@@ -1,0 +1,228 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* The page follows the visitor's system theme, so dark is a media query. */
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme inline {
+  /* Page palette */
+  --color-ground: var(--ground);
+  --color-ink: var(--ink);
+  --color-dim: var(--dim);
+  --color-line: var(--line);
+
+  /* Logo colours */
+  --color-brand-blue: #48c9ec;
+  --color-brand-blue-light: #8be4ff;
+  --color-brand-orange: #ff9e03;
+  --color-brand-orange-light: #ffb547;
+  --color-brand-red: #ff3236;
+  --color-brand-red-light: #ff8687;
+
+  /* Element colours: four categories that must stay legible in both themes,
+     so each has a light-theme and a dark-theme value. */
+  --color-element-fire: var(--element-fire);
+  --color-element-water: var(--element-water);
+  --color-element-wind: var(--element-wind);
+  --color-element-earth: var(--element-earth);
+
+  /* Rarity tiers, as the game colours them */
+  --color-tier-common: var(--tier-common);
+  --color-tier-great: var(--tier-great);
+  --color-tier-rare: var(--tier-rare);
+  --color-tier-epic: var(--tier-epic);
+  --color-tier-legendary: var(--tier-legendary);
+  --color-tier-mythic: var(--tier-mythic);
+  --color-tier-immortal: var(--tier-immortal);
+
+  --font-display: var(--font-display-face);
+  --font-body: var(--font-body-face);
+  --font-mono: var(--font-mono-face);
+
+  /* shadcn tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: light dark;
+
+  --ground: #f1f3f6;
+  --ink: #0f1217;
+  --dim: #5a6371;
+  --line: rgb(15 18 23 / 7.5%);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --element-fire: #cc1f26;
+  --element-water: #0d7ea6;
+  --element-wind: #5b46c4;
+  --element-earth: #8a5a00;
+
+  --tier-common: #6b7280;
+  --tier-great: #2f7d4f;
+  --tier-rare: #1f6fb2;
+  --tier-epic: #7a3fb8;
+  --tier-legendary: #b06a00;
+  --tier-mythic: #b3243a;
+  --tier-immortal: #8a6a12;
+
+  /* shadcn semantics, tuned to the palette above */
+  --background: var(--ground);
+  --foreground: var(--ink);
+  --card: var(--ground);
+  --card-foreground: var(--ink);
+  --popover: var(--ground);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--ground);
+  --secondary: rgb(15 18 23 / 5%);
+  --secondary-foreground: var(--ink);
+  --muted: rgb(15 18 23 / 5%);
+  --muted-foreground: var(--dim);
+  --accent: rgb(15 18 23 / 5%);
+  --accent-foreground: var(--ink);
+  --destructive: #ff3236;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: #ff9e03;
+  --radius: 0.625rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #0c0f14;
+    --ink: #eef1f5;
+    --dim: #8a94a3;
+    --line: rgb(238 241 245 / 6%);
+    --secondary: rgb(238 241 245 / 6%);
+    --muted: rgb(238 241 245 / 6%);
+    --accent: rgb(238 241 245 / 6%);
+
+    --element-fire: #ff5b5e;
+    --element-water: #48c9ec;
+    --element-wind: #a99cff;
+    --element-earth: #ffb547;
+
+    --tier-common: #9aa3af;
+    --tier-great: #4ec27f;
+    --tier-rare: #5aa9f0;
+    --tier-epic: #b98cf0;
+    --tier-legendary: #ffb547;
+    --tier-mythic: #ff6b7d;
+    --tier-immortal: #ffd75e;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-body;
+  }
+  body {
+    @apply bg-ground text-ink;
+  }
+}
+
+/* Isometric grid — the same 30° geometry the mark is cut from */
+.iso-grid {
+  mask-image: radial-gradient(ellipse 70% 65% at 22% 72%, #000 0%, transparent 75%);
+}
+.iso-grid path {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+@media (width <= 520px) {
+  .iso-grid {
+    mask-image: radial-gradient(ellipse 110% 60% at 30% 70%, #000 0%, transparent 75%);
+  }
+}
+
+/* Status dot */
+@keyframes pulse-dot {
+  0% { box-shadow: 0 0 0 0 rgb(255 158 3 / 45%); }
+  70% { box-shadow: 0 0 0 9px rgb(255 158 3 / 0%); }
+  100% { box-shadow: 0 0 0 0 rgb(255 158 3 / 0%); }
+}
+.status-dot {
+  animation: pulse-dot 2.4s ease-out infinite;
+}
+
+/* Entry choreography: type rises, mark pieces fly in and lock together.
+   data-phase lives on <html>: idle on first paint, then ready, then settled. */
+.reveal {
+  transition:
+    opacity 0.8s ease calc(var(--i, 0) * 90ms),
+    transform 1s var(--ease-out) calc(var(--i, 0) * 90ms);
+}
+[data-phase="idle"] .reveal {
+  opacity: 0;
+  transform: translateY(0.35em);
+}
+
+.mark {
+  --hover: 0;
+}
+.mark .piece {
+  --load: 0;
+  transform-box: fill-box;
+  transform: translate(
+    calc(var(--dx) * (var(--load) + var(--hover)) * 1px),
+    calc(var(--dy) * (var(--load) + var(--hover)) * 1px)
+  );
+  transition:
+    transform 1.4s var(--ease-out) calc(420ms + var(--d)),
+    opacity 0.5s ease calc(420ms + var(--d));
+}
+[data-phase="idle"] .mark .piece {
+  --load: 9;
+  opacity: 0;
+}
+[data-phase="settled"] .mark .piece {
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .mark .piece {
+    transition: none;
+  }
+  [data-phase="idle"] .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  [data-phase="idle"] .mark .piece {
+    --load: 0;
+    opacity: 1;
+  }
+  .status-dot {
+    animation: none;
+  }
+}
