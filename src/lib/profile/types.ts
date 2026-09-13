@@ -68,6 +68,8 @@ export type CharacterState = {
   highestStage: number;
   /** Training Diary level (each adds 100 growth skill points once unlocked). */
   trainingDiary: number;
+  /** Over Point max-level upgrades bought per growth stat (0-48). */
+  diaryUpgrades: Record<string, number>;
   /** Latent Power values: stat -> the five slots I-V. */
   latent: Record<string, number[]>;
   latentAwakening: { grade: number; level: number };
@@ -92,6 +94,7 @@ export function emptyCharacter(): CharacterState {
     slayerLevel: 1,
     highestStage: 0,
     trainingDiary: 0,
+    diaryUpgrades: {},
     latent: Object.fromEntries(LATENT_STATS.map((stat) => [stat, Array<number>(LATENT_SLOTS).fill(0)])),
     latentAwakening: { grade: 0, level: 0 },
     promotion: 0,

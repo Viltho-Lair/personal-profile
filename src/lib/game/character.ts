@@ -93,6 +93,39 @@ export function skillPoints(slayerLevel: number, diaryLevel: number) {
   return { fromLevel: level * 3, fromDiary: diary * 100, diary, total: level * 3 + diary * 100 };
 }
 
+/**
+ * Growth max levels. STR, HP, VIT and LUK start at 1,000 and gain 50 per Training
+ * Diary level; CRI, ACC and DODGE start at 200 and gain 10. Over Points (20 per
+ * diary level) buy up to 48 more steps per stat: +25 max level for 5 OP, or +5
+ * for 1 OP.
+ */
+export const GROWTH_CAP = {
+  large: { base: 1000, perDiary: 50, perUpgrade: 25, upgradeCost: 5 },
+  small: { base: 200, perDiary: 10, perUpgrade: 5, upgradeCost: 1 },
+} as const;
+export const LARGE_GROWTH = ["STR", "HP", "VIT", "LUK"] as const;
+export const OP_PER_DIARY_LEVEL = 20;
+export const MAX_DIARY_UPGRADES = 48;
+
+export const growthCapOf = (stat: string) => ((LARGE_GROWTH as readonly string[]).includes(stat) ? GROWTH_CAP.large : GROWTH_CAP.small);
+
+/** A growth stat's max level from the Training Diary level and its Over Point upgrades. */
+export function growthMaxLevel(stat: string, diaryLevel: number, upgrades: number): number {
+  const cap = growthCapOf(stat);
+  const steps = Math.min(MAX_DIARY_UPGRADES, Math.max(0, Math.floor(upgrades)));
+  return cap.base + Math.max(0, Math.floor(diaryLevel)) * cap.perDiary + steps * cap.perUpgrade;
+}
+
+/** Over Points earned from the Training Diary and spent on max-level upgrades. */
+export function overPoints(diaryLevel: number, upgrades: Record<string, number>) {
+  const total = Math.max(0, Math.floor(diaryLevel)) * OP_PER_DIARY_LEVEL;
+  const spent = Object.entries(upgrades).reduce(
+    (sum, [stat, count]) => sum + Math.min(MAX_DIARY_UPGRADES, Math.max(0, Math.floor(count))) * growthCapOf(stat).upgradeCost,
+    0,
+  );
+  return { total, spent, left: total - spent };
+}
+
 /** Class max level: 200, +50 per Awakened Blast. */
 export function classMaxLevel(awakening: number): number {
   return 200 + 50 * Math.max(0, Math.floor(awakening));

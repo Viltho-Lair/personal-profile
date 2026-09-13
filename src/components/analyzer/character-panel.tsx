@@ -9,6 +9,10 @@ import {
   awakenedClassName,
   classMaxLevel,
   diaryMaxLevel,
+  growthCapOf,
+  growthMaxLevel,
+  MAX_DIARY_UPGRADES,
+  overPoints,
   diaryUnlockLevel,
   skillPoints,
   enhanceMax,
@@ -230,6 +234,7 @@ function TrainingDiary() {
   const max = diaryMaxLevel(character.slayerLevel);
   const level = Math.min(character.trainingDiary, max);
   const next = level + 1;
+  const op = overPoints(level, character.diaryUpgrades);
 
   return (
     <div className="flex flex-col gap-3">
@@ -253,6 +258,51 @@ function TrainingDiary() {
           ? `Unlocks at slayer level ${formatValue(diaryUnlockLevel(1))} (now ${formatValue(character.slayerLevel)})`
           : `Next level (${next}) unlocks at slayer level ${formatValue(diaryUnlockLevel(next))}`}
       </p>
+
+      <section aria-label="Over Points" className="flex flex-col gap-2 border-t border-ink/10 pt-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className={LABEL}>Over Points (OP) left</h3>
+          <span className={`font-mono text-sm tabular-nums ${op.left < 0 ? "text-red-500" : "text-ink"}`}>
+            {formatValue(op.left)} <span className="text-[10px] text-dim">of {formatValue(op.total)}</span>
+          </span>
+        </div>
+        <p className="text-[11px] leading-snug text-dim">
+          Each Training Diary level gives 20 OP, spent on raising a stat&apos;s max level, up to {MAX_DIARY_UPGRADES} times per stat.
+        </p>
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-1.5">
+          {GROWTH.map((stat) => {
+            const cap = growthCapOf(stat.key);
+            const bought = Math.min(MAX_DIARY_UPGRADES, character.diaryUpgrades[stat.key] ?? 0);
+            // More upgrades need OP left over: at most what the remaining OP buys.
+            const affordable = Math.min(MAX_DIARY_UPGRADES, bought + Math.max(0, Math.floor(op.left / cap.upgradeCost)));
+            return (
+              <li key={stat.key} className="flex flex-col items-center gap-1 rounded-md border border-ink/15 p-2 text-center">
+                <Art item={stat} className="size-9" />
+                <span className="text-xs font-medium">{stat.key}</span>
+                <span className="font-mono text-[9px] text-dim uppercase">
+                  Max Lv +{cap.perUpgrade} · {cap.upgradeCost} OP
+                </span>
+                <InlineLevel
+                  value={bought}
+                  min={0}
+                  max={affordable}
+                  name={`${stat.key} OP upgrades`}
+                  title={`Up to ${affordable} with the OP left`}
+                  onChange={(value) =>
+                    set((c) => ({ ...c, diaryUpgrades: { ...c.diaryUpgrades, [stat.key]: clampLevel(value, affordable) } }))
+                  }
+                />
+                <span className={`font-mono text-[10px] tabular-nums ${bought >= MAX_DIARY_UPGRADES ? "text-element-water" : "text-dim"}`}>
+                  {bought}/{MAX_DIARY_UPGRADES}
+                </span>
+                <span className="font-mono text-[9px] text-dim tabular-nums">
+                  Max Lv {formatValue(growthMaxLevel(stat.key, level, bought))}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </div>
   );
 }
@@ -373,14 +423,18 @@ function GrowthSection() {
       {GROWTH.map((stat) => {
         const level = character.growth[stat.key] ?? 0;
         const latent = totals[stat.key];
-        // Points are spent as a stat's level goes up: it can rise by at most what's left.
-        const cap = level + Math.max(0, remaining);
+        // Points are spent as a stat's level goes up: it can rise by at most what's left, and never past its max level.
+        const maxLevel = growthMaxLevel(stat.key, points.diary, character.diaryUpgrades[stat.key] ?? 0);
+        const cap = Math.min(maxLevel, level + Math.max(0, remaining));
         return (
           <li key={stat.key} className="flex items-center justify-between gap-3 rounded-md border border-ink/10 p-2">
             <Art item={stat} className="size-9" />
             <div className="min-w-0 flex-1">
               <p className="text-sm leading-tight font-medium">
-                {stat.key} <span className="text-xs font-normal text-dim">{stat.detail}</span>
+                {stat.key} <span className="text-xs font-normal text-dim">{stat.detail}</span>{" "}
+                <span className={`font-mono text-[10px] ${level > maxLevel ? "text-red-500" : "text-element-water"}`}>
+                  Max Lv.{formatValue(maxLevel)}
+                </span>
               </p>
               <p className={LABEL}>
                 {latent

@@ -6,6 +6,8 @@ import {
   classMaxLevel,
   diaryMaxLevel,
   skillPoints,
+  growthMaxLevel,
+  overPoints,
   enhanceMax,
   enhanceStat,
   latentMultiplier,
@@ -68,6 +70,15 @@ describe("classes and abilities", () => {
     expect(skillPoints(2794, 23)).toEqual({ fromLevel: 8382, fromDiary: 2300, diary: 23, total: 10682 });
     // A diary level the slayer hasn't unlocked yet doesn't count.
     expect(skillPoints(2794, 24).diary).toBe(23);
+  });
+
+  it("raises growth max levels with the Training Diary and Over Point upgrades", () => {
+    expect(growthMaxLevel("STR", 0, 0)).toBe(1000);
+    expect(growthMaxLevel("CRI", 0, 0)).toBe(200);
+    // Diary 22 with all 48 upgrades: 1,000 + 1,100 + 1,200 = 3,300, as in the game.
+    expect(growthMaxLevel("STR", 22, 48)).toBe(3300);
+    expect(growthMaxLevel("DODGE", 22, 99)).toBe(200 + 220 + 240);
+    expect(overPoints(22, { STR: 48, CRI: 48, LUK: 38 })).toEqual({ total: 440, spent: 240 + 48 + 190, left: 440 - 478 });
     expect([0, 6, 12, 18].map(awakenedClassName)).toEqual(["Blast", "Tera", "Seed", "Nova"]);
   });
 
