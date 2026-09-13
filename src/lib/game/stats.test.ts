@@ -47,6 +47,17 @@ describe("computeStats", () => {
     expect(after.hp / before.hp).toBeCloseTo(1.5);
   });
 
+  it("adds gear secondary stats to CRIT DMG, gold, EXP and mana", () => {
+    const s = emptySources();
+    s.gearSecondary = { critDamage: 0.555, gold: 0.25, exp: 0.05, mana: 0.02, manaRecovery: 0.05 };
+    const stats = computeStats(s);
+    expect(stats.critDamage).toBeCloseTo(1.55);
+    expect(stats.extraGold).toBeCloseTo(0.25);
+    expect(stats.extraExp).toBeCloseTo(0.05);
+    expect(stats.mana).toBeCloseTo(102);
+    expect(stats.manaRecovery).toBeCloseTo(10.5);
+  });
+
   it("adds skill buffs only through the skills source", () => {
     const s = sample();
     const base = computeStats(s).attack;

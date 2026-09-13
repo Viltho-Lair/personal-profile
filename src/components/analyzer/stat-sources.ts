@@ -103,6 +103,39 @@ export function latentTotals(character: CharacterState) {
   ) as Record<string, { perLevel: number; total: number; sum: number }>;
 }
 
+/**
+ * Secondary stats of every owned weapon and accessory (Equipment Data rows
+ * 252-304): weapon CRIT DMG and gold, accessory mana, mana recovery and EXP.
+ */
+export function gearSecondary(profile: ProfileV1) {
+  const totals = { critDamage: 0, gold: 0, exp: 0, mana: 0, manaRecovery: 0 };
+  const weaponRow = AWAKENING[awakening(profile, "weapons", MAX_AWAKENING)];
+  for (const gear of WEAPONS) {
+    const { owned, level } = gearState(profile, "weapons", gear.grade, gear.maxLevel);
+    if (!owned) continue;
+    const immortal = gear.tier === "Immortal";
+    const crit = immortal ? (weaponRow?.weaponCritHit ?? 0) : (gear.secondary.critHitIncreaseAt0 ?? 0);
+    totals.critDamage += level === 0 ? (gear.secondary.critHitAt0 ?? 0) : ((level + 10) * crit) / 10;
+    if (immortal) totals.gold += level === 0 ? 0.25 : ((level + 10) * (weaponRow?.weaponGold ?? 0)) / 10;
+    else if (gear.tier === "Mythic" && gear.gradeNumber) totals.gold += 0.05 * (5 - gear.gradeNumber) * (1 + level / 10);
+  }
+  const accessoryRow = AWAKENING[awakening(profile, "accessories", MAX_AWAKENING)];
+  for (const gear of ACCESSORIES) {
+    const { owned, level } = gearState(profile, "accessories", gear.grade, gear.maxLevel);
+    if (!owned) continue;
+    const immortal = gear.tier === "Immortal";
+    const mana = (immortal ? (accessoryRow?.accessoryMaxMana ?? 0) : (gear.secondary.manaRecoveryAt0 ?? 0)) / 100;
+    totals.manaRecovery += mana;
+    if (immortal || gear.tier === "Legendary" || gear.tier === "Mythic") totals.mana += mana;
+    if (immortal) totals.exp += level === 0 ? 0.05 : (0.05 + level * 0.005) * (accessoryRow?.accessoryExp ?? 0);
+    else if (gear.tier === "Mythic") {
+      const exp = gear.secondary.expBonus ?? 0;
+      totals.exp += level === 0 ? 0.01 : (exp * (1 + level / 10)) / 10;
+    }
+  }
+  return totals;
+}
+
 /** Best equip effect and 30% of every owned item's effect, in whole percents. */
 function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
   const row = AWAKENING[awakening(profile, kind, MAX_AWAKENING)];
@@ -163,6 +196,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   }
 
   s.weapon = gearTotals(profile, "weapons", WEAPONS);
+  s.gearSecondary = gearSecondary(profile);
   s.accessory = gearTotals(profile, "accessories", ACCESSORIES);
 
   // Classes: best equip effect + 30% of all owned; the last class awakens with Blast.
@@ -377,9 +411,6 @@ export const UNTRACKED_SOURCES = [
   "Appearance",
   "Black Orb",
   "Beasts",
-  "Skill Stones",
   "Skill Refinement",
-  "Soul Weapon engravings",
   "Sealed Shrine statues",
-  "Weapon/accessory secondary stats",
 ] as const;

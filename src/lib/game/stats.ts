@@ -31,6 +31,8 @@ export type StatSources = {
   /** Growing Knowledge combined value. */
   knowledge: number;
   soulWeapon: { atk: number; completionAtk: number; completionHp: number };
+  /** Weapon and accessory secondary stats (Equipment Data B427:E430), as fractions. */
+  gearSecondary: { critDamage: number; gold: number; exp: number; mana: number; manaRecovery: number };
   /** Soul gems on the equipped soul weapon's plate (the workbook's Additional Options). */
   engraving: { atk: number; hp: number; hpRecovery: number; critDamage: number; gold: number; accuracy: number; dodge: number };
   relics: { atk: number; critDamage: number; hp: number; hpRecovery: number; gold: number; accuracy: number; dodge: number; element: ByElement };
@@ -130,13 +132,13 @@ export function computeStats(s: StatSources): Stats {
     familiarHp;
 
   const critDamage = round(
-    (1 + s.enhance.critDamage + down(s.growth.crit, 2) + s.companions.lunatic + s.engraving.critDamage + s.companionPromotion.critDamage + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
+    (1 + s.enhance.critDamage + down(s.growth.crit, 2) + down(s.gearSecondary.critDamage, 2) + s.companions.lunatic + s.engraving.critDamage + s.companionPromotion.critDamage + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
     3,
   );
 
   const gold =
     down(
-      (down(s.relics.gold + s.growth.gold + s.engraving.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
+      (down(s.gearSecondary.gold + s.relics.gold + s.growth.gold + s.engraving.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
         (1 + s.companions.goldRush + s.companions.goldRush2 + s.memoryTree.goldAll + s.constellation.goldAll) *
         (1 + s.memoryTree.goldStage + s.constellation.goldStage) *
         (1 + down(s.spirits.gold, 3)),
@@ -145,7 +147,7 @@ export function computeStats(s: StatSources): Stats {
 
   const exp =
     down(
-      (down(s.mastery.exp + s.companionPromotion.exp + s.slayerPromotion.exp, 3) + 1) *
+      (down(s.gearSecondary.exp + s.mastery.exp + s.companionPromotion.exp + s.slayerPromotion.exp, 3) + 1) *
         (1 + s.companions.hymn + s.memoryTree.expAll + s.constellation.expAll) *
         (1 + s.memoryTree.expStage + s.constellation.expStage) *
         (1 + down(s.spirits.exp, 3)),
@@ -170,8 +172,8 @@ export function computeStats(s: StatSources): Stats {
     critDamage,
     deathStrikeChance: s.enhance.deathStrikeChance,
     deathStrikeDamage: 1 + s.enhance.deathStrikeDamage,
-    mana: 100 * (1 + s.companions.manaAmplification + s.companionPromotion.mana + s.slayerPromotion.mana),
-    manaRecovery: 10 * (1 + s.companions.manaDope + s.companionPromotion.manaRecovery + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
+    mana: 100 * (1 + s.gearSecondary.mana) * (1 + s.companions.manaAmplification + s.companionPromotion.mana + s.slayerPromotion.mana),
+    manaRecovery: 10 * (1 + s.gearSecondary.manaRecovery) * (1 + s.companions.manaDope + s.companionPromotion.manaRecovery + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
     accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.engraving.accuracy + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
     dodge: 10 + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.engraving.dodge + s.companionPromotion.dodge + s.slayerPromotion.dodge,
     ccResist: s.companionPromotion.ccResist + s.slayerPromotion.ccResist,
@@ -195,6 +197,7 @@ export function emptySources(): StatSources {
     knowledge: 0,
     soulWeapon: { atk: 0, completionAtk: 0, completionHp: 0 },
     engraving: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, gold: 0, accuracy: 0, dodge: 0 },
+    gearSecondary: { critDamage: 0, gold: 0, exp: 0, mana: 0, manaRecovery: 0 },
     relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, element: noElements() },
     companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },
     slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0, ccResist: 0 },
