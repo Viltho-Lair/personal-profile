@@ -15,6 +15,7 @@ import {
 import { clampLevel, companionState } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
+import { BeastPanel } from "./beast-panel";
 import { formatValue } from "./data";
 import { InlineLevel } from "./level-input";
 import { Sprite } from "./sprite";
@@ -426,9 +427,7 @@ export function CompanionPanel() {
         {section === "companion" ? (
           <CompanionSection />
         ) : (
-          <div className="flex h-full items-center justify-center p-6">
-            <p className="font-mono text-xs tracking-[0.08em] text-dim uppercase">Beasts are coming later.</p>
-          </div>
+          <BeastPanel />
         )}
       </div>
     </div>

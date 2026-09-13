@@ -15,8 +15,8 @@ const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const PRESET_ROWS: { kind: PresetKind | "skills"; label: string; note?: string }[] = [
   { kind: "skills", label: "Skills" },
   { kind: "spirits", label: "Spirits" },
-  { kind: "skillStones", label: "Skill Stone", note: "Skill Stone contents aren't tracked yet" },
-  { kind: "beasts", label: "Beast", note: "Beasts aren't tracked yet" },
+  { kind: "skillStones", label: "Skill Stone" },
+  { kind: "beasts", label: "Beast" },
   { kind: "familiars", label: "Familiar" },
   { kind: "abilities", label: "Slayer Promotion Ability" },
 ];

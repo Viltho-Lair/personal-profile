@@ -1,3 +1,4 @@
+import type { BeastState } from "@/lib/game/beasts";
 import type { ShrineKey } from "@/lib/game/shrine";
 import type { SkillStoneSet } from "@/lib/game/battle";
 import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
@@ -516,6 +517,29 @@ export function setRefinementLine(
   while (lines.length <= index) lines.push({ option: null, value: null });
   lines[index] = { ...lines[index], ...change };
   return { ...profile, skillRefinement: { ...profile.skillRefinement, [skill]: lines } };
+}
+
+/** Changes a beast's awaken level (null: not owned) or affection; affection stays within 1..70. */
+export function setBeast(profile: ProfileV1, beast: string, change: Partial<BeastState>): ProfileV1 {
+  const current = profile.beasts[beast] ?? { awaken: null, affection: 1 };
+  const next = { ...current, ...change };
+  next.affection = Math.min(70, Math.max(1, Math.floor(next.affection) || 1));
+  if (next.awaken !== null) next.awaken = Math.min(6, Math.max(0, Math.floor(next.awaken)));
+  const beasts = { ...profile.beasts, [beast]: next };
+  // A beast no longer owned can't stay mounted.
+  const presetBeasts = next.awaken === null ? profile.presets.beasts.map((b) => (b === beast ? null : b)) : profile.presets.beasts;
+  return { ...profile, beasts, presets: { ...profile.presets, beasts: presetBeasts } };
+}
+
+/** The mounted beast of the active beast preset. */
+export function mountedBeast(profile: ProfileV1): string | null {
+  return profile.presets.beasts[profile.activePresets.beasts] ?? null;
+}
+
+export function setMountedBeast(profile: ProfileV1, beast: string | null): ProfileV1 {
+  const index = profile.activePresets.beasts;
+  const beasts = profile.presets.beasts.map((b, i) => (i === index ? beast : b));
+  return { ...profile, presets: { ...profile.presets, beasts } };
 }
 
 /** Marks an outfit owned or not. */

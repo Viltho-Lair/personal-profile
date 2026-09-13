@@ -42,6 +42,7 @@ from optimizer.skill_mechanics import extract_skill_mechanics  # noqa: E402
 from optimizer.refinement import extract_refinement  # noqa: E402
 from optimizer.shrine import extract_shrine  # noqa: E402
 from optimizer.appearance import extract_appearance  # noqa: E402
+from optimizer.beasts import extract_beasts  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
 from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
 from optimizer.stages import extract_promotion_stages, extract_stage_bosses  # noqa: E402
@@ -255,6 +256,7 @@ def main():
         stage_bosses = extract_stage_bosses(values["Stage Data"])
         shrine, shrine_art = extract_shrine(values["Equipment Data"], formulas["EQUIPMENT"])
         clothing, guild_outfits, appearance_art = extract_appearance(formulas["APPEARANCE"], formulas["CHARACTER"])
+        beasts = extract_beasts(values["Companions Data"])
         promotion_stages = extract_promotion_stages(values["STAT TRACKER"])
         companions, promotion, companion_art = extract_companions(
             formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
@@ -427,6 +429,12 @@ def main():
         "guild": guild_outfits,
     })
     print(f"appearance: {len(clothing)} clothing, {len(guild_outfits)} guild shop outfits")
+
+    write_json(DATA / "beasts.json", {
+        "source": {"file": source.name, "sheet": "Companions Data (beasts and the affection table)", "extractedOn": today},
+        **beasts,
+    }, compact=True)
+    print(f"beasts: {len(beasts['beasts'])} beasts, tiers {', '.join(beasts['tables'])}")
 
     write_json(DATA / "skill-refinement.json", {
         "source": {"file": source.name, "sheet": "SKILLS (option ranges from the game's Refinement Effect screen)", "extractedOn": today},

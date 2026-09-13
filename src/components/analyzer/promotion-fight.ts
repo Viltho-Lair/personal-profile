@@ -6,11 +6,11 @@ import { skillPower } from "@/lib/game/formulas";
 import { refinementEffects } from "@/lib/game/refinement";
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
-import { activeSkillStones, effectiveSkillLevel, masteryLevel } from "@/lib/profile/rules";
+import { activeSkillStones, effectiveSkillLevel, masteryLevel, mountedBeast } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
 import { MASTERY_PAGES, SKILL_BY_NAME, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
-import { collectSources, SHRINE } from "./stat-sources";
+import { BEASTS, collectSources, SHRINE } from "./stat-sources";
 
 type PromotionStage = { name: string; stage: number; range: number };
 export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[];
@@ -145,6 +145,29 @@ export function presetFightSkills(profile: ProfileV1) {
     }
     else skills.push(withStones(result, stones));
   }
+
+  // The mounted beast's skill: wolves raise ATK after a number of attack skill casts.
+  const beast = BEASTS.beasts.find((b) => b.name === mountedBeast(profile));
+  const awaken = beast ? profile.beasts[beast.name]?.awaken : null;
+  if (beast && awaken !== null && awaken !== undefined) {
+    if (beast.family === "Wolf" && typeof beast.skill.x === "number") {
+      skills.push({
+        name: beast.name,
+        element: null,
+        kind: "passive",
+        trigger: "attackCasts",
+        every: beast.skill.x,
+        duration: 10,
+        delay: 0,
+        startAt: 0,
+        freezes: false,
+        bonus: 0,
+        effect: { type: "atk", power: (beast.skill.values[awaken] ?? 0) / 100 },
+      });
+    } else {
+      skipped.push(`${beast.name} (mounted skill not modelled)`);
+    }
+  }
   return { skills, skipped };
 }
 
@@ -175,10 +198,12 @@ const atkStat = ENHANCE.find((stat) => stat.name === "ATK");
 const ATK_GROUPS: { label: string; group: (s: StatSources) => number; describe: (s: StatSources, added: number) => string | null }[] = [
   {
     label: "Enhance ATK",
-    group: (s) => (s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk) + s.soulWeapon.atk,
+    group: (s) =>
+      (s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk) +
+      s.soulWeapon.atk * (1 + s.shrine.soulWeaponAtk),
     describe: (s, added) => {
       if (!atkStat) return null;
-      const target = s.enhance.atk + added / (1 + s.engraving.atk);
+      const target = s.enhance.atk + added / (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk);
       const max = atkStat.maxLevel ?? 2_200_000;
       if (enhanceStat(atkStat.formula, max).value < target) return null;
       let low = 0;

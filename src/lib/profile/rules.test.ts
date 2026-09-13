@@ -3,6 +3,9 @@ import {
   addToSkillPreset,
   setShrineLevel,
   setOutfitOwned,
+  setBeast,
+  setMountedBeast,
+  mountedBeast,
   awakening,
   companionState,
   clampLevel,
@@ -290,6 +293,17 @@ describe("skill mastery", () => {
     expect(openMasteryPages(p, pages)).toBe(3);
     p = setMasteryPage(p, page1, false);
     expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("beasts", () => {
+  it("clamps awaken and affection and dismounts a beast that's no longer owned", () => {
+    let p = setBeast(emptyProfile(), "Gray Wolf", { awaken: 9, affection: 99 });
+    expect(p.beasts["Gray Wolf"]).toEqual({ awaken: 6, affection: 70 });
+    p = setMountedBeast(p, "Gray Wolf");
+    expect(mountedBeast(p)).toBe("Gray Wolf");
+    p = setBeast(p, "Gray Wolf", { awaken: null });
+    expect(mountedBeast(p)).toBeNull();
   });
 });
 

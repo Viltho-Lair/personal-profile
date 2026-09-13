@@ -35,6 +35,8 @@ export type StatSources = {
   gearSecondary: { critDamage: number; gold: number; exp: number; mana: number; manaRecovery: number };
   /** Skill Refinement owned effects (Skills Data I77:M77): ATK and HP as fractions, CRIT DMG fraction, Accuracy and Dodge flat. */
   refinement: { atk: number; hp: number; critDamage: number; accuracy: number; dodge: number };
+  /** Beasts: owned (combat) effect on ATK, HP and HP Recovery, and mounted ATK, as fractions. */
+  beasts: { combat: number; mountedAtk: number };
   /** Owned clothing and guild shop outfits: ATK, HP, gold and EXP fractions, flat Accuracy and Dodge. */
   appearance: { atk: number; hp: number; gold: number; exp: number; accuracy: number; dodge: number };
   /** Sealed Shrine: Chaos soul weapon ATK amp and Character ATK, Demon Character HP, Order element damage. */
@@ -109,6 +111,8 @@ export function computeStats(s: StatSources): Stats {
     (1 + s.memoryTree.atkMultiplier + s.constellation.promotion) *
     (1 + s.familiarProficiency.atk) *
     (1 + s.familiarProficiency.slayer) *
+    (1 + s.beasts.combat) *
+    (1 + s.beasts.mountedAtk) *
     (1 + s.skills.atk);
 
   const hp =
@@ -122,7 +126,8 @@ export function computeStats(s: StatSources): Stats {
     (1 + s.relics.hp + s.companionPromotion.hp + s.slayerPromotion.hp + s.mastery.hp + s.companions.fortitude + s.memoryTree.hp + s.constellation.hp) *
     (1 + s.mastery.hpAmp) *
     breakthrough *
-    familiarHp;
+    familiarHp *
+    (1 + s.beasts.combat);
 
   const hpRecovery =
     mantra *
@@ -135,7 +140,8 @@ export function computeStats(s: StatSources): Stats {
     (1 + s.relics.hpRecovery + s.companionPromotion.hpRecovery + s.slayerPromotion.hpRecovery + s.mastery.hpRegen + s.memoryTree.vit + s.constellation.hpRecovery) *
     (1 + s.mastery.hpRegenAmp) *
     breakthrough *
-    familiarHp;
+    familiarHp *
+    (1 + s.beasts.combat);
 
   const critDamage = round(
     (1 + s.enhance.critDamage + down(s.growth.crit, 2) + down(s.gearSecondary.critDamage, 2) + s.refinement.critDamage + s.companions.lunatic + s.engraving.critDamage + s.companionPromotion.critDamage + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
@@ -208,6 +214,7 @@ export function emptySources(): StatSources {
     refinement: { atk: 0, hp: 0, critDamage: 0, accuracy: 0, dodge: 0 },
     shrine: { soulWeaponAtk: 0, atk: 0, hp: 0, element: noElements() },
     appearance: { atk: 0, hp: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0 },
+    beasts: { combat: 0, mountedAtk: 0 },
     relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, element: noElements() },
     companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },
     slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0, ccResist: 0 },

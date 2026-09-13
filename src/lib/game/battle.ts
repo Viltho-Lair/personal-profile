@@ -37,8 +37,8 @@ export type FightSkill = {
   name: string;
   element: Element | null;
   kind: "attack" | "buff" | "passive";
-  /** What readies it: seconds of cooldown, basic-attack hits, always on, or uses of skills of its element. */
-  trigger: "seconds" | "hits" | "always" | "elementCasts";
+  /** What readies it: seconds of cooldown, basic-attack hits, always on, uses of skills of its element, or attack skill casts. */
+  trigger: "seconds" | "hits" | "always" | "elementCasts" | "attackCasts";
   every: number;
   /** Seconds a buff lasts. */
   duration: number;
@@ -193,6 +193,8 @@ export function simulateFight(input: FightInput): FightResult {
         frozenUntil = Math.max(frozenUntil, real + animation);
       }
       if (s.element && queue) countElementUse(s.element, l);
+      // Every attack skill cast counts toward "after X strike skills used", passives included.
+      for (const other of live) if (other !== l && other.skill.trigger === "attackCasts" && other.started) other.progress += 1;
     } else if (e.type === "rave") {
       raveUntil = real + Math.max(s.duration, ANIMATION_SECONDS);
       raveStored = 0;

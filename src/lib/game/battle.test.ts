@@ -69,6 +69,16 @@ describe("simulateFight", () => {
     expect(result.points[result.points.length - 1].t).toBeCloseTo(10, 0);
   });
 
+  it("readies an attack-cast buff after that many attack skill casts", () => {
+    const slash = skill({ name: "Slash", every: 1, effect: { type: "damage", power: 1, hits: 1 } });
+    const wolf = skill({ name: "Wolf", element: null, kind: "passive", trigger: "attackCasts", every: 3, duration: 10, effect: { type: "atk", power: 1 } });
+    const result = simulateFight({ ...base, skills: [slash, wolf] });
+    const wolfCasts = result.casts.filter((c) => c.name === "Wolf");
+    expect(wolfCasts.length).toBeGreaterThanOrEqual(1);
+    expect(wolfCasts[0].t).toBeGreaterThan(2);
+    expect(result.basic).toBeGreaterThan(simulateFight({ ...base, skills: [slash] }).basic);
+  });
+
   it("applies skill stones only to their element", () => {
     const s = skill({ name: "Buff", element: "Water", kind: "buff", every: 20, duration: 10, effect: { type: "atk", power: 1 } });
     const stones = { cooldown: { grade: "B" as const, element: "Water" as const }, time: { grade: "A" as const, element: "Water" as const }, heat: null };

@@ -20,6 +20,8 @@ import { shrineEffects, type ShrineData, type ShrineLevels } from "@/lib/game/sh
 import shrineData from "@/data/optimizer/sealed-shrine.json";
 import { appearanceTotals, sweatsuitMultiplier, type AppearanceData } from "@/lib/game/appearance";
 import appearanceData from "@/data/optimizer/appearance.json";
+import { beastTotals, type BeastData } from "@/lib/game/beasts";
+import beastsData from "@/data/optimizer/beasts.json";
 import refinementData from "@/data/optimizer/skill-refinement.json";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
 import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
@@ -27,6 +29,7 @@ import { totalSubNodeLevels, treeBonuses, treeBuffs, treeLevel, type MemoryTree 
 import { ELEMENTS, emptySources, type Element, type StatSources } from "@/lib/game/stats";
 import {
   activeAbilityPreset,
+  mountedBeast,
   activeSpiritPreset,
   awakening,
   clampLevel,
@@ -97,6 +100,7 @@ const rawBase = (key: string, perLevel: number) => (key === "LUK" ? perLevel * 1
 /** Growth totals after Latent Power: STR/HP/VIT flat, CRI and LUK as fractions (CHARACTER AR25:AR29). */
 export const SHRINE = shrineData as unknown as ShrineData;
 export const APPEARANCE = appearanceData as unknown as AppearanceData;
+export const BEASTS = beastsData as unknown as BeastData;
 
 /** Latent power per growth level and in total; the Statue of Dragon amplifies the latent part. */
 export function latentTotals(character: CharacterState, shrine?: ShrineLevels) {
@@ -267,6 +271,8 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   const latent = latentTotals(c, profile.sealedShrine);
   const shrine = shrineEffects(SHRINE, profile.sealedShrine);
   s.appearance = appearanceTotals(APPEARANCE, profile.appearance);
+  const beasts = beastTotals(BEASTS, profile.beasts, mountedBeast(profile) !== null);
+  s.beasts = { combat: beasts.combat, mountedAtk: beasts.mountedAtk };
   s.shrine = { soulWeaponAtk: shrine.soulWeaponAtk, atk: shrine.atk, hp: shrine.hp, element: shrine.element };
   const growthLevel = (key: string) => (c.growth[key] ?? 0) * (GROWTH.find((g) => g.key === key)?.perLevel ?? 0);
   s.growth = {
@@ -440,5 +446,4 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
 /** Sources the workbook counts that the analyzer doesn't track yet. */
 export const UNTRACKED_SOURCES = [
   "Black Orb",
-  "Beasts",
 ] as const;

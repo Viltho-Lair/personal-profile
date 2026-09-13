@@ -128,6 +128,8 @@ export function useProfile() {
       update((p) => rules.setPromotionTarget(p, change)),
     setRefinementLine: (skill: string, index: number, change: Parameters<typeof rules.setRefinementLine>[3]) =>
       update((p) => rules.setRefinementLine(p, skill, index, change)),
+    setBeast: (beast: string, change: Parameters<typeof rules.setBeast>[2]) => update((p) => rules.setBeast(p, beast, change)),
+    setMountedBeast: (beast: string | null) => update((p) => rules.setMountedBeast(p, beast)),
     setOutfitOwned: (group: Parameters<typeof rules.setOutfitOwned>[1], name: string, owned: boolean) =>
       update((p) => rules.setOutfitOwned(p, group, name, owned)),
     setShrineLevel: (statue: Parameters<typeof rules.setShrineLevel>[1], level: number, max: number) =>

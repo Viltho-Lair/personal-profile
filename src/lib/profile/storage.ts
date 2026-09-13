@@ -224,6 +224,7 @@ function presets(data: Json): Presets {
       const preset = list(stored.familiars)[i];
       return familiarPreset(preset === undefined && i === 0 ? data.equippedFamiliars : preset);
     }),
+    beasts: base.beasts.map((_, i) => name(list(stored.beasts)[i])),
     abilities: base.abilities.map((_, i) => {
       const preset = list(stored.abilities)[i];
       if (preset === undefined && i === 0 && Array.isArray(legacyCharacter.abilities)) {
@@ -316,6 +317,23 @@ function soulEngraving(value: unknown): SoulEngraving {
   };
 }
 
+const MAX_BEAST_AWAKEN = 6;
+const MAX_BEAST_AFFECTION = 70;
+
+function beasts(value: unknown): ProfileV1["beasts"] {
+  const result: ProfileV1["beasts"] = {};
+  if (!isRecord(value)) return result;
+  for (const [beast, state] of Object.entries(value)) {
+    if (beast === "__proto__" || !isRecord(state)) continue;
+    const awaken = wholeLevel(state.awaken);
+    result[beast] = {
+      awaken: awaken === null ? null : Math.min(MAX_BEAST_AWAKEN, awaken),
+      affection: Math.min(MAX_BEAST_AFFECTION, Math.max(1, wholeLevel(state.affection) ?? 1)),
+    };
+  }
+  return result;
+}
+
 function appearance(value: unknown): ProfileV1["appearance"] {
   const list = (items: unknown) =>
     Array.isArray(items) ? [...new Set(items.filter((item): item is string => typeof item === "string" && item.length > 0))] : [];
@@ -390,6 +408,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     skillRefinement: skillRefinement(data.skillRefinement),
     sealedShrine: sealedShrine(data.sealedShrine),
     appearance: appearance(data.appearance),
+    beasts: beasts(data.beasts),
     promotionTarget: promotionTarget(data.promotionTarget),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,

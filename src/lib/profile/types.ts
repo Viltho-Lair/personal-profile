@@ -3,6 +3,7 @@ import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
 import type { RefinementLine } from "@/lib/game/refinement";
 import { emptyShrineLevels, type ShrineLevels } from "@/lib/game/shrine";
 import type { OwnedAppearance } from "@/lib/game/appearance";
+import type { BeastState } from "@/lib/game/beasts";
 
 /** Weapons and accessories are graded, and keyed by grade name ("Common 4"). */
 export type GearKind = "weapons" | "accessories";
@@ -111,8 +112,7 @@ export type AbilityPreset = { effect: string | null; rows: AbilityRoll[] };
 export type FamiliarPreset = Record<FamiliarGroup, string | null>;
 
 /**
- * Presets other than skills. Skill Stone and Beast presets are only chosen
- * for now; what they hold arrives with those screens.
+ * Presets other than skills.
  */
 export type Presets = {
   spirits: (string | null)[][];
@@ -120,6 +120,8 @@ export type Presets = {
   skillStones: SkillStoneSet[];
   familiars: FamiliarPreset[];
   abilities: AbilityPreset[];
+  /** The mounted beast per preset. */
+  beasts: (string | null)[];
 };
 
 export type PresetKind = "spirits" | "skillStones" | "beasts" | "familiars" | "abilities";
@@ -138,6 +140,7 @@ export function emptyPresets(): Presets {
     skillStones: Array.from({ length: PRESET_COUNT }, () => ({ cooldown: null, time: null, heat: null })),
     familiars: Array.from({ length: PRESET_COUNT }, () => ({ weapon: null, attribute: null, battle: null })),
     abilities: Array.from({ length: PRESET_COUNT }, emptyAbilityPreset),
+    beasts: Array<string | null>(PRESET_COUNT).fill(null),
   };
 }
 
@@ -205,6 +208,8 @@ export type ProfileV1 = {
   sealedShrine: ShrineLevels;
   /** Owned outfits by name: clothing and guild shop appearances. */
   appearance: OwnedAppearance;
+  /** Beasts by name: awaken level (null: not owned) and affection. */
+  beasts: Record<string, BeastState>;
   /** The promotion the progress chart aims at, and the fight's length in seconds. */
   promotionTarget: { promotion: number | null; duration: number };
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
@@ -255,6 +260,7 @@ export function emptyProfile(): ProfileV1 {
     skillRefinement: {},
     sealedShrine: emptyShrineLevels(),
     appearance: { clothing: [], guild: [] },
+    beasts: {},
     promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS },
     weaponAwakening: 0,
     accessoryAwakening: 0,

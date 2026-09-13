@@ -237,15 +237,15 @@ describe("parseProfile", () => {
 
   it("keeps an unknown top-level key (e.g. a later build's field) after load and save", () => {
     const { storage } = memoryStorage();
-    const raw = JSON.stringify({ ...emptyProfile(), beasts: { x: 1 } });
+    const raw = JSON.stringify({ ...emptyProfile(), laterFeature: { x: 1 } });
     const profile = parseProfile(raw);
     expect(profile).not.toBeNull();
-    const withBeasts = profile as unknown as { beasts: unknown };
-    expect(withBeasts.beasts).toEqual({ x: 1 });
+    const withLater = profile as unknown as { laterFeature: unknown };
+    expect(withLater.laterFeature).toEqual({ x: 1 });
 
     expect(saveProfile(storage, profile as ProfileV1)).toBe(true);
     const roundTripped = JSON.parse(storage.getItem(PROFILE_KEY) ?? "null");
-    expect(roundTripped.beasts).toEqual({ x: 1 });
+    expect(roundTripped.laterFeature).toEqual({ x: 1 });
   });
 });
 
