@@ -1,11 +1,16 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
+import { unknownEntries } from "@/lib/profile/rules";
+import { useProfile } from "@/lib/profile/use-profile";
 import { AdSlot } from "./ad-slot";
 import { CompanionPanel } from "./companion-panel";
+import { KNOWN_NAMES } from "./data";
 import { EquipmentPanel } from "./equipment-panel";
+import { ResetProfileButton } from "./profile-controls";
 import { SkillGrid } from "./skill-grid";
 import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
 
@@ -14,6 +19,17 @@ export function AnalyzerShell() {
   const searchParams = useSearchParams();
   const requested = searchParams.get("tab");
   const active = isTabId(requested) ? requested : DEFAULT_TAB;
+  const { profile, resetProfile } = useProfile();
+
+  // Rule 6: entries for items a data update renamed or removed are kept but
+  // not shown. Say so during development so they can be remapped.
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    const unknown = unknownEntries(profile, KNOWN_NAMES);
+    if (unknown.length > 0) {
+      console.warn(`Saved profile entries not in the current data (kept, not shown): ${unknown.join(", ")}`);
+    }
+  }, [profile]);
 
   return (
     <Tabs
@@ -40,7 +56,9 @@ export function AnalyzerShell() {
         >
           <AdSlot slot={ANALYZER_AD_SLOT} />
         </aside>
-        <div className="col-start-3 row-start-2" />
+        <div className="col-start-3 row-start-2 flex items-end justify-end p-3">
+          <ResetProfileButton onReset={resetProfile} />
+        </div>
       </section>
 
       {ANALYZER_TABS.map((tab) => (
