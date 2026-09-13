@@ -615,7 +615,16 @@ function AbilityTab() {
           <select
             aria-label="Slayer Promotion page effect"
             value={preset.effect ?? ""}
-            onChange={(event) => updateAbilityPreset((p) => ({ ...p, effect: event.target.value || null }))}
+            onChange={(event) => {
+              const effect = event.target.value || null;
+              // Picking a page effect sets every ability row to the same stat at its top roll.
+              const option = effect ? ABILITY_OPTIONS.find((o) => o.name === `${effect}(%)`) : undefined;
+              updateAbilityPreset((p) => ({
+                ...p,
+                effect,
+                rows: option ? p.rows.map((r) => ({ ...r, option: option.name, value: Math.max(...option.values) })) : p.rows,
+              }));
+            }}
             className={SELECT}
           >
             <option value="">—</option>
@@ -628,7 +637,8 @@ function AbilityTab() {
         </label>
       </div>
       <p className="text-[11px] leading-snug text-dim">
-        Rows open as your promotion passes them. Pick each row&apos;s option and rolled value; the multiplier comes from the sweatsuits owned in Appearance.
+        Rows open as your promotion passes them. Picking a page effect sets every row to that stat at its top roll; each row can still
+        be changed. The multiplier comes from the sweatsuits owned in Appearance.
       </p>
       <ul className="flex flex-col gap-1.5">
         {preset.rows.slice(0, ABILITY_SLOTS).map((roll, row) => {
