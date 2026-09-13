@@ -14,7 +14,6 @@ const NODE_H = 4;
 const LINE_ON = "var(--element-water)";
 
 /** Every node on every page, for completing or clearing Skill Mastery in one go. */
-const ALL_NODES = MASTERY_PAGES.flatMap((page) => page.nodes);
 
 const pct = (value: number) => `${(value * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
 
@@ -258,8 +257,8 @@ export function SkillMastery() {
   const [pageNumber, setPageNumber] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const allComplete = isMasteryPageComplete(profile, ALL_NODES);
   const page = MASTERY_PAGES.find((p) => p.page === pageNumber) ?? MASTERY_PAGES[0];
+  const pageComplete = isMasteryPageComplete(profile, page.nodes);
   const index = MASTERY_PAGES.indexOf(page);
   const locked = index >= open;
   const selected = page.nodes.find((node) => node.id === selectedId) ?? null;
@@ -301,14 +300,15 @@ export function SkillMastery() {
           <div className="sticky top-0 z-10 flex justify-end">
             <button
               type="button"
-              onClick={() => setMasteryPage(ALL_NODES, !allComplete)}
-              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                allComplete
+              onClick={() => setMasteryPage(page.nodes, !pageComplete)}
+              disabled={locked}
+              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 ${
+                pageComplete
                   ? "border-ink/25 bg-ground text-dim hover:border-ink hover:text-ink"
                   : "border-element-water bg-ground text-element-water hover:bg-element-water hover:text-ground"
               }`}
             >
-              {allComplete ? "Clear all pages" : "Complete all pages"}
+              {pageComplete ? `Clear page ${page.page}` : `Complete page ${page.page}`}
             </button>
           </div>
           <PageCanvas
@@ -332,24 +332,6 @@ export function SkillMastery() {
               ? `Fill page ${page.page - 1} to open this page.`
               : "Click a node to set its level. The next page opens once every node here is filled."}
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              disabled={locked}
-              onClick={() => setMasteryPage(page.nodes, true)}
-              className="rounded-md border border-ink/25 px-2 py-1 font-mono text-[10px] tracking-[0.08em] text-dim uppercase hover:border-ink hover:text-ink disabled:opacity-40"
-            >
-              Fill page
-            </button>
-            <button
-              type="button"
-              disabled={locked}
-              onClick={() => setMasteryPage(page.nodes, false)}
-              className="rounded-md border border-ink/25 px-2 py-1 font-mono text-[10px] tracking-[0.08em] text-dim uppercase hover:border-ink hover:text-ink disabled:opacity-40"
-            >
-              Clear page
-            </button>
-          </div>
         </section>
 
         <section className="flex flex-col gap-2">

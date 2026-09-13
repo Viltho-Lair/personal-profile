@@ -87,6 +87,11 @@ export function plateComplete(rows: readonly string[], placements: readonly GemP
 }
 
 /** Stat totals from the gems placed on a plate; percents as fractions, Accuracy/Dodge flat. */
+/** Every set gem as a placement, for totals that don't depend on a plate. */
+export function everyGem(gems: readonly (SoulGem | null)[]): GemPlacement[] {
+  return gems.flatMap((gem, index) => (gem ? [{ gem: index, row: 0, col: 0, rotation: 0 }] : []));
+}
+
 export function gemTotals(placements: readonly GemPlacement[], gems: readonly (SoulGem | null)[]): Record<EngravingStat, number> {
   const totals: Record<EngravingStat, number> = { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, gold: 0, accuracy: 0, dodge: 0 };
   for (const placement of placements) {

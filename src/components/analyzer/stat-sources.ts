@@ -14,7 +14,7 @@ import {
 import { companionEffect, companionLevel, companionStatus, promotionBuff, type CompanionFormula } from "@/lib/game/companions";
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { proficiencyBonuses } from "@/lib/game/familiars";
-import { gemTotals, plateComplete } from "@/lib/game/engraving";
+import { everyGem, gemTotals } from "@/lib/game/engraving";
 import { ownedEffect, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects, type ShrineData, type ShrineLevels } from "@/lib/game/shrine";
 import shrineData from "@/data/optimizer/sealed-shrine.json";
@@ -300,16 +300,15 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
         soulWeapon.soulColor ?? ""
       ] ?? 0;
     const engraving = profile.soulEngraving;
-    const plate = engraving.plates[soulWeapon.name] ?? [];
-    const grid = SOUL_GRIDS[soulWeapon.id];
-    const complete = grid ? plateComplete(grid.rows, plate, engraving.gems) : engraving.completed[soulWeapon.name] === true;
+    // Engraving is done in the game: the weapon's completion is ticked here and every soul gem counts.
+    const complete = engraving.completed[soulWeapon.name] === true;
     const completion = complete ? (1 + amp) * (1 + engraving.chaosBonus) : 0;
     s.soulWeapon = {
       atk: soulWeapon.attack ?? 0,
       completionAtk: ((soulWeapon.engraving.atk ?? 0) / 100) * completion,
       completionHp: ((soulWeapon.engraving.hp ?? 0) / 100) * completion,
     };
-    s.engraving = gemTotals(plate, engraving.gems);
+    s.engraving = gemTotals(everyGem(engraving.gems), engraving.gems);
   }
 
   const relic = (name: string) => {
