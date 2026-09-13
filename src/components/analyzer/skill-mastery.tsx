@@ -13,6 +13,9 @@ const NODE_W = 5;
 const NODE_H = 4;
 const LINE_ON = "var(--element-water)";
 
+/** Every node on every page, for completing or clearing Skill Mastery in one go. */
+const ALL_NODES = MASTERY_PAGES.flatMap((page) => page.nodes);
+
 const pct = (value: number) => `${(value * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
 
 /** "ACC M4" -> "Accessory Mythic 4", as the game labels the required gear. */
@@ -255,6 +258,7 @@ export function SkillMastery() {
   const [pageNumber, setPageNumber] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const allComplete = isMasteryPageComplete(profile, ALL_NODES);
   const page = MASTERY_PAGES.find((p) => p.page === pageNumber) ?? MASTERY_PAGES[0];
   const index = MASTERY_PAGES.indexOf(page);
   const locked = index >= open;
@@ -293,7 +297,20 @@ export function SkillMastery() {
             );
           })}
         </div>
-        <div className="min-h-0 flex-1 overflow-auto p-3 sm:p-4">
+        <div className="relative min-h-0 flex-1 overflow-auto p-3 sm:p-4">
+          <div className="sticky top-0 z-10 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setMasteryPage(ALL_NODES, !allComplete)}
+              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                allComplete
+                  ? "border-ink/25 bg-ground text-dim hover:border-ink hover:text-ink"
+                  : "border-element-water bg-ground text-element-water hover:bg-element-water hover:text-ground"
+              }`}
+            >
+              {allComplete ? "Clear all pages" : "Complete all pages"}
+            </button>
+          </div>
           <PageCanvas
             page={page}
             profile={profile}

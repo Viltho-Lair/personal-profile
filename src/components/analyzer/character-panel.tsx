@@ -479,7 +479,7 @@ function AbilityTab() {
 
 function PromotionSection() {
   const { character, set } = useCharacter();
-  const [tab, setTab] = useState<"classes" | "ability" | "tree" | "constellation">("classes");
+  const [tab, setTab] = useState<"classes" | "ability" | "memory" | "constellation">("classes");
 
   const left = (
     <div className="overflow-x-auto">
@@ -528,7 +528,7 @@ function PromotionSection() {
         tabs={[
           { id: "classes", label: "Classes" },
           { id: "ability", label: "Slayer Promotion Ability" },
-          { id: "tree", label: "Tree of Life" },
+          { id: "memory", label: "Memory Tree" },
           { id: "constellation", label: "Constellation" },
         ]}
         active={tab}
@@ -541,8 +541,8 @@ function PromotionSection() {
           <AbilityTab />
         ) : (
           <p className="text-xs text-dim">
-            {tab === "tree" ? "Tree of Life" : "Constellation"} settings are coming next, from the workbook&apos;s{" "}
-            {tab === "tree" ? "MEMORY TREE" : "CONSTELLATION"} sheet.
+            {tab === "memory" ? "Memory Tree" : "Constellation"} settings are coming next, from the workbook&apos;s{" "}
+            {tab === "memory" ? "MEMORY TREE" : "CONSTELLATION"} sheet.
           </p>
         )}
       </div>
