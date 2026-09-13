@@ -61,6 +61,8 @@ export type FightSkill = {
   delay: number;
   /** Seconds into the fight before it first goes (delayed passives). */
   startAt: number;
+  /** Starts on its cooldown instead of ready, then goes each time it comes round (Wrath of Gods). */
+  startsOnCooldown?: boolean;
   /** Attack played out in stopped time (Demon Hunt). */
   freezes: boolean;
   effect: SkillEffect;
@@ -199,7 +201,7 @@ export function createFight(input: FightInput): Fight {
   const step = input.step ?? DEFAULT_STEP;
   const manual = new Set(input.manual ?? []);
   // Cooldown skills are ready at the start; stacks and counters start from zero.
-  const readyAtStart = (skill: FightSkill) => skill.trigger === "seconds" && !isStack(skill);
+  const readyAtStart = (skill: FightSkill) => skill.trigger === "seconds" && !isStack(skill) && !skill.startsOnCooldown;
   const live: Live[] = input.skills.map((skill) => ({
     skill,
     progress: readyAtStart(skill) ? skill.every : 0,

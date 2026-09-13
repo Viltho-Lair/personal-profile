@@ -178,6 +178,12 @@ describe("simulateFight", () => {
     expect(simulateFight({ ...base, skills: [fast] }).basic).toBeGreaterThan(simulateFight({ ...base, skills: [slow] }).basic);
   });
 
+  it("starts Wrath of Gods on its cooldown and restarts it as it goes", () => {
+    const wrath = skill({ name: "Wrath of Gods", kind: "passive", every: 30, duration: 5, startsOnCooldown: true, effect: { type: "atk", power: 1 } });
+    const result = simulateFight({ ...base, duration: 95, skills: [wrath] });
+    expect(result.casts.map((c) => Math.round(c.t))).toEqual([30, 60, 90]);
+  });
+
   it("holds a skill with auto off until it's cast by hand", () => {
     const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
     const fight = createFight({ ...base, skills: [slash], manual: ["Slash"] });
