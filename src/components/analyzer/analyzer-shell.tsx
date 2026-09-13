@@ -13,7 +13,7 @@ import { CharacterPanel } from "./character-panel";
 import { CompanionPanel } from "./companion-panel";
 import { KNOWN_NAMES } from "./data";
 import { EquipmentPanel } from "./equipment-panel";
-import { ResetProfileButton } from "./profile-controls";
+import { ResetProfileButton, SlayerProgress } from "./profile-controls";
 import { ProgressChart } from "./progress-chart";
 import { SkillPanel } from "./skill-panel";
 import { StatsSummary } from "./stats-summary";
@@ -68,8 +68,11 @@ export function AnalyzerShell() {
         >
           <AdSlot slot={ANALYZER_AD_SLOT} />
         </aside>
-        <div className="flex items-end justify-end p-3 md:col-start-3 md:row-start-2">
-          <ResetProfileButton onReset={resetProfile} />
+        <div className="flex flex-col justify-between gap-3 p-3 md:col-start-3 md:row-start-2">
+          <SlayerProgress />
+          <div className="flex justify-end">
+            <ResetProfileButton onReset={resetProfile} />
+          </div>
         </div>
       </section>
 

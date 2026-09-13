@@ -1,5 +1,7 @@
 "use client";
 
+import { useProfile } from "@/lib/profile/use-profile";
+
 export function OwnedToggle({
   owned,
   onChange,
@@ -57,6 +59,37 @@ export function EquippedBadge({ position = "top-1 left-1" }: { position?: string
     >
       E
     </span>
+  );
+}
+
+/** Slayer level and the highest stage reached, beside Reset profile in the overview. */
+export function SlayerProgress() {
+  const { profile, updateCharacter } = useProfile();
+  const { slayerLevel, highestStage } = profile.character;
+  const field = (label: string, value: number, min: number, onChange: (value: number) => void) => (
+    <label className="flex items-center justify-between gap-3">
+      <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">{label}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        step={1}
+        value={value || ""}
+        placeholder={String(min)}
+        aria-label={label}
+        onChange={(event) => {
+          const next = Math.floor(event.target.valueAsNumber);
+          onChange(Number.isFinite(next) ? Math.max(min, next) : min);
+        }}
+        className="w-28 rounded-md border border-ink/20 bg-transparent px-2 py-1 text-right font-mono text-xs text-ink tabular-nums outline-none focus-visible:border-ink"
+      />
+    </label>
+  );
+  return (
+    <section aria-label="Slayer progress" className="flex flex-col gap-1.5">
+      {field("Slayer level", slayerLevel, 1, (value) => updateCharacter((c) => ({ ...c, slayerLevel: value })))}
+      {field("Highest stage reached", highestStage, 0, (value) => updateCharacter((c) => ({ ...c, highestStage: value })))}
+    </section>
   );
 }
 

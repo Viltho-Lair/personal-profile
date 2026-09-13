@@ -10,7 +10,7 @@ import { activeSkillStones, effectiveSkillLevel, masteryLevel, mountedBeast } fr
 import type { ProfileV1 } from "@/lib/profile/types";
 import { MASTERY_PAGES, SKILL_BY_NAME, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
-import { BEASTS, collectSources, SHRINE } from "./stat-sources";
+import { BEASTS, collectSources, companionSkill, SHRINE } from "./stat-sources";
 
 type PromotionStage = { name: string; stage: number; range: number };
 export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[];
@@ -104,6 +104,10 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     return make({ type: "damage", power, hits: 1, growsTo: 7 }, { kind: "passive", trigger: "elementCasts", every: m.additional[0] || 3 });
   if (skill.name === "Blast Wind") return make({ type: "elementStack", power }, { kind: "passive", trigger: "elementCasts", every: 5 });
   if (skill.name === "Rage") return make({ type: "rage", power }, { kind: "buff" });
+  // Mana's Blessing raises Mana Recovery for the whole fight, as in the Stats Summary.
+  if (skill.name === "Mana's Blessing") return make({ type: "manaRecovery", power }, { kind: "passive", trigger: "always" });
+  if (skill.name === "Life Mana")
+    return make({ type: "restore", hp: power, mana: (num(/(\d+)% recovery of mana/i, text) ?? 30) / 100 }, { kind: "buff" });
   if (skill.name === "Lightning Body")
     return make({ type: "speed", power }, { kind: "buff", hpCost: (num(/(\d+)% of current HP/i, text) ?? 50) / 100 });
 
@@ -120,9 +124,10 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     }
     // Refinement: extra damage, and a shorter cooldown or fewer required hits.
     const every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
-    // Statue of Demon amplifies skill damage.
+    // Statue of Demon and Luna's Wisdom of War add skill damage.
     const shrine = shrineEffects(SHRINE, profile.sealedShrine).skillDamage;
-    return make({ type: "damage", power: power * amp, hits }, { bonus: bonus + refined.damage + shrine, every });
+    const wisdom = companionSkill(profile, "Luna", "Wisdom of War");
+    return make({ type: "damage", power: power * amp, hits }, { bonus: bonus + refined.damage + shrine + wisdom, every });
   }
 
   const speed = /ATK SPD/i.test(text);

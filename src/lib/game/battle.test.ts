@@ -130,6 +130,10 @@ describe("simulateFight", () => {
     const slash = skill({ name: "Slash", every: 1, mpCost: 30, effect: { type: "damage", power: 1, hits: 1 } });
     const starved = simulateFight({ ...base, ...pools, skills: [slash] });
     expect(starved.casts).toHaveLength(1);
+    const waiting = createFight({ ...base, ...pools, skills: [slash] });
+    waiting.advance(2);
+    expect(waiting.state().mana).toBeCloseTo(20);
+    expect(waiting.state().skills[0]).toMatchObject({ mpCost: 30, waitingForMana: true });
 
     const body = skill({ name: "Lightning Body", element: "Wind", kind: "buff", every: 100, duration: 5, hpCost: 0.5, effect: { type: "speed", power: 1 } });
     const fight = createFight({ ...base, ...pools, skills: [body] });
@@ -142,6 +146,30 @@ describe("simulateFight", () => {
     const plain = simulateFight({ ...base, ...pools, skills: [body] });
     // 50% life missing: +100% ATK on the basics
     expect(raged.basic).toBeGreaterThan(plain.basic * 1.8);
+  });
+
+  it("doesn't let cheaper skills keep taking the mana a costlier skill ahead of them waits for", () => {
+    const pools = { maxHp: 1000, hpRecovery: 0, maxMana: 60, manaRecovery: 10 };
+    const cheap = skill({ name: "Cheap", every: 3, mpCost: 25, effect: { type: "damage", power: 1, hits: 1 } });
+    const costly = skill({ name: "Costly", kind: "buff", every: 3, mpCost: 50, duration: 1, effect: { type: "atk", power: 0 } });
+    const result = simulateFight({ ...base, ...pools, duration: 30, skills: [cheap, costly] });
+    expect(result.casts.filter((c) => c.name === "Costly").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("raises mana recovery with Mana's Blessing and refills life and mana with Life Mana", () => {
+    const pools = { maxHp: 1000, hpRecovery: 0, maxMana: 100, manaRecovery: 10 };
+    const blessing = skill({ name: "Mana's Blessing", kind: "passive", trigger: "always", effect: { type: "manaRecovery", power: 1 } });
+    const drain = skill({ name: "Lightning Body", kind: "buff", every: 100, duration: 1, hpCost: 0.5, mpCost: 80, effect: { type: "speed", power: 0 } });
+    const blessed = createFight({ ...base, ...pools, skills: [drain, blessing] });
+    blessed.advance(2);
+    expect(blessed.state().manaRecovery).toBe(20);
+    expect(blessed.state().mana).toBeGreaterThan(55);
+
+    const lifeMana = skill({ name: "Life Mana", kind: "buff", every: 3, effect: { type: "restore", hp: 0.3, mana: 0.3 } });
+    const restored = createFight({ ...base, ...pools, manaRecovery: 0, skills: [drain, lifeMana] });
+    restored.advance(0.5);
+    expect(restored.state().hp).toBeCloseTo(800);
+    expect(restored.state().mana).toBeCloseTo(50);
   });
 
   it("holds a skill with auto off until it's cast by hand", () => {

@@ -64,6 +64,8 @@ export type CharacterState = {
   /** Growth levels by stat key ("STR", "ACC"). */
   growth: Record<string, number>;
   slayerLevel: number;
+  /** Highest stage the slayer has reached (0 = not set). */
+  highestStage: number;
   /** Latent Power values: stat -> the five slots I-V. */
   latent: Record<string, number[]>;
   latentAwakening: { grade: number; level: number };
@@ -86,6 +88,7 @@ export function emptyCharacter(): CharacterState {
     superhuman: 0,
     growth: {},
     slayerLevel: 1,
+    highestStage: 0,
     latent: Object.fromEntries(LATENT_STATS.map((stat) => [stat, Array<number>(LATENT_SLOTS).fill(0)])),
     latentAwakening: { grade: 0, level: 0 },
     promotion: 0,

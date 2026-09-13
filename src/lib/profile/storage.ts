@@ -141,6 +141,7 @@ function character(value: unknown): CharacterState {
     superhuman: wholeLevel(value.superhuman) ?? 0,
     growth: wholeRecord(value.growth),
     slayerLevel: wholeLevel(value.slayerLevel) ?? base.slayerLevel,
+    highestStage: wholeLevel(value.highestStage) ?? 0,
     latent: Object.fromEntries(
       LATENT_STATS.map((stat) => {
         const slots = Array.isArray(latent[stat]) ? latent[stat] : [];

@@ -172,7 +172,7 @@ function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
   return { equip, owned };
 }
 
-function companionSkill(profile: ProfileV1, companion: string, skill: string): number {
+export function companionSkill(profile: ProfileV1, companion: string, skill: string): number {
   const data = COMPANIONS.find((c) => c.name === companion)?.skills.find((s) => s.name === skill);
   if (!data) return 0;
   const level = clampLevel(companionState(profile, companion).skills[skill] ?? 0, data.maxLevel);

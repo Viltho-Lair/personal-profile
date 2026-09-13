@@ -42,7 +42,11 @@ export type SkillEffect =
   /** The next attack skill of the same element deals +power (Ignition). */
   | { type: "nextSkill"; power: number }
   /** Total ATK +power for each percent of life missing, no HP recovery while it lasts (Rage). */
-  | { type: "rage"; power: number };
+  | { type: "rage"; power: number }
+  /** Mana Recovery +power while it's on (Mana's Blessing). */
+  | { type: "manaRecovery"; power: number }
+  /** Restores these shares of max life and max mana at once (Life Mana). */
+  | { type: "restore"; hp: number; mana: number };
 
 export type FightSkill = {
   name: string;
@@ -120,6 +124,9 @@ export type SkillStatus = {
   charged: boolean;
   /** Damage waiting in that release. */
   stored: number;
+  /** Mana a cast costs, and whether it's queued but short of mana. */
+  mpCost: number;
+  waitingForMana: boolean;
 };
 
 export type FightState = FightResult & {
@@ -129,6 +136,10 @@ export type FightState = FightResult & {
   maxHp: number;
   mana: number;
   maxMana: number;
+  hpRecovery: number;
+  manaRecovery: number;
+  /** Whether HP Recovery is running (Rage stops it). */
+  recovering: boolean;
   attacksPerSecond: number;
   done: boolean;
   skills: SkillStatus[];
@@ -165,6 +176,8 @@ type Live = {
   holding: boolean;
   /** The stopped time is over and the stored damage can be released. */
   charged: boolean;
+  /** Order it joined a queue in, shared by both queues. */
+  queuedAt: number;
 };
 
 const isStack = (skill: FightSkill) =>
@@ -197,10 +210,17 @@ export function createFight(input: FightInput): Fight {
     manual: castable(skill) && manual.has(skill.name),
     lastCast: -1,
     holding: false,
+    queuedAt: 0,
     charged: false,
   }));
   const queues: Record<"attack" | "buff", Live[]> = { attack: [], buff: [] };
   const queueFreeAt = { attack: 0, buff: 0 }; // real time
+  let queueOrder = 0;
+  const enqueue = (l: Live) => {
+    l.queued = true;
+    l.queuedAt = (queueOrder += 1);
+    queues[l.skill.kind === "attack" ? "attack" : "buff"].push(l);
+  };
 
   const maxHp = input.maxHp ?? 0;
   const maxMana = input.maxMana ?? 0;
@@ -230,6 +250,7 @@ export function createFight(input: FightInput): Fight {
     let speed = 0;
     let cooldownRate = 0;
     let rage = false;
+    let manaRate = 0;
     const element: Partial<Record<Element, number>> = {};
     const missing = maxHp > 0 ? Math.max(0, 1 - hp / maxHp) * 100 : 0;
     for (const l of live) {
@@ -241,12 +262,13 @@ export function createFight(input: FightInput): Fight {
       if (e.type === "atk") atk += e.power;
       if (e.type === "speed") speed += e.power;
       if (e.type === "cooldownRate") cooldownRate += e.power;
+      if (e.type === "manaRecovery") manaRate += e.power;
       if (e.type === "rage") {
         atk += e.power * missing;
         rage = true;
       }
     }
-    return { atk, speed, cooldownRate, element, rage };
+    return { atk, speed, cooldownRate, element, rage, manaRate };
   };
 
   const boss = 1 + (input.bossDamage ?? 0);
@@ -311,6 +333,9 @@ export function createFight(input: FightInput): Fight {
         raveStored = 0;
         l.holding = true;
       }
+    } else if (e.type === "restore") {
+      hp = Math.min(maxHp, hp + e.hp * maxHp);
+      mana = Math.min(maxMana, mana + e.mana * maxMana);
     } else if (e.type === "nextSkill") {
       if (s.element) nextSkillBonus[s.element] = e.power;
     } else if (e.type === "chargeCooldowns") {
@@ -345,10 +370,7 @@ export function createFight(input: FightInput): Fight {
       for (const l of live) {
         if (l.skill.effect.type !== "rave" || !l.holding || l.charged) continue;
         l.charged = true;
-        if (!l.manual) {
-          l.queued = true;
-          queues.attack.push(l);
-        }
+        if (!l.manual) enqueue(l);
       }
     }
 
@@ -364,8 +386,7 @@ export function createFight(input: FightInput): Fight {
       l.progress = Math.min(l.progress, s.every);
       if (s.kind === "passive") go(l, null);
       else if (!l.manual) {
-        l.queued = true;
-        queues[s.kind === "attack" ? "attack" : "buff"].push(l);
+        enqueue(l);
       }
     }
 
@@ -373,8 +394,13 @@ export function createFight(input: FightInput): Fight {
     const blocked = frozen;
     for (const queue of ["buff", "attack"] as const) {
       if (!queues[queue].length || real < queueFreeAt[queue] || blocked) continue;
-      // The first queued skill there's mana for goes; the rest keep waiting.
-      const index = pools ? queues[queue].findIndex((l) => l.charged || (l.skill.mpCost ?? 0) <= mana) : 0;
+      // Skills cast in the order they became ready: one short of mana holds every skill
+      // queued after it (in either queue), so cheaper skills can't keep taking its mana.
+      const short = (l: Live) => !l.charged && (l.skill.mpCost ?? 0) > mana;
+      const holder = pools
+        ? [...queues.buff, ...queues.attack].filter(short).reduce<Live | null>((first, l) => (!first || l.queuedAt < first.queuedAt ? l : first), null)
+        : null;
+      const index = queues[queue].findIndex((l) => l.charged || (!short(l) && (!holder || l.queuedAt < holder.queuedAt)));
       if (index >= 0) go(queues[queue].splice(index, 1)[0]!, queue);
     }
 
@@ -387,7 +413,7 @@ export function createFight(input: FightInput): Fight {
 
     if (!frozen) {
       if (maxHp > 0 && !now.rage) hp = Math.min(maxHp, hp + (input.hpRecovery ?? 0) * step);
-      if (pools) mana = Math.min(maxMana, mana + (input.manaRecovery ?? 0) * step);
+      if (pools) mana = Math.min(maxMana, mana + (input.manaRecovery ?? 0) * (1 + now.manaRate) * step);
     }
 
     real += step;
@@ -407,8 +433,7 @@ export function createFight(input: FightInput): Fight {
       const l = live.find((x) => x.skill.name === name);
       if (!l || !l.manual || l.queued || !l.started || done()) return false;
       if (l.holding ? !l.charged : l.progress < l.skill.every) return false;
-      l.queued = true;
-      queues[l.skill.kind === "attack" ? "attack" : "buff"].push(l);
+      enqueue(l);
       return true;
     },
     state: () => {
@@ -425,6 +450,9 @@ export function createFight(input: FightInput): Fight {
         maxHp,
         mana,
         maxMana,
+        hpRecovery: input.hpRecovery ?? 0,
+        manaRecovery: (input.manaRecovery ?? 0) * (1 + now.manaRate),
+        recovering: !now.rage,
         attacksPerSecond: baseSpeed * (1 + now.speed),
         done: done(),
         skills: live.map((l) => ({
@@ -439,6 +467,8 @@ export function createFight(input: FightInput): Fight {
           uses: l.uses,
           charged: l.charged,
           stored: l.skill.effect.type === "rave" && l.holding ? raveStored * l.skill.effect.power : 0,
+          mpCost: l.skill.mpCost ?? 0,
+          waitingForMana: pools && l.queued && !l.charged && (l.skill.mpCost ?? 0) > mana,
         })),
       };
     },

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Settings } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createFight, type Fight, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
+import { createFight, type Fight, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME } from "./data";
 import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions } from "./promotion-fight";
@@ -182,7 +182,7 @@ export function ProgressChart() {
         ))}
       </svg>
 
-      <LiveReadout snap={snap} duration={duration} />
+      <LiveReadout snap={snap} input={setup.input} duration={duration} />
 
       <SkillGrid
         profileSlots={profile.skillPresets[profile.activeSkillPreset] ?? []}
@@ -201,21 +201,31 @@ export function ProgressChart() {
   );
 }
 
-function Bar({ label, value, max, tone }: { label: string; value: number; max: number; tone: string }) {
+function Bar({ label, value, max, tone, text, note }: { label: string; value: number; max: number; tone: string; text: string; note: string }) {
   const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="w-8 font-mono text-[9px] text-dim uppercase">{label}</span>
-      <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-ink/10">
-        <div className={`absolute inset-y-0 left-0 ${tone}`} style={{ width: `${ratio * 100}%` }} />
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-center gap-1.5">
+        <span className="w-6 font-mono text-[9px] text-dim uppercase">{label}</span>
+        <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-ink/10">
+          <div className={`absolute inset-y-0 left-0 ${tone}`} style={{ width: `${ratio * 100}%` }} />
+        </div>
+        <span className="min-w-14 text-right font-mono text-[9px] text-ink tabular-nums">{text}</span>
       </div>
-      <span className="w-10 text-right font-mono text-[9px] text-dim tabular-nums">{Math.round(ratio * 100)}%</span>
+      <span className="text-right font-mono text-[8px] text-dim">{note}</span>
     </div>
   );
 }
 
-/** Time, damage so far, attack speed, and the life and mana pools while the fight plays. */
-function LiveReadout({ snap, duration }: { snap: FightState | null; duration: number }) {
+/** Time, damage so far, attack speed, life as a share of max HP, and mana as points. */
+function LiveReadout({ snap, input, duration }: { snap: FightState | null; input: FightInput; duration: number }) {
+  const maxHp = snap?.maxHp || input.maxHp || 0;
+  const hp = snap ? snap.hp : maxHp;
+  const maxMana = snap?.maxMana || input.maxMana || 0;
+  const mana = snap ? snap.mana : maxMana;
+  const hpRecovery = input.hpRecovery ?? 0;
+  const manaRecovery = snap ? snap.manaRecovery : (input.manaRecovery ?? 0);
+  const recovering = snap ? snap.recovering : true;
   return (
     <div className="grid shrink-0 grid-cols-2 gap-x-3 gap-y-1 font-mono text-[10px]">
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2">
@@ -231,8 +241,26 @@ function LiveReadout({ snap, duration }: { snap: FightState | null; duration: nu
         <dd className="text-right tabular-nums">{formatValue(Math.round((snap?.attacksPerSecond ?? 0) * 100) / 100)}</dd>
       </dl>
       <div className="flex flex-col justify-center gap-1">
-        <Bar label="HP" value={snap?.hp ?? 1} max={snap?.maxHp || 1} tone="bg-red-500" />
-        <Bar label="MP" value={snap?.mana ?? 1} max={snap?.maxMana || 1} tone="bg-sky-500" />
+        <Bar
+          label="HP"
+          value={hp}
+          max={maxHp}
+          tone="bg-red-500"
+          text={`${maxHp > 0 ? formatValue(Math.round((hp / maxHp) * 1000) / 10) : 0}%`}
+          note={
+            recovering
+              ? `+${maxHp > 0 ? formatValue(Math.round((hpRecovery / maxHp) * 1000) / 10) : 0}% a second (HP Recovery)`
+              : "No recovery while Rage lasts"
+          }
+        />
+        <Bar
+          label="MP"
+          value={mana}
+          max={maxMana}
+          tone="bg-sky-500"
+          text={`${formatValue(Math.floor(mana))} / ${formatValue(Math.round(maxMana))}`}
+          note={`+${formatValue(Math.round(manaRecovery * 100) / 100)} a second (Mana Recovery)`}
+        />
       </div>
     </div>
   );
@@ -314,13 +342,24 @@ function SkillGrid({
               {status && ready < 1 && !status.complete ? (
                 <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} />
               ) : null}
+              {castable && fightSkill?.mpCost ? (
+                <span
+                  className={`absolute top-0.5 left-0.5 rounded-sm px-0.5 font-mono text-[8px] tabular-nums ${
+                    status?.waitingForMana ? "bg-sky-500 text-white" : "bg-black/60 text-sky-300"
+                  }`}
+                >
+                  {formatValue(Math.round(fightSkill.mpCost * 10) / 10)}
+                </span>
+              ) : null}
               {castable && auto ? (
                 <Settings aria-hidden className="absolute top-0.5 right-0.5 size-3.5 animate-[spin_4s_linear_infinite] text-white opacity-35" />
               ) : null}
               {castable && !auto && running && ready >= 1 ? (
                 <span className="absolute inset-0 animate-pulse bg-white/15" />
               ) : null}
-              {status?.charged || (status && status.stored > 0) ? (
+              {status?.waitingForMana ? (
+                <span className="absolute right-0 bottom-0 left-0 bg-sky-600/90 text-center font-mono text-[8px] text-white">NO MP</span>
+              ) : status?.charged || (status && status.stored > 0) ? (
                 <span className="absolute right-0 bottom-0 left-0 bg-fuchsia-500/85 text-center font-mono text-[8px] text-white">
                   {status.charged ? (auto ? "RELEASE" : "TAP") : "STORING"}
                 </span>

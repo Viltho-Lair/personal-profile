@@ -65,7 +65,7 @@ function Tabs<T extends string>({
   onChange,
   label,
 }: {
-  tabs: readonly { id: T; label: string }[];
+  tabs: readonly { id: T; label: string; locked?: string | null }[];
   active: T;
   onChange: (id: T) => void;
   label: string;
@@ -77,12 +77,15 @@ function Tabs<T extends string>({
           key={tab.id}
           type="button"
           aria-pressed={active === tab.id}
+          disabled={Boolean(tab.locked)}
+          title={tab.locked ?? undefined}
           onClick={() => onChange(tab.id)}
-          className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
-            active === tab.id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink/60 hover:text-ink"
+          className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 sm:text-xs ${
+            active === tab.id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink"
           }`}
         >
           {tab.label}
+          {tab.locked ? " · Locked" : ""}
         </button>
       ))}
     </nav>
@@ -226,19 +229,9 @@ function LatentPower() {
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="flex items-center gap-2">
-        <span className={LABEL}>Slayer level</span>
-        <InlineLevel
-              wide
-          value={character.slayerLevel}
-          min={1}
-          max={NO_CAP}
-          name="Slayer level"
-          onChange={(value) => set((c) => ({ ...c, slayerLevel: clampLevel(value, null) || 1 }))}
-        />
-      </label>
       <p className="text-[11px] leading-snug text-dim">
-        Latent Power adds to growth once the slayer is past level 250. Enter each slot&apos;s rolled value.
+        Latent Power adds to growth once the slayer is past level 250 (Slayer level {character.slayerLevel.toLocaleString("en")},
+        set in the overview). Enter each slot&apos;s rolled value.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full font-mono text-[10px] uppercase">
@@ -381,11 +374,34 @@ function ClassesTab() {
   const max = classMaxLevel(character.classAwakening) + constellationCap;
   const blastMultiplier = AWAKENING[character.classAwakening]?.blastMultiplier ?? 1;
 
+  const shown = CLASSES.filter((_, index) => index < CLASSES.length - 4 || index === CLASSES.length - 1);
+  const allOwned = shown.every((cls) => character.classes[cls.name]?.owned);
+  const setAllOwned = (owned: boolean) =>
+    set((c) => ({
+      ...c,
+      classes: {
+        ...c.classes,
+        ...Object.fromEntries(shown.map((cls) => [cls.name, { ...(c.classes[cls.name] ?? { owned: false, level: 0 }), owned }])),
+      },
+    }));
+
   return (
     <div className="flex flex-col gap-3">
-      <p className={LABEL}>
-        All classes: max level {max} (200 + 50 per Blast awakening + {constellationCap} from Constellation)
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className={LABEL}>
+          All classes: max level {max} (200 + 50 per Blast awakening + {constellationCap} from Constellation)
+        </p>
+        <label className={`flex items-center gap-1.5 ${LABEL}`}>
+          <input
+            type="checkbox"
+            checked={allOwned}
+            onChange={(event) => setAllOwned(event.target.checked)}
+            aria-label="Own every class"
+            className="size-3.5 accent-ink"
+          />
+          Own all
+        </label>
+      </div>
       <ul className="flex flex-col gap-1">
         {CLASSES.map((cls, index) => {
           const isLast = index === CLASSES.length - 1;
@@ -551,6 +567,12 @@ function AbilityTab() {
 function PromotionSection() {
   const { character, set } = useCharacter();
   const [tab, setTab] = useState<"classes" | "ability" | "memory" | "constellation">("classes");
+  // The Memory Tree opens with Seed (Blast awakening 12) and the Constellation with Nova (18), once the class is owned.
+  const lastClass = CLASSES[CLASSES.length - 1];
+  const awakenedOwned = Boolean(lastClass && character.classes[lastClass.name]?.owned);
+  const memoryLocked = awakenedOwned && character.classAwakening >= 12 ? null : "Unlocks once the Seed class is owned (Blast awakening 12)";
+  const constellationLocked = awakenedOwned && character.classAwakening >= 18 ? null : "Unlocks once the Nova class is owned (Blast awakening 18)";
+  const shownTab = (tab === "memory" && memoryLocked) || (tab === "constellation" && constellationLocked) ? "classes" : tab;
 
   const left = (
     <div className="overflow-x-auto">
@@ -600,18 +622,18 @@ function PromotionSection() {
         tabs={[
           { id: "classes", label: "Classes" },
           { id: "ability", label: "Slayer Promotion Ability" },
-          { id: "memory", label: "Memory Tree" },
-          { id: "constellation", label: "Constellation" },
+          { id: "memory", label: "Memory Tree", locked: memoryLocked },
+          { id: "constellation", label: "Constellation", locked: constellationLocked },
         ]}
-        active={tab}
+        active={shownTab}
         onChange={setTab}
       />
       <div className="min-h-0 flex-1 overflow-auto p-3 sm:p-4">
-        {tab === "classes" ? (
+        {shownTab === "classes" ? (
           <ClassesTab />
-        ) : tab === "ability" ? (
+        ) : shownTab === "ability" ? (
           <AbilityTab />
-        ) : tab === "memory" ? (
+        ) : shownTab === "memory" ? (
           <MemoryTreeTab />
         ) : (
           <ConstellationTab />
