@@ -1,6 +1,6 @@
 import characterData from "@/data/optimizer/character.json";
 import promotionBossData from "@/data/optimizer/promotion-bosses.json";
-import { simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
+import { ANIMATION_SECONDS, simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
 import { refinementEffects } from "@/lib/game/refinement";
@@ -65,6 +65,33 @@ const num = (pattern: RegExp, text: string) => {
 /** Skills played out in stopped time. */
 const FREEZING = new Set(["Demon Hunt"]);
 
+/**
+ * Skill Mastery nodes the workbook's skill formulas don't read: later pages
+ * pair their 3x DMG (or the 3x alone) with a second effect. Each applies once
+ * its node is checked. Range, monster, stun, fire-enemy and damage-resistance
+ * effects don't change a single boss fight, so they're left out; Stone Strike's
+ * +20% boss DMG (9-FT22) is already in its workbook multiplier (3 x 1.2).
+ */
+const MASTERY_EXTRAS: {
+  node: string;
+  skills: string[];
+  multiplier?: number;
+  manaCost?: number;
+  /** Share of the usual 0.3s cast animation. */
+  animation?: number;
+  stopsTime?: boolean;
+  strikes?: number;
+  cooldown?: number;
+}[] = [
+  { node: "6-DL37", skills: ["Fulgurous"], multiplier: 3, manaCost: -5 },
+  { node: "10-GN22", skills: ["Demon Hunt"], multiplier: 3 },
+  { node: "10-GB32", skills: ["Blizzard"], multiplier: 3 },
+  { node: "6-DF7", skills: ["Water Slash"], animation: 0.5 },
+  { node: "6-DF22", skills: ["Hot Blast", "Fire Blast"], stopsTime: true },
+  { node: "7-DZ17", skills: ["Fire Slash", "Flame Slash", "Hellfire Slash"], strikes: -1 },
+  { node: "8-EN12", skills: ["Pillar of Fire"], cooldown: -2 },
+];
+
 /** A preset skill as a fight skill, or the reason it's left out. */
 function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: SkillWithMechanics[]): FightSkill | string {
   const m = skill.mechanics;
@@ -123,11 +150,28 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
       bonus = heart * (1 + Math.max(0, fireSkills - 4));
     }
     // Refinement: extra damage, and a shorter cooldown or fewer required hits.
-    const every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
+    let every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
     // Statue of Demon and Luna's Wisdom of War add skill damage.
     const shrine = shrineEffects(SHRINE, profile.sealedShrine).skillDamage;
     const wisdom = companionSkill(profile, "Luna", "Wisdom of War");
-    return make({ type: "damage", power: power * amp, hits }, { bonus: bonus + refined.damage + shrine + wisdom, every });
+    // Checked mastery nodes the workbook doesn't read.
+    const extras = MASTERY_EXTRAS.filter((extra) => extra.skills.includes(skill.name) && nodeDone(profile, extra.node));
+    let extraAmp = 1;
+    let mpCost = base.mpCost ?? 0;
+    let animation: number | undefined;
+    let freezes = base.freezes;
+    for (const extra of extras) {
+      extraAmp *= extra.multiplier ?? 1;
+      mpCost = Math.max(0, mpCost + (extra.manaCost ?? 0));
+      if (extra.animation) animation = ANIMATION_SECONDS * extra.animation;
+      if (extra.stopsTime) freezes = true;
+      if (extra.strikes && base.trigger === "hits") every = Math.max(1, every + extra.strikes);
+      if (extra.cooldown && base.trigger === "seconds") every = Math.max(0.1, every + extra.cooldown);
+    }
+    return make(
+      { type: "damage", power: power * amp * extraAmp, hits },
+      { bonus: bonus + refined.damage + shrine + wisdom, every, mpCost, animation, freezes },
+    );
   }
 
   const speed = /ATK SPD/i.test(text);

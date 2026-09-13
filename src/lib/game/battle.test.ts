@@ -172,6 +172,12 @@ describe("simulateFight", () => {
     expect(restored.state().mana).toBeCloseTo(50);
   });
 
+  it("holds basic attacks back only for a skill's own animation", () => {
+    const slow = skill({ name: "Slash", every: 1, effect: { type: "damage", power: 0, hits: 1 } });
+    const fast = { ...slow, animation: 0.05 };
+    expect(simulateFight({ ...base, skills: [fast] }).basic).toBeGreaterThan(simulateFight({ ...base, skills: [slow] }).basic);
+  });
+
   it("holds a skill with auto off until it's cast by hand", () => {
     const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
     const fight = createFight({ ...base, skills: [slash], manual: ["Slash"] });

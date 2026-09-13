@@ -72,6 +72,8 @@ export type FightSkill = {
   hpCost?: number;
   /** Stages a stacking passive completes; it stops once they're all done. */
   maxStacks?: number | null;
+  /** Seconds its cast animation lasts, per hit for stopped-time attacks (0.3 when not set). */
+  animation?: number;
 };
 
 export type FightInput = {
@@ -299,7 +301,8 @@ export function createFight(input: FightInput): Fight {
     if (pools && !release) mana = Math.max(0, mana - (s.mpCost ?? 0));
     if (s.hpCost) hp -= hp * s.hpCost;
     const now = bonuses();
-    let animation = queue ? ANIMATION_SECONDS : 0;
+    const castSeconds = s.animation ?? ANIMATION_SECONDS;
+    let animation = queue ? castSeconds : 0;
 
     if (e.type === "damage") {
       let bonus = s.bonus + (s.element ? input.extraDamage[s.element] + (now.element[s.element] ?? 0) : 0);
@@ -313,7 +316,7 @@ export function createFight(input: FightInput): Fight {
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * hits) / whole;
       for (let i = 0; i < whole; i += 1) deal(perHit, s.name);
       if (s.freezes) {
-        animation = ANIMATION_SECONDS * whole;
+        animation = castSeconds * whole;
         frozenUntil = Math.max(frozenUntil, real + animation);
       }
       if (s.element && queue) countElementUse(s.element, l);
