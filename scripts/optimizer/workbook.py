@@ -55,6 +55,16 @@ def header_columns(sheet, header_row, names, *, min_col=1, max_col=None):
     return found
 
 
+def find_header_row(sheet, names):
+    """The first row that holds every header in `names`, with its column map."""
+    for row in range(1, sheet.max_row + 1):
+        try:
+            return row, header_columns(sheet, row, names)
+        except MissingHeader:
+            continue
+    raise MissingHeader(f"{sheet.title}: no row holds all of {names}")
+
+
 def number(value):
     """Whole floats become ints; numeric text is read; anything else is None."""
     if value is None or value == "":

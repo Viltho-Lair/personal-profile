@@ -5,6 +5,7 @@ from openpyxl import Workbook
 from optimizer.workbook import (
     MissingHeader,
     find_cell,
+    find_header_row,
     header_columns,
     number,
     rows_until_blank,
@@ -52,6 +53,18 @@ class HeaderColumns(unittest.TestCase):
         sheet = sheet_with([["TYPE"]])
         with self.assertRaisesRegex(MissingHeader, r"MULTIPLIER.*MAX LVL"):
             header_columns(sheet, 1, ["TYPE", "MULTIPLIER", "MAX LVL"])
+
+    def test_find_header_row_returns_the_first_row_with_every_header(self):
+        sheet = sheet_with([["ICON"], [None], ["ICON", "RELIC", "BONUS"]])
+        self.assertEqual(
+            find_header_row(sheet, ["ICON", "RELIC"]),
+            (3, {"ICON": 1, "RELIC": 2}),
+        )
+
+    def test_find_header_row_names_the_headers_when_absent(self):
+        sheet = sheet_with([["ICON"]])
+        with self.assertRaisesRegex(MissingHeader, "RELIC"):
+            find_header_row(sheet, ["ICON", "RELIC"])
 
 
 class RowsUntilBlank(unittest.TestCase):
