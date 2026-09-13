@@ -22,7 +22,11 @@ export type StatSources = {
   /** The promotion's ATK / HP multiplier (1 with no promotion). */
   promotionBonus: number;
   spirits: { atk: number; hp: number; gold: number; exp: number };
-  enhance: { atk: number; hp: number; hpRecovery: number; critDamage: number; critChance: number };
+  enhance: {
+    atk: number; hp: number; hpRecovery: number; critDamage: number; critChance: number;
+    /** Death Strike damage and chance, as fractions (DMG Efficiency Data B44, B48). */
+    deathStrikeDamage: number; deathStrikeChance: number;
+  };
   growth: { atk: number; hp: number; hpRecovery: number; crit: number; gold: number; accuracy: number; dodge: number };
   /** Growing Knowledge combined value. */
   knowledge: number;
@@ -59,6 +63,9 @@ export type Stats = {
   /** Fractions: 0.1 = 10%. */
   critChance: number;
   critDamage: number;
+  deathStrikeChance: number;
+  /** Death Strike multiplier: 1 + its damage (1.01 = 101%). */
+  deathStrikeDamage: number;
   mana: number;
   manaRecovery: number;
   accuracy: number;
@@ -161,6 +168,8 @@ export function computeStats(s: StatSources): Stats {
     hpRecovery,
     critChance: s.enhance.critChance,
     critDamage,
+    deathStrikeChance: s.enhance.deathStrikeChance,
+    deathStrikeDamage: 1 + s.enhance.deathStrikeDamage,
     mana: 100 * (1 + s.companions.manaAmplification + s.companionPromotion.mana + s.slayerPromotion.mana),
     manaRecovery: 10 * (1 + s.companions.manaDope + s.companionPromotion.manaRecovery + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
     accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.engraving.accuracy + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
@@ -181,7 +190,7 @@ export function emptySources(): StatSources {
     classes: { equip: 0, owned: 0 },
     promotionBonus: 1,
     spirits: { atk: 0, hp: 0, gold: 0, exp: 0 },
-    enhance: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, critChance: 0 },
+    enhance: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, critChance: 0, deathStrikeDamage: 0, deathStrikeChance: 0 },
     growth: { atk: 0, hp: 0, hpRecovery: 0, crit: 0, gold: 0, accuracy: 0, dodge: 0 },
     knowledge: 0,
     soulWeapon: { atk: 0, completionAtk: 0, completionHp: 0 },

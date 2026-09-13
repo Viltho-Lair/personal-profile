@@ -6,7 +6,7 @@ function sample(): StatSources {
   const s = emptySources();
   s.weapon = { equip: 7, owned: 2.1 };
   s.accessory = { equip: 7, owned: 2.1 };
-  s.enhance = { atk: 1, hp: 10, hpRecovery: 1, critDamage: 0.01, critChance: 0.001 };
+  s.enhance = { atk: 1, hp: 10, hpRecovery: 1, critDamage: 0.01, critChance: 0.001, deathStrikeDamage: 0.01, deathStrikeChance: 0.001 };
   s.companionPromotion.atk = 0.8;
   s.slayerPromotion.atk = 0.4;
   s.memoryTree = { ...s.memoryTree, atk: 0.5, hp: 0.1, vit: 0.05 };

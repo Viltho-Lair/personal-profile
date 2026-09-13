@@ -57,7 +57,7 @@ export function AnalyzerShell() {
         className="flex shrink-0 flex-col border-b border-ink/15 md:grid md:h-1/2 md:grid-cols-3 md:grid-rows-2"
       >
         <div className="flex flex-col md:col-span-2 md:row-span-2 md:grid md:min-h-0 md:grid-cols-2 md:border-r md:border-ink/15">
-          <div className="flex h-72 min-h-0 flex-col border-b border-ink/15 md:h-auto md:border-r md:border-b-0">
+          <div className="flex min-h-80 flex-col border-b border-ink/15 md:min-h-0 md:border-r md:border-b-0">
             <ProgressChart />
           </div>
           <StatsSummary />

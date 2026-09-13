@@ -122,6 +122,10 @@ export function useProfile() {
       update((p) => rules.placeSoulGem(p, weapon, placement)),
     removeSoulGem: (weapon: string, gem: number | null) => update((p) => rules.removeSoulGem(p, weapon, gem)),
     setPlateCompleted: (weapon: string, on: boolean) => update((p) => rules.setPlateCompleted(p, weapon, on)),
+    updateSkillStones: (change: Parameters<typeof rules.updateSkillStones>[1]) =>
+      update((p) => rules.updateSkillStones(p, change)),
+    setPromotionTarget: (change: Parameters<typeof rules.setPromotionTarget>[1]) =>
+      update((p) => rules.setPromotionTarget(p, change)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     resetProfile: () => update(() => emptyProfile()),
   };

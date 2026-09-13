@@ -1,3 +1,4 @@
+import type { SkillStoneSet } from "@/lib/game/battle";
 import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
 import {
   emptyCompanion,
@@ -485,6 +486,21 @@ export function setPlateCompleted(profile: ProfileV1, weapon: string, on: boolea
     else delete completed[weapon];
     return { ...e, completed };
   });
+}
+
+/** Changes the active skill stone preset. */
+export function updateSkillStones(profile: ProfileV1, change: (stones: SkillStoneSet) => SkillStoneSet): ProfileV1 {
+  const index = profile.activePresets.skillStones;
+  const skillStones = profile.presets.skillStones.map((set, i) => (i === index ? change(set) : set));
+  return { ...profile, presets: { ...profile.presets, skillStones } };
+}
+
+export function activeSkillStones(profile: ProfileV1): SkillStoneSet {
+  return profile.presets.skillStones[profile.activePresets.skillStones] ?? { cooldown: null, time: null, heat: null };
+}
+
+export function setPromotionTarget(profile: ProfileV1, change: Partial<ProfileV1["promotionTarget"]>): ProfileV1 {
+  return { ...profile, promotionTarget: { ...profile.promotionTarget, ...change } };
 }
 
 export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): ProfileV1 {

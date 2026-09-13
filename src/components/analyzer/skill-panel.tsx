@@ -15,6 +15,7 @@ import { SkillDialog } from "./skill-dialog";
 import { SkillFamiliars } from "./skill-familiars";
 import { SkillMastery } from "./skill-mastery";
 import { SkillSettings } from "./skill-settings";
+import { SkillStoneSettings } from "./skill-stones";
 import { SkillTiles } from "./skill-tiles";
 
 type Section = "core" | "familiars" | "proficiency" | "mastery" | "immortals" | "seasonal";
@@ -77,6 +78,7 @@ function SkillWorkspace({ skills }: { skills: Skill[] }) {
           onClearSlot={(slot) => clearSkillPresetSlot(preset, slot)}
           onOpenSkill={(skill) => setOpenName(skill.name)}
         />
+        <SkillStoneSettings />
       </div>
 
       {open ? (

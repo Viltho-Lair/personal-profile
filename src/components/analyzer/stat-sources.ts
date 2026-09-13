@@ -200,6 +200,8 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     hpRecovery: enhance("HP Recovery"),
     critDamage: enhance("CRIT DMG"),
     critChance: enhance("CRIT %"),
+    deathStrikeDamage: enhance("DEATH STRIKE"),
+    deathStrikeChance: enhance("DEATH STRIKE %"),
   };
 
   const latent = latentTotals(c);

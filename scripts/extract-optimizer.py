@@ -40,6 +40,7 @@ from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
 from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
+from optimizer.stages import extract_promotion_stages, extract_stage_bosses  # noqa: E402
 from optimizer.summary import diff_items, format_diff  # noqa: E402
 from optimizer.workbook import MissingHeader, image_size, slug  # noqa: E402
 
@@ -210,6 +211,8 @@ def main():
         )
         memory_tree, memory_tree_icons = extract_memory_tree(values["Tree Data"])
         constellation, constellation_art = extract_constellation(values["Constellation Data"])
+        stage_bosses = extract_stage_bosses(values["Stage Data"])
+        promotion_stages = extract_promotion_stages(values["STAT TRACKER"])
         companions, promotion, companion_art = extract_companions(
             formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
         )
@@ -353,6 +356,13 @@ def main():
     })
     print(f"constellation: {len(constellation['signs'])} signs, "
           f"{sum(len(s['nodes']) for s in constellation['signs'])} nodes, {len(constellation['levels'])} levels")
+
+    write_json(DATA / "promotion-bosses.json", {
+        "source": {"file": source.name, "sheet": "Stage Data, STAT TRACKER", "extractedOn": today},
+        "promotions": promotion_stages,
+        "bossHp": stage_bosses,
+    }, compact=True)  # boss HP for every stage
+    print(f"promotion bosses: {len(promotion_stages)} promotions, boss HP for stages 1-{len(stage_bosses)}")
 
     published = publish_files("companion-skins", companion_art)
     for companion in companions:

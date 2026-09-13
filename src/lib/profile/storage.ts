@@ -1,3 +1,4 @@
+import type { SkillStone } from "@/lib/game/battle";
 import { importLegacyLevels } from "./migration";
 import {
   ABILITY_SLOTS,
@@ -11,6 +12,7 @@ import {
   MIN_SPIRIT_ENHANCE,
   emptyActivePresets,
   emptySoulEngraving,
+  DEFAULT_FIGHT_SECONDS,
   emptyPresets,
   MAIN_SPIRIT_COUNT,
   PRESET_COUNT,
@@ -212,6 +214,7 @@ function presets(data: Json): Presets {
   const base = emptyPresets();
   const legacyCharacter = isRecord(data.character) ? data.character : {};
   return {
+    skillStones: base.skillStones.map((_, i) => skillStoneSet(list(stored.skillStones)[i])),
     spirits: base.spirits.map((_, i) => {
       const slots = list(list(stored.spirits)[i]);
       return Array.from({ length: SPIRIT_PRESET_SLOTS }, (_, slot) => name(slots[slot]));
@@ -232,6 +235,29 @@ function presets(data: Json): Presets {
         rows: abilityRows(entry.rows),
       };
     }),
+  };
+}
+
+const STONE_ELEMENTS = ["Fire", "Water", "Wind", "Earth"] as const;
+
+function skillStone(value: unknown): SkillStone | null {
+  if (!isRecord(value)) return null;
+  const element = STONE_ELEMENTS.find((e) => e === value.element);
+  const grade: SkillStone["grade"] | null = value.grade === "A" ? "A" : value.grade === "B" ? "B" : null;
+  return element && grade ? { grade, element } : null;
+}
+
+function skillStoneSet(value: unknown): Presets["skillStones"][number] {
+  const stored = isRecord(value) ? value : {};
+  return { cooldown: skillStone(stored.cooldown), time: skillStone(stored.time), heat: skillStone(stored.heat) };
+}
+
+function promotionTarget(value: unknown): ProfileV1["promotionTarget"] {
+  const stored = isRecord(value) ? value : {};
+  const duration = wholeLevel(stored.duration);
+  return {
+    promotion: wholeLevel(stored.promotion),
+    duration: duration !== null && duration >= 1 ? duration : DEFAULT_FIGHT_SECONDS,
   };
 }
 
@@ -327,6 +353,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
     soulEngraving: soulEngraving(data.soulEngraving),
+    promotionTarget: promotionTarget(data.promotionTarget),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,
     companions: entries(data.companions, companionEntry),

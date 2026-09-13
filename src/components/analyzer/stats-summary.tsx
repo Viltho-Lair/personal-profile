@@ -36,6 +36,8 @@ export function StatsSummary() {
     ["HP Recovery", formatValue(stats.hpRecovery)],
     ["Crit %", pct(stats.critChance)],
     ["Crit Damage %", pct(stats.critDamage)],
+    ["Death Strike %", pct(stats.deathStrikeChance)],
+    ["Death Strike Damage %", pct(stats.deathStrikeDamage)],
     ["Mana", formatValue(stats.mana)],
     ["Mana Recovery", formatValue(stats.manaRecovery)],
     ["Accuracy", formatValue(stats.accuracy)],

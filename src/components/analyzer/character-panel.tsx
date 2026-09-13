@@ -191,10 +191,18 @@ function EnhanceSection() {
 
   const right = (
     <div className="flex min-h-0 flex-col gap-4 overflow-auto p-3 sm:p-4">
-      {gradeSelect("Growing Knowledge", "growingKnowledge", (g) => `ATK +${formatValue(g.atk)} · DS cap ${formatValue(g.maxDeathStrike)}`)}
+      {gradeSelect(
+        "Growing Knowledge",
+        "growingKnowledge",
+        (g) => `ATK +${formatValue(g.atk)} · HP +${formatValue(g.atk * 10)} · HP Rec +${formatValue(g.atk)} · DS cap ${formatValue(g.maxDeathStrike)}`,
+      )}
       {gradeSelect("Superhuman", "superhuman", (g) => `+${formatValue(g.superhuman)} DS levels`)}
       <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-xs">
-        <dt className="text-dim">Growing Knowledge ATK effect</dt>
+        <dt className="text-dim">Growing Knowledge ATK</dt>
+        <dd className="text-right text-ink tabular-nums">+{formatValue(knowledge?.atk ?? 0)}</dd>
+        <dt className="text-dim">Growing Knowledge HP (×10)</dt>
+        <dd className="text-right text-ink tabular-nums">+{formatValue((knowledge?.atk ?? 0) * 10)}</dd>
+        <dt className="text-dim">Growing Knowledge HP Recovery</dt>
         <dd className="text-right text-ink tabular-nums">+{formatValue(knowledge?.atk ?? 0)}</dd>
         <dt className="text-dim">Death Strike cap</dt>
         <dd className="text-right text-ink tabular-nums">

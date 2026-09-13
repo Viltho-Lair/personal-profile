@@ -1,3 +1,4 @@
+import type { SkillStoneSet } from "@/lib/game/battle";
 import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
 
 /** Weapons and accessories are graded, and keyed by grade name ("Common 4"). */
@@ -112,6 +113,8 @@ export type FamiliarPreset = Record<FamiliarGroup, string | null>;
  */
 export type Presets = {
   spirits: (string | null)[][];
+  /** One cooldown, time and heat stone per preset. */
+  skillStones: SkillStoneSet[];
   familiars: FamiliarPreset[];
   abilities: AbilityPreset[];
 };
@@ -129,6 +132,7 @@ export function emptyAbilityPreset(): AbilityPreset {
 export function emptyPresets(): Presets {
   return {
     spirits: Array.from({ length: PRESET_COUNT }, () => Array<string | null>(SPIRIT_PRESET_SLOTS).fill(null)),
+    skillStones: Array.from({ length: PRESET_COUNT }, () => ({ cooldown: null, time: null, heat: null })),
     familiars: Array.from({ length: PRESET_COUNT }, () => ({ weapon: null, attribute: null, battle: null })),
     abilities: Array.from({ length: PRESET_COUNT }, emptyAbilityPreset),
   };
@@ -145,6 +149,8 @@ export type SoulEngraving = {
   /** Completion ticked by hand, for weapons whose plate layout isn't known. */
   completed: Record<string, boolean>;
 };
+
+export const DEFAULT_FIGHT_SECONDS = 60;
 
 export function emptySoulEngraving(): SoulEngraving {
   return { chaosLevel: 0, chaosBonus: 0, gems: Array<SoulGem | null>(8).fill(null), plates: {}, completed: {} };
@@ -190,6 +196,8 @@ export type ProfileV1 = {
   /** The Stats Summary adds the active skill preset's buffs. */
   includeSkills: boolean;
   soulEngraving: SoulEngraving;
+  /** The promotion the progress chart aims at, and the fight's length in seconds. */
+  promotionTarget: { promotion: number | null; duration: number };
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
   weaponAwakening: number;
   accessoryAwakening: number;
@@ -235,6 +243,7 @@ export function emptyProfile(): ProfileV1 {
     mainSpirits: [],
     includeSkills: false,
     soulEngraving: emptySoulEngraving(),
+    promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS },
     weaponAwakening: 0,
     accessoryAwakening: 0,
     companions: {},

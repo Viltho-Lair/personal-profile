@@ -204,6 +204,15 @@ describe("parseProfile", () => {
     expect(c?.classes).toEqual({ Trainee: { owned: true, level: 20 } });
     expect(c?.slayerLevel).toBe(1);
     expect(c?.memoryTree).toEqual({ "1": 1 });
+    const parsed = parseProfile(
+      JSON.stringify({
+        ...emptyProfile(),
+        promotionTarget: { promotion: 5, duration: 0 },
+        presets: { skillStones: [{ cooldown: { grade: "B", element: "Water" }, time: { grade: "C", element: "Fire" } }] },
+      }),
+    );
+    expect(parsed?.promotionTarget).toEqual({ promotion: 5, duration: 60 });
+    expect(parsed?.presets.skillStones[0]).toEqual({ cooldown: { grade: "B", element: "Water" }, time: null, heat: null });
     expect(c?.constellation).toEqual({ "1": 2, "2": 1 });
   });
 
