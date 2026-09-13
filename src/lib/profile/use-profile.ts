@@ -126,6 +126,8 @@ export function useProfile() {
       update((p) => rules.updateSkillStones(p, change)),
     setPromotionTarget: (change: Parameters<typeof rules.setPromotionTarget>[1]) =>
       update((p) => rules.setPromotionTarget(p, change)),
+    setRefinementLine: (skill: string, index: number, change: Parameters<typeof rules.setRefinementLine>[3]) =>
+      update((p) => rules.setRefinementLine(p, skill, index, change)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     resetProfile: () => update(() => emptyProfile()),
   };

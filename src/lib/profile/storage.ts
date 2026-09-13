@@ -315,6 +315,24 @@ function soulEngraving(value: unknown): SoulEngraving {
   };
 }
 
+const REFINEMENT_LINES = 5;
+
+function skillRefinement(value: unknown): ProfileV1["skillRefinement"] {
+  const result: ProfileV1["skillRefinement"] = {};
+  if (!isRecord(value)) return result;
+  for (const [skill, lines] of Object.entries(value)) {
+    if (skill === "__proto__" || !Array.isArray(lines)) continue;
+    result[skill] = Array.from({ length: Math.min(REFINEMENT_LINES, lines.length) }, (_, i) => {
+      const line = isRecord(lines[i]) ? lines[i] : {};
+      return {
+        option: name(line.option),
+        value: typeof line.value === "number" && Number.isFinite(line.value) ? line.value : null,
+      };
+    });
+  }
+  return result;
+}
+
 function mainSpirits(value: unknown): string[] {
   const names = (Array.isArray(value) ? value : []).filter((n): n is string => typeof n === "string");
   return [...new Set(names)].slice(0, MAIN_SPIRIT_COUNT);
@@ -353,6 +371,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
     soulEngraving: soulEngraving(data.soulEngraving),
+    skillRefinement: skillRefinement(data.skillRefinement),
     promotionTarget: promotionTarget(data.promotionTarget),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,

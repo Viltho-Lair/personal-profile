@@ -6,6 +6,7 @@ import { effectiveSkillLevel } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
 import type { Skill } from "./data";
 import { LevelInput } from "./level-input";
+import { SkillRefinement } from "./skill-refinement";
 import { Sprite } from "./sprite";
 import { ELEMENT_TEXT, TIER_TEXT } from "./tiers";
 
@@ -126,6 +127,8 @@ export function SkillDialog({
           {skill.description.specific ? <p>{skill.description.specific}</p> : null}
         </div>
       ) : null}
+
+      <SkillRefinement skill={skill} />
     </div>
   );
 }

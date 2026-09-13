@@ -15,6 +15,8 @@ import { companionEffect, promotionBuff, type CompanionFormula } from "@/lib/gam
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { proficiencyBonuses } from "@/lib/game/familiars";
 import { gemTotals, plateComplete } from "@/lib/game/engraving";
+import { ownedEffect, type RefinementData } from "@/lib/game/refinement";
+import refinementData from "@/data/optimizer/skill-refinement.json";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
 import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
 import { totalSubNodeLevels, treeBonuses, treeBuffs, treeLevel, type MemoryTree } from "@/lib/game/memory-tree";
@@ -197,6 +199,20 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
 
   s.weapon = gearTotals(profile, "weapons", WEAPONS);
   s.gearSecondary = gearSecondary(profile);
+
+  // Skill Refinement owned effects, from every refined skill.
+  const REFINEMENT_TARGET: Record<string, keyof StatSources["refinement"]> = {
+    "Character ATK": "atk",
+    "Character HP": "hp",
+    "CRIT Dmg": "critDamage",
+    Accuracy: "accuracy",
+    Dodge: "dodge",
+  };
+  for (const [skill, lines] of Object.entries(profile.skillRefinement)) {
+    const owned = ownedEffect(refinementData as unknown as RefinementData, skill, lines);
+    const target = owned ? REFINEMENT_TARGET[owned.stat] : undefined;
+    if (owned && target) s.refinement[target] += owned.value;
+  }
   s.accessory = gearTotals(profile, "accessories", ACCESSORIES);
 
   // Classes: best equip effect + 30% of all owned; the last class awakens with Blast.
@@ -411,6 +427,5 @@ export const UNTRACKED_SOURCES = [
   "Appearance",
   "Black Orb",
   "Beasts",
-  "Skill Refinement",
   "Sealed Shrine statues",
 ] as const;

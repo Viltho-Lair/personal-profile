@@ -503,6 +503,20 @@ export function setPromotionTarget(profile: ProfileV1, change: Partial<ProfileV1
   return { ...profile, promotionTarget: { ...profile.promotionTarget, ...change } };
 }
 
+/** Sets one refinement line of a skill; changing the option clears the value. */
+export function setRefinementLine(
+  profile: ProfileV1,
+  skill: string,
+  index: number,
+  change: Partial<{ option: string | null; value: number | null }>,
+): ProfileV1 {
+  if (!Number.isInteger(index) || index < 0 || index > 4) return profile;
+  const lines = [...(profile.skillRefinement[skill] ?? [])];
+  while (lines.length <= index) lines.push({ option: null, value: null });
+  lines[index] = { ...lines[index], ...change };
+  return { ...profile, skillRefinement: { ...profile.skillRefinement, [skill]: lines } };
+}
+
 export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): ProfileV1 {
   return { ...profile, includeSkills };
 }

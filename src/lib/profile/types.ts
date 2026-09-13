@@ -1,5 +1,6 @@
 import type { SkillStoneSet } from "@/lib/game/battle";
 import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
+import type { RefinementLine } from "@/lib/game/refinement";
 
 /** Weapons and accessories are graded, and keyed by grade name ("Common 4"). */
 export type GearKind = "weapons" | "accessories";
@@ -196,6 +197,8 @@ export type ProfileV1 = {
   /** The Stats Summary adds the active skill preset's buffs. */
   includeSkills: boolean;
   soulEngraving: SoulEngraving;
+  /** Refinement lines by attack skill name. */
+  skillRefinement: Record<string, RefinementLine[]>;
   /** The promotion the progress chart aims at, and the fight's length in seconds. */
   promotionTarget: { promotion: number | null; duration: number };
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
@@ -243,6 +246,7 @@ export function emptyProfile(): ProfileV1 {
     mainSpirits: [],
     includeSkills: false,
     soulEngraving: emptySoulEngraving(),
+    skillRefinement: {},
     promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS },
     weaponAwakening: 0,
     accessoryAwakening: 0,

@@ -3,6 +3,7 @@ import promotionBossData from "@/data/optimizer/promotion-bosses.json";
 import { simulateFight, withStones, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
+import { refinementEffects } from "@/lib/game/refinement";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
 import { activeSkillStones, effectiveSkillLevel, masteryLevel } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
@@ -109,7 +110,10 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
       const heart = (skillPower(heartOfFire.baseValue, heartOfFire.upgradeValue, effectiveSkillLevel(profile, heartOfFire.name, heartOfFire.maxLevel)) ?? 0) / 100;
       bonus = heart * (1 + Math.max(0, fireSkills - 4));
     }
-    return make({ type: "damage", power: power * amp, hits }, { bonus });
+    // Refinement: extra damage, and a shorter cooldown or fewer required hits.
+    const refined = refinementEffects(profile.skillRefinement[skill.name] ?? []);
+    const every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
+    return make({ type: "damage", power: power * amp, hits }, { bonus: bonus + refined.damage, every });
   }
 
   const speed = /ATK SPD/i.test(text);

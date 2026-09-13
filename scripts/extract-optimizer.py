@@ -39,6 +39,7 @@ from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
 from optimizer.skill_mechanics import extract_skill_mechanics  # noqa: E402
+from optimizer.refinement import extract_refinement  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
 from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
 from optimizer.stages import extract_promotion_stages, extract_stage_bosses  # noqa: E402
@@ -229,6 +230,7 @@ def main():
         skills, skill_icons = extract_skills(values["Skills Data"])
         proficiency = extract_proficiency(values["Skills Data"])
         skill_mechanics = extract_skill_mechanics(values["Skills Data"], formulas["Skills Data"])
+        refinement = extract_refinement(formulas["SKILLS"], {s["name"]: s for s in skills})
         weapons = extract_gear(values["Equipment Data"], "WEAPONS")
         accessories = extract_gear(values["Equipment Data"], "ACCESSORIES")
         level_factors = extract_level_factors(values["Equipment Data"])
@@ -402,6 +404,12 @@ def main():
         "bossHp": stage_bosses,
     }, compact=True)  # boss HP for every stage
     print(f"promotion bosses: {len(promotion_stages)} promotions, boss HP for stages 1-{len(stage_bosses)}")
+
+    write_json(DATA / "skill-refinement.json", {
+        "source": {"file": source.name, "sheet": "SKILLS (option ranges from the game's Refinement Effect screen)", "extractedOn": today},
+        **refinement,
+    })
+    print(f"skill refinement: {len(refinement['skills'])} refinable skills")
 
     published = publish_files("companion-skins", companion_art)
     for companion in companions:

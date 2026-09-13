@@ -8,6 +8,7 @@ import {
   effectiveSkillLevel,
   equip,
   activeFamiliars,
+  setRefinementLine,
   placeSoulGem,
   setSoulGem,
   effectiveSpiritLevel,
@@ -287,6 +288,19 @@ describe("skill mastery", () => {
     expect(openMasteryPages(p, pages)).toBe(3);
     p = setMasteryPage(p, page1, false);
     expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("skill refinement", () => {
+  it("fills lines up to the one being set and clears a changed option's value", () => {
+    let p = setRefinementLine(emptyProfile(), "Fire Slash", 2, { option: "DMG Increase(%)" });
+    p = setRefinementLine(p, "Fire Slash", 2, { value: 15 });
+    expect(p.skillRefinement["Fire Slash"]).toEqual([
+      { option: null, value: null },
+      { option: null, value: null },
+      { option: "DMG Increase(%)", value: 15 },
+    ]);
+    expect(setRefinementLine(p, "Fire Slash", 5, { value: 1 })).toBe(p);
   });
 });
 
