@@ -35,6 +35,8 @@ export type StatSources = {
   gearSecondary: { critDamage: number; gold: number; exp: number; mana: number; manaRecovery: number };
   /** Skill Refinement owned effects (Skills Data I77:M77): ATK and HP as fractions, CRIT DMG fraction, Accuracy and Dodge flat. */
   refinement: { atk: number; hp: number; critDamage: number; accuracy: number; dodge: number };
+  /** Owned clothing and guild shop outfits: ATK, HP, gold and EXP fractions, flat Accuracy and Dodge. */
+  appearance: { atk: number; hp: number; gold: number; exp: number; accuracy: number; dodge: number };
   /** Sealed Shrine: Chaos soul weapon ATK amp and Character ATK, Demon Character HP, Order element damage. */
   shrine: { soulWeaponAtk: number; atk: number; hp: number; element: ByElement };
   /** Soul gems on the equipped soul weapon's plate (the workbook's Additional Options). */
@@ -101,7 +103,7 @@ export function computeStats(s: StatSources): Stats {
     (1 + (s.classes.equip + s.classes.owned) / 100) *
     promotion *
     (1 + s.spirits.atk) *
-    ((s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.shrine.atk) + s.soulWeapon.atk * (1 + s.shrine.soulWeaponAtk)) *
+    ((s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk) + s.soulWeapon.atk * (1 + s.shrine.soulWeaponAtk)) *
     (1 + s.soulWeapon.completionAtk) *
     (1 + s.relics.atk + s.companionPromotion.atk + s.slayerPromotion.atk + s.mastery.atk + s.companions.blessingOfForest + s.memoryTree.atk + s.constellation.atk) *
     (1 + s.memoryTree.atkMultiplier + s.constellation.promotion) *
@@ -115,7 +117,7 @@ export function computeStats(s: StatSources): Stats {
     down(1 + (s.classes.equip + s.classes.owned) / 100, 2) *
     promotion *
     down(1 + s.spirits.hp, 2) *
-    (s.enhance.hp + s.growth.hp + s.knowledge * 10) * (1 + s.engraving.hp + s.refinement.hp + s.shrine.hp) *
+    (s.enhance.hp + s.growth.hp + s.knowledge * 10) * (1 + s.engraving.hp + s.refinement.hp + s.appearance.hp + s.shrine.hp) *
     (1 + s.soulWeapon.completionHp) *
     (1 + s.relics.hp + s.companionPromotion.hp + s.slayerPromotion.hp + s.mastery.hp + s.companions.fortitude + s.memoryTree.hp + s.constellation.hp) *
     (1 + s.mastery.hpAmp) *
@@ -142,7 +144,7 @@ export function computeStats(s: StatSources): Stats {
 
   const gold =
     down(
-      (down(s.gearSecondary.gold + s.relics.gold + s.growth.gold + s.engraving.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
+      (down(s.gearSecondary.gold + s.appearance.gold + s.relics.gold + s.growth.gold + s.engraving.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
         (1 + s.companions.goldRush + s.companions.goldRush2 + s.memoryTree.goldAll + s.constellation.goldAll) *
         (1 + s.memoryTree.goldStage + s.constellation.goldStage) *
         (1 + down(s.spirits.gold, 3)),
@@ -151,7 +153,7 @@ export function computeStats(s: StatSources): Stats {
 
   const exp =
     down(
-      (down(s.gearSecondary.exp + s.mastery.exp + s.companionPromotion.exp + s.slayerPromotion.exp, 3) + 1) *
+      (down(s.gearSecondary.exp + s.appearance.exp + s.mastery.exp + s.companionPromotion.exp + s.slayerPromotion.exp, 3) + 1) *
         (1 + s.companions.hymn + s.memoryTree.expAll + s.constellation.expAll) *
         (1 + s.memoryTree.expStage + s.constellation.expStage) *
         (1 + down(s.spirits.exp, 3)),
@@ -179,8 +181,8 @@ export function computeStats(s: StatSources): Stats {
     deathStrikeDamage: 1 + s.enhance.deathStrikeDamage,
     mana: 100 * (1 + s.gearSecondary.mana) * (1 + s.companions.manaAmplification + s.companionPromotion.mana + s.slayerPromotion.mana),
     manaRecovery: 10 * (1 + s.gearSecondary.manaRecovery) * (1 + s.companions.manaDope + s.companionPromotion.manaRecovery + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
-    accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.refinement.accuracy + s.engraving.accuracy + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
-    dodge: 10 + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.refinement.dodge + s.engraving.dodge + s.companionPromotion.dodge + s.slayerPromotion.dodge,
+    accuracy: 30 + s.appearance.accuracy + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.refinement.accuracy + s.engraving.accuracy + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
+    dodge: 10 + s.appearance.dodge + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.refinement.dodge + s.engraving.dodge + s.companionPromotion.dodge + s.slayerPromotion.dodge,
     ccResist: s.companionPromotion.ccResist + s.slayerPromotion.ccResist,
     extraGold: gold,
     extraExp: exp,
@@ -205,6 +207,7 @@ export function emptySources(): StatSources {
     gearSecondary: { critDamage: 0, gold: 0, exp: 0, mana: 0, manaRecovery: 0 },
     refinement: { atk: 0, hp: 0, critDamage: 0, accuracy: 0, dodge: 0 },
     shrine: { soulWeaponAtk: 0, atk: 0, hp: 0, element: noElements() },
+    appearance: { atk: 0, hp: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0 },
     relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, element: noElements() },
     companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },
     slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0, ccResist: 0 },

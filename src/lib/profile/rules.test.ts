@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addToSkillPreset,
   setShrineLevel,
+  setOutfitOwned,
   awakening,
   companionState,
   clampLevel,
@@ -289,6 +290,16 @@ describe("skill mastery", () => {
     expect(openMasteryPages(p, pages)).toBe(3);
     p = setMasteryPage(p, page1, false);
     expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("appearance", () => {
+  it("adds and removes owned outfits per group", () => {
+    let p = setOutfitOwned(emptyProfile(), "guild", "Chef", true);
+    expect(setOutfitOwned(p, "guild", "Chef", true)).toBe(p);
+    expect(p.appearance).toEqual({ clothing: [], guild: ["Chef"] });
+    p = setOutfitOwned(p, "guild", "Chef", false);
+    expect(p.appearance.guild).toEqual([]);
   });
 });
 

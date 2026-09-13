@@ -518,6 +518,14 @@ export function setRefinementLine(
   return { ...profile, skillRefinement: { ...profile.skillRefinement, [skill]: lines } };
 }
 
+/** Marks an outfit owned or not. */
+export function setOutfitOwned(profile: ProfileV1, group: keyof ProfileV1["appearance"], name: string, owned: boolean): ProfileV1 {
+  const names = profile.appearance[group];
+  if (names.includes(name) === owned) return profile;
+  const next = owned ? [...names, name] : names.filter((n) => n !== name);
+  return { ...profile, appearance: { ...profile.appearance, [group]: next } };
+}
+
 /** Sets a Sealed Shrine statue's level, clamped to 0..max. */
 export function setShrineLevel(profile: ProfileV1, statue: ShrineKey, level: number, max: number): ProfileV1 {
   const next = clampLevel(level, max);

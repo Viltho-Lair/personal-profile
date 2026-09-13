@@ -1,0 +1,649 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "APPEARANCE, CHARACTER",
+    "extractedOn": "2026-09-13"
+  },
+  "clothing": [
+    {
+      "name": "Pac-Man T-shirt",
+      "bonus": "Dodge",
+      "value": 3,
+      "key": "clothing-0",
+      "icon": "/art/appearance/clothing-0.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Summer Shirt",
+      "bonus": "Dodge",
+      "value": 3,
+      "key": "clothing-1",
+      "icon": "/art/appearance/clothing-1.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Prison Garb (Striped)",
+      "bonus": "Extra EXP",
+      "value": 0.05,
+      "key": "clothing-2",
+      "icon": "/art/appearance/clothing-2.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Military Uniform",
+      "bonus": "Extra EXP",
+      "value": 0.03,
+      "key": "clothing-3",
+      "icon": "/art/appearance/clothing-3.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Kindergarten",
+      "bonus": "Monster Gold",
+      "value": 0.03,
+      "key": "clothing-4",
+      "icon": "/art/appearance/clothing-4.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Swagger",
+      "bonus": "Accuracy",
+      "value": 3,
+      "key": "clothing-5",
+      "icon": "/art/appearance/clothing-5.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sailor",
+      "bonus": "Extra EXP",
+      "value": 0.05,
+      "key": "clothing-6",
+      "icon": "/art/appearance/clothing-6.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Rainbow Shirt",
+      "bonus": "Extra EXP",
+      "value": 0.03,
+      "key": "clothing-7",
+      "icon": "/art/appearance/clothing-7.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Tuxedo",
+      "bonus": "Dodge",
+      "value": 6,
+      "key": "clothing-8",
+      "icon": "/art/appearance/clothing-8.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Denim Jacket",
+      "bonus": "Monster Gold",
+      "value": 0.1,
+      "key": "clothing-9",
+      "icon": "/art/appearance/clothing-9.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Sky)",
+      "bonus": "Dodge",
+      "value": 6,
+      "key": "clothing-10",
+      "icon": "/art/appearance/clothing-10.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Suit",
+      "bonus": "Accuracy",
+      "value": 6,
+      "key": "clothing-11",
+      "icon": "/art/appearance/clothing-11.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Purple)",
+      "bonus": "Extra EXP",
+      "value": 0.06,
+      "key": "clothing-12",
+      "icon": "/art/appearance/clothing-12.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Martial Arts Uniform",
+      "bonus": "Dodge",
+      "value": 6,
+      "key": "clothing-13",
+      "icon": "/art/appearance/clothing-13.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Taekwondo Uniform",
+      "bonus": "Extra EXP",
+      "value": 0.1,
+      "key": "clothing-14",
+      "icon": "/art/appearance/clothing-14.png",
+      "iconSize": 42
+    },
+    {
+      "name": "80's Vibe",
+      "bonus": "Accuracy",
+      "value": 6,
+      "key": "clothing-15",
+      "icon": "/art/appearance/clothing-15.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Smith",
+      "bonus": "Extra EXP",
+      "value": 0.09,
+      "key": "clothing-16",
+      "icon": "/art/appearance/clothing-16.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Chef",
+      "bonus": "Monster Gold",
+      "value": 0.09,
+      "key": "clothing-17",
+      "icon": "/art/appearance/clothing-17.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Yellow Raincoat",
+      "bonus": "Accuracy",
+      "value": 15,
+      "key": "clothing-18",
+      "icon": "/art/appearance/clothing-18.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Techwear",
+      "bonus": "Dodge",
+      "value": 9,
+      "key": "clothing-19",
+      "icon": "/art/appearance/clothing-19.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Police Uniform",
+      "bonus": "Accuracy",
+      "value": 9,
+      "key": "clothing-20",
+      "icon": "/art/appearance/clothing-20.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sleeveless",
+      "bonus": "Dodge",
+      "value": 9,
+      "key": "clothing-21",
+      "icon": "/art/appearance/clothing-21.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Zip-Up Hoodie",
+      "bonus": "Monster Gold",
+      "value": 0.15,
+      "key": "clothing-22",
+      "icon": "/art/appearance/clothing-22.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Rash Guard",
+      "bonus": "Monster Gold",
+      "value": 0.09,
+      "key": "clothing-23",
+      "icon": "/art/appearance/clothing-23.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Leopard",
+      "bonus": "Monster Gold",
+      "value": 0.12,
+      "key": "clothing-24",
+      "icon": "/art/appearance/clothing-24.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Orange)",
+      "bonus": "Monster Gold",
+      "value": 0.12,
+      "promotionRow": 0,
+      "multiplier": 2,
+      "key": "clothing-25",
+      "icon": "/art/appearance/clothing-25.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Naughty Skeleton T-Shirt",
+      "bonus": "Accuracy",
+      "value": 20,
+      "key": "clothing-26",
+      "icon": "/art/appearance/clothing-26.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Pajamas",
+      "bonus": "Dodge",
+      "value": 9,
+      "key": "clothing-27",
+      "icon": "/art/appearance/clothing-27.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Basketball Uniform",
+      "bonus": "Accuracy",
+      "value": 12,
+      "key": "clothing-28",
+      "icon": "/art/appearance/clothing-28.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Prison Garb (Orange)",
+      "bonus": "Monster Gold",
+      "value": 0.12,
+      "key": "clothing-29",
+      "icon": "/art/appearance/clothing-29.png",
+      "iconSize": 42
+    },
+    {
+      "name": "City Hunter",
+      "bonus": "Dodge",
+      "value": 12,
+      "key": "clothing-30",
+      "icon": "/art/appearance/clothing-30.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Ninja Suit",
+      "bonus": "Monster Gold",
+      "value": 0.2,
+      "key": "clothing-31",
+      "icon": "/art/appearance/clothing-31.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Baseball Uniform",
+      "bonus": "Monster Gold",
+      "value": 0.12,
+      "key": "clothing-32",
+      "icon": "/art/appearance/clothing-32.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Blue Robe",
+      "bonus": "Monster Gold",
+      "value": 0.18,
+      "key": "clothing-33",
+      "icon": "/art/appearance/clothing-33.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Plumber Work Clothes",
+      "bonus": "Dodge",
+      "value": 15,
+      "key": "clothing-34",
+      "icon": "/art/appearance/clothing-34.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Hawaiian Shirt",
+      "bonus": "Monster Gold",
+      "value": 0.25,
+      "key": "clothing-35",
+      "icon": "/art/appearance/clothing-35.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Solver",
+      "bonus": "Accuracy",
+      "value": 15,
+      "key": "clothing-36",
+      "icon": "/art/appearance/clothing-36.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Bartender",
+      "bonus": "Extra EXP",
+      "value": 0.21,
+      "key": "clothing-37",
+      "icon": "/art/appearance/clothing-37.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Captain's Clothes",
+      "bonus": "Extra EXP",
+      "value": 0.18,
+      "key": "clothing-38",
+      "icon": "/art/appearance/clothing-38.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Red)",
+      "bonus": "Accuracy",
+      "value": 30,
+      "promotionRow": 1,
+      "multiplier": 2,
+      "key": "clothing-39",
+      "icon": "/art/appearance/clothing-39.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Fitness Freak",
+      "bonus": "Accuracy",
+      "value": 18,
+      "key": "clothing-40",
+      "icon": "/art/appearance/clothing-40.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Blue Suit",
+      "bonus": "Accuracy",
+      "value": 24,
+      "key": "clothing-41",
+      "icon": "/art/appearance/clothing-41.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Red Suit",
+      "bonus": "Extra EXP",
+      "value": 0.24,
+      "key": "clothing-42",
+      "icon": "/art/appearance/clothing-42.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Life Jacket",
+      "bonus": "Dodge",
+      "value": 40,
+      "key": "clothing-43",
+      "icon": "/art/appearance/clothing-43.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Training Uniform",
+      "bonus": "Accuracy",
+      "value": 24,
+      "key": "clothing-44",
+      "icon": "/art/appearance/clothing-44.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Black Robe",
+      "bonus": "Extra EXP",
+      "value": 0.24,
+      "key": "clothing-45",
+      "icon": "/art/appearance/clothing-45.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Blue)",
+      "bonus": "Extra EXP",
+      "value": 0.24,
+      "promotionRow": 2,
+      "multiplier": 2,
+      "key": "clothing-46",
+      "icon": "/art/appearance/clothing-46.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Black)",
+      "bonus": "Monster Gold",
+      "value": 0.5,
+      "promotionRow": 3,
+      "multiplier": 2,
+      "key": "clothing-47",
+      "icon": "/art/appearance/clothing-47.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Green)",
+      "bonus": "Extra EXP",
+      "value": 0.5,
+      "promotionRow": 4,
+      "multiplier": 2,
+      "key": "clothing-48",
+      "icon": "/art/appearance/clothing-48.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Yellow)",
+      "bonus": "Monster Gold",
+      "value": 1,
+      "promotionRow": 5,
+      "multiplier": 2,
+      "key": "clothing-49",
+      "icon": "/art/appearance/clothing-49.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Crimson)",
+      "bonus": "Extra EXP",
+      "value": 0.8,
+      "promotionRow": 6,
+      "multiplier": 2,
+      "key": "clothing-50",
+      "icon": "/art/appearance/clothing-50.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (White)",
+      "bonus": "Monster Gold",
+      "value": 2,
+      "promotionRow": 0,
+      "multiplier": 3,
+      "key": "clothing-51",
+      "icon": "/art/appearance/clothing-51.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Dark Purple)",
+      "bonus": "Extra EXP",
+      "value": 1.5,
+      "promotionRow": 1,
+      "multiplier": 3,
+      "key": "clothing-52",
+      "icon": "/art/appearance/clothing-52.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Royal Blue)",
+      "bonus": "Monster Gold",
+      "value": 3,
+      "promotionRow": 2,
+      "multiplier": 3,
+      "key": "clothing-53",
+      "icon": "/art/appearance/clothing-53.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Black&Pink)",
+      "bonus": "Extra EXP",
+      "value": 2,
+      "promotionRow": 3,
+      "multiplier": 3,
+      "key": "clothing-54",
+      "icon": "/art/appearance/clothing-54.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Mint)",
+      "bonus": "Monster Gold",
+      "value": 4,
+      "promotionRow": 4,
+      "multiplier": 3,
+      "key": "clothing-55",
+      "icon": "/art/appearance/clothing-55.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Scarlet)",
+      "bonus": "Extra EXP",
+      "value": 2.5,
+      "promotionRow": 5,
+      "multiplier": 3,
+      "key": "clothing-56",
+      "icon": "/art/appearance/clothing-56.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Cream)",
+      "bonus": "Monster Gold",
+      "value": 5,
+      "promotionRow": 6,
+      "multiplier": 3,
+      "key": "clothing-57",
+      "icon": "/art/appearance/clothing-57.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Dark Green)",
+      "bonus": "Extra EXP",
+      "value": 3,
+      "promotionRow": 0,
+      "multiplier": 4,
+      "key": "clothing-58",
+      "icon": "/art/appearance/clothing-58.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Silver Blue)",
+      "bonus": "Monster Gold",
+      "value": 6,
+      "promotionRow": 1,
+      "multiplier": 4,
+      "key": "clothing-59",
+      "icon": "/art/appearance/clothing-59.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Lime)",
+      "bonus": "Extra EXP",
+      "value": 3.5,
+      "promotionRow": 2,
+      "multiplier": 4,
+      "key": "clothing-60",
+      "icon": "/art/appearance/clothing-60.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Green Gold)",
+      "bonus": "Monster Gold",
+      "value": 7,
+      "promotionRow": 3,
+      "multiplier": 4,
+      "key": "clothing-61",
+      "icon": "/art/appearance/clothing-61.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Sweatsuit (Sunset Lavendar)",
+      "bonus": "Extra EXP",
+      "value": 4,
+      "promotionRow": 4,
+      "multiplier": 4,
+      "key": "clothing-62",
+      "icon": "/art/appearance/clothing-62.png",
+      "iconSize": 32
+    }
+  ],
+  "guild": [
+    {
+      "name": "Unity",
+      "bonus": "Character ATK",
+      "value": 0.1,
+      "key": "guild-0",
+      "icon": "/art/appearance/guild-0.png",
+      "iconSize": 128
+    },
+    {
+      "name": "Guild Guardian",
+      "bonus": "Character HP",
+      "value": 0.1,
+      "key": "guild-1",
+      "icon": "/art/appearance/guild-1.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Secret",
+      "bonus": "Character ATK",
+      "value": 0.1,
+      "key": "guild-2",
+      "icon": "/art/appearance/guild-2.png",
+      "iconSize": 128
+    },
+    {
+      "name": "Agent",
+      "bonus": "Character HP",
+      "value": 0.1,
+      "key": "guild-3",
+      "icon": "/art/appearance/guild-3.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Bargain",
+      "bonus": "Character ATK",
+      "value": 0.1,
+      "key": "guild-4",
+      "icon": "/art/appearance/guild-4.png",
+      "iconSize": 128
+    },
+    {
+      "name": "Wandering Merchant",
+      "bonus": "Character HP",
+      "value": 0.1,
+      "key": "guild-5",
+      "icon": "/art/appearance/guild-5.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Excavation",
+      "bonus": "Character ATK",
+      "value": 0.15,
+      "key": "guild-6",
+      "icon": "/art/appearance/guild-6.png",
+      "iconSize": 128
+    },
+    {
+      "name": "Archaeologist",
+      "bonus": "Character HP",
+      "value": 0.15,
+      "key": "guild-7",
+      "icon": "/art/appearance/guild-7.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Invention",
+      "bonus": "Character ATK",
+      "value": 0.15,
+      "key": "guild-8",
+      "icon": "/art/appearance/guild-8.png",
+      "iconSize": 128
+    },
+    {
+      "name": "Engineer",
+      "bonus": "Character HP",
+      "value": 0.15,
+      "key": "guild-9",
+      "icon": "/art/appearance/guild-9.png",
+      "iconSize": 42
+    },
+    {
+      "name": "Cooking",
+      "bonus": "Character ATK",
+      "value": 0.15,
+      "key": "guild-10",
+      "icon": "/art/appearance/guild-10.png",
+      "iconSize": 128
+    },
+    {
+      "name": "Chef",
+      "bonus": "Character HP",
+      "value": 0.15,
+      "key": "guild-11",
+      "icon": "/art/appearance/guild-11.png",
+      "iconSize": 42
+    }
+  ]
+}

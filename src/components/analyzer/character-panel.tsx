@@ -19,7 +19,9 @@ import { awakeningStage, gearEffects } from "@/lib/game/formulas";
 import { activeAbilityPreset, clampLevel } from "@/lib/profile/rules";
 import { ABILITY_SLOTS, LATENT_SLOTS, LATENT_STATS, PROMOTION_EFFECTS } from "@/lib/profile/types";
 import { PresetPicker } from "./preset-picker";
-import { latentTotals } from "./stat-sources";
+import { AppearanceSection } from "./appearance-section";
+import { APPEARANCE, latentTotals } from "./stat-sources";
+import { sweatsuitMultiplier } from "@/lib/game/appearance";
 import { useProfile } from "@/lib/profile/use-profile";
 import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./data";
 import { ConstellationTab } from "./constellation-tab";
@@ -494,13 +496,14 @@ function AbilityTab() {
         </label>
       </div>
       <p className="text-[11px] leading-snug text-dim">
-        Rows open as your promotion passes them. Pick each row&apos;s option, rolled value and its multiplier (×1 to ×4).
+        Rows open as your promotion passes them. Pick each row&apos;s option and rolled value; the multiplier comes from the sweatsuits owned in Appearance.
       </p>
       <ul className="flex flex-col gap-1.5">
         {preset.rows.slice(0, ABILITY_SLOTS).map((roll, row) => {
           const open = abilityRowOpen(character.promotion, row);
           const option = ABILITY_OPTIONS.find((o) => o.name === roll.option);
-          const effective = open && roll.value !== null ? roll.value * roll.multiplier : null;
+          const suit = sweatsuitMultiplier(APPEARANCE, profile.appearance, row);
+          const effective = open && roll.value !== null ? roll.value * suit.multiplier : null;
           if (effective !== null && roll.option) totals.set(roll.option, (totals.get(roll.option) ?? 0) + effective);
           const setRoll = (next: Partial<typeof roll>) =>
             updateAbilityPreset((p) => ({ ...p, rows: p.rows.map((r, i) => (i === row ? { ...r, ...next } : r)) }));
@@ -523,13 +526,9 @@ function AbilityTab() {
                   </option>
                 ))}
               </select>
-              <select aria-label={`Ability row ${row + 1} multiplier`} value={roll.multiplier} onChange={(e) => setRoll({ multiplier: Number(e.target.value) })} className={SELECT}>
-                {[1, 2, 3, 4].map((m) => (
-                  <option key={m} value={m}>
-                    ×{m}
-                  </option>
-                ))}
-              </select>
+              <span className="font-mono text-[11px] text-ink" title={suit.suit ?? "No sweatsuit for this row"}>
+                ×{suit.multiplier}
+              </span>
               <span className="ml-auto font-mono text-[11px] text-ink tabular-nums">{effective === null ? "—" : `+${formatValue(effective)}`}</span>
             </li>
           );
@@ -625,7 +624,7 @@ function PromotionSection() {
 }
 
 export function CharacterPanel() {
-  const [section, setSection] = useState<"enhance" | "growth" | "promotion">("enhance");
+  const [section, setSection] = useState<"enhance" | "growth" | "promotion" | "appearance">("enhance");
   return (
     <div className="flex h-full min-h-0 flex-col">
       <Tabs
@@ -634,12 +633,21 @@ export function CharacterPanel() {
           { id: "enhance", label: "Enhance" },
           { id: "growth", label: "Growth" },
           { id: "promotion", label: "Promotion" },
+          { id: "appearance", label: "Appearance" },
         ]}
         active={section}
         onChange={setSection}
       />
       <div className="min-h-0 flex-1">
-        {section === "enhance" ? <EnhanceSection /> : section === "growth" ? <GrowthSection /> : <PromotionSection />}
+        {section === "enhance" ? (
+          <EnhanceSection />
+        ) : section === "growth" ? (
+          <GrowthSection />
+        ) : section === "promotion" ? (
+          <PromotionSection />
+        ) : (
+          <AppearanceSection />
+        )}
       </div>
     </div>
   );

@@ -316,6 +316,12 @@ function soulEngraving(value: unknown): SoulEngraving {
   };
 }
 
+function appearance(value: unknown): ProfileV1["appearance"] {
+  const list = (items: unknown) =>
+    Array.isArray(items) ? [...new Set(items.filter((item): item is string => typeof item === "string" && item.length > 0))] : [];
+  return isRecord(value) ? { clothing: list(value.clothing), guild: list(value.guild) } : { clothing: [], guild: [] };
+}
+
 const MAX_SHRINE_LEVEL = 999;
 
 function sealedShrine(value: unknown): ProfileV1["sealedShrine"] {
@@ -383,6 +389,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     soulEngraving: soulEngraving(data.soulEngraving),
     skillRefinement: skillRefinement(data.skillRefinement),
     sealedShrine: sealedShrine(data.sealedShrine),
+    appearance: appearance(data.appearance),
     promotionTarget: promotionTarget(data.promotionTarget),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,

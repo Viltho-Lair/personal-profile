@@ -2,6 +2,7 @@ import type { SkillStoneSet } from "@/lib/game/battle";
 import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
 import type { RefinementLine } from "@/lib/game/refinement";
 import { emptyShrineLevels, type ShrineLevels } from "@/lib/game/shrine";
+import type { OwnedAppearance } from "@/lib/game/appearance";
 
 /** Weapons and accessories are graded, and keyed by grade name ("Common 4"). */
 export type GearKind = "weapons" | "accessories";
@@ -202,6 +203,8 @@ export type ProfileV1 = {
   skillRefinement: Record<string, RefinementLine[]>;
   /** Sealed Shrine statue levels; 0 is not unlocked. */
   sealedShrine: ShrineLevels;
+  /** Owned outfits by name: clothing and guild shop appearances. */
+  appearance: OwnedAppearance;
   /** The promotion the progress chart aims at, and the fight's length in seconds. */
   promotionTarget: { promotion: number | null; duration: number };
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
@@ -251,6 +254,7 @@ export function emptyProfile(): ProfileV1 {
     soulEngraving: emptySoulEngraving(),
     skillRefinement: {},
     sealedShrine: emptyShrineLevels(),
+    appearance: { clothing: [], guild: [] },
     promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS },
     weaponAwakening: 0,
     accessoryAwakening: 0,

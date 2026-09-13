@@ -18,6 +18,8 @@ import { gemTotals, plateComplete } from "@/lib/game/engraving";
 import { ownedEffect, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects, type ShrineData, type ShrineLevels } from "@/lib/game/shrine";
 import shrineData from "@/data/optimizer/sealed-shrine.json";
+import { appearanceTotals, sweatsuitMultiplier, type AppearanceData } from "@/lib/game/appearance";
+import appearanceData from "@/data/optimizer/appearance.json";
 import refinementData from "@/data/optimizer/skill-refinement.json";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
 import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
@@ -94,6 +96,7 @@ const rawBase = (key: string, perLevel: number) => (key === "LUK" ? perLevel * 1
 
 /** Growth totals after Latent Power: STR/HP/VIT flat, CRI and LUK as fractions (CHARACTER AR25:AR29). */
 export const SHRINE = shrineData as unknown as ShrineData;
+export const APPEARANCE = appearanceData as unknown as AppearanceData;
 
 /** Latent power per growth level and in total; the Statue of Dragon amplifies the latent part. */
 export function latentTotals(character: CharacterState, shrine?: ShrineLevels) {
@@ -263,6 +266,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
 
   const latent = latentTotals(c, profile.sealedShrine);
   const shrine = shrineEffects(SHRINE, profile.sealedShrine);
+  s.appearance = appearanceTotals(APPEARANCE, profile.appearance);
   s.shrine = { soulWeaponAtk: shrine.soulWeaponAtk, atk: shrine.atk, hp: shrine.hp, element: shrine.element };
   const growthLevel = (key: string) => (c.growth[key] ?? 0) * (GROWTH.find((g) => g.key === key)?.perLevel ?? 0);
   s.growth = {
@@ -352,7 +356,9 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     const target = row.option ? ROW_TARGET[row.option] : undefined;
     if (!target || row.value === null || c.promotion <= index) return;
     const flat = target === "accuracy" || target === "dodge" || target === "ccResist";
-    s.slayerPromotion[target] += (row.value * row.multiplier) / (flat ? 1 : 100);
+    // The row multiplier comes from owned sweatsuits (APPEARANCE, CHARACTER R52:R58).
+    const { multiplier } = sweatsuitMultiplier(APPEARANCE, profile.appearance, index);
+    s.slayerPromotion[target] += (row.value * multiplier) / (flat ? 1 : 100);
   });
 
   // Skill Mastery level nodes.
@@ -433,7 +439,6 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
 
 /** Sources the workbook counts that the analyzer doesn't track yet. */
 export const UNTRACKED_SOURCES = [
-  "Appearance",
   "Black Orb",
   "Beasts",
 ] as const;

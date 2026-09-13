@@ -41,6 +41,7 @@ from optimizer.skills import extract_skills  # noqa: E402
 from optimizer.skill_mechanics import extract_skill_mechanics  # noqa: E402
 from optimizer.refinement import extract_refinement  # noqa: E402
 from optimizer.shrine import extract_shrine  # noqa: E402
+from optimizer.appearance import extract_appearance  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
 from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
 from optimizer.stages import extract_promotion_stages, extract_stage_bosses  # noqa: E402
@@ -253,6 +254,7 @@ def main():
         constellation, constellation_art = extract_constellation(values["Constellation Data"])
         stage_bosses = extract_stage_bosses(values["Stage Data"])
         shrine, shrine_art = extract_shrine(values["Equipment Data"], formulas["EQUIPMENT"])
+        clothing, guild_outfits, appearance_art = extract_appearance(formulas["APPEARANCE"], formulas["CHARACTER"])
         promotion_stages = extract_promotion_stages(values["STAT TRACKER"])
         companions, promotion, companion_art = extract_companions(
             formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
@@ -415,6 +417,16 @@ def main():
         "statues": shrine,
     })
     print("sealed shrine: " + ", ".join(f"{s['name']} 1-{len(s['levels'])}" for s in shrine))
+
+    published = publish_files("appearance", appearance_art)
+    for item in clothing + guild_outfits:
+        item["icon"], item["iconSize"] = attach(published, item["key"])
+    write_json(DATA / "appearance.json", {
+        "source": {"file": source.name, "sheet": "APPEARANCE, CHARACTER", "extractedOn": today},
+        "clothing": clothing,
+        "guild": guild_outfits,
+    })
+    print(f"appearance: {len(clothing)} clothing, {len(guild_outfits)} guild shop outfits")
 
     write_json(DATA / "skill-refinement.json", {
         "source": {"file": source.name, "sheet": "SKILLS (option ranges from the game's Refinement Effect screen)", "extractedOn": today},
