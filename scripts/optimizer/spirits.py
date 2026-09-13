@@ -20,6 +20,8 @@ from optimizer.workbook import (
 
 RARITY_GROUPS = ["Common", "Great", "Rare", "Epic", "Legendary", "Mythic", "Immortal", "Ancient"]
 STATS = {"ATK": "atk", "HP": "hp", "GOLD": "gold", "EXP": "exp"}
+# Awakened Fountain of Circulation: stat -> which of the 4 companion effects (1-4) amplifies it.
+AMP_SLOTS = {"Slot 1 AMP type": "atk", "Slot 2 AMP type": "hp", "Slot 3 AMP type": "gold", "Slot 4 AMP type": "exp"}
 MATRICES = {"ATTACK HP FACTORS": "atkHp", "GOLD EXP FACTOR": "goldExp"}
 
 PLACEHOLDER = "None"
@@ -42,7 +44,7 @@ def extract_spirits(sheet):
     """Return (spirits, icons); icons maps "<name>|<rarity group>" to image bytes."""
     max_level = extract_spirit_max_level(sheet)
     title_row, title_col = find_cell(sheet, "SPIRITS BASE", max_row=1)
-    col = header_columns(sheet, title_row + 1, ["NAME", *RARITY_GROUPS, *STATS], min_col=title_col)
+    col = header_columns(sheet, title_row + 1, ["NAME", *RARITY_GROUPS, *STATS, *AMP_SLOTS], min_col=title_col)
     images = images_by_cell(sheet)
 
     spirits, icons = [], {}
@@ -56,7 +58,13 @@ def extract_spirits(sheet):
             if not isinstance(value, (int, float)):
                 raise ValueError(f"{sheet.title} row {row}: spirit {name!r} has no {header} ratio")
             ratios[key] = value
-        spirits.append({"id": len(spirits), "name": name, "maxLevel": max_level, "ratios": ratios})
+        fountain = {}
+        for header, key in AMP_SLOTS.items():
+            slot = number(sheet.cell(row, col[header]).value)
+            if slot not in (1, 2, 3, 4):
+                raise ValueError(f"{sheet.title} row {row}: spirit {name!r} has no {header} (1-4)")
+            fountain[key] = slot
+        spirits.append({"id": len(spirits), "name": name, "maxLevel": max_level, "ratios": ratios, "fountainSlots": fountain})
         for group in RARITY_GROUPS:
             icon = images.get((row, col[group]))
             if icon is not None:

@@ -88,6 +88,25 @@ function companionEntry(entry: Json): CompanionState {
   return { ...emptyCompanion(), advancement: wholeLevel(entry.advancement) ?? 0, skills, promotion };
 }
 
+function familiarProficiency(value: unknown): ProfileV1["familiarProficiency"] {
+  const stored = isRecord(value) ? value : {};
+  return {
+    attribute: wholeLevel(stored.attribute) ?? 0,
+    weapon: wholeLevel(stored.weapon) ?? 0,
+    battle: wholeLevel(stored.battle) ?? 0,
+  };
+}
+
+const FOUNTAIN_SLOTS = 4;
+
+function fountainEffects(value: unknown): number[] {
+  const stored = Array.isArray(value) ? value : [];
+  return Array.from({ length: FOUNTAIN_SLOTS }, (_, i) => {
+    const effect = stored[i];
+    return typeof effect === "number" && Number.isFinite(effect) && effect >= 0 ? effect : 0;
+  });
+}
+
 const ownedEntry = (entry: Json) =>
   typeof entry.owned === "boolean" ? { owned: entry.owned } : null;
 
@@ -144,6 +163,8 @@ function parseKnownFields(data: Json): ProfileV1 {
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,
     companions: entries(data.companions, companionEntry),
+    familiarProficiency: familiarProficiency(data.familiarProficiency),
+    fountainEffects: fountainEffects(data.fountainEffects),
   };
 }
 

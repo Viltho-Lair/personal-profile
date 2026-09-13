@@ -46,6 +46,15 @@ export function spiritStat(ratio: number, factor: number): number {
   return Math.ceil(Number((value * 10_000).toFixed(6))) / 10_000;
 }
 
+/**
+ * A spirit stat with its amplifiers (Equipment Data CN20:CQ31): x (1 + the
+ * Fountain of Circulation companion effect for that stat's slot) x (1 + the
+ * companion "Spirit Stats" passive for the spirit's element).
+ */
+export function amplifiedSpiritStat(base: number, fountainEffect: number, companionAmp: number): number {
+  return base * (1 + fountainEffect) * (1 + companionAmp);
+}
+
 /** "Legendary A3" -> "Legendary", the rarity group that picks the art. */
 export function rarityGroup(tier: string): string {
   return tier.split(" ")[0];

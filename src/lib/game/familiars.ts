@@ -1,3 +1,20 @@
+/**
+ * Familiar Proficiency bonuses (fractions), as Familiar Data T72:X77 adds them:
+ * every proficiency gives ATK (level / 100) and HP (level / 10); Attribute also
+ * gives All Attribute DMG (level), Weapon gives Slayer DMG and Battle gives
+ * Familiar DMG (level / 100).
+ */
+export function proficiencyBonuses(levels: { attribute: number; weapon: number; battle: number }) {
+  const total = levels.attribute + levels.weapon + levels.battle;
+  return {
+    atk: total / 100,
+    hp: total / 10,
+    allAttributeDamage: levels.attribute,
+    slayerDamage: levels.weapon / 100,
+    familiarDamage: levels.battle / 100,
+  };
+}
+
 export type AltarLevel = { level: number; skillDamage: number; soul: number; starsNeeded: number };
 
 /** Only the six highest-starred familiars count toward the Mana Altar. */

@@ -21,7 +21,9 @@ import {
   setCompanionAdvancement,
   setCompanionPromotion,
   setCompanionSkillLevel,
+  setFamiliarProficiency,
   setFamiliarStars,
+  setFountainEffect,
   setGearLevel,
   setMasteryLevel,
   setMasteryPage,
@@ -363,6 +365,16 @@ describe("companions", () => {
     expect(zeke.skills.Lunatic).toBe(100);
     expect(zeke.promotion[2]).toEqual({ option: "Extra HP", tier: 4 });
     expect(companionState(p, "Ellie").skills).toEqual({});
+  });
+});
+
+describe("familiar proficiency and fountain", () => {
+  it("saves proficiency levels and fountain effects", () => {
+    let p = setFamiliarProficiency(emptyProfile(), "weapon", 12.7);
+    p = setFountainEffect(p, 2, 0.35);
+    p = setFountainEffect(p, 0, -1);
+    expect(p.familiarProficiency).toEqual({ attribute: 0, weapon: 12, battle: 0 });
+    expect(p.fountainEffects).toEqual([0, 0, 0.35, 0]);
   });
 });
 

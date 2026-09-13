@@ -100,6 +100,10 @@ export function useProfile() {
       update((p) => rules.setCompanionSkillLevel(p, name, skill, level, maxLevel)),
     setCompanionPromotion: (name: string, slot: number, roll: Partial<PromotionRoll>) =>
       update((p) => rules.setCompanionPromotion(p, name, slot, roll)),
+    setFamiliarProficiency: (kind: rules.ProficiencyKind, level: number) =>
+      update((p) => rules.setFamiliarProficiency(p, kind, level)),
+    setFountainEffect: (slot: number, effect: number) =>
+      update((p) => rules.setFountainEffect(p, slot, effect)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }

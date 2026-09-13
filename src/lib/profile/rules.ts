@@ -211,6 +211,21 @@ export function setCompanionPromotion(
   }));
 }
 
+export type ProficiencyKind = keyof ProfileV1["familiarProficiency"];
+
+export function setFamiliarProficiency(profile: ProfileV1, kind: ProficiencyKind, level: number): ProfileV1 {
+  return { ...profile, familiarProficiency: { ...profile.familiarProficiency, [kind]: clampLevel(level, null) } };
+}
+
+/** `effect` is a fraction (0.05 = 5%); negative or invalid input becomes 0. */
+export function setFountainEffect(profile: ProfileV1, slot: number, effect: number): ProfileV1 {
+  const safe = Number.isFinite(effect) && effect > 0 ? effect : 0;
+  return {
+    ...profile,
+    fountainEffects: profile.fountainEffects.map((current, i) => (i === slot ? safe : current)),
+  };
+}
+
 export function awakening(profile: ProfileV1, kind: GearKind, maxAwakening: number): number {
   return clampLevel(kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening, maxAwakening);
 }

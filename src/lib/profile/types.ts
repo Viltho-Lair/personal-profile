@@ -72,6 +72,10 @@ export type ProfileV1 = {
   weaponAwakening: number;
   accessoryAwakening: number;
   companions: Record<string, CompanionState>;
+  /** Familiar Proficiency levels. */
+  familiarProficiency: { attribute: number; weapon: number; battle: number };
+  /** Awakened Fountain of Circulation: the 1st-4th companion effects, as fractions (0.05 = 5%). */
+  fountainEffects: number[];
 };
 
 export type KnownNames = Record<
@@ -107,5 +111,7 @@ export function emptyProfile(): ProfileV1 {
     weaponAwakening: 0,
     accessoryAwakening: 0,
     companions: {},
+    familiarProficiency: { attribute: 0, weapon: 0, battle: 0 },
+    fountainEffects: [0, 0, 0, 0],
   };
 }

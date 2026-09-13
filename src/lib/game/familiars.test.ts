@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
 import familiarsData from "@/data/optimizer/familiars.json";
-import { altarStars, manaAltar } from "./familiars";
+import { altarStars, manaAltar, proficiencyBonuses } from "./familiars";
+
+describe("proficiencyBonuses", () => {
+  it("adds ATK and HP from every proficiency and one special bonus each", () => {
+    expect(proficiencyBonuses({ attribute: 2, weapon: 3, battle: 5 })).toEqual({
+      atk: 0.1,
+      hp: 1,
+      allAttributeDamage: 2,
+      slayerDamage: 0.03,
+      familiarDamage: 0.05,
+    });
+  });
+});
 
 describe("altarStars", () => {
   it("adds up the six highest star counts only", () => {

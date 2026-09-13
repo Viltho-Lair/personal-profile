@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { altarStars, manaAltar } from "@/lib/game/familiars";
+import { altarStars, manaAltar, proficiencyBonuses } from "@/lib/game/familiars";
 import { familiarStars } from "@/lib/profile/rules";
 import { FAMILIAR_GROUPS, MAX_FAMILIAR_STARS, type FamiliarGroup } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
 import { FAMILIARS, MANA_ALTAR, type Familiar } from "./data";
+import { InlineLevel } from "./level-input";
 import { EquippedBadge } from "./profile-controls";
 import { SideDialog } from "./side-dialog";
 import { Sprite } from "./sprite";
@@ -76,6 +77,48 @@ function FamiliarTile({
         {familiar.name}
       </span>
     </button>
+  );
+}
+
+const PROFICIENCIES = [
+  { kind: "attribute", label: "Attribute" },
+  { kind: "weapon", label: "Weapon" },
+  { kind: "battle", label: "Battle" },
+] as const;
+
+function ProficiencySettings() {
+  const { profile, setFamiliarProficiency } = useProfile();
+  const bonuses = proficiencyBonuses(profile.familiarProficiency);
+  return (
+    <section className="flex flex-col gap-2 rounded-lg border border-ink/15 p-3">
+      <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">Familiar Proficiency</h3>
+      <div className="flex flex-wrap gap-3">
+        {PROFICIENCIES.map(({ kind, label }) => (
+          <div key={kind} className="flex items-center gap-1.5 text-xs">
+            <span className="text-dim">{label}</span>
+            <InlineLevel
+              value={profile.familiarProficiency[kind]}
+              min={0}
+              max={1_000_000}
+              name={`${label} familiar proficiency`}
+              onChange={(level) => setFamiliarProficiency(kind, level)}
+            />
+          </div>
+        ))}
+      </div>
+      <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-xs">
+        <dt className="text-dim">ATK increase</dt>
+        <dd className="text-right text-ink tabular-nums">+{pct(bonuses.atk)}</dd>
+        <dt className="text-dim">HP increase</dt>
+        <dd className="text-right text-ink tabular-nums">+{pct(bonuses.hp)}</dd>
+        <dt className="text-dim">All Attribute DMG</dt>
+        <dd className="text-right text-ink tabular-nums">+{pct(bonuses.allAttributeDamage)}</dd>
+        <dt className="text-dim">Slayer DMG</dt>
+        <dd className="text-right text-ink tabular-nums">+{pct(bonuses.slayerDamage)}</dd>
+        <dt className="text-dim">Familiar DMG</dt>
+        <dd className="text-right text-ink tabular-nums">+{pct(bonuses.familiarDamage)}</dd>
+      </dl>
+    </section>
   );
 }
 
@@ -158,6 +201,8 @@ export function SkillFamiliars() {
             {altar.nextStars === null ? "Mana Altar is at its max level." : `Next level at ${altar.nextStars} stars.`}
           </p>
         </section>
+
+        <ProficiencySettings />
       </div>
 
       {open ? (

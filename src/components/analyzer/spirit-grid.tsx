@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { rarityGroup, spiritStat } from "@/lib/game/formulas";
-import { spiritState } from "@/lib/profile/rules";
+import { amplifiedSpiritStat, rarityGroup, spiritStat } from "@/lib/game/formulas";
+import { clampLevel, companionState, spiritState } from "@/lib/profile/rules";
+import type { ProfileV1 } from "@/lib/profile/types";
 import { MAX_SPIRIT_ENHANCE, MIN_SPIRIT_ENHANCE } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
-import { SPIRIT_TIERS, SPIRITS, type Spirit } from "./data";
+import { SPIRIT_COMPANION_AMP, SPIRIT_TIERS, SPIRITS, type Spirit } from "./data";
 import { InlineLevel } from "./level-input";
 import { Sprite } from "./sprite";
 import { ELEMENT_BORDER, ELEMENT_TEXT, TIER_TEXT } from "./tiers";
@@ -33,6 +34,14 @@ function useSpiritFactors() {
 
 const pct = (value: number) => `${(value * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
 
+/** 1 + the companion passive for the spirit's element is applied as its level x per-level amount. */
+function companionAmp(profile: ProfileV1, spirit: Spirit): { amount: number; source: string | null } {
+  const amp = spirit.element ? SPIRIT_COMPANION_AMP[spirit.element] : undefined;
+  if (!amp) return { amount: 0, source: null };
+  const level = clampLevel(companionState(profile, amp.companion).skills[amp.skill] ?? 0, amp.maxLevel);
+  return { amount: level * amp.perLevel, source: `${amp.companion} · ${amp.skill} Lv ${level}` };
+}
+
 const SELECT =
   "rounded-md border border-ink/20 bg-ground px-1.5 py-1 font-mono text-[11px] text-ink outline-none focus-visible:border-ink";
 
@@ -43,10 +52,13 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
   const art = spirit.art[group] ?? spirit.art.Common;
   const skillLevel = spirit.skill?.levels.find((entry) => entry.level === state.enhance);
 
-  const stat = (ratio: number, matrix: "atkHp" | "goldExp") => {
+  const amp = companionAmp(profile, spirit);
+  const stat = (key: keyof Spirit["ratios"], matrix: "atkHp" | "goldExp") => {
     if (!state.awakening) return "—";
     const factor = factors?.[matrix][state.awakening]?.[state.level];
-    return factor === undefined ? "…" : pct(spiritStat(ratio, factor));
+    if (factor === undefined) return "…";
+    const fountain = profile.fountainEffects[spirit.fountainSlots[key] - 1] ?? 0;
+    return pct(amplifiedSpiritStat(spiritStat(spirit.ratios[key], factor), fountain, amp.amount));
   };
 
   return (
@@ -124,10 +136,10 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
 
       <dl className="col-span-2 grid grid-cols-4 gap-2 font-mono text-[10px] tracking-[0.06em] uppercase sm:col-span-3">
         {[
-          ["ATK", stat(spirit.ratios.atk, "atkHp")],
-          ["HP", stat(spirit.ratios.hp, "atkHp")],
-          ["Gold", stat(spirit.ratios.gold, "goldExp")],
-          ["EXP", stat(spirit.ratios.exp, "goldExp")],
+          ["ATK", stat("atk", "atkHp")],
+          ["HP", stat("hp", "atkHp")],
+          ["Gold", stat("gold", "goldExp")],
+          ["EXP", stat("exp", "goldExp")],
         ].map(([label, value]) => (
           <div key={label} className="flex flex-col rounded-md bg-ink/[0.04] px-2 py-1">
             <dt className="text-dim">{label}</dt>
@@ -135,7 +147,41 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
           </div>
         ))}
       </dl>
+      {amp.source ? (
+        <p className="col-span-2 font-mono text-[9px] tracking-[0.04em] text-dim uppercase sm:col-span-3">
+          ×{(1 + amp.amount).toLocaleString("en", { maximumFractionDigits: 2 })} from {amp.source} · Fountain slots{" "}
+          {Object.values(spirit.fountainSlots).join("/")}
+        </p>
+      ) : null}
     </li>
+  );
+}
+
+function FountainSettings() {
+  const { profile, setFountainEffect } = useProfile();
+  return (
+    <section className="flex flex-col gap-2 rounded-lg border border-ink/15 p-2">
+      <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">Awakened Fountain of Circulation</h3>
+      <div className="flex flex-wrap gap-3">
+        {profile.fountainEffects.map((effect, slot) => (
+          <label key={slot} className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
+            {["1st", "2nd", "3rd", "4th"][slot]} companion effect
+            <input
+              type="number"
+              min={0}
+              step={0.01}
+              value={Number((effect * 100).toFixed(4))}
+              onChange={(event) => setFountainEffect(slot, (event.target.valueAsNumber || 0) / 100)}
+              className="w-20 rounded border border-ink/20 bg-transparent px-1 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
+            />
+            %
+          </label>
+        ))}
+      </div>
+      <p className="text-[11px] leading-snug text-dim">
+        Each spirit stat is multiplied by one of these effects (its slot) and by the Spirit Stats passive of the companion with its element.
+      </p>
+    </section>
   );
 }
 
@@ -147,6 +193,7 @@ export function SpiritGrid() {
       <p className="font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
         Pick each spirit&apos;s awakening. Stats follow awakening and level; the skill follows enhance (1-5).
       </p>
+      <FountainSettings />
       <ul className="grid gap-2 xl:grid-cols-2">
         {SPIRITS.map((spirit) => (
           <SpiritRow key={spirit.id} spirit={spirit} factors={factors} />

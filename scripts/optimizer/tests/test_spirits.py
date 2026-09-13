@@ -13,8 +13,9 @@ def equipment_data(**overrides):
         "CK2": "Common", "CL2": "Great", "CM2": "Rare", "CN2": "Epic", "CO2": "Legendary",
         "CP2": "Mythic", "CQ2": "Immortal", "CR2": "Ancient",
         "CT2": "ATK", "CU2": "HP", "CV2": "GOLD", "CW2": "EXP",
-        "CJ3": "Ark", "CT3": 1.05, "CU3": 1.05, "CV3": 1.0, "CW3": 1.0,
-        "CJ4": "Bo", "CT4": 1.0, "CU4": 1.0, "CV4": 1.05, "CW4": 1.15,
+        "CX2": "Slot 1 AMP type", "CY2": "Slot 2 AMP type", "CZ2": "Slot 3 AMP type", "DA2": "Slot 4 AMP type",
+        "CJ3": "Ark", "CT3": 1.05, "CU3": 1.05, "CV3": 1.0, "CW3": 1.0, "CX3": 2, "CY3": 1, "CZ3": 4, "DA3": 3,
+        "CJ4": "Bo", "CT4": 1.0, "CU4": 1.0, "CV4": 1.05, "CW4": 1.15, "CX4": 1, "CY4": 2, "CZ4": 3, "DA4": 4,
         # GOLD EXP FACTOR and ATTACK HP FACTORS, levels 0-2, two tiers each
         "AI1": "LEVEL", "AJ1": "GOLD EXP FACTOR", "AJ2": "Common", "AK2": "Legendary A0",
         "AI3": 0, "AJ3": 1.0, "AK3": 4.0, "AI4": 1, "AJ4": 1.14, "AK4": 4.55, "AI5": 2, "AJ5": 1.28, "AK5": 5.1,
@@ -32,6 +33,7 @@ class ExtractSpirits(unittest.TestCase):
         self.assertEqual(spirits[0], {
             "id": 0, "name": "Ark", "maxLevel": 2,
             "ratios": {"atk": 1.05, "hp": 1.05, "gold": 1, "exp": 1},
+            "fountainSlots": {"atk": 2, "hp": 1, "gold": 4, "exp": 3},
         })
         self.assertEqual([s["name"] for s in spirits], ["Ark", "Bo"])
 

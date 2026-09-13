@@ -1,4 +1,5 @@
 import accessoriesData from "@/data/optimizer/accessories.json";
+import companionsData from "@/data/optimizer/companions.json";
 import familiarsData from "@/data/optimizer/familiars.json";
 import gearLevelsData from "@/data/optimizer/gear-levels.json";
 import relicsData from "@/data/optimizer/relics.json";
@@ -61,6 +62,8 @@ export type Spirit = Art & {
   maxLevel: number;
   /** Stat ratios that scale the level x awakening factors. */
   ratios: { atk: number; hp: number; gold: number; exp: number };
+  /** Which Fountain of Circulation companion effect (1-4) amplifies each stat. */
+  fountainSlots: { atk: number; hp: number; gold: number; exp: number };
   /** Art per rarity group ("Common" ... "Ancient"). */
   art: Record<string, { icon: string; iconSize: number }>;
   element: string | null;
@@ -151,6 +154,21 @@ export const MAX_AWAKENING = AWAKENING.length - 1;
 /** Immortal art by awakening: each entry applies from `from` awakenings. */
 export const IMMORTAL_ART: Record<"weapons" | "accessories", { from: number; icon: string; iconSize: number }[]> =
   gearLevelsData.immortalArt;
+
+/**
+ * Each element's spirits are amplified by the companion of that element's
+ * "... Spirit Stats" passive (Equipment Data DA20:DA31 -> COMPANIONS row 30).
+ */
+export const SPIRIT_COMPANION_AMP: Record<string, { companion: string; skill: string; perLevel: number; maxLevel: number }> =
+  Object.fromEntries(
+    companionsData.companions.flatMap((companion) => {
+      const skill = companion.skills.find((s) => /spirit stats$/i.test(s.effect ?? ""));
+      const perLevel = skill?.formula.kind === "linear" ? skill.formula.perLevel : undefined;
+      return companion.element && skill && perLevel !== undefined
+        ? [[companion.element, { companion: companion.name, skill: skill.name, perLevel, maxLevel: skill.maxLevel }]]
+        : [];
+    }),
+  );
 
 /** Awakening tiers in order: "Common" ... "Legendary A0" ... "Ancient A0". */
 export const SPIRIT_TIERS: readonly string[] = spiritsData.tiers;

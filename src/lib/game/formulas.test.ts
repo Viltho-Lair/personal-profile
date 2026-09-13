@@ -3,6 +3,7 @@ import accessoriesData from "@/data/optimizer/accessories.json";
 import gearLevelsData from "@/data/optimizer/gear-levels.json";
 import relicsData from "@/data/optimizer/relics.json";
 import {
+  amplifiedSpiritStat,
   awakeningStage,
   bandAt,
   gearEffects,
@@ -95,6 +96,11 @@ describe("spiritStat", () => {
     // Ark ATK at Common level 0: 1.05 x 3.33 / 100 = 0.034965 -> 0.035
     expect(spiritStat(1.05, 3.33)).toBe(0.035);
     expect(spiritStat(1, 13.33)).toBe(0.1333);
+  });
+
+  it("amplifies by the fountain effect and the companion passive", () => {
+    expect(amplifiedSpiritStat(0.1, 0.05, 0.3)).toBeCloseTo(0.1 * 1.05 * 1.3);
+    expect(amplifiedSpiritStat(0.1, 0, 0)).toBe(0.1);
   });
 
   it("names the rarity group of a tier", () => {
