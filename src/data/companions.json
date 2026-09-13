@@ -1,0 +1,389 @@
+{
+  "source": {
+    "data": "Slayer Legend Wiki (github.com/BenDol/SlayerLegendWiki)",
+    "art": "Slayer Legend CDN (github.com/BenDol/SlayerLegendCDN)",
+    "url": "https://slayerlegend.wiki/companions",
+    "fetchedOn": "2026-09-13"
+  },
+  "companions": [
+    {
+      "id": 1,
+      "name": "Ellie",
+      "className": "Elf",
+      "element": "Wind",
+      "specialty": "Accuracy, extra ATK, and enemy HP reduction - the offense enabler",
+      "portrait": "/companions/ellie.png",
+      "skills": [
+        {
+          "name": "Intensive Fire",
+          "effect": "Accuracy",
+          "maxLevel": 100,
+          "icon": "/companions/skills/1-1.png"
+        },
+        {
+          "name": "Blessing of Forest",
+          "effect": "Extra ATK",
+          "maxLevel": 100,
+          "icon": "/companions/skills/1-2.png"
+        },
+        {
+          "name": "Song of Elf",
+          "effect": "Reduce Enemy HP",
+          "maxLevel": 100,
+          "icon": "/companions/skills/1-3.png"
+        }
+      ],
+      "lockedSkills": [
+        {
+          "name": "Green Soul Weapon Completion Effect",
+          "maxLevel": 100
+        },
+        {
+          "name": "Destructionist DMG",
+          "maxLevel": 100
+        },
+        {
+          "name": "Wind Spirit Stats",
+          "maxLevel": 100
+        }
+      ],
+      "passive": {
+        "name": "Wind's Understanding",
+        "maxLevel": 1500,
+        "stoneCost": 11796000,
+        "emeraldCost": 1990575
+      },
+      "promotionSlots": 7
+    },
+    {
+      "id": 2,
+      "name": "Zeke",
+      "className": "Tramp Swordsman",
+      "element": "Earth",
+      "specialty": "HP, critical damage, and total ATK - the raw power block",
+      "portrait": "/companions/zeke.png",
+      "skills": [
+        {
+          "name": "Fortitude",
+          "effect": "HP Increase",
+          "maxLevel": 100,
+          "icon": "/companions/skills/2-1.png"
+        },
+        {
+          "name": "Lunatic",
+          "effect": "CRIT Dmg",
+          "maxLevel": 100,
+          "icon": "/companions/skills/2-2.png"
+        },
+        {
+          "name": "Blade Dance",
+          "effect": "ATK Sum",
+          "maxLevel": 100,
+          "icon": "/companions/skills/2-3.png"
+        }
+      ],
+      "lockedSkills": [
+        {
+          "name": "Chaos Soul",
+          "maxLevel": 100
+        },
+        {
+          "name": "Rift Demon DMG Reduction",
+          "maxLevel": 100
+        },
+        {
+          "name": "Earth Spirit Stats",
+          "maxLevel": 100
+        }
+      ],
+      "passive": {
+        "name": "Earth Ineraction",
+        "maxLevel": 1500,
+        "stoneCost": 745000,
+        "emeraldCost": 126650
+      },
+      "promotionSlots": 7
+    },
+    {
+      "id": 3,
+      "name": "Miho",
+      "className": "Looter",
+      "element": "Fire",
+      "specialty": "Damage resistance, dodge, and total gold - the survivalist and farming economist",
+      "portrait": "/companions/miho.png",
+      "skills": [
+        {
+          "name": "Shadow Step",
+          "effect": "Dmg Resist",
+          "maxLevel": 100,
+          "icon": "/companions/skills/3-1.png"
+        },
+        {
+          "name": "Shadow Dance",
+          "effect": "Dodge",
+          "maxLevel": 100,
+          "icon": "/companions/skills/3-2.png"
+        },
+        {
+          "name": "Gold Rush",
+          "effect": "Total Gold",
+          "maxLevel": 100,
+          "icon": "/companions/skills/3-3.png"
+        }
+      ],
+      "lockedSkills": [
+        {
+          "name": "Red Soul Weapon Completion Effect",
+          "maxLevel": 100
+        },
+        {
+          "name": "Devournist DMG",
+          "maxLevel": 100
+        },
+        {
+          "name": "Fire Spirit Stats",
+          "maxLevel": 100
+        }
+      ],
+      "passive": {
+        "name": "Fire Understanding",
+        "maxLevel": 1500,
+        "stoneCost": 11796000,
+        "emeraldCost": 1990575
+      },
+      "promotionSlots": 7
+    },
+    {
+      "id": 4,
+      "name": "Luna",
+      "className": "Trainee Magician",
+      "element": "Water",
+      "specialty": "Mana recovery, extra mana, and skill damage - the engine behind skill builds",
+      "portrait": "/companions/luna.png",
+      "skills": [
+        {
+          "name": "Mana Dope",
+          "effect": "Mana Recovery",
+          "maxLevel": 100,
+          "icon": "/companions/skills/4-1.png"
+        },
+        {
+          "name": "Mana Amplification",
+          "effect": "Extra Mana",
+          "maxLevel": 100,
+          "icon": "/companions/skills/4-2.png"
+        },
+        {
+          "name": "Wisdom of War",
+          "effect": "Skill Dmg",
+          "maxLevel": 100,
+          "icon": "/companions/skills/4-3.png"
+        }
+      ],
+      "lockedSkills": [
+        {
+          "name": "Blue Soul Weapon Completion Effect",
+          "maxLevel": 100
+        },
+        {
+          "name": "Origin of Chaos DMG",
+          "maxLevel": 100
+        },
+        {
+          "name": "Water Spirit Stats",
+          "maxLevel": 100
+        }
+      ],
+      "passive": {
+        "name": "Sea's Understanding",
+        "maxLevel": 1500,
+        "stoneCost": 11796000,
+        "emeraldCost": 1990575
+      },
+      "promotionSlots": 7
+    }
+  ],
+  "promotion": {
+    "tiers": [
+      {
+        "color": "Gray",
+        "rarity": "Common",
+        "probability": 23
+      },
+      {
+        "color": "Green",
+        "rarity": "Great",
+        "probability": 20
+      },
+      {
+        "color": "Orange",
+        "rarity": "Rare",
+        "probability": 30
+      },
+      {
+        "color": "Purple",
+        "rarity": "Epic",
+        "probability": 20
+      },
+      {
+        "color": "Red",
+        "rarity": "Legendary",
+        "probability": 5
+      },
+      {
+        "color": "Blue",
+        "rarity": "Mythic",
+        "probability": 2
+      }
+    ],
+    "options": [
+      {
+        "name": "Extra ATK",
+        "percent": true,
+        "values": [
+          3,
+          4,
+          6,
+          9,
+          14,
+          20
+        ]
+      },
+      {
+        "name": "CRIT Dmg",
+        "percent": true,
+        "values": [
+          5,
+          7,
+          10,
+          15,
+          24,
+          35
+        ]
+      },
+      {
+        "name": "Extra HP",
+        "percent": true,
+        "values": [
+          5,
+          7,
+          10,
+          15,
+          24,
+          35
+        ]
+      },
+      {
+        "name": "Extra HP Recovery",
+        "percent": true,
+        "values": [
+          5,
+          7,
+          10,
+          15,
+          24,
+          35
+        ]
+      },
+      {
+        "name": "Extra Mana",
+        "percent": true,
+        "values": [
+          3,
+          4,
+          5,
+          8,
+          10,
+          15
+        ]
+      },
+      {
+        "name": "Extra Mana Recovery",
+        "percent": true,
+        "values": [
+          3,
+          4,
+          5,
+          8,
+          10,
+          15
+        ]
+      },
+      {
+        "name": "Monster Gold",
+        "percent": true,
+        "values": [
+          3,
+          4,
+          6,
+          9,
+          14,
+          20
+        ]
+      },
+      {
+        "name": "Accuracy",
+        "percent": false,
+        "values": [
+          3,
+          4,
+          5,
+          8,
+          10,
+          15
+        ]
+      },
+      {
+        "name": "Dodge",
+        "percent": false,
+        "values": [
+          3,
+          4,
+          5,
+          8,
+          10,
+          15
+        ]
+      },
+      {
+        "name": "Extra Exp",
+        "percent": true,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          8
+        ]
+      },
+      {
+        "name": "CC Resist",
+        "percent": false,
+        "values": [
+          3,
+          4,
+          6,
+          9,
+          14,
+          20
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "page": 1,
+        "multiplier": 1
+      },
+      {
+        "page": 2,
+        "multiplier": 1.5
+      },
+      {
+        "page": 3,
+        "multiplier": 2.0
+      }
+    ],
+    "maxRollDice": 40000
+  }
+}

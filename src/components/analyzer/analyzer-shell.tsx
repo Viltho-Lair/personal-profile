@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
 import { AdSlot } from "./ad-slot";
+import { CompanionPanel } from "./companion-panel";
 import { EquipmentPanel } from "./equipment-panel";
 import { SkillGrid } from "./skill-grid";
 import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
@@ -52,6 +53,8 @@ export function AnalyzerShell() {
             <SkillGrid />
           ) : tab.id === "equips" ? (
             <EquipmentPanel />
+          ) : tab.id === "companion" ? (
+            <CompanionPanel />
           ) : (
             <div className="flex h-full items-center justify-center p-6">
               <p className="max-w-[40ch] text-center font-mono text-xs tracking-[0.08em] text-dim uppercase">
