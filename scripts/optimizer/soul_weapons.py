@@ -28,6 +28,16 @@ def split_requirement(value):
     return (match.group(1), match.group(2)) if match else (raw, None)
 
 
+def soul_weapon_name(value):
+    """The sheet's name, or a stable label for rows it hasn't named yet.
+
+    Unnamed rows hold their unlock stage (a number) in the name cell.
+    """
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return f"Unnamed (stage {number(value)})"
+    return text(value)
+
+
 def extract_soul_weapons(sheet):
     title_row, title_col = find_cell(sheet, "SOUL WEAPONS", max_row=1)
     col = header_columns(sheet, title_row + 1, HEADERS, min_col=title_col)
@@ -35,7 +45,7 @@ def extract_soul_weapons(sheet):
 
     weapons, icons = [], {}
     for row in rows_until_blank(sheet, title_row + 2, col["NAME"]):
-        name = text(sheet.cell(row, col["NAME"]).value)
+        name = soul_weapon_name(sheet.cell(row, col["NAME"]).value)
         if name == PLACEHOLDER:
             continue
 

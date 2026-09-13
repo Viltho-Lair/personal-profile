@@ -55,6 +55,16 @@ class ExtractSoulWeapons(unittest.TestCase):
         with self.assertRaisesRegex(MissingHeader, "Engraving HP"):
             extract_soul_weapons(equipment_data(AG2=None))
 
+    def test_a_number_in_the_name_cell_is_an_unnamed_soul_weapon(self):
+        weapons, _ = extract_soul_weapons(equipment_data(
+            X6=1860.0, Z6="RED", AA6=4000.0, AC6=9500.0, AD6=1860.0,
+        ))
+        unnamed = weapons[-1]
+        self.assertEqual(
+            (unnamed["id"], unnamed["name"], unnamed["cost"], unnamed["stage"]),
+            (3, "Unnamed (stage 1860)", 4000, {"number": 1860, "name": None}),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

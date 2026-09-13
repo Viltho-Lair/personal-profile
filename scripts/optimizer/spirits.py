@@ -17,6 +17,8 @@ from optimizer.workbook import (
 # SPIRITS BASE has one art column per rarity; Common is the base look.
 ART_COLUMN = "Common"
 
+PLACEHOLDER = "None"
+
 
 def extract_spirit_max_level(sheet):
     """The last level listed in the SPIRIT COST table."""
@@ -38,9 +40,11 @@ def extract_spirits(sheet):
     images = images_by_cell(sheet)
 
     spirits, icons = [], {}
-    for index, row in enumerate(rows_until_blank(sheet, title_row + 2, col["NAME"])):
+    for row in rows_until_blank(sheet, title_row + 2, col["NAME"]):
         name = text(sheet.cell(row, col["NAME"]).value)
-        spirits.append({"id": index, "name": name, "maxLevel": max_level})
+        if name == PLACEHOLDER:
+            continue
+        spirits.append({"id": len(spirits), "name": name, "maxLevel": max_level})
         icon = images.get((row, col[ART_COLUMN]))
         if icon is not None:
             icons[name] = icon

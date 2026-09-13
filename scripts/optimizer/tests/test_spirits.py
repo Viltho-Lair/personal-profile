@@ -34,6 +34,10 @@ class ExtractSpirits(unittest.TestCase):
         with self.assertRaisesRegex(MissingHeader, "SPIRIT COST"):
             extract_spirits(equipment_data(CG1=None))
 
+    def test_skips_the_none_placeholder_row(self):
+        spirits, _ = extract_spirits(equipment_data(CJ5="None"))
+        self.assertEqual([s["name"] for s in spirits], ["Ark", "Bo"])
+
 
 if __name__ == "__main__":
     unittest.main()
