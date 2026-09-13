@@ -141,10 +141,13 @@ function CompanionColumn({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const { profile } = useProfile();
+  const { profile, setCompanionSkillLevel } = useProfile();
   const state = companionState(profile, companion.name);
   const advancement = advancementOf(profile, companion);
   const levels = companion.skills.map((skill) => clampLevel(state.skills[skill.name] ?? 0, skill.maxLevel));
+  const unlockedSkills = companion.skills.filter((skill) => isUnlocked(skill, companion, profile));
+  const allMax = unlockedSkills.every((skill) => clampLevel(state.skills[skill.name] ?? 0, skill.maxLevel) >= skill.maxLevel);
+  const maxSkills = () => unlockedSkills.forEach((skill) => setCompanionSkillLevel(companion.name, skill.name, skill.maxLevel, skill.maxLevel));
   const total = companion.skills.reduce<[number, number]>(
     (sum, skill, i) => {
       const [s, e] = costToMax(skill.costs, levels[i], skill.maxLevel);
@@ -156,11 +159,12 @@ function CompanionColumn({
   return (
     // On a phone only the selected companion's column shows; the picker above switches it.
     <section className={`min-w-0 flex-col gap-2 ${selected ? "flex" : "hidden md:flex"}`}>
+      <div className="relative">
       <button
         type="button"
         onClick={onSelect}
         aria-pressed={selected}
-        className={`flex items-center gap-2 rounded-lg border p-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        className={`flex w-full items-center gap-2 rounded-lg border p-2 pr-16 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           selected
             ? "border-ink ring-1 ring-ink"
             : `${(companion.element && ELEMENT_BORDER[companion.element]) || "border-ink/20"} hover:brightness-125`
@@ -183,6 +187,17 @@ function CompanionColumn({
           </span>
         </span>
       </button>
+      {/* Beside the card's button rather than inside it, so it doesn't also select the companion. */}
+      <button
+        type="button"
+        onClick={maxSkills}
+        disabled={allMax}
+        title={`Set every unlocked ${companion.name} skill to its max level`}
+        className="absolute top-2 right-2 rounded-md border border-ink/25 px-1.5 py-0.5 font-mono text-[9px] tracking-[0.06em] text-dim uppercase outline-none enabled:hover:border-ink enabled:hover:text-ink focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"
+      >
+        {allMax ? "Maxed" : "Max all"}
+      </button>
+      </div>
 
       {[1, 2, 3].map((group) => (
         <div key={group} className="flex flex-col gap-1">
@@ -252,6 +267,13 @@ function AdvancementTab({ companion }: { companion: Companion }) {
 
 function PromotionTab({ companion }: { companion: Companion }) {
   const { profile, setCompanionPromotion } = useProfile();
+  const [maxOption, setMaxOption] = useState(PROMOTION.options[0] ?? "");
+  const topTier = PROMOTION.tiers.length - 1;
+  const maxRows = (names: string[]) =>
+    names.forEach((name) => {
+      const rows = companionState(profile, name).promotion.length;
+      for (let slot = 0; slot < rows; slot += 1) setCompanionPromotion(name, slot, { option: maxOption, tier: topTier });
+    });
   const state = companionState(profile, companion.name);
   const ranks = PROMOTION.slotsByAdvancement[advancementOf(profile, companion)] ?? [];
   const totals = new Map<string, number>();
@@ -267,6 +289,35 @@ function PromotionTab({ companion }: { companion: Companion }) {
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-ink/15 p-1.5">
+        <span className="font-mono text-[10px] tracking-[0.04em] text-dim uppercase">Set all to max</span>
+        <select
+          aria-label="Stat to set every promotion row to"
+          value={maxOption}
+          onChange={(event) => setMaxOption(event.target.value)}
+          className="rounded-md border border-ink/20 bg-ground px-1.5 py-0.5 font-mono text-[11px] text-ink outline-none"
+        >
+          {PROMOTION.options.map((option) => (
+            <option key={option} value={option}>
+              {option} {formatEffect(optionDisplay(option), PROMOTION.tiers[topTier]?.values[option] ?? 0)}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => maxRows([companion.name])}
+          className="rounded-md border border-ink/25 px-2 py-0.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase outline-none hover:border-ink hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {companion.name}
+        </button>
+        <button
+          type="button"
+          onClick={() => maxRows(COMPANIONS.map((c) => c.name))}
+          className="rounded-md border border-ink/25 px-2 py-0.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase outline-none hover:border-ink hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          All companions
+        </button>
+      </div>
       <ul className="flex flex-col gap-1.5">
         {rows.map(({ roll, slot, rank, buff }) => (
           <li key={slot} className={`flex flex-wrap items-center gap-2 rounded-md border border-ink/10 p-1.5 ${rank ? "" : "opacity-50"}`}>

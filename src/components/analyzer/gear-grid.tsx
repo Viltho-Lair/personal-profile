@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { awakeningStage, gearEffects } from "@/lib/game/formulas";
 import { awakening, equippedKey, gearState } from "@/lib/profile/rules";
@@ -80,7 +81,7 @@ function AwakeningControl({ kind }: { kind: GearKind }) {
   const art = immortalArt(kind, count);
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/15 p-2 sm:max-w-md">
+    <div className="flex h-full flex-wrap items-center gap-3 rounded-lg border border-ink/15 p-2">
       <span className="relative flex size-12 shrink-0 items-center justify-center rounded-md border border-tier-immortal/50 bg-ink/[0.04]">
         <Sprite src={art.icon} native={art.iconSize} size={32} className="size-10" />
       </span>
@@ -201,14 +202,46 @@ function GearTile({
   );
 }
 
-function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; row: AwakeningRow }) {
+const NAV =
+  "absolute top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-ink/25 bg-ground text-dim outline-none enabled:hover:border-ink enabled:hover:text-ink focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30";
+
+function GearDetail({
+  kind,
+  gear,
+  row,
+  onPrev,
+  onNext,
+  position,
+}: {
+  kind: GearKind;
+  gear: Gear | null;
+  row: AwakeningRow;
+  onPrev: (() => void) | null;
+  onNext: (() => void) | null;
+  position: string;
+}) {
   const { profile, setGearLevel, equip } = useProfile();
+
+  // Left and right of the card: step through the grades from Common G4 to Immortal.
+  const nav = (
+    <>
+      <button type="button" onClick={onPrev ?? undefined} disabled={!onPrev} aria-label="Previous grade" className={`${NAV} -left-4`}>
+        <ChevronLeft aria-hidden className="size-4" />
+      </button>
+      <button type="button" onClick={onNext ?? undefined} disabled={!onNext} aria-label="Next grade" className={`${NAV} -right-4`}>
+        <ChevronRight aria-hidden className="size-4" />
+      </button>
+    </>
+  );
 
   if (!gear) {
     return (
-      <p className="font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
-        Pick a grade to set it up.
-      </p>
+      <>
+        {nav}
+        <p className="px-6 font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
+          Pick a grade to set it up, or step through them with the arrows.
+        </p>
+      </>
     );
   }
 
@@ -219,8 +252,9 @@ function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; ro
   const secondary = immortal ? { ...gear.secondary, ...immortal.secondary } : gear.secondary;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col gap-4 px-6 sm:flex-row sm:items-start">
+      {nav}
+      <div className="flex shrink-0 flex-col items-start gap-2">
         {gear.icon && gear.iconSize ? (
           <Sprite
             src={gear.icon}
@@ -231,12 +265,13 @@ function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; ro
         ) : null}
         <div>
           <p className={`font-mono text-[10px] tracking-[0.08em] uppercase ${TIER_TEXT[gear.tier] ?? "text-dim"}`}>
-            {gear.tier}
+            {gear.tier} · {position}
           </p>
           <h3 className="text-base leading-tight font-medium">{gear.grade}</h3>
         </div>
       </div>
 
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <InlineLevel
           value={state.level}
@@ -252,7 +287,7 @@ function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; ro
         />
       </div>
 
-      <dl className="grid gap-y-1 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
+      <dl className="grid gap-x-8 gap-y-1.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase xl:grid-cols-2">
         <Row label={`Equip effect at Lv ${state.level}`} value={formatPercent(effects.equip)} />
         <Row label={`Owned effect at Lv ${state.level}`} value={formatPercent(effects.owned)} />
         <Row label="Multiplier" value={formatValue(gear.multiplier)} />
@@ -264,6 +299,7 @@ function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; ro
           <Row key={key} label={SECONDARY_LABELS[key] ?? key} value={formatValue(value)} />
         ))}
       </dl>
+      </div>
     </div>
   );
 }
@@ -275,17 +311,31 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
   const count = awakening(profile, kind, MAX_AWAKENING);
   const awakeningRow = AWAKENING[count];
   const items = baseItems.map((gear) => awakened(kind, gear, count, awakeningRow));
+  const tiers = byTier(items);
+  // Common G4 first through Immortal last, the order the tiers are laid out in.
+  const order = tiers.flatMap(([, row]) => row);
+  const index = order.findIndex((gear) => gear.grade === selected);
+  const allOwned = items.every((gear) => gearState(profile, kind, gear.grade, gear.maxLevel).owned);
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <AwakeningControl kind={kind} />
-        {byTier(items).map(([tier, row]) => (
+      <div className="flex w-full min-w-0 flex-col gap-4 sm:max-w-md">
+        <label className="flex w-fit items-center gap-2 rounded-lg border border-ink/15 px-3 py-2 font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
+          <input
+            type="checkbox"
+            checked={allOwned}
+            onChange={(event) => items.forEach((gear) => setOwned(kind, gear.grade, event.target.checked))}
+            aria-label={`Mark every ${kind === "weapons" ? "weapon" : "accessory"} as owned`}
+            className="size-3.5 accent-ink"
+          />
+          Mark all as owned
+        </label>
+        {tiers.map(([tier, row]) => (
           <section key={tier} className="flex flex-col gap-2">
             <h3 className={`font-mono text-[10px] tracking-[0.12em] uppercase ${TIER_TEXT[tier] ?? "text-dim"}`}>
               {tier}
             </h3>
-            <div className="grid grid-cols-4 gap-2 sm:max-w-md">
+            <div className="grid grid-cols-4 gap-2">
               {row.map((gear) => {
                 const state = gearState(profile, kind, gear.grade, gear.maxLevel);
                 return (
@@ -302,13 +352,25 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
                   />
                 );
               })}
+              {tier === "Immortal" ? (
+                <div className="col-span-3">
+                  <AwakeningControl kind={kind} />
+                </div>
+              ) : null}
             </div>
           </section>
         ))}
       </div>
 
-      <aside className="shrink-0 rounded-lg border border-ink/15 p-3 lg:sticky lg:top-0 lg:w-72">
-        <GearDetail kind={kind} row={awakeningRow} gear={items.find((gear) => gear.grade === selected) ?? null} />
+      <aside className="relative mx-4 min-w-0 rounded-lg border border-ink/15 py-4 lg:sticky lg:top-0 lg:mx-5 lg:flex-1">
+        <GearDetail
+          kind={kind}
+          row={awakeningRow}
+          gear={order[index] ?? null}
+          position={index >= 0 ? `${index + 1} of ${order.length}` : ""}
+          onPrev={index > 0 ? () => setSelected(order[index - 1].grade) : null}
+          onNext={index < order.length - 1 ? () => setSelected(order[(index + 1)].grade) : null}
+        />
       </aside>
     </div>
   );
