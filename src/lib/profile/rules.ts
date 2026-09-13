@@ -1,6 +1,8 @@
 import {
+  MAX_FAMILIAR_STARS,
   SKILL_PRESET_COUNT,
   type EquippableKind,
+  type FamiliarGroup,
   type GearKind,
   type GearState,
   type KnownNames,
@@ -196,6 +198,74 @@ export function clearSkillPresetSlot(profile: ProfileV1, index: number, slot: nu
   return withPreset(profile, index, slots.map((name, i) => (i === slot ? null : name)));
 }
 
+export function masteryLevel(profile: ProfileV1, id: string, maxLevel: number): number {
+  return clampLevel(profile.masteryNodes[id]?.level ?? 0, maxLevel);
+}
+
+export function setMasteryLevel(profile: ProfileV1, id: string, level: number, maxLevel: number): ProfileV1 {
+  return {
+    ...profile,
+    masteryNodes: { ...profile.masteryNodes, [id]: { level: clampLevel(level, maxLevel) } },
+  };
+}
+
+type MasteryNodeRef = { id: string; maxLevel: number };
+
+/** Sets every node on a page at once, to fill or clear it. */
+export function setMasteryPage(profile: ProfileV1, nodes: readonly MasteryNodeRef[], full: boolean): ProfileV1 {
+  const masteryNodes = { ...profile.masteryNodes };
+  for (const node of nodes) masteryNodes[node.id] = { level: full ? node.maxLevel : 0 };
+  return { ...profile, masteryNodes };
+}
+
+/** A page is filled when every node on it is at its max level. */
+export function isMasteryPageComplete(profile: ProfileV1, nodes: readonly MasteryNodeRef[]): boolean {
+  return nodes.every((node) => masteryLevel(profile, node.id, node.maxLevel) >= node.maxLevel);
+}
+
+/** How many pages are open: page 1 always, each later page once the one before is filled. */
+export function openMasteryPages(
+  profile: ProfileV1,
+  pages: readonly { nodes: readonly MasteryNodeRef[] }[],
+): number {
+  let open = pages.length > 0 ? 1 : 0;
+  while (open < pages.length && isMasteryPageComplete(profile, pages[open - 1].nodes)) open += 1;
+  return open;
+}
+
+/** Stars for an owned familiar, or null when it isn't owned. */
+export function familiarStars(profile: ProfileV1, name: string): number | null {
+  const entry = profile.familiars[name];
+  return entry ? clampLevel(entry.stars, MAX_FAMILIAR_STARS) : null;
+}
+
+/** `null` stars removes the familiar and unequips it. */
+export function setFamiliarStars(
+  profile: ProfileV1,
+  name: string,
+  group: FamiliarGroup,
+  stars: number | null,
+): ProfileV1 {
+  const familiars = { ...profile.familiars };
+  if (stars === null) {
+    delete familiars[name];
+    const equippedFamiliars =
+      profile.equippedFamiliars[group] === name
+        ? { ...profile.equippedFamiliars, [group]: null }
+        : profile.equippedFamiliars;
+    return { ...profile, familiars, equippedFamiliars };
+  }
+  familiars[name] = { stars: clampLevel(stars, MAX_FAMILIAR_STARS) };
+  return { ...profile, familiars };
+}
+
+/** Equipping marks the familiar owned (at 0 stars if it wasn't). `null` empties the group's slot. */
+export function equipFamiliar(profile: ProfileV1, group: FamiliarGroup, name: string | null): ProfileV1 {
+  const owned =
+    name === null || profile.familiars[name] ? profile : setFamiliarStars(profile, name, group, 0);
+  return { ...owned, equippedFamiliars: { ...owned.equippedFamiliars, [group]: name } };
+}
+
 export function gearState(
   profile: ProfileV1,
   kind: GearKind,
@@ -253,5 +323,13 @@ export function unknownEntries(profile: ProfileV1, known: KnownNames): string[] 
     .filter((name): name is string => name !== null && !knownSkills.has(name))
     .map((name) => `skillPresets: ${name}`);
 
-  return [...stored, ...equipped, ...presets];
+  const missing = (names: string[] | undefined, kind: string, keys: string[]) =>
+    names ? [...new Set(keys)].filter((key) => !names.includes(key)).map((key) => `${kind}: ${key}`) : [];
+  const mastery = missing(known.masteryNodes, "masteryNodes", Object.keys(profile.masteryNodes));
+  const familiars = missing(known.familiars, "familiars", [
+    ...Object.keys(profile.familiars),
+    ...Object.values(profile.equippedFamiliars).filter((n): n is string => n !== null),
+  ]);
+
+  return [...stored, ...equipped, ...presets, ...mastery, ...familiars];
 }

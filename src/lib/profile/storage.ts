@@ -64,6 +64,16 @@ function skillPresets(value: unknown): SkillPreset[] {
   });
 }
 
+const starsEntry = (entry: Json) => {
+  const stars = wholeLevel(entry.stars);
+  return stars === null ? null : { stars };
+};
+
+function equippedFamiliars(value: unknown): ProfileV1["equippedFamiliars"] {
+  const stored = isRecord(value) ? value : {};
+  return { weapon: name(stored.weapon), attribute: name(stored.attribute), battle: name(stored.battle) };
+}
+
 const presetIndex = (value: unknown): number =>
   typeof value === "number" && Number.isInteger(value) && value >= 0 && value < SKILL_PRESET_COUNT
     ? value
@@ -90,6 +100,9 @@ function parseKnownFields(data: Json): ProfileV1 {
     skillsAtMax: data.skillsAtMax === true,
     skillPresets: skillPresets(data.skillPresets),
     activeSkillPreset: presetIndex(data.activeSkillPreset),
+    masteryNodes: entries(data.masteryNodes, levelEntry),
+    familiars: entries(data.familiars, starsEntry),
+    equippedFamiliars: equippedFamiliars(data.equippedFamiliars),
   };
 }
 

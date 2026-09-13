@@ -11,6 +11,10 @@ export const SKILL_PRESET_SLOTS = 10;
 /** Skill names per slot, filled top row left to right, then the bottom row. */
 export type SkillPreset = (string | null)[];
 
+export type FamiliarGroup = "weapon" | "attribute" | "battle";
+export const FAMILIAR_GROUPS: readonly FamiliarGroup[] = ["weapon", "attribute", "battle"];
+export const MAX_FAMILIAR_STARS = 11;
+
 /**
  * A player's account as entered in the analyzer. Stored sparsely: only items
  * the player has changed appear, everything else reads as the default.
@@ -31,12 +35,18 @@ export type ProfileV1 = {
   skillsAtMax: boolean;
   skillPresets: SkillPreset[];
   activeSkillPreset: number;
+  /** Skill Mastery node levels by node id ("1-D12"); checkbox nodes use 0 or 1. */
+  masteryNodes: Record<string, { level: number }>;
+  /** Owned familiars and their stars (0-11); absent means not owned. */
+  familiars: Record<string, { stars: number }>;
+  /** One equipped familiar per group. */
+  equippedFamiliars: Record<FamiliarGroup, string | null>;
 };
 
 export type KnownNames = Record<
   "skills" | "weapons" | "accessories" | "relics" | "spirits" | "soulWeapons",
   string[]
->;
+> & { masteryNodes?: string[]; familiars?: string[] };
 
 export function emptySkillPresets(): SkillPreset[] {
   return Array.from({ length: SKILL_PRESET_COUNT }, () =>
@@ -60,5 +70,8 @@ export function emptyProfile(): ProfileV1 {
     skillsAtMax: false,
     skillPresets: emptySkillPresets(),
     activeSkillPreset: 0,
+    masteryNodes: {},
+    familiars: {},
+    equippedFamiliars: { weapon: null, attribute: null, battle: null },
   };
 }

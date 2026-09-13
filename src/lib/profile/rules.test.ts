@@ -5,12 +5,20 @@ import {
   clearSkillPresetSlot,
   effectiveSkillLevel,
   equip,
+  equipFamiliar,
+  familiarStars,
+  isMasteryPageComplete,
+  masteryLevel,
+  openMasteryPages,
   equippedKey,
   gearState,
   proficiencyLevel,
   relicLevel,
   selectSkillPreset,
+  setFamiliarStars,
   setGearLevel,
+  setMasteryLevel,
+  setMasteryPage,
   setOwned,
   setProficiencyLevel,
   setRelicLevel,
@@ -234,6 +242,67 @@ describe("skill settings", () => {
     const p = addToSkillPreset(emptyProfile(), 2, "Retired Skill");
     const known = { skills: [], weapons: [], accessories: [], relics: [], spirits: [], soulWeapons: [] };
     expect(unknownEntries(p, known)).toEqual(["skillPresets: Retired Skill"]);
+  });
+});
+
+describe("skill mastery", () => {
+  const page1 = [{ id: "1-A", maxLevel: 10 }, { id: "1-B", maxLevel: 1 }];
+  const page2 = [{ id: "2-A", maxLevel: 5 }];
+  const pages = [{ nodes: page1 }, { nodes: page2 }, { nodes: [{ id: "3-A", maxLevel: 1 }] }];
+
+  it("node levels are clamped to the node's max", () => {
+    const p = setMasteryLevel(emptyProfile(), "1-A", 40, 10);
+    expect(masteryLevel(p, "1-A", 10)).toBe(10);
+    expect(masteryLevel(emptyProfile(), "1-A", 10)).toBe(0);
+  });
+
+  it("only page 1 is open until it is filled", () => {
+    let p = setMasteryLevel(emptyProfile(), "1-A", 10, 10);
+    expect(openMasteryPages(p, pages)).toBe(1);
+    p = setMasteryLevel(p, "1-B", 1, 1);
+    expect(isMasteryPageComplete(p, page1)).toBe(true);
+    expect(openMasteryPages(p, pages)).toBe(2);
+    expect(openMasteryPages(setMasteryPage(p, page2, true), pages)).toBe(3);
+  });
+
+  it("clearing a page closes the pages after it", () => {
+    let p = setMasteryPage(setMasteryPage(emptyProfile(), page1, true), page2, true);
+    expect(openMasteryPages(p, pages)).toBe(3);
+    p = setMasteryPage(p, page1, false);
+    expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("familiars", () => {
+  it("are not owned until given stars, and stars cap at 11", () => {
+    expect(familiarStars(emptyProfile(), "Hi")).toBeNull();
+    expect(familiarStars(setFamiliarStars(emptyProfile(), "Hi", "attribute", 14), "Hi")).toBe(11);
+    expect(familiarStars(setFamiliarStars(emptyProfile(), "Hi", "attribute", 0), "Hi")).toBe(0);
+  });
+
+  it("equipping marks a familiar owned and replaces the group's familiar", () => {
+    let p = equipFamiliar(emptyProfile(), "battle", "Ku");
+    expect(familiarStars(p, "Ku")).toBe(0);
+    p = equipFamiliar(setFamiliarStars(p, "Sha", "battle", 9), "battle", "Sha");
+    expect(p.equippedFamiliars).toEqual({ weapon: null, attribute: null, battle: "Sha" });
+    expect(familiarStars(p, "Sha")).toBe(9);
+  });
+
+  it("removing a familiar unequips it", () => {
+    let p = equipFamiliar(emptyProfile(), "weapon", "Na");
+    p = setFamiliarStars(p, "Na", "weapon", null);
+    expect(familiarStars(p, "Na")).toBeNull();
+    expect(p.equippedFamiliars.weapon).toBeNull();
+  });
+
+  it("reports familiars and mastery nodes the data no longer has", () => {
+    let p = equipFamiliar(emptyProfile(), "weapon", "Gone");
+    p = setMasteryLevel(p, "11-A1", 1, 1);
+    const known = {
+      skills: [], weapons: [], accessories: [], relics: [], spirits: [], soulWeapons: [],
+      masteryNodes: [], familiars: [],
+    };
+    expect(unknownEntries(p, known)).toEqual(["masteryNodes: 11-A1", "familiars: Gone"]);
   });
 });
 

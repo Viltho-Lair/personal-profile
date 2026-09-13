@@ -124,6 +124,19 @@ describe("parseProfile", () => {
     expect(profile?.skillPresets[1]).toEqual(Array(10).fill(null));
   });
 
+  it("reads mastery levels, familiar stars and equipped familiars", () => {
+    const raw = JSON.stringify({
+      ...emptyProfile(),
+      masteryNodes: { "1-D12": { level: 4 }, bad: { level: -1 } },
+      familiars: { Hi: { stars: 11 }, Ku: { stars: "x" } },
+      equippedFamiliars: { weapon: "Na", attribute: 3 },
+    });
+    const profile = parseProfile(raw);
+    expect(profile?.masteryNodes).toEqual({ "1-D12": { level: 4 } });
+    expect(profile?.familiars).toEqual({ Hi: { stars: 11 } });
+    expect(profile?.equippedFamiliars).toEqual({ weapon: "Na", attribute: null, battle: null });
+  });
+
   it("a profile saved before skill settings existed gets their defaults", () => {
     const raw = JSON.stringify({ version: 1, skills: { "Fire Slash": { level: 5 } } });
     const profile = parseProfile(raw);

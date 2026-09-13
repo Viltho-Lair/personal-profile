@@ -7,6 +7,7 @@ import { PROFILE_KEY, type StorageLike } from "./storage";
 import {
   emptyProfile,
   type EquippableKind,
+  type FamiliarGroup,
   type GearKind,
   type OwnableKind,
 } from "./types";
@@ -78,6 +79,14 @@ export function useProfile() {
       update((p) => rules.addToSkillPreset(p, index, name)),
     clearSkillPresetSlot: (index: number, slot: number) =>
       update((p) => rules.clearSkillPresetSlot(p, index, slot)),
+    setMasteryLevel: (id: string, level: number, maxLevel: number) =>
+      update((p) => rules.setMasteryLevel(p, id, level, maxLevel)),
+    setMasteryPage: (nodes: readonly { id: string; maxLevel: number }[], full: boolean) =>
+      update((p) => rules.setMasteryPage(p, nodes, full)),
+    setFamiliarStars: (name: string, group: FamiliarGroup, stars: number | null) =>
+      update((p) => rules.setFamiliarStars(p, name, group, stars)),
+    equipFamiliar: (group: FamiliarGroup, name: string | null) =>
+      update((p) => rules.equipFamiliar(p, group, name)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }
