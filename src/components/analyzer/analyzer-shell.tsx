@@ -7,6 +7,7 @@ import { ANALYZER_AD_SLOT } from "@/lib/adsense";
 import { unknownEntries } from "@/lib/profile/rules";
 import { useProfile } from "@/lib/profile/use-profile";
 import { AdSlot } from "./ad-slot";
+import { CharacterPanel } from "./character-panel";
 import { CompanionPanel } from "./companion-panel";
 import { KNOWN_NAMES } from "./data";
 import { EquipmentPanel } from "./equipment-panel";
@@ -71,7 +72,9 @@ export function AnalyzerShell() {
           value={tab.id}
           className="min-h-0 flex-1 overflow-auto pb-20"
         >
-          {tab.id === "skill" ? (
+          {tab.id === "char" ? (
+            <CharacterPanel />
+          ) : tab.id === "skill" ? (
             <SkillPanel />
           ) : tab.id === "equips" ? (
             <EquipmentPanel />

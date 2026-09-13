@@ -1,6 +1,10 @@
 import { importLegacyLevels } from "./migration";
 import {
+  ABILITY_SLOTS,
+  emptyCharacter,
   emptyCompanion,
+  LATENT_SLOTS,
+  LATENT_STATS,
   emptyProfile,
   FIRST_SPIRIT_TIER,
   MAX_SPIRIT_ENHANCE,
@@ -8,6 +12,7 @@ import {
   PROMOTION_SLOTS,
   SKILL_PRESET_COUNT,
   SKILL_PRESET_SLOTS,
+  type CharacterState,
   type CompanionState,
   type GearState,
   type ProfileV1,
@@ -97,6 +102,54 @@ function familiarProficiency(value: unknown): ProfileV1["familiarProficiency"] {
   };
 }
 
+function wholeRecord(value: unknown): Record<string, number> {
+  const result: Record<string, number> = {};
+  if (!isRecord(value)) return result;
+  for (const [key, level] of Object.entries(value)) {
+    const whole = wholeLevel(level);
+    if (key !== "__proto__" && whole !== null) result[key] = whole;
+  }
+  return result;
+}
+
+const finiteOr = (value: unknown, fallback: number) =>
+  typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
+function character(value: unknown): CharacterState {
+  const base = emptyCharacter();
+  if (!isRecord(value)) return base;
+  const latent = isRecord(value.latent) ? value.latent : {};
+  const awakening = isRecord(value.latentAwakening) ? value.latentAwakening : {};
+  const rolls = Array.isArray(value.abilities) ? value.abilities : [];
+  return {
+    enhance: wholeRecord(value.enhance),
+    growingKnowledge: wholeLevel(value.growingKnowledge) ?? 0,
+    superhuman: wholeLevel(value.superhuman) ?? 0,
+    growth: wholeRecord(value.growth),
+    slayerLevel: wholeLevel(value.slayerLevel) ?? base.slayerLevel,
+    latent: Object.fromEntries(
+      LATENT_STATS.map((stat) => {
+        const slots = Array.isArray(latent[stat]) ? latent[stat] : [];
+        return [stat, Array.from({ length: LATENT_SLOTS }, (_, i) => Math.max(0, finiteOr(slots[i], 0)))];
+      }),
+    ),
+    latentAwakening: { grade: wholeLevel(awakening.grade) ?? 0, level: wholeLevel(awakening.level) ?? 0 },
+    promotion: wholeLevel(value.promotion) ?? 0,
+    abilities: Array.from({ length: ABILITY_SLOTS }, (_, i) => {
+      const roll = isRecord(rolls[i]) ? rolls[i] : {};
+      const multiplier = wholeLevel(roll.multiplier);
+      return {
+        option: name(roll.option),
+        value: typeof roll.value === "number" && Number.isFinite(roll.value) ? roll.value : null,
+        multiplier: multiplier !== null && multiplier >= 1 && multiplier <= 4 ? multiplier : 1,
+      };
+    }),
+    classes: entries(value.classes, ownedLevelEntry),
+    equippedClass: name(value.equippedClass),
+    classAwakening: wholeLevel(value.classAwakening) ?? 0,
+  };
+}
+
 const FOUNTAIN_SLOTS = 4;
 
 function fountainEffects(value: unknown): number[] {
@@ -165,6 +218,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     companions: entries(data.companions, companionEntry),
     familiarProficiency: familiarProficiency(data.familiarProficiency),
     fountainEffects: fountainEffects(data.fountainEffects),
+    character: character(data.character),
   };
 }
 

@@ -211,6 +211,14 @@ export function setCompanionPromotion(
   }));
 }
 
+/** Applies a change to the character settings. The caller keeps values in range. */
+export function updateCharacter(
+  profile: ProfileV1,
+  change: (character: ProfileV1["character"]) => ProfileV1["character"],
+): ProfileV1 {
+  return { ...profile, character: change(profile.character) };
+}
+
 export type ProficiencyKind = keyof ProfileV1["familiarProficiency"];
 
 export function setFamiliarProficiency(profile: ProfileV1, kind: ProficiencyKind, level: number): ProfileV1 {

@@ -63,12 +63,15 @@ export function InlineLevel({
   max,
   onChange,
   name,
+  wide = false,
 }: {
   value: number;
   min?: number;
   max: number;
   onChange: (level: number) => void;
   name: string;
+  /** Room for 7+ digit levels. */
+  wide?: boolean;
 }) {
   const clamp = clampTo(min, max);
 
@@ -82,7 +85,7 @@ export function InlineLevel({
         max={max}
         aria-label={`${name} level`}
         onChange={(event) => onChange(clamp(event.target.valueAsNumber))}
-        className="w-12 rounded border border-ink/20 bg-transparent px-1 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
+        className={`${wide ? "w-20" : "w-12"} rounded border border-ink/20 bg-transparent px-1 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink`}
       />
     </label>
   );

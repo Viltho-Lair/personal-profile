@@ -174,6 +174,31 @@ describe("parseProfile", () => {
     expect(ellie?.promotion[1]).toEqual({ option: null, tier: null });
   });
 
+  it("reads character settings and repairs malformed ones", () => {
+    const raw = JSON.stringify({
+      ...emptyProfile(),
+      character: {
+        enhance: { ATK: 5000, Bad: "x" },
+        growingKnowledge: 12,
+        latent: { STR: [1, 2, "x"], LUK: "oops" },
+        latentAwakening: { grade: 3, level: 9 },
+        abilities: [{ option: "Extra ATK(%)", value: 40, multiplier: 4 }, { multiplier: 7 }],
+        classes: { Trainee: { owned: true, level: 20 } },
+        equippedClass: "Trainee",
+      },
+    });
+    const c = parseProfile(raw)?.character;
+    expect(c?.enhance).toEqual({ ATK: 5000 });
+    expect(c?.growingKnowledge).toBe(12);
+    expect(c?.latent.STR).toEqual([1, 2, 0, 0, 0]);
+    expect(c?.latent.LUK).toEqual([0, 0, 0, 0, 0]);
+    expect(c?.latentAwakening).toEqual({ grade: 3, level: 9 });
+    expect(c?.abilities[0]).toEqual({ option: "Extra ATK(%)", value: 40, multiplier: 4 });
+    expect(c?.abilities[1]).toEqual({ option: null, value: null, multiplier: 1 });
+    expect(c?.classes).toEqual({ Trainee: { owned: true, level: 20 } });
+    expect(c?.slayerLevel).toBe(1);
+  });
+
   it("a profile saved before skill settings existed gets their defaults", () => {
     const raw = JSON.stringify({ version: 1, skills: { "Fire Slash": { level: 5 } } });
     const profile = parseProfile(raw);

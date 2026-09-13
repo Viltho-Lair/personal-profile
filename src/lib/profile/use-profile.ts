@@ -11,6 +11,7 @@ import {
   type GearKind,
   type PromotionRoll,
   type OwnableKind,
+  type ProfileV1,
 } from "./types";
 
 function browserStorage(): StorageLike | null {
@@ -104,6 +105,8 @@ export function useProfile() {
       update((p) => rules.setFamiliarProficiency(p, kind, level)),
     setFountainEffect: (slot: number, effect: number) =>
       update((p) => rules.setFountainEffect(p, slot, effect)),
+    updateCharacter: (change: (character: ProfileV1["character"]) => ProfileV1["character"]) =>
+      update((p) => rules.updateCharacter(p, change)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }

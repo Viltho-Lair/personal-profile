@@ -38,6 +38,51 @@ export function emptyCompanion(): CompanionState {
   };
 }
 
+export const LATENT_STATS = ["STR", "HP", "VIT", "CRI", "LUK"] as const;
+export const LATENT_SLOTS = 5;
+export const ABILITY_SLOTS = 7;
+
+/** One promotion additional ability row: option, rolled value and the row's multiplier (1-4). */
+export type AbilityRoll = { option: string | null; value: number | null; multiplier: number };
+
+export type CharacterState = {
+  /** Enhance levels by stat name ("ATK", "DEATH STRIKE %"). */
+  enhance: Record<string, number>;
+  /** Grade indexes into the Growing Knowledge table (0 = Not Obtained). */
+  growingKnowledge: number;
+  superhuman: number;
+  /** Growth levels by stat key ("STR", "ACC"). */
+  growth: Record<string, number>;
+  slayerLevel: number;
+  /** Latent Power values: stat -> the five slots I-V. */
+  latent: Record<string, number[]>;
+  latentAwakening: { grade: number; level: number };
+  /** Current promotion number (0 = none, 1 = Stone). */
+  promotion: number;
+  abilities: AbilityRoll[];
+  classes: Record<string, { owned: boolean; level: number }>;
+  equippedClass: string | null;
+  /** Awakened Blast, 0-18. */
+  classAwakening: number;
+};
+
+export function emptyCharacter(): CharacterState {
+  return {
+    enhance: {},
+    growingKnowledge: 0,
+    superhuman: 0,
+    growth: {},
+    slayerLevel: 1,
+    latent: Object.fromEntries(LATENT_STATS.map((stat) => [stat, Array<number>(LATENT_SLOTS).fill(0)])),
+    latentAwakening: { grade: 0, level: 0 },
+    promotion: 0,
+    abilities: Array.from({ length: ABILITY_SLOTS }, () => ({ option: null, value: null, multiplier: 1 })),
+    classes: {},
+    equippedClass: null,
+    classAwakening: 0,
+  };
+}
+
 export type FamiliarGroup = "weapon" | "attribute" | "battle";
 export const FAMILIAR_GROUPS: readonly FamiliarGroup[] = ["weapon", "attribute", "battle"];
 export const MAX_FAMILIAR_STARS = 11;
@@ -76,6 +121,7 @@ export type ProfileV1 = {
   familiarProficiency: { attribute: number; weapon: number; battle: number };
   /** Awakened Fountain of Circulation: the 1st-4th companion effects, as fractions (0.05 = 5%). */
   fountainEffects: number[];
+  character: CharacterState;
 };
 
 export type KnownNames = Record<
@@ -113,5 +159,6 @@ export function emptyProfile(): ProfileV1 {
     companions: {},
     familiarProficiency: { attribute: 0, weapon: 0, battle: 0 },
     fountainEffects: [0, 0, 0, 0],
+    character: emptyCharacter(),
   };
 }
