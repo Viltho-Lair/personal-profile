@@ -1,0 +1,1909 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Familiar Data",
+    "extractedOn": "2026-09-13"
+  },
+  "familiars": [
+    {
+      "id": 100,
+      "name": "Na",
+      "group": "weapon",
+      "element": null,
+      "stats": [
+        {
+          "label": "Range",
+          "percent": false
+        },
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Range": 1,
+            "Damage": 1.0
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Range": 1,
+            "Damage": 1.35
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Range": 1,
+            "Damage": 1.82
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Range": 1,
+            "Damage": 2.46
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Range": 1,
+            "Damage": 3.32
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Range": 1,
+            "Damage": 4.48
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Range": 1,
+            "Damage": 6.05
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Range": 1,
+            "Damage": 8.17
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 1,
+            "Damage": 13.03
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 1,
+            "Damage": 18.2
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Range": 1,
+            "Damage": 25.2
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Range": 1,
+            "Damage": 33.3
+          }
+        }
+      ],
+      "special": "Increase DMG to enemies with 60% or less HP by 10%",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/na-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/na-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/na-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/na-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/na-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/na-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 101,
+      "name": "Rion",
+      "group": "weapon",
+      "element": null,
+      "stats": [
+        {
+          "label": "Range",
+          "percent": false
+        },
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Range": 4,
+            "Damage": 0.8
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Range": 4,
+            "Damage": 1.08
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Range": 4,
+            "Damage": 1.46
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Range": 4,
+            "Damage": 1.97
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Range": 4,
+            "Damage": 2.66
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Range": 4,
+            "Damage": 3.58
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Range": 4,
+            "Damage": 4.84
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Range": 4,
+            "Damage": 6.54
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 5,
+            "Damage": 10.42
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 5,
+            "Damage": 14.56
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Range": 6,
+            "Damage": 20.16
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Range": 7,
+            "Damage": 26.64
+          }
+        }
+      ],
+      "special": "Increase ATK SPD by 200% for 10s",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/rion-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/rion-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/rion-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/rion-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/rion-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/rion-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 102,
+      "name": "Ru",
+      "group": "weapon",
+      "element": null,
+      "stats": [
+        {
+          "label": "Range",
+          "percent": false
+        },
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Range": 7,
+            "Damage": 0.5
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Range": 7,
+            "Damage": 0.68
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Range": 7,
+            "Damage": 0.91
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Range": 7,
+            "Damage": 1.23
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Range": 7,
+            "Damage": 1.66
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Range": 7,
+            "Damage": 2.24
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Range": 7,
+            "Damage": 3.03
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Range": 7,
+            "Damage": 4.09
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 8,
+            "Damage": 6.52
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 8,
+            "Damage": 9.1
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Range": 9,
+            "Damage": 12.6
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Range": 10,
+            "Damage": 16.65
+          }
+        }
+      ],
+      "special": "Increase ATK by 150% for 5s",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/ru-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/ru-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/ru-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/ru-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/ru-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/ru-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 103,
+      "name": "Mus",
+      "group": "weapon",
+      "element": null,
+      "stats": [
+        {
+          "label": "Range",
+          "percent": false
+        },
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Range": 10,
+            "Damage": 0.3
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Range": 11,
+            "Damage": 0.41
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Range": 12,
+            "Damage": 0.55
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Range": 13,
+            "Damage": 0.74
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Range": 14,
+            "Damage": 1.0
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Range": 15,
+            "Damage": 1.34
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Range": 16,
+            "Damage": 1.82
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Range": 17,
+            "Damage": 2.45
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 18,
+            "Damage": 3.91
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Range": 19,
+            "Damage": 5.46
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Range": 20,
+            "Damage": 7.56
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Range": 21,
+            "Damage": 9.99
+          }
+        }
+      ],
+      "special": "Upon eliminating enemy, increase All ATK by 2%",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/mus-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/mus-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/mus-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/mus-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/mus-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/mus-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 200,
+      "name": "Hi",
+      "group": "attribute",
+      "element": "Fire",
+      "stats": [
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.0
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.35
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Damage": 1.82
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Damage": 2.46
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 3.32
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 4.48
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 6.05
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 8.17
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 13.03
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 18.2
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Damage": 25.2
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Damage": 33.3
+          }
+        }
+      ],
+      "special": "Addtional Burn DMG for 3s",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/hi-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/hi-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/hi-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/hi-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/hi-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/hi-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 201,
+      "name": "A",
+      "group": "attribute",
+      "element": "Water",
+      "stats": [
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.0
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.35
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Damage": 1.82
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Damage": 2.46
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 3.32
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 4.48
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 6.05
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 8.17
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 13.03
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 18.2
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Damage": 25.2
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Damage": 33.3
+          }
+        }
+      ],
+      "special": "Charge 15% cooldown for all Skill Cooldown",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/a-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/a-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/a-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/a-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/a-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/a-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 202,
+      "name": "Je",
+      "group": "attribute",
+      "element": "Wind",
+      "stats": [
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.0
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.35
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Damage": 1.82
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Damage": 2.46
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 3.32
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 4.48
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 6.05
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 8.17
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 13.03
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 18.2
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Damage": 25.2
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Damage": 33.3
+          }
+        }
+      ],
+      "special": "Increase MSPD by 25% for 10s",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/je-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/je-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/je-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/je-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/je-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/je-symbol.png",
+      "symbolSize": 60
+    },
+    {
+      "id": 203,
+      "name": "Ti",
+      "group": "attribute",
+      "element": "Earth",
+      "stats": [
+        {
+          "label": "Damage",
+          "percent": true
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.0
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Damage": 1.35
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Damage": 1.82
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Damage": 2.46
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 3.32
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Damage": 4.48
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 6.05
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Damage": 8.17
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 13.03
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Damage": 18.2
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Damage": 25.2
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Damage": 33.3
+          }
+        }
+      ],
+      "special": "Reduce DMG Taken by 50% for 5s",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/ti-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/ti-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/ti-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/ti-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/ti-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/ti-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 300,
+      "name": "Ku",
+      "group": "battle",
+      "element": null,
+      "stats": [
+        {
+          "label": "Hits",
+          "percent": false
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Hits": 1
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Hits": 2
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Hits": 3
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Hits": 4
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Hits": 5
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Hits": 6
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Hits": 7
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Hits": 8
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Hits": 11
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Hits": 14
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Hits": 20
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Hits": 20
+          }
+        }
+      ],
+      "special": "Increase DMG by 10% and can be used 2 times (CD 20s)",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/ku-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/ku-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/ku-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/ku-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/ku-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/ku-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 301,
+      "name": "Pe",
+      "group": "battle",
+      "element": null,
+      "stats": [
+        {
+          "label": "Seconds",
+          "percent": false
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Seconds": 1
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Seconds": 2
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Seconds": 3
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Seconds": 4
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Seconds": 5
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Seconds": 6
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Seconds": 7
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Seconds": 8
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Seconds": 9
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Seconds": 10
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Seconds": 12
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Seconds": 14
+          }
+        }
+      ],
+      "special": "Reduce Activation Cycle by 10%",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/pe-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/pe-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/pe-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/pe-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/pe-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/pe-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 302,
+      "name": "Sha",
+      "group": "battle",
+      "element": null,
+      "stats": [
+        {
+          "label": "Hits",
+          "percent": false
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Hits": 2
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Hits": 3
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Hits": 4
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Hits": 5
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Hits": 6
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Hits": 7
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Hits": 9
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Hits": 11
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Hits": 15
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Hits": 19
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Hits": 26
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Hits": 33
+          }
+        }
+      ],
+      "special": "Everyone 1 attack has a chance of 20% to Stun for 1s",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/sha-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/sha-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/sha-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/sha-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/sha-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/sha-symbol.png",
+      "symbolSize": 64
+    },
+    {
+      "id": 303,
+      "name": "Po",
+      "group": "battle",
+      "element": null,
+      "stats": [
+        {
+          "label": "Seconds",
+          "percent": false
+        },
+        {
+          "label": "Hits",
+          "percent": false
+        }
+      ],
+      "stars": [
+        {
+          "star": 0,
+          "rarity": "Common",
+          "values": {
+            "Seconds": 2,
+            "Hits": 3
+          }
+        },
+        {
+          "star": 1,
+          "rarity": "Common",
+          "values": {
+            "Seconds": 2,
+            "Hits": 6
+          }
+        },
+        {
+          "star": 2,
+          "rarity": "Great",
+          "values": {
+            "Seconds": 2,
+            "Hits": 9
+          }
+        },
+        {
+          "star": 3,
+          "rarity": "Great",
+          "values": {
+            "Seconds": 2,
+            "Hits": 13
+          }
+        },
+        {
+          "star": 4,
+          "rarity": "Rare",
+          "values": {
+            "Seconds": 2,
+            "Hits": 17
+          }
+        },
+        {
+          "star": 5,
+          "rarity": "Rare",
+          "values": {
+            "Seconds": 2,
+            "Hits": 21
+          }
+        },
+        {
+          "star": 6,
+          "rarity": "Epic",
+          "values": {
+            "Seconds": 2,
+            "Hits": 25
+          }
+        },
+        {
+          "star": 7,
+          "rarity": "Epic",
+          "values": {
+            "Seconds": 2,
+            "Hits": 30
+          }
+        },
+        {
+          "star": 8,
+          "rarity": "Legendary",
+          "values": {
+            "Seconds": 2,
+            "Hits": 37
+          }
+        },
+        {
+          "star": 9,
+          "rarity": "Legendary",
+          "values": {
+            "Seconds": 2,
+            "Hits": 47
+          }
+        },
+        {
+          "star": 10,
+          "rarity": "Mythic",
+          "values": {
+            "Seconds": 2,
+            "Hits": 60
+          }
+        },
+        {
+          "star": 11,
+          "rarity": "Immortal",
+          "values": {
+            "Seconds": 2,
+            "Hits": 75
+          }
+        }
+      ],
+      "special": "Additional 15 attack(s) 2s before end of battle",
+      "art": [
+        {
+          "from": 0,
+          "to": 5,
+          "icon": "/art/familiars/po-0-5.png",
+          "iconSize": 128
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "icon": "/art/familiars/po-6-7.png",
+          "iconSize": 128
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "icon": "/art/familiars/po-8-9.png",
+          "iconSize": 128
+        },
+        {
+          "from": 10,
+          "to": 10,
+          "icon": "/art/familiars/po-10.png",
+          "iconSize": 128
+        },
+        {
+          "from": 11,
+          "to": 11,
+          "icon": "/art/familiars/po-11.png",
+          "iconSize": 128
+        }
+      ],
+      "symbol": "/art/familiars/po-symbol.png",
+      "symbolSize": 64
+    }
+  ],
+  "manaAltar": [
+    {
+      "level": 1,
+      "skillDamage": 3,
+      "soul": 0,
+      "starsNeeded": 30
+    },
+    {
+      "level": 2,
+      "skillDamage": 3,
+      "soul": 0,
+      "starsNeeded": 31
+    },
+    {
+      "level": 3,
+      "skillDamage": 3,
+      "soul": 0,
+      "starsNeeded": 32
+    },
+    {
+      "level": 4,
+      "skillDamage": 0,
+      "soul": 5,
+      "starsNeeded": 33
+    },
+    {
+      "level": 5,
+      "skillDamage": 5,
+      "soul": 0,
+      "starsNeeded": 34
+    },
+    {
+      "level": 6,
+      "skillDamage": 5,
+      "soul": 0,
+      "starsNeeded": 35
+    },
+    {
+      "level": 7,
+      "skillDamage": 0,
+      "soul": 10,
+      "starsNeeded": 36
+    },
+    {
+      "level": 8,
+      "skillDamage": 7,
+      "soul": 0,
+      "starsNeeded": 37
+    },
+    {
+      "level": 9,
+      "skillDamage": 7,
+      "soul": 0,
+      "starsNeeded": 38
+    },
+    {
+      "level": 10,
+      "skillDamage": 0,
+      "soul": 15,
+      "starsNeeded": 39
+    },
+    {
+      "level": 11,
+      "skillDamage": 10,
+      "soul": 0,
+      "starsNeeded": 40
+    },
+    {
+      "level": 12,
+      "skillDamage": 10,
+      "soul": 0,
+      "starsNeeded": 41
+    },
+    {
+      "level": 13,
+      "skillDamage": 0,
+      "soul": 20,
+      "starsNeeded": 42
+    },
+    {
+      "level": 14,
+      "skillDamage": 20,
+      "soul": 0,
+      "starsNeeded": 43
+    },
+    {
+      "level": 15,
+      "skillDamage": 20,
+      "soul": 0,
+      "starsNeeded": 44
+    },
+    {
+      "level": 16,
+      "skillDamage": 0,
+      "soul": 25,
+      "starsNeeded": 45
+    },
+    {
+      "level": 17,
+      "skillDamage": 30,
+      "soul": 0,
+      "starsNeeded": 46
+    },
+    {
+      "level": 18,
+      "skillDamage": 30,
+      "soul": 0,
+      "starsNeeded": 47
+    },
+    {
+      "level": 19,
+      "skillDamage": 0,
+      "soul": 30,
+      "starsNeeded": 48
+    },
+    {
+      "level": 20,
+      "skillDamage": 50,
+      "soul": 0,
+      "starsNeeded": 49
+    },
+    {
+      "level": 21,
+      "skillDamage": 50,
+      "soul": 0,
+      "starsNeeded": 50
+    },
+    {
+      "level": 22,
+      "skillDamage": 0,
+      "soul": 35,
+      "starsNeeded": 51
+    },
+    {
+      "level": 23,
+      "skillDamage": 75,
+      "soul": 0,
+      "starsNeeded": 52
+    },
+    {
+      "level": 24,
+      "skillDamage": 75,
+      "soul": 0,
+      "starsNeeded": 53
+    },
+    {
+      "level": 25,
+      "skillDamage": 0,
+      "soul": 50,
+      "starsNeeded": 54
+    },
+    {
+      "level": 26,
+      "skillDamage": 150,
+      "soul": 0,
+      "starsNeeded": 55
+    },
+    {
+      "level": 27,
+      "skillDamage": 150,
+      "soul": 0,
+      "starsNeeded": 56
+    },
+    {
+      "level": 28,
+      "skillDamage": 0,
+      "soul": 50,
+      "starsNeeded": 57
+    },
+    {
+      "level": 29,
+      "skillDamage": 250,
+      "soul": 0,
+      "starsNeeded": 58
+    },
+    {
+      "level": 30,
+      "skillDamage": 300,
+      "soul": 0,
+      "starsNeeded": 59
+    },
+    {
+      "level": 31,
+      "skillDamage": 350,
+      "soul": 0,
+      "starsNeeded": 60
+    },
+    {
+      "level": 32,
+      "skillDamage": 400,
+      "soul": 0,
+      "starsNeeded": 61
+    },
+    {
+      "level": 33,
+      "skillDamage": 450,
+      "soul": 0,
+      "starsNeeded": 62
+    },
+    {
+      "level": 34,
+      "skillDamage": 500,
+      "soul": 0,
+      "starsNeeded": 63
+    },
+    {
+      "level": 35,
+      "skillDamage": 550,
+      "soul": 0,
+      "starsNeeded": 64
+    },
+    {
+      "level": 36,
+      "skillDamage": 600,
+      "soul": 0,
+      "starsNeeded": 65
+    },
+    {
+      "level": 37,
+      "skillDamage": 666,
+      "soul": 0,
+      "starsNeeded": 66
+    }
+  ]
+}

@@ -1,0 +1,8023 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "SKILL MASTERY",
+    "extractedOn": "2026-09-13"
+  },
+  "pages": [
+    {
+      "page": 1,
+      "columns": 19,
+      "rows": 36,
+      "nodes": [
+        {
+          "id": "1-J7",
+          "x": 7,
+          "y": 1,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "ACC M4",
+          "reward": null,
+          "icon": "/art/skill-mastery/94e8c9a27ed8.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "1-D12",
+          "x": 1,
+          "y": 6,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "1-J12",
+          "x": 7,
+          "y": 6,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "1-P12",
+          "x": 13,
+          "y": 6,
+          "label": "MYTHIC G1",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "WEAPON M1",
+          "icon": "/art/skill-mastery/050c7f02fdef.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "1-D17",
+          "x": 1,
+          "y": 11,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "1-J17",
+          "x": 7,
+          "y": 11,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "1.5x DMG 2x Hits"
+          },
+          "requires": "WEAPON M4",
+          "reward": null,
+          "icon": "/art/skill-mastery/e698b6bac97c.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "1-D22",
+          "x": 1,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "1.5x DMG 2x Hits"
+          },
+          "requires": "ACCESSORY M4",
+          "reward": null,
+          "icon": "/art/skill-mastery/8b0a31999b40.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "1-J22",
+          "x": 7,
+          "y": 16,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.15,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "1-P22",
+          "x": 13,
+          "y": 16,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.05,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "1-J27",
+          "x": 7,
+          "y": 21,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.7,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "1-P27",
+          "x": 13,
+          "y": 21,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "1-J32",
+          "x": 7,
+          "y": 26,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 1,
+          "cost": {
+            "base": 20,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "1-J37",
+          "x": 7,
+          "y": 31,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 1,
+          "cost": {
+            "base": 20,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              2,
+              3
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              2,
+              5
+            ],
+            [
+              2,
+              6
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "1-D12",
+            "1-J7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              5,
+              9
+            ]
+          ],
+          "nodes": [
+            "1-J12",
+            "1-J7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ]
+          ],
+          "nodes": [
+            "1-D12",
+            "1-D17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              9
+            ]
+          ],
+          "nodes": [
+            "1-J12",
+            "1-J17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              12
+            ],
+            [
+              11,
+              13
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              11,
+              15
+            ]
+          ],
+          "nodes": [
+            "1-J17",
+            "1-P12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              13,
+              12
+            ],
+            [
+              13,
+              13
+            ],
+            [
+              13,
+              14
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "1-J17",
+            "1-P22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              3
+            ]
+          ],
+          "nodes": [
+            "1-D17",
+            "1-D22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              9
+            ]
+          ],
+          "nodes": [
+            "1-J17",
+            "1-J22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              3
+            ],
+            [
+              21,
+              3
+            ],
+            [
+              22,
+              3
+            ],
+            [
+              22,
+              4
+            ],
+            [
+              22,
+              5
+            ],
+            [
+              22,
+              6
+            ]
+          ],
+          "nodes": [
+            "1-D22",
+            "1-J27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              9
+            ]
+          ],
+          "nodes": [
+            "1-J22",
+            "1-J27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              15
+            ]
+          ],
+          "nodes": [
+            "1-P22",
+            "1-P27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              9
+            ]
+          ],
+          "nodes": [
+            "1-J27",
+            "1-J32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              15
+            ],
+            [
+              26,
+              15
+            ],
+            [
+              27,
+              12
+            ],
+            [
+              27,
+              13
+            ],
+            [
+              27,
+              14
+            ],
+            [
+              27,
+              15
+            ]
+          ],
+          "nodes": [
+            "1-J32",
+            "1-P27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              9
+            ]
+          ],
+          "nodes": [
+            "1-J32",
+            "1-J37"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "columns": 19,
+      "rows": 41,
+      "nodes": [
+        {
+          "id": "2-AD7",
+          "x": 7,
+          "y": 1,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "WEAPON M3",
+          "reward": null,
+          "icon": "/art/skill-mastery/6c232194cd80.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "2-X11",
+          "x": 1,
+          "y": 5,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.05,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AJ11",
+          "x": 13,
+          "y": 5,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AD15",
+          "x": 7,
+          "y": 9,
+          "label": "SPIRIT",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "Spirit Selection Scroll",
+          "icon": "/art/skill-mastery/390409bdefe4.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "2-X20",
+          "x": 1,
+          "y": 14,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 300,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AD20",
+          "x": 7,
+          "y": 14,
+          "label": "DIAMONDS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "50000 Diamonds",
+          "icon": "/art/skill-mastery/3c51fe96d350.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AJ20",
+          "x": 13,
+          "y": 14,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "2-X27",
+          "x": 1,
+          "y": 21,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AD27",
+          "x": 7,
+          "y": 21,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.15,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AJ27",
+          "x": 13,
+          "y": 21,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "1.5x DMG 2x Hits"
+          },
+          "requires": "ACC M3",
+          "reward": null,
+          "icon": "/art/skill-mastery/7a39b9f6abe4.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AD32",
+          "x": 7,
+          "y": 26,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "WEAPON M4",
+          "reward": null,
+          "icon": "/art/skill-mastery/daa17f75f25e.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "2-X37",
+          "x": 1,
+          "y": 31,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.08,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AD37",
+          "x": 7,
+          "y": 31,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AJ37",
+          "x": 13,
+          "y": 31,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "2-AD42",
+          "x": 7,
+          "y": 36,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 2,
+          "cost": {
+            "base": 40,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              5,
+              9
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              6,
+              8
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              6,
+              10
+            ],
+            [
+              6,
+              11
+            ],
+            [
+              6,
+              12
+            ]
+          ],
+          "nodes": [
+            "2-AD7",
+            "2-AJ11",
+            "2-X11"
+          ]
+        },
+        {
+          "cells": [
+            [
+              9,
+              3
+            ],
+            [
+              10,
+              3
+            ],
+            [
+              10,
+              4
+            ],
+            [
+              10,
+              5
+            ],
+            [
+              10,
+              6
+            ]
+          ],
+          "nodes": [
+            "2-AD15",
+            "2-X11"
+          ]
+        },
+        {
+          "cells": [
+            [
+              9,
+              15
+            ],
+            [
+              10,
+              12
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              10,
+              14
+            ],
+            [
+              10,
+              15
+            ]
+          ],
+          "nodes": [
+            "2-AD15",
+            "2-AJ11"
+          ]
+        },
+        {
+          "cells": [
+            [
+              12,
+              3
+            ],
+            [
+              12,
+              4
+            ],
+            [
+              12,
+              5
+            ],
+            [
+              12,
+              6
+            ],
+            [
+              13,
+              3
+            ]
+          ],
+          "nodes": [
+            "2-AD15",
+            "2-X20"
+          ]
+        },
+        {
+          "cells": [
+            [
+              12,
+              12
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              12,
+              14
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              13,
+              15
+            ]
+          ],
+          "nodes": [
+            "2-AD15",
+            "2-AJ20"
+          ]
+        },
+        {
+          "cells": [
+            [
+              18,
+              3
+            ],
+            [
+              19,
+              3
+            ],
+            [
+              19,
+              4
+            ],
+            [
+              19,
+              5
+            ],
+            [
+              19,
+              6
+            ],
+            [
+              19,
+              7
+            ],
+            [
+              20,
+              7
+            ]
+          ],
+          "nodes": [
+            "2-AD27",
+            "2-X20"
+          ]
+        },
+        {
+          "cells": [
+            [
+              18,
+              9
+            ],
+            [
+              19,
+              9
+            ],
+            [
+              20,
+              9
+            ]
+          ],
+          "nodes": [
+            "2-AD20",
+            "2-AD27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              18,
+              15
+            ],
+            [
+              19,
+              11
+            ],
+            [
+              19,
+              12
+            ],
+            [
+              19,
+              13
+            ],
+            [
+              19,
+              14
+            ],
+            [
+              19,
+              15
+            ],
+            [
+              20,
+              11
+            ]
+          ],
+          "nodes": [
+            "2-AD27",
+            "2-AJ20"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              3
+            ],
+            [
+              26,
+              3
+            ],
+            [
+              26,
+              4
+            ],
+            [
+              26,
+              5
+            ],
+            [
+              26,
+              6
+            ]
+          ],
+          "nodes": [
+            "2-AD32",
+            "2-X27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              9
+            ]
+          ],
+          "nodes": [
+            "2-AD27",
+            "2-AD32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              15
+            ],
+            [
+              26,
+              12
+            ],
+            [
+              26,
+              13
+            ],
+            [
+              26,
+              14
+            ],
+            [
+              26,
+              15
+            ]
+          ],
+          "nodes": [
+            "2-AD32",
+            "2-AJ27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              28,
+              3
+            ],
+            [
+              28,
+              4
+            ],
+            [
+              28,
+              5
+            ],
+            [
+              28,
+              6
+            ],
+            [
+              29,
+              3
+            ],
+            [
+              30,
+              3
+            ]
+          ],
+          "nodes": [
+            "2-AD32",
+            "2-X37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              28,
+              12
+            ],
+            [
+              28,
+              13
+            ],
+            [
+              28,
+              14
+            ],
+            [
+              28,
+              15
+            ],
+            [
+              29,
+              15
+            ],
+            [
+              30,
+              15
+            ]
+          ],
+          "nodes": [
+            "2-AD32",
+            "2-AJ37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              9
+            ]
+          ],
+          "nodes": [
+            "2-AD32",
+            "2-AD37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              3
+            ],
+            [
+              36,
+              3
+            ],
+            [
+              37,
+              3
+            ],
+            [
+              37,
+              4
+            ],
+            [
+              37,
+              5
+            ],
+            [
+              37,
+              6
+            ]
+          ],
+          "nodes": [
+            "2-AD42",
+            "2-X37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              9
+            ]
+          ],
+          "nodes": [
+            "2-AD37",
+            "2-AD42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              15
+            ],
+            [
+              36,
+              15
+            ],
+            [
+              37,
+              12
+            ],
+            [
+              37,
+              13
+            ],
+            [
+              37,
+              14
+            ],
+            [
+              37,
+              15
+            ]
+          ],
+          "nodes": [
+            "2-AD42",
+            "2-AJ37"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "columns": 19,
+      "rows": 44,
+      "nodes": [
+        {
+          "id": "3-AX7",
+          "x": 7,
+          "y": 1,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 200,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "WEAPON M1",
+          "reward": null,
+          "icon": "/art/skill-mastery/dfe7e326196b.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AR11",
+          "x": 1,
+          "y": 5,
+          "label": "FEATHER",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Purple Feathers",
+          "icon": "/art/skill-mastery/e56c929ca2e4.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "3-BD11",
+          "x": 13,
+          "y": 5,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AR16",
+          "x": 1,
+          "y": 10,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.16,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "3-BD16",
+          "x": 13,
+          "y": 10,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.07,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AX21",
+          "x": 7,
+          "y": 15,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AR23",
+          "x": 1,
+          "y": 17,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "WEAPON M3",
+          "reward": null,
+          "icon": "/art/skill-mastery/cee6b5f33654.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AR28",
+          "x": 1,
+          "y": 22,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AX28",
+          "x": 7,
+          "y": 22,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "3-BD28",
+          "x": 13,
+          "y": 22,
+          "label": "EMERALDS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20000 Emeralds",
+          "icon": "/art/skill-mastery/305b6daf7e90.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AR35",
+          "x": 1,
+          "y": 29,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AX35",
+          "x": 7,
+          "y": 29,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "1.5x DMG 2x Hits"
+          },
+          "requires": "ACC M3",
+          "reward": null,
+          "icon": "/art/skill-mastery/fd89f29fb089.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "3-BD35",
+          "x": 13,
+          "y": 29,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AX40",
+          "x": 7,
+          "y": 34,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 3,
+          "cost": {
+            "base": 60,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "3-AX45",
+          "x": 7,
+          "y": 39,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 1,
+          "cost": {
+            "base": 30,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              5,
+              9
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              6,
+              8
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              6,
+              10
+            ],
+            [
+              6,
+              11
+            ],
+            [
+              6,
+              12
+            ]
+          ],
+          "nodes": [
+            "3-AR11",
+            "3-AX7",
+            "3-BD11"
+          ]
+        },
+        {
+          "cells": [
+            [
+              9,
+              3
+            ]
+          ],
+          "nodes": [
+            "3-AR11",
+            "3-AR16"
+          ]
+        },
+        {
+          "cells": [
+            [
+              9,
+              15
+            ]
+          ],
+          "nodes": [
+            "3-BD11",
+            "3-BD16"
+          ]
+        },
+        {
+          "cells": [
+            [
+              14,
+              3
+            ],
+            [
+              15,
+              3
+            ],
+            [
+              15,
+              4
+            ],
+            [
+              15,
+              5
+            ],
+            [
+              15,
+              6
+            ]
+          ],
+          "nodes": [
+            "3-AR16",
+            "3-AX21"
+          ]
+        },
+        {
+          "cells": [
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              12
+            ],
+            [
+              15,
+              13
+            ],
+            [
+              15,
+              14
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "3-AX21",
+            "3-BD16"
+          ]
+        },
+        {
+          "cells": [
+            [
+              19,
+              9
+            ],
+            [
+              20,
+              6
+            ],
+            [
+              20,
+              7
+            ],
+            [
+              20,
+              8
+            ],
+            [
+              20,
+              9
+            ],
+            [
+              21,
+              9
+            ]
+          ],
+          "nodes": [
+            "3-AR23",
+            "3-AX21",
+            "3-AX28"
+          ]
+        },
+        {
+          "cells": [
+            [
+              21,
+              3
+            ]
+          ],
+          "nodes": [
+            "3-AR23",
+            "3-AR28"
+          ]
+        },
+        {
+          "cells": [
+            [
+              26,
+              3
+            ],
+            [
+              26,
+              9
+            ],
+            [
+              26,
+              15
+            ],
+            [
+              27,
+              3
+            ],
+            [
+              27,
+              4
+            ],
+            [
+              27,
+              5
+            ],
+            [
+              27,
+              6
+            ],
+            [
+              27,
+              7
+            ],
+            [
+              27,
+              8
+            ],
+            [
+              27,
+              9
+            ],
+            [
+              27,
+              10
+            ],
+            [
+              27,
+              11
+            ],
+            [
+              27,
+              12
+            ],
+            [
+              27,
+              13
+            ],
+            [
+              27,
+              14
+            ],
+            [
+              27,
+              15
+            ],
+            [
+              28,
+              9
+            ]
+          ],
+          "nodes": [
+            "3-AR28",
+            "3-AX28",
+            "3-AX35",
+            "3-BD28"
+          ]
+        },
+        {
+          "cells": [
+            [
+              31,
+              6
+            ]
+          ],
+          "nodes": [
+            "3-AR35",
+            "3-AX35"
+          ]
+        },
+        {
+          "cells": [
+            [
+              31,
+              12
+            ]
+          ],
+          "nodes": [
+            "3-AX35",
+            "3-BD35"
+          ]
+        },
+        {
+          "cells": [
+            [
+              33,
+              3
+            ],
+            [
+              34,
+              3
+            ],
+            [
+              35,
+              3
+            ],
+            [
+              35,
+              4
+            ],
+            [
+              35,
+              5
+            ],
+            [
+              35,
+              6
+            ]
+          ],
+          "nodes": [
+            "3-AR35",
+            "3-AX40"
+          ]
+        },
+        {
+          "cells": [
+            [
+              33,
+              15
+            ],
+            [
+              34,
+              15
+            ],
+            [
+              35,
+              12
+            ],
+            [
+              35,
+              13
+            ],
+            [
+              35,
+              14
+            ],
+            [
+              35,
+              15
+            ]
+          ],
+          "nodes": [
+            "3-AX40",
+            "3-BD35"
+          ]
+        },
+        {
+          "cells": [
+            [
+              38,
+              9
+            ]
+          ],
+          "nodes": [
+            "3-AX40",
+            "3-AX45"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "columns": 19,
+      "rows": 48,
+      "nodes": [
+        {
+          "id": "4-BR7",
+          "x": 7,
+          "y": 1,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 3,
+          "cost": {
+            "base": 120,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 2.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BL12",
+          "x": 1,
+          "y": 6,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 200,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "ACC M1",
+          "reward": null,
+          "icon": "/art/skill-mastery/1fb05f35659e.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR12",
+          "x": 7,
+          "y": 6,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.06,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BX12",
+          "x": 13,
+          "y": 6,
+          "label": "MYTHIC G1",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "ACC M1",
+          "icon": "/art/skill-mastery/7076dfd5831e.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR17",
+          "x": 7,
+          "y": 11,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR22",
+          "x": 7,
+          "y": 16,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.18,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BX22",
+          "x": 13,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "WEAPON M2",
+          "reward": null,
+          "icon": "/art/skill-mastery/acd4d02d399b.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BL27",
+          "x": 1,
+          "y": 21,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR27",
+          "x": 7,
+          "y": 21,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.35,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BL34",
+          "x": 1,
+          "y": 28,
+          "label": "FEATHER",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Green Feathers",
+          "icon": "/art/skill-mastery/e522c4f16d49.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR34",
+          "x": 7,
+          "y": 28,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.05,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BX34",
+          "x": 13,
+          "y": 28,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.08,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR39",
+          "x": 7,
+          "y": 33,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 100,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "ACC M2",
+          "reward": null,
+          "icon": "/art/skill-mastery/afa6a59459de.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BL44",
+          "x": 1,
+          "y": 38,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.8,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR44",
+          "x": 7,
+          "y": 38,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BX44",
+          "x": 13,
+          "y": 38,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "4-BR49",
+          "x": 7,
+          "y": 43,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 2,
+          "cost": {
+            "base": 40,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "4-BL12",
+            "4-BR7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              3,
+              12
+            ],
+            [
+              3,
+              13
+            ],
+            [
+              3,
+              14
+            ],
+            [
+              3,
+              15
+            ],
+            [
+              4,
+              15
+            ],
+            [
+              5,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BR7",
+            "4-BX12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              5,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR12",
+            "4-BR7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ],
+            [
+              11,
+              3
+            ],
+            [
+              12,
+              3
+            ],
+            [
+              13,
+              3
+            ],
+            [
+              14,
+              3
+            ],
+            [
+              15,
+              3
+            ],
+            [
+              16,
+              3
+            ],
+            [
+              17,
+              3
+            ],
+            [
+              18,
+              3
+            ],
+            [
+              19,
+              3
+            ],
+            [
+              20,
+              3
+            ]
+          ],
+          "nodes": [
+            "4-BL12",
+            "4-BL27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR12",
+            "4-BR17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              12
+            ],
+            [
+              11,
+              13
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              11,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BR17",
+            "4-BX12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              13,
+              12
+            ],
+            [
+              13,
+              13
+            ],
+            [
+              13,
+              14
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BR17",
+            "4-BX22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR17",
+            "4-BR22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR22",
+            "4-BR27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              15
+            ],
+            [
+              21,
+              15
+            ],
+            [
+              22,
+              15
+            ],
+            [
+              23,
+              15
+            ],
+            [
+              24,
+              15
+            ],
+            [
+              25,
+              15
+            ],
+            [
+              26,
+              15
+            ],
+            [
+              27,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BX22",
+            "4-BX34"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              3
+            ],
+            [
+              25,
+              9
+            ],
+            [
+              26,
+              3
+            ],
+            [
+              26,
+              4
+            ],
+            [
+              26,
+              5
+            ],
+            [
+              26,
+              6
+            ],
+            [
+              26,
+              7
+            ],
+            [
+              26,
+              8
+            ],
+            [
+              26,
+              9
+            ],
+            [
+              27,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BL27",
+            "4-BR27",
+            "4-BR34"
+          ]
+        },
+        {
+          "cells": [
+            [
+              29,
+              6
+            ]
+          ],
+          "nodes": [
+            "4-BL34",
+            "4-BR34"
+          ]
+        },
+        {
+          "cells": [
+            [
+              32,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR34",
+            "4-BR39"
+          ]
+        },
+        {
+          "cells": [
+            [
+              32,
+              15
+            ],
+            [
+              33,
+              15
+            ],
+            [
+              34,
+              12
+            ],
+            [
+              34,
+              13
+            ],
+            [
+              34,
+              14
+            ],
+            [
+              34,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BR39",
+            "4-BX34"
+          ]
+        },
+        {
+          "cells": [
+            [
+              36,
+              3
+            ],
+            [
+              36,
+              4
+            ],
+            [
+              36,
+              5
+            ],
+            [
+              36,
+              6
+            ],
+            [
+              37,
+              3
+            ]
+          ],
+          "nodes": [
+            "4-BL44",
+            "4-BR39"
+          ]
+        },
+        {
+          "cells": [
+            [
+              36,
+              12
+            ],
+            [
+              36,
+              13
+            ],
+            [
+              36,
+              14
+            ],
+            [
+              36,
+              15
+            ],
+            [
+              37,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BR39",
+            "4-BX44"
+          ]
+        },
+        {
+          "cells": [
+            [
+              37,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR39",
+            "4-BR44"
+          ]
+        },
+        {
+          "cells": [
+            [
+              42,
+              3
+            ],
+            [
+              43,
+              3
+            ],
+            [
+              44,
+              3
+            ],
+            [
+              44,
+              4
+            ],
+            [
+              44,
+              5
+            ],
+            [
+              44,
+              6
+            ]
+          ],
+          "nodes": [
+            "4-BL44",
+            "4-BR49"
+          ]
+        },
+        {
+          "cells": [
+            [
+              42,
+              9
+            ]
+          ],
+          "nodes": [
+            "4-BR44",
+            "4-BR49"
+          ]
+        },
+        {
+          "cells": [
+            [
+              42,
+              15
+            ],
+            [
+              43,
+              15
+            ],
+            [
+              44,
+              12
+            ],
+            [
+              44,
+              13
+            ],
+            [
+              44,
+              14
+            ],
+            [
+              44,
+              15
+            ]
+          ],
+          "nodes": [
+            "4-BR49",
+            "4-BX44"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "columns": 19,
+      "rows": 51,
+      "nodes": [
+        {
+          "id": "5-CL7",
+          "x": 7,
+          "y": 1,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 200,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 2.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CF12",
+          "x": 1,
+          "y": 6,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL12",
+          "x": 7,
+          "y": 6,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.12,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CR12",
+          "x": 13,
+          "y": 6,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CF17",
+          "x": 1,
+          "y": 11,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.06,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL17",
+          "x": 7,
+          "y": 11,
+          "label": "FEATHER",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Green Feathers",
+          "icon": "/art/skill-mastery/e522c4f16d49.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL22",
+          "x": 7,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 200,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "WEAPON M1",
+          "reward": null,
+          "icon": "/art/skill-mastery/775dca2caab8.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CF27",
+          "x": 1,
+          "y": 21,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.05,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CR27",
+          "x": 13,
+          "y": 21,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 2,
+          "cost": {
+            "base": 80,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CF32",
+          "x": 1,
+          "y": 26,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.05,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL32",
+          "x": 7,
+          "y": 26,
+          "label": "FEATHER",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Purple Feathers",
+          "icon": "/art/skill-mastery/e56c929ca2e4.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CR32",
+          "x": 13,
+          "y": 26,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CF37",
+          "x": 1,
+          "y": 31,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 150,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CF42",
+          "x": 1,
+          "y": 36,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.05,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL42",
+          "x": 7,
+          "y": 36,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": {
+            "base": 200,
+            "perLevel": 0
+          },
+          "bonus": {
+            "text": "3x DMG"
+          },
+          "requires": "ACC M1",
+          "reward": null,
+          "icon": "/art/skill-mastery/062aaf22a96f.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL47",
+          "x": 7,
+          "y": 41,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 150,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "5-CL52",
+          "x": 7,
+          "y": 46,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 2,
+          "cost": {
+            "base": 60,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 1.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "5-CF12",
+            "5-CL7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              3,
+              12
+            ],
+            [
+              3,
+              13
+            ],
+            [
+              3,
+              14
+            ],
+            [
+              3,
+              15
+            ],
+            [
+              4,
+              15
+            ],
+            [
+              5,
+              15
+            ]
+          ],
+          "nodes": [
+            "5-CL7",
+            "5-CR12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              5,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CL12",
+            "5-CL7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ]
+          ],
+          "nodes": [
+            "5-CF12",
+            "5-CF17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CL12",
+            "5-CL17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              15
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              13,
+              12
+            ],
+            [
+              13,
+              13
+            ],
+            [
+              13,
+              14
+            ],
+            [
+              13,
+              15
+            ]
+          ],
+          "nodes": [
+            "5-CL17",
+            "5-CR12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              3
+            ],
+            [
+              16,
+              3
+            ],
+            [
+              16,
+              4
+            ],
+            [
+              16,
+              5
+            ],
+            [
+              16,
+              6
+            ]
+          ],
+          "nodes": [
+            "5-CF17",
+            "5-CL22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CL17",
+            "5-CL22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              18,
+              3
+            ],
+            [
+              18,
+              4
+            ],
+            [
+              18,
+              5
+            ],
+            [
+              18,
+              6
+            ],
+            [
+              19,
+              3
+            ],
+            [
+              20,
+              3
+            ]
+          ],
+          "nodes": [
+            "5-CF27",
+            "5-CL22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              18,
+              12
+            ],
+            [
+              18,
+              13
+            ],
+            [
+              18,
+              14
+            ],
+            [
+              18,
+              15
+            ],
+            [
+              19,
+              15
+            ],
+            [
+              20,
+              15
+            ]
+          ],
+          "nodes": [
+            "5-CL22",
+            "5-CR27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              9
+            ],
+            [
+              21,
+              9
+            ],
+            [
+              22,
+              9
+            ],
+            [
+              23,
+              9
+            ],
+            [
+              24,
+              9
+            ],
+            [
+              25,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CL22",
+            "5-CL32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              3
+            ]
+          ],
+          "nodes": [
+            "5-CF27",
+            "5-CF32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              15
+            ]
+          ],
+          "nodes": [
+            "5-CR27",
+            "5-CR32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              3
+            ]
+          ],
+          "nodes": [
+            "5-CF32",
+            "5-CF37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              9
+            ],
+            [
+              31,
+              9
+            ],
+            [
+              32,
+              9
+            ],
+            [
+              33,
+              6
+            ],
+            [
+              33,
+              7
+            ],
+            [
+              33,
+              8
+            ],
+            [
+              33,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CF37",
+            "5-CL32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              15
+            ],
+            [
+              31,
+              15
+            ],
+            [
+              32,
+              15
+            ],
+            [
+              33,
+              15
+            ],
+            [
+              34,
+              15
+            ],
+            [
+              35,
+              15
+            ],
+            [
+              36,
+              15
+            ],
+            [
+              37,
+              12
+            ],
+            [
+              37,
+              13
+            ],
+            [
+              37,
+              14
+            ],
+            [
+              37,
+              15
+            ]
+          ],
+          "nodes": [
+            "5-CL42",
+            "5-CR32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              3
+            ]
+          ],
+          "nodes": [
+            "5-CF37",
+            "5-CF42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              3
+            ],
+            [
+              41,
+              3
+            ],
+            [
+              42,
+              3
+            ],
+            [
+              42,
+              4
+            ],
+            [
+              42,
+              5
+            ],
+            [
+              42,
+              6
+            ]
+          ],
+          "nodes": [
+            "5-CF42",
+            "5-CL47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CL42",
+            "5-CL47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              9
+            ]
+          ],
+          "nodes": [
+            "5-CL47",
+            "5-CL52"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "columns": 19,
+      "rows": 56,
+      "nodes": [
+        {
+          "id": "6-DF7",
+          "x": 7,
+          "y": 1,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · Faster Animation"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/daa17f75f25e.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "6-CZ12",
+          "x": 1,
+          "y": 6,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF12",
+          "x": 7,
+          "y": 6,
+          "label": "FEATHER",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Green Feathers",
+          "icon": "/art/skill-mastery/e522c4f16d49.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DL12",
+          "x": 13,
+          "y": 6,
+          "label": "HP AMP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF22",
+          "x": 7,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · Stops Time"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/8b0a31999b40.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DL22",
+          "x": 13,
+          "y": 16,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "6-CZ32",
+          "x": 1,
+          "y": 26,
+          "label": "EMERALDS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "10000 Emeralds",
+          "icon": "/art/skill-mastery/305b6daf7e90.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF32",
+          "x": 7,
+          "y": 26,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DL32",
+          "x": 13,
+          "y": 26,
+          "label": "HP REGEN AMP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF37",
+          "x": 7,
+          "y": 31,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.8,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DL37",
+          "x": 13,
+          "y": 31,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · -5 Mana Cost"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/cee6b5f33654.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "6-CZ47",
+          "x": 1,
+          "y": 41,
+          "label": "SKILL CARD",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "100 Skill Summon Tickets",
+          "icon": "/art/skill-mastery/3d94ef87897f.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF47",
+          "x": 7,
+          "y": 41,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DL47",
+          "x": 13,
+          "y": 41,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "6-CZ52",
+          "x": 1,
+          "y": 46,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF52",
+          "x": 7,
+          "y": 46,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "6-DF57",
+          "x": 7,
+          "y": 51,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "6-CZ12",
+            "6-DF7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              3,
+              12
+            ],
+            [
+              3,
+              13
+            ],
+            [
+              3,
+              14
+            ],
+            [
+              3,
+              15
+            ],
+            [
+              4,
+              15
+            ],
+            [
+              5,
+              15
+            ]
+          ],
+          "nodes": [
+            "6-DF7",
+            "6-DL12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ],
+            [
+              11,
+              3
+            ],
+            [
+              12,
+              3
+            ],
+            [
+              13,
+              3
+            ],
+            [
+              14,
+              3
+            ],
+            [
+              15,
+              3
+            ],
+            [
+              16,
+              3
+            ],
+            [
+              17,
+              3
+            ],
+            [
+              17,
+              4
+            ],
+            [
+              17,
+              5
+            ],
+            [
+              17,
+              6
+            ]
+          ],
+          "nodes": [
+            "6-CZ12",
+            "6-DF22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              9
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              11,
+              9
+            ],
+            [
+              11,
+              13
+            ],
+            [
+              12,
+              9
+            ],
+            [
+              12,
+              10
+            ],
+            [
+              12,
+              11
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              13,
+              9
+            ],
+            [
+              14,
+              9
+            ],
+            [
+              15,
+              9
+            ]
+          ],
+          "nodes": [
+            "6-DF12",
+            "6-DF22",
+            "6-DL12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              15
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "6-DL12",
+            "6-DL22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              9
+            ],
+            [
+              21,
+              9
+            ],
+            [
+              22,
+              9
+            ],
+            [
+              23,
+              9
+            ],
+            [
+              24,
+              9
+            ],
+            [
+              25,
+              9
+            ]
+          ],
+          "nodes": [
+            "6-DF22",
+            "6-DF32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              11
+            ],
+            [
+              20,
+              15
+            ],
+            [
+              21,
+              11
+            ],
+            [
+              21,
+              15
+            ],
+            [
+              22,
+              11
+            ],
+            [
+              22,
+              12
+            ],
+            [
+              22,
+              13
+            ],
+            [
+              22,
+              14
+            ],
+            [
+              22,
+              15
+            ],
+            [
+              23,
+              15
+            ],
+            [
+              24,
+              15
+            ],
+            [
+              25,
+              15
+            ]
+          ],
+          "nodes": [
+            "6-DF22",
+            "6-DL22",
+            "6-DL32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              27,
+              6
+            ]
+          ],
+          "nodes": [
+            "6-CZ32",
+            "6-DF32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              9
+            ]
+          ],
+          "nodes": [
+            "6-DF32",
+            "6-DF37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              15
+            ]
+          ],
+          "nodes": [
+            "6-DL32",
+            "6-DL37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              33,
+              3
+            ],
+            [
+              33,
+              4
+            ],
+            [
+              33,
+              5
+            ],
+            [
+              33,
+              6
+            ],
+            [
+              34,
+              3
+            ],
+            [
+              35,
+              3
+            ],
+            [
+              36,
+              3
+            ],
+            [
+              37,
+              3
+            ],
+            [
+              38,
+              3
+            ],
+            [
+              39,
+              3
+            ],
+            [
+              40,
+              3
+            ]
+          ],
+          "nodes": [
+            "6-CZ47",
+            "6-DF37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              9
+            ],
+            [
+              35,
+              13
+            ],
+            [
+              36,
+              9
+            ],
+            [
+              36,
+              13
+            ],
+            [
+              37,
+              9
+            ],
+            [
+              37,
+              10
+            ],
+            [
+              37,
+              11
+            ],
+            [
+              37,
+              12
+            ],
+            [
+              37,
+              13
+            ],
+            [
+              38,
+              9
+            ],
+            [
+              39,
+              9
+            ],
+            [
+              40,
+              9
+            ]
+          ],
+          "nodes": [
+            "6-DF37",
+            "6-DF47",
+            "6-DL37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              15
+            ],
+            [
+              36,
+              15
+            ],
+            [
+              37,
+              15
+            ],
+            [
+              38,
+              15
+            ],
+            [
+              39,
+              15
+            ],
+            [
+              40,
+              15
+            ]
+          ],
+          "nodes": [
+            "6-DL37",
+            "6-DL47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              3
+            ]
+          ],
+          "nodes": [
+            "6-CZ47",
+            "6-CZ52"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              9
+            ]
+          ],
+          "nodes": [
+            "6-DF47",
+            "6-DF52"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              15
+            ],
+            [
+              46,
+              15
+            ],
+            [
+              47,
+              12
+            ],
+            [
+              47,
+              13
+            ],
+            [
+              47,
+              14
+            ],
+            [
+              47,
+              15
+            ]
+          ],
+          "nodes": [
+            "6-DF52",
+            "6-DL47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              50,
+              3
+            ],
+            [
+              51,
+              3
+            ],
+            [
+              52,
+              3
+            ],
+            [
+              52,
+              4
+            ],
+            [
+              52,
+              5
+            ],
+            [
+              52,
+              6
+            ]
+          ],
+          "nodes": [
+            "6-CZ52",
+            "6-DF57"
+          ]
+        },
+        {
+          "cells": [
+            [
+              50,
+              9
+            ]
+          ],
+          "nodes": [
+            "6-DF52",
+            "6-DF57"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 7,
+      "columns": 19,
+      "rows": 51,
+      "nodes": [
+        {
+          "id": "7-DZ7",
+          "x": 7,
+          "y": 1,
+          "label": "HP AMP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DT12",
+          "x": 1,
+          "y": 6,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · +4/5/2 Range"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/6c232194cd80.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DZ12",
+          "x": 7,
+          "y": 6,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 600,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "7-EF12",
+          "x": 13,
+          "y": 6,
+          "label": "FEATHER",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Purple Feathers",
+          "icon": "/art/skill-mastery/e56c929ca2e4.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DT17",
+          "x": 1,
+          "y": 11,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DZ17",
+          "x": 7,
+          "y": 11,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · -1 Strike Required"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/e698b6bac97c.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DT27",
+          "x": 1,
+          "y": 21,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.15,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DZ27",
+          "x": 7,
+          "y": 21,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "7-EF27",
+          "x": 13,
+          "y": 21,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 450,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DT32",
+          "x": 1,
+          "y": 26,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "7-EF32",
+          "x": 13,
+          "y": 26,
+          "label": "HP REGEN AMP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DT37",
+          "x": 1,
+          "y": 31,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · +2 Range"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/afa6a59459de.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DZ37",
+          "x": 7,
+          "y": 31,
+          "label": "DIAMONDS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "50000 Diamonds",
+          "icon": "/art/skill-mastery/3c51fe96d350.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DT47",
+          "x": 1,
+          "y": 41,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 5,
+          "cost": {
+            "base": 100,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 4.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DZ47",
+          "x": 7,
+          "y": 41,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "7-EF47",
+          "x": 13,
+          "y": 41,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "7-DZ52",
+          "x": 7,
+          "y": 46,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 100,
+            "perLevel": -10
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "7-DT12",
+            "7-DZ7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              3,
+              12
+            ],
+            [
+              3,
+              13
+            ],
+            [
+              3,
+              14
+            ],
+            [
+              3,
+              15
+            ],
+            [
+              4,
+              15
+            ],
+            [
+              5,
+              15
+            ]
+          ],
+          "nodes": [
+            "7-DZ7",
+            "7-EF12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              5,
+              9
+            ]
+          ],
+          "nodes": [
+            "7-DZ12",
+            "7-DZ7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ]
+          ],
+          "nodes": [
+            "7-DT12",
+            "7-DT17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              9
+            ]
+          ],
+          "nodes": [
+            "7-DZ12",
+            "7-DZ17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              13
+            ],
+            [
+              11,
+              13
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              12,
+              13
+            ]
+          ],
+          "nodes": [
+            "7-DZ17",
+            "7-EF12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              15
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ],
+            [
+              16,
+              15
+            ],
+            [
+              17,
+              15
+            ],
+            [
+              18,
+              15
+            ],
+            [
+              19,
+              15
+            ],
+            [
+              20,
+              15
+            ]
+          ],
+          "nodes": [
+            "7-EF12",
+            "7-EF27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              3
+            ],
+            [
+              15,
+              7
+            ],
+            [
+              16,
+              3
+            ],
+            [
+              16,
+              7
+            ],
+            [
+              17,
+              3
+            ],
+            [
+              17,
+              4
+            ],
+            [
+              17,
+              5
+            ],
+            [
+              17,
+              6
+            ],
+            [
+              17,
+              7
+            ],
+            [
+              18,
+              3
+            ],
+            [
+              19,
+              3
+            ],
+            [
+              20,
+              3
+            ]
+          ],
+          "nodes": [
+            "7-DT17",
+            "7-DT27",
+            "7-DZ17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              9
+            ],
+            [
+              16,
+              9
+            ],
+            [
+              17,
+              9
+            ],
+            [
+              18,
+              9
+            ],
+            [
+              19,
+              9
+            ],
+            [
+              20,
+              9
+            ]
+          ],
+          "nodes": [
+            "7-DZ17",
+            "7-DZ27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              3
+            ]
+          ],
+          "nodes": [
+            "7-DT27",
+            "7-DT32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              8
+            ],
+            [
+              26,
+              8
+            ],
+            [
+              27,
+              6
+            ],
+            [
+              27,
+              7
+            ],
+            [
+              27,
+              8
+            ]
+          ],
+          "nodes": [
+            "7-DT32",
+            "7-DZ27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              10
+            ],
+            [
+              26,
+              10
+            ],
+            [
+              27,
+              10
+            ],
+            [
+              27,
+              11
+            ],
+            [
+              27,
+              12
+            ]
+          ],
+          "nodes": [
+            "7-DZ27",
+            "7-EF32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              15
+            ]
+          ],
+          "nodes": [
+            "7-EF27",
+            "7-EF32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              3
+            ]
+          ],
+          "nodes": [
+            "7-DT32",
+            "7-DT37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              15
+            ],
+            [
+              31,
+              15
+            ],
+            [
+              32,
+              15
+            ],
+            [
+              33,
+              15
+            ],
+            [
+              34,
+              15
+            ],
+            [
+              35,
+              15
+            ],
+            [
+              36,
+              15
+            ],
+            [
+              37,
+              15
+            ],
+            [
+              38,
+              15
+            ],
+            [
+              39,
+              15
+            ],
+            [
+              40,
+              15
+            ]
+          ],
+          "nodes": [
+            "7-EF32",
+            "7-EF47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              32,
+              6
+            ]
+          ],
+          "nodes": [
+            "7-DT37",
+            "7-DZ37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              3
+            ],
+            [
+              36,
+              3
+            ],
+            [
+              37,
+              3
+            ],
+            [
+              38,
+              3
+            ],
+            [
+              39,
+              3
+            ],
+            [
+              40,
+              3
+            ]
+          ],
+          "nodes": [
+            "7-DT37",
+            "7-DT47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              5
+            ],
+            [
+              36,
+              5
+            ],
+            [
+              37,
+              5
+            ],
+            [
+              37,
+              6
+            ],
+            [
+              37,
+              7
+            ],
+            [
+              37,
+              8
+            ],
+            [
+              37,
+              9
+            ],
+            [
+              38,
+              9
+            ],
+            [
+              39,
+              9
+            ],
+            [
+              40,
+              9
+            ]
+          ],
+          "nodes": [
+            "7-DT37",
+            "7-DZ47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              3
+            ],
+            [
+              46,
+              3
+            ],
+            [
+              47,
+              3
+            ],
+            [
+              47,
+              4
+            ],
+            [
+              47,
+              5
+            ],
+            [
+              47,
+              6
+            ]
+          ],
+          "nodes": [
+            "7-DT47",
+            "7-DZ52"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              9
+            ]
+          ],
+          "nodes": [
+            "7-DZ47",
+            "7-DZ52"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              15
+            ],
+            [
+              46,
+              15
+            ],
+            [
+              47,
+              12
+            ],
+            [
+              47,
+              13
+            ],
+            [
+              47,
+              14
+            ],
+            [
+              47,
+              15
+            ]
+          ],
+          "nodes": [
+            "7-DZ52",
+            "7-EF47"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "columns": 19,
+      "rows": 46,
+      "nodes": [
+        {
+          "id": "8-ET7",
+          "x": 7,
+          "y": 1,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1.25,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EN12",
+          "x": 1,
+          "y": 6,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · -2s cooldown"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/dfe7e326196b.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "8-ET12",
+          "x": 7,
+          "y": 6,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EN22",
+          "x": 1,
+          "y": 16,
+          "label": "HP REGEN AMP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "8-ET22",
+          "x": 7,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · Increased range"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/fd89f29fb089.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EZ22",
+          "x": 13,
+          "y": 16,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 15,
+          "cost": {
+            "base": 450,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EN32",
+          "x": 1,
+          "y": 26,
+          "label": "FEATHERS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "10 Feather Bundles",
+          "icon": "/art/skill-mastery/e2e0869db4f7.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "8-ET32",
+          "x": 7,
+          "y": 26,
+          "label": "HP AMP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EZ32",
+          "x": 13,
+          "y": 26,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.9,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "8-ET37",
+          "x": 7,
+          "y": 31,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EN42",
+          "x": 1,
+          "y": 36,
+          "label": "SKILL CARD",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "100 Skill Summon Tickets",
+          "icon": "/art/skill-mastery/3d94ef87897f.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "8-ET42",
+          "x": 7,
+          "y": 36,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "8-EZ42",
+          "x": 13,
+          "y": 36,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · +50% DMG to stunned"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/7a39b9f6abe4.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "8-ET47",
+          "x": 7,
+          "y": 41,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "8-EN12",
+            "8-ET7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              5,
+              9
+            ]
+          ],
+          "nodes": [
+            "8-ET12",
+            "8-ET7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              7,
+              12
+            ],
+            [
+              7,
+              13
+            ],
+            [
+              7,
+              14
+            ],
+            [
+              7,
+              15
+            ],
+            [
+              8,
+              15
+            ],
+            [
+              9,
+              15
+            ],
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              15
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "8-ET12",
+            "8-EZ22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ],
+            [
+              11,
+              3
+            ],
+            [
+              12,
+              3
+            ],
+            [
+              13,
+              3
+            ],
+            [
+              14,
+              3
+            ],
+            [
+              15,
+              3
+            ]
+          ],
+          "nodes": [
+            "8-EN12",
+            "8-EN22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              5
+            ],
+            [
+              10,
+              9
+            ],
+            [
+              11,
+              5
+            ],
+            [
+              11,
+              9
+            ],
+            [
+              12,
+              5
+            ],
+            [
+              12,
+              6
+            ],
+            [
+              12,
+              7
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              12,
+              9
+            ],
+            [
+              13,
+              9
+            ],
+            [
+              14,
+              9
+            ],
+            [
+              15,
+              9
+            ]
+          ],
+          "nodes": [
+            "8-EN12",
+            "8-ET12",
+            "8-ET22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              3
+            ],
+            [
+              20,
+              9
+            ],
+            [
+              21,
+              3
+            ],
+            [
+              21,
+              9
+            ],
+            [
+              22,
+              3
+            ],
+            [
+              22,
+              4
+            ],
+            [
+              22,
+              5
+            ],
+            [
+              22,
+              6
+            ],
+            [
+              22,
+              7
+            ],
+            [
+              22,
+              8
+            ],
+            [
+              22,
+              9
+            ],
+            [
+              23,
+              9
+            ],
+            [
+              24,
+              9
+            ],
+            [
+              25,
+              9
+            ]
+          ],
+          "nodes": [
+            "8-EN22",
+            "8-ET22",
+            "8-ET32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              11
+            ],
+            [
+              20,
+              15
+            ],
+            [
+              21,
+              11
+            ],
+            [
+              21,
+              15
+            ],
+            [
+              22,
+              11
+            ],
+            [
+              22,
+              12
+            ],
+            [
+              22,
+              13
+            ],
+            [
+              22,
+              14
+            ],
+            [
+              22,
+              15
+            ],
+            [
+              23,
+              15
+            ],
+            [
+              24,
+              15
+            ],
+            [
+              25,
+              15
+            ]
+          ],
+          "nodes": [
+            "8-ET22",
+            "8-EZ22",
+            "8-EZ32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              27,
+              6
+            ]
+          ],
+          "nodes": [
+            "8-EN32",
+            "8-ET32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              9
+            ]
+          ],
+          "nodes": [
+            "8-ET32",
+            "8-ET37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              15
+            ],
+            [
+              31,
+              15
+            ],
+            [
+              32,
+              15
+            ],
+            [
+              33,
+              15
+            ],
+            [
+              34,
+              15
+            ],
+            [
+              35,
+              15
+            ]
+          ],
+          "nodes": [
+            "8-EZ32",
+            "8-EZ42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              9
+            ]
+          ],
+          "nodes": [
+            "8-ET37",
+            "8-ET42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              37,
+              6
+            ]
+          ],
+          "nodes": [
+            "8-EN42",
+            "8-ET42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              9
+            ]
+          ],
+          "nodes": [
+            "8-ET42",
+            "8-ET47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              15
+            ],
+            [
+              41,
+              15
+            ],
+            [
+              42,
+              12
+            ],
+            [
+              42,
+              13
+            ],
+            [
+              42,
+              14
+            ],
+            [
+              42,
+              15
+            ]
+          ],
+          "nodes": [
+            "8-ET47",
+            "8-EZ42"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 9,
+      "columns": 19,
+      "rows": 46,
+      "nodes": [
+        {
+          "id": "9-FN7",
+          "x": 7,
+          "y": 1,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · +20% monster DMG"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/1fb05f35659e.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FH12",
+          "x": 1,
+          "y": 6,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.75,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FN12",
+          "x": 7,
+          "y": 6,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FT12",
+          "x": 13,
+          "y": 6,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 1.25,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FH22",
+          "x": 1,
+          "y": 16,
+          "label": "HP REGEN AMP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 800,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FN22",
+          "x": 7,
+          "y": 16,
+          "label": "LIGHT SHARDS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "1000 Light Shards",
+          "icon": "/art/skill-mastery/5595628c374c.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FT22",
+          "x": 13,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · +20% boss DMG"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/acd4d02d399b.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FN27",
+          "x": 7,
+          "y": 21,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FT27",
+          "x": 13,
+          "y": 21,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.4,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FH37",
+          "x": 1,
+          "y": 31,
+          "label": "EMERALDS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20000 Emeralds",
+          "icon": "/art/skill-mastery/305b6daf7e90.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FN37",
+          "x": 7,
+          "y": 31,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · Extra range and speed"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/94e8c9a27ed8.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FT37",
+          "x": 13,
+          "y": 31,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FH42",
+          "x": 1,
+          "y": 36,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FT42",
+          "x": 13,
+          "y": 36,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "9-FN47",
+          "x": 7,
+          "y": 41,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 100,
+            "perLevel": -10
+          },
+          "bonus": {
+            "perLevel": 0.25,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "9-FH12",
+            "9-FN7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              3,
+              12
+            ],
+            [
+              3,
+              13
+            ],
+            [
+              3,
+              14
+            ],
+            [
+              3,
+              15
+            ],
+            [
+              4,
+              15
+            ],
+            [
+              5,
+              15
+            ]
+          ],
+          "nodes": [
+            "9-FN7",
+            "9-FT12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              5,
+              9
+            ]
+          ],
+          "nodes": [
+            "9-FN12",
+            "9-FN7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ],
+            [
+              10,
+              8
+            ],
+            [
+              11,
+              3
+            ],
+            [
+              11,
+              8
+            ],
+            [
+              12,
+              3
+            ],
+            [
+              12,
+              4
+            ],
+            [
+              12,
+              5
+            ],
+            [
+              12,
+              6
+            ],
+            [
+              12,
+              7
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              13,
+              3
+            ],
+            [
+              14,
+              3
+            ],
+            [
+              15,
+              3
+            ]
+          ],
+          "nodes": [
+            "9-FH12",
+            "9-FH22",
+            "9-FN12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              10
+            ],
+            [
+              11,
+              15
+            ],
+            [
+              12,
+              10
+            ],
+            [
+              12,
+              11
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              12,
+              14
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "9-FN12",
+            "9-FT12",
+            "9-FT22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              17,
+              6
+            ]
+          ],
+          "nodes": [
+            "9-FH22",
+            "9-FN22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              3
+            ],
+            [
+              21,
+              3
+            ],
+            [
+              22,
+              3
+            ],
+            [
+              22,
+              4
+            ],
+            [
+              22,
+              5
+            ],
+            [
+              22,
+              6
+            ]
+          ],
+          "nodes": [
+            "9-FH22",
+            "9-FN27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              15
+            ]
+          ],
+          "nodes": [
+            "9-FT22",
+            "9-FT27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              8
+            ],
+            [
+              26,
+              8
+            ],
+            [
+              27,
+              8
+            ],
+            [
+              28,
+              8
+            ],
+            [
+              29,
+              8
+            ],
+            [
+              30,
+              8
+            ]
+          ],
+          "nodes": [
+            "9-FN27",
+            "9-FN37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              10
+            ],
+            [
+              25,
+              15
+            ],
+            [
+              26,
+              10
+            ],
+            [
+              26,
+              15
+            ],
+            [
+              27,
+              10
+            ],
+            [
+              27,
+              11
+            ],
+            [
+              27,
+              12
+            ],
+            [
+              27,
+              13
+            ],
+            [
+              27,
+              14
+            ],
+            [
+              27,
+              15
+            ],
+            [
+              28,
+              15
+            ],
+            [
+              29,
+              15
+            ],
+            [
+              30,
+              15
+            ]
+          ],
+          "nodes": [
+            "9-FN27",
+            "9-FT27",
+            "9-FT37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              32,
+              6
+            ]
+          ],
+          "nodes": [
+            "9-FH37",
+            "9-FN37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              8
+            ],
+            [
+              36,
+              8
+            ],
+            [
+              37,
+              6
+            ],
+            [
+              37,
+              7
+            ],
+            [
+              37,
+              8
+            ]
+          ],
+          "nodes": [
+            "9-FH42",
+            "9-FN37"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              10
+            ],
+            [
+              36,
+              10
+            ],
+            [
+              37,
+              10
+            ],
+            [
+              37,
+              11
+            ],
+            [
+              37,
+              12
+            ]
+          ],
+          "nodes": [
+            "9-FN37",
+            "9-FT42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              35,
+              15
+            ]
+          ],
+          "nodes": [
+            "9-FT37",
+            "9-FT42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              3
+            ],
+            [
+              41,
+              3
+            ],
+            [
+              42,
+              3
+            ],
+            [
+              42,
+              4
+            ],
+            [
+              42,
+              5
+            ],
+            [
+              42,
+              6
+            ]
+          ],
+          "nodes": [
+            "9-FH42",
+            "9-FN47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              15
+            ],
+            [
+              41,
+              15
+            ],
+            [
+              42,
+              12
+            ],
+            [
+              42,
+              13
+            ],
+            [
+              42,
+              14
+            ],
+            [
+              42,
+              15
+            ]
+          ],
+          "nodes": [
+            "9-FN47",
+            "9-FT42"
+          ]
+        }
+      ]
+    },
+    {
+      "page": 10,
+      "columns": 19,
+      "rows": 51,
+      "nodes": [
+        {
+          "id": "10-GH7",
+          "x": 7,
+          "y": 1,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 400,
+            "perLevel": -40
+          },
+          "bonus": {
+            "perLevel": 2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GB12",
+          "x": 1,
+          "y": 6,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH12",
+          "x": 7,
+          "y": 6,
+          "label": "FEATHERS",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "20 Black Feathers",
+          "icon": "/art/skill-mastery/3da248f1e0b9.png",
+          "badge": null,
+          "iconSize": 56,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GN12",
+          "x": 13,
+          "y": 6,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.6,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH17",
+          "x": 7,
+          "y": 11,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GB22",
+          "x": 1,
+          "y": 16,
+          "label": "HP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH22",
+          "x": 7,
+          "y": 16,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.25,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GN22",
+          "x": 13,
+          "y": 16,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · 50% DMG Resistance"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/775dca2caab8.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GB27",
+          "x": 1,
+          "y": 21,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 300,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 0.5,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GN27",
+          "x": 13,
+          "y": 21,
+          "label": "HP REGEN AMP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 600,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GB32",
+          "x": 1,
+          "y": 26,
+          "label": "SKILL",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": {
+            "text": "3x DMG · DMG to Fire Enemies"
+          },
+          "requires": "BATTLE",
+          "reward": null,
+          "icon": "/art/skill-mastery/226351867609.png",
+          "badge": null,
+          "iconSize": 128,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH32",
+          "x": 7,
+          "y": 26,
+          "label": "STONES",
+          "kind": "check",
+          "maxLevel": 1,
+          "cost": null,
+          "bonus": null,
+          "requires": null,
+          "reward": "100,000 attribute stones",
+          "icon": "/art/skill-mastery/9d73558587e8.png",
+          "badge": null,
+          "iconSize": 64,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GB42",
+          "x": 1,
+          "y": 36,
+          "label": "HP REGEN",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 100,
+            "perLevel": -10
+          },
+          "bonus": {
+            "perLevel": 0.3,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/0868182fee21.png",
+          "badge": null,
+          "iconSize": 41,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH42",
+          "x": 7,
+          "y": 36,
+          "label": "MONSTER GOLD",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/fbda69dd6a0d.png",
+          "badge": null,
+          "iconSize": 47,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GN42",
+          "x": 13,
+          "y": 36,
+          "label": "EXP",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 200,
+            "perLevel": -20
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/c3222fbbdd36.png",
+          "badge": null,
+          "iconSize": 57,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH47",
+          "x": 7,
+          "y": 41,
+          "label": "HP AMP",
+          "kind": "level",
+          "maxLevel": 20,
+          "cost": {
+            "base": 600,
+            "perLevel": -30
+          },
+          "bonus": {
+            "perLevel": 1,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/1c531a125db8.png",
+          "badge": null,
+          "iconSize": 42,
+          "badgeSize": null
+        },
+        {
+          "id": "10-GH52",
+          "x": 7,
+          "y": 46,
+          "label": "ATK",
+          "kind": "level",
+          "maxLevel": 10,
+          "cost": {
+            "base": 100,
+            "perLevel": -10
+          },
+          "bonus": {
+            "perLevel": 0.2,
+            "percent": true
+          },
+          "requires": null,
+          "reward": null,
+          "icon": "/art/skill-mastery/a441fa07184e.png",
+          "badge": null,
+          "iconSize": 33,
+          "badgeSize": null
+        }
+      ],
+      "links": [
+        {
+          "cells": [
+            [
+              3,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              3,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "nodes": [
+            "10-GB12",
+            "10-GH7"
+          ]
+        },
+        {
+          "cells": [
+            [
+              3,
+              12
+            ],
+            [
+              3,
+              13
+            ],
+            [
+              3,
+              14
+            ],
+            [
+              3,
+              15
+            ],
+            [
+              4,
+              15
+            ],
+            [
+              5,
+              15
+            ]
+          ],
+          "nodes": [
+            "10-GH7",
+            "10-GN12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              8,
+              12
+            ]
+          ],
+          "nodes": [
+            "10-GH12",
+            "10-GN12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              3
+            ],
+            [
+              11,
+              3
+            ],
+            [
+              11,
+              4
+            ],
+            [
+              11,
+              5
+            ],
+            [
+              11,
+              6
+            ]
+          ],
+          "nodes": [
+            "10-GB12",
+            "10-GH17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              10,
+              15
+            ],
+            [
+              11,
+              12
+            ],
+            [
+              11,
+              13
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              11,
+              15
+            ]
+          ],
+          "nodes": [
+            "10-GH17",
+            "10-GN12"
+          ]
+        },
+        {
+          "cells": [
+            [
+              13,
+              3
+            ],
+            [
+              13,
+              4
+            ],
+            [
+              13,
+              5
+            ],
+            [
+              13,
+              6
+            ],
+            [
+              14,
+              3
+            ],
+            [
+              15,
+              3
+            ]
+          ],
+          "nodes": [
+            "10-GB22",
+            "10-GH17"
+          ]
+        },
+        {
+          "cells": [
+            [
+              13,
+              12
+            ],
+            [
+              13,
+              13
+            ],
+            [
+              13,
+              14
+            ],
+            [
+              13,
+              15
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              15,
+              15
+            ]
+          ],
+          "nodes": [
+            "10-GH17",
+            "10-GN22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              15,
+              9
+            ]
+          ],
+          "nodes": [
+            "10-GH17",
+            "10-GH22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              3
+            ]
+          ],
+          "nodes": [
+            "10-GB22",
+            "10-GB27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              22,
+              6
+            ],
+            [
+              22,
+              7
+            ],
+            [
+              22,
+              8
+            ]
+          ],
+          "nodes": [
+            "10-GB27",
+            "10-GH22"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              10
+            ],
+            [
+              21,
+              10
+            ],
+            [
+              22,
+              10
+            ],
+            [
+              22,
+              11
+            ],
+            [
+              22,
+              12
+            ]
+          ],
+          "nodes": [
+            "10-GH22",
+            "10-GN27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              20,
+              15
+            ]
+          ],
+          "nodes": [
+            "10-GN22",
+            "10-GN27"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              3
+            ]
+          ],
+          "nodes": [
+            "10-GB27",
+            "10-GB32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              25,
+              15
+            ],
+            [
+              26,
+              15
+            ],
+            [
+              27,
+              15
+            ],
+            [
+              28,
+              15
+            ],
+            [
+              29,
+              15
+            ],
+            [
+              30,
+              15
+            ],
+            [
+              31,
+              15
+            ],
+            [
+              32,
+              15
+            ],
+            [
+              33,
+              15
+            ],
+            [
+              34,
+              15
+            ],
+            [
+              35,
+              15
+            ]
+          ],
+          "nodes": [
+            "10-GN27",
+            "10-GN42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              27,
+              6
+            ]
+          ],
+          "nodes": [
+            "10-GB32",
+            "10-GH32"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              3
+            ],
+            [
+              31,
+              3
+            ],
+            [
+              32,
+              3
+            ],
+            [
+              33,
+              3
+            ],
+            [
+              34,
+              3
+            ],
+            [
+              35,
+              3
+            ]
+          ],
+          "nodes": [
+            "10-GB32",
+            "10-GB42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              30,
+              5
+            ],
+            [
+              31,
+              5
+            ],
+            [
+              32,
+              5
+            ],
+            [
+              32,
+              6
+            ],
+            [
+              32,
+              7
+            ],
+            [
+              32,
+              8
+            ],
+            [
+              32,
+              9
+            ],
+            [
+              33,
+              9
+            ],
+            [
+              34,
+              9
+            ],
+            [
+              35,
+              9
+            ]
+          ],
+          "nodes": [
+            "10-GB32",
+            "10-GH42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              3
+            ],
+            [
+              41,
+              3
+            ],
+            [
+              42,
+              3
+            ],
+            [
+              42,
+              4
+            ],
+            [
+              42,
+              5
+            ],
+            [
+              42,
+              6
+            ]
+          ],
+          "nodes": [
+            "10-GB42",
+            "10-GH47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              9
+            ]
+          ],
+          "nodes": [
+            "10-GH42",
+            "10-GH47"
+          ]
+        },
+        {
+          "cells": [
+            [
+              40,
+              15
+            ],
+            [
+              41,
+              15
+            ],
+            [
+              42,
+              12
+            ],
+            [
+              42,
+              13
+            ],
+            [
+              42,
+              14
+            ],
+            [
+              42,
+              15
+            ]
+          ],
+          "nodes": [
+            "10-GH47",
+            "10-GN42"
+          ]
+        },
+        {
+          "cells": [
+            [
+              45,
+              9
+            ]
+          ],
+          "nodes": [
+            "10-GH47",
+            "10-GH52"
+          ]
+        }
+      ]
+    }
+  ]
+}

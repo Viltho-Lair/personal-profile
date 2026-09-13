@@ -21,7 +21,9 @@ import openpyxl  # noqa: E402
 from PIL import Image  # noqa: E402
 
 from optimizer.art import find_existing_art  # noqa: E402
+from optimizer.familiars import extract_familiars  # noqa: E402
 from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors  # noqa: E402
+from optimizer.mastery import extract_mastery  # noqa: E402
 from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
@@ -108,6 +110,28 @@ def publish_art(area, items, icons, name_of):
     return gaps
 
 
+def publish_files(area, files):
+    """Replace public/art/<area>/ with {stem: bytes}; return {stem: (url, width)}.
+
+    Like publish_art, every file is decoded before the folder is touched.
+    """
+    prepared = {stem: (f"{stem}{suffix_for(data)}", data, image_size(data)[0]) for stem, data in files.items()}
+    folder = ART / area
+    if folder.exists():
+        shutil.rmtree(folder)
+    folder.mkdir(parents=True)
+    published = {}
+    for stem, (filename, data, width) in prepared.items():
+        (folder / filename).write_bytes(data)
+        published[stem] = (f"/art/{area}/{filename}", width)
+    return published
+
+
+def attach(published, stem):
+    """(url, width) for a published stem, or (None, None)."""
+    return published.get(stem, (None, None)) if stem else (None, None)
+
+
 def merge_spirit_skills(spirits):
     if not WIKI_SPIRITS.exists():
         print("warning: src/data/wiki/spirit-skills.json is missing; run scripts/fetch-wiki-spirit-skills.py")
@@ -160,6 +184,8 @@ def main():
         relics, relic_icons = extract_relics(values["EQUIPMENT"], formulas["Equipment Data"])
         spirits, spirit_icons = extract_spirits(values["Equipment Data"])
         soul_weapons, soul_icons = extract_soul_weapons(values["Equipment Data"])
+        mastery_pages, mastery_icons = extract_mastery(formulas["SKILL MASTERY"])
+        familiars, mana_altar, familiar_art = extract_familiars(formulas["Familiar Data"])
     except (MissingHeader, ValueError, KeyError) as error:
         print(f"Extraction stopped, nothing was written: {error}", file=sys.stderr)
         return 1
@@ -202,6 +228,29 @@ def main():
         "bonuses": proficiency,
     })
     print(f"skill-proficiency: levels 0-{len(proficiency) - 1}")
+
+    published = publish_files("skill-mastery", mastery_icons)
+    for page in mastery_pages:
+        for node in page["nodes"]:
+            node["icon"], node["iconSize"] = attach(published, node["icon"])
+            node["badge"], node["badgeSize"] = attach(published, node["badge"])
+    write_json(DATA / "skill-mastery.json", {
+        "source": {"file": source.name, "sheet": "SKILL MASTERY", "extractedOn": today},
+        "pages": mastery_pages,
+    })
+    print(f"skill-mastery: {len(mastery_pages)} pages, {sum(len(p['nodes']) for p in mastery_pages)} nodes")
+
+    published = publish_files("familiars", familiar_art)
+    for familiar in familiars:
+        for band in familiar["art"]:
+            band["icon"], band["iconSize"] = attach(published, band["icon"])
+        familiar["symbol"], familiar["symbolSize"] = attach(published, familiar["symbol"])
+    write_json(DATA / "familiars.json", {
+        "source": {"file": source.name, "sheet": "Familiar Data", "extractedOn": today},
+        "familiars": familiars,
+        "manaAltar": mana_altar,
+    })
+    print(f"familiars: {len(familiars)} familiars, mana altar levels 1-{len(mana_altar)}")
     return 0
 
 
