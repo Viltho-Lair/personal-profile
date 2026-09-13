@@ -60,6 +60,10 @@ class ExtractSkills(unittest.TestCase):
         self.assertEqual(image_size(icons[1]), (128, 128))
         self.assertNotIn(45, icons)
 
+    def test_a_skill_without_max_level_stops_extraction(self):
+        with self.assertRaisesRegex(MissingHeader, "Fire Slash"):
+            extract_skills(skills_sheet(M3=None))
+
 
 if __name__ == "__main__":
     unittest.main()
