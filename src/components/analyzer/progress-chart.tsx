@@ -340,7 +340,7 @@ function SkillGrid({
           ? "Include Skills is off: basic attacks only."
           : phase === "running"
             ? "Skills with auto off light up when ready: tap to cast."
-            : "Skills are on auto (turning gear). Tap one to switch it to manual before rendering. Rave stores damage, then a second press releases it."}
+            : "Skills are on auto (turning gear). Tap one to switch it to manual before rendering. Rave stores 5 seconds of damage, then its reuse unleashes it."}
       </p>
     </div>
   );
@@ -416,8 +416,8 @@ function Results({
       {profile.includeSkills && setup.skipped.length ? <p className="text-dim">Skills not modelled: {setup.skipped.join(", ")}.</p> : null}
       <p className="text-[10px] text-dim">
         Approximate, hit by hit: one basic attack a second before ATK SPD (the workbook has no base attack speed), skills
-        cast from their own queues 0.3s apart when there&apos;s mana, casts pause basic attacks, Rave and Demon Hunt stop the
-        clock, and Rave&apos;s stored damage lands on its second press, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
+        cast from their own queues 0.3s apart when there&apos;s mana, casts pause basic attacks, Demon Hunt stops the clock,
+        and Rave stores its duration&apos;s damage, unleashed on its reuse, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
         recommended stage.
       </p>
     </div>

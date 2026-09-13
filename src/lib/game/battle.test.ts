@@ -81,13 +81,24 @@ describe("simulateFight", () => {
     expect(fight.cast("Rave")).toBe(false);
   });
 
-  it("stops the clock for Rave and adds its share of the damage done meanwhile", () => {
+  it("stores five seconds of the fight's damage with Rave while the clock keeps running", () => {
     const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1 } });
     const result = simulateFight({ ...base, skills: [rave] });
-    // five free seconds of basics, doubled by Rave, on top of the normal ten
+    const released = result.casts.filter((c) => c.name === "Rave").map((c) => c.t);
+    // Used at the start, unleashed once the five seconds are up.
+    expect(released[0]).toBeCloseTo(0, 0);
+    expect(released[1]).toBeCloseTo(5, 0);
     expect(result.bySkill.Rave).toBeGreaterThan(400);
-    expect(result.basic).toBeGreaterThan(1300);
-    expect(result.points[result.points.length - 1].t).toBeCloseTo(10, 0);
+    expect(result.bySkill.Rave).toBeLessThan(600);
+    // No free seconds of basics any more: the fight clock never stopped for the storing.
+    expect(result.basic).toBeLessThanOrEqual(1000);
+  });
+
+  it("keeps Rave's share proportional to what it stored", () => {
+    const rave = (power: number) => skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power } });
+    const once = simulateFight({ ...base, skills: [rave(1)] }).bySkill.Rave ?? 0;
+    const twice = simulateFight({ ...base, skills: [rave(2)] }).bySkill.Rave ?? 0;
+    expect(twice).toBeCloseTo(once * 2);
   });
 
   it("readies an attack-cast buff after that many attack skill casts", () => {

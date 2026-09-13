@@ -13,10 +13,11 @@
  *   percent of life missing and stops HP recovery while it lasts.
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
- * - Rave stops the fight clock for its duration and stores the damage dealt
- *   meanwhile. Pressing Rave again releases its share of that damage, and only
- *   then does its cooldown start. Demon Hunt plays its hits in stopped
- *   time. While the clock is stopped, cooldowns, buffs and recovery don't run.
+ * - Rave stores the damage dealt for its duration (5 seconds) while the fight
+ *   carries on. It can then be used again to unleash its share of that damage,
+ *   played out in stopped time, and only then does its cooldown start.
+ * - Demon Hunt plays its hits in stopped time. While the clock is stopped,
+ *   cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
  *   refreshes it rather than stacking.
  */
@@ -211,6 +212,7 @@ export function createFight(input: FightInput): Fight {
   let real = 0;
   let clock = 0;
   let frozenUntil = 0; // real time the clock runs again
+  /** Fight-clock time Rave's storing ends, -1 when it isn't storing. */
   let raveUntil = -1;
   let raveStored = 0;
   let nextBasic = 0;
@@ -253,7 +255,7 @@ export function createFight(input: FightInput): Fight {
     total += amount;
     if (source) bySkill[source] = (bySkill[source] ?? 0) + amount;
     else basic += amount;
-    if (real < raveUntil) raveStored += amount;
+    if (clock < raveUntil) raveStored += amount;
     points.push({ t: clock, damage: total });
   };
 
@@ -297,15 +299,16 @@ export function createFight(input: FightInput): Fight {
       for (const other of live) if (other !== l && other.skill.trigger === "attackCasts" && other.started) other.progress += 1;
     } else if (e.type === "rave") {
       if (release) {
-        // The second press deals Rave's share of the stored damage; the cooldown starts now.
+        // The reuse unleashes Rave's share of the stored damage in stopped time; the cooldown starts now.
         deal(raveStored * e.power, s.name);
         raveStored = 0;
         l.charged = false;
         l.holding = false;
+        frozenUntil = Math.max(frozenUntil, real + ANIMATION_SECONDS);
       } else {
-        raveUntil = real + Math.max(s.duration, ANIMATION_SECONDS);
+        // Storing runs with the fight: everything keeps going for the duration.
+        raveUntil = clock + s.duration;
         raveStored = 0;
-        frozenUntil = Math.max(frozenUntil, raveUntil);
         l.holding = true;
       }
     } else if (e.type === "nextSkill") {
@@ -334,10 +337,9 @@ export function createFight(input: FightInput): Fight {
 
   const tick = () => {
     const frozen = real < frozenUntil;
-    const inRave = real < raveUntil;
     const now = bonuses();
 
-    if (raveUntil >= 0 && !inRave) {
+    if (raveUntil >= 0 && clock >= raveUntil) {
       raveUntil = -1;
       // Rave is ready to release: on auto it queues straight away, by hand it waits for a press.
       for (const l of live) {
@@ -367,8 +369,8 @@ export function createFight(input: FightInput): Fight {
       }
     }
 
-    // Skills keep going during Rave's stopped time, but wait out a stopped-time attack.
-    const blocked = frozen && !inRave;
+    // Skills and basic attacks wait out stopped time.
+    const blocked = frozen;
     for (const queue of ["buff", "attack"] as const) {
       if (!queues[queue].length || real < queueFreeAt[queue] || blocked) continue;
       // The first queued skill there's mana for goes; the rest keep waiting.
