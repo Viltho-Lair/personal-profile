@@ -1,0 +1,2143 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Equipment Data",
+    "extractedOn": "2026-09-13"
+  },
+  "soulWeapons": [
+    {
+      "id": 1,
+      "name": "Innocence",
+      "soulColor": "GREEN",
+      "attack": 6300,
+      "cost": 2000,
+      "disassemblyReward": 1000,
+      "requirement": {
+        "item": "Steel Sword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 80,
+        "name": "Black Forest"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/innocence.png",
+      "iconSize": 70
+    },
+    {
+      "id": 2,
+      "name": "Coolness",
+      "soulColor": "BLUE",
+      "attack": 9750,
+      "cost": 9000,
+      "disassemblyReward": 4500,
+      "requirement": {
+        "item": "Wide Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 100,
+        "name": "Red Mountain"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/coolness.png",
+      "iconSize": 70
+    },
+    {
+      "id": 3,
+      "name": "Desire",
+      "soulColor": "RED",
+      "attack": 14699,
+      "cost": 28000,
+      "disassemblyReward": 14000,
+      "requirement": {
+        "item": "Long Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 120,
+        "name": "Land of Desire"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/desire.png",
+      "iconSize": 70
+    },
+    {
+      "id": 4,
+      "name": "Effort",
+      "soulColor": "GREEN",
+      "attack": 33600,
+      "cost": 75000,
+      "disassemblyReward": 37500,
+      "requirement": {
+        "item": "Bone Blade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 140,
+        "name": "Forgotten Castle"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/effort.png",
+      "iconSize": 70
+    },
+    {
+      "id": 5,
+      "name": "Patience",
+      "soulColor": "BLUE",
+      "attack": 72000,
+      "cost": 88800,
+      "disassemblyReward": 44400,
+      "requirement": {
+        "item": "Silver Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 160,
+        "name": "Frozen Wood"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/patience.png",
+      "iconSize": 70
+    },
+    {
+      "id": 6,
+      "name": "Hatred",
+      "soulColor": "RED",
+      "attack": 96000,
+      "cost": 109200,
+      "disassemblyReward": 54600,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 180,
+        "name": "Land of Hate"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/hatred.png",
+      "iconSize": 70
+    },
+    {
+      "id": 7,
+      "name": "Dignity",
+      "soulColor": "GREEN",
+      "attack": 144000,
+      "cost": 375000,
+      "disassemblyReward": 187500,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 200,
+        "name": "Sand Plain"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/dignity.png",
+      "iconSize": 70
+    },
+    {
+      "id": 8,
+      "name": "Agony",
+      "soulColor": "BLUE",
+      "attack": 182400,
+      "cost": 450000,
+      "disassemblyReward": 225000,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 220,
+        "name": "Asian North Coast"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/agony.png",
+      "iconSize": 70
+    },
+    {
+      "id": 9,
+      "name": "Joy",
+      "soulColor": "RED",
+      "attack": 230400,
+      "cost": 525000,
+      "disassemblyReward": 262500,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 240,
+        "name": "Unknown Forest"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/joy.png",
+      "iconSize": 70
+    },
+    {
+      "id": 10,
+      "name": "Rage",
+      "soulColor": "GREEN",
+      "attack": 250560,
+      "cost": 1875000,
+      "disassemblyReward": 937500,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 260,
+        "name": "Canyon of Rage"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/rage.png",
+      "iconSize": 70
+    },
+    {
+      "id": 11,
+      "name": "Condolence",
+      "soulColor": "BLUE",
+      "attack": 309120,
+      "cost": 2250000,
+      "disassemblyReward": 1125000,
+      "requirement": {
+        "item": "Bone Blade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 280,
+        "name": "Wailing Forest"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/condolence.png",
+      "iconSize": 70
+    },
+    {
+      "id": 12,
+      "name": "Yearning",
+      "soulColor": "RED",
+      "attack": 375000,
+      "cost": 2625000,
+      "disassemblyReward": 1312500,
+      "requirement": {
+        "item": "Blade of Madness",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 300,
+        "name": "Wind Plateau"
+      },
+      "engraving": {
+        "atk": 1,
+        "hp": 1
+      },
+      "icon": "/art/soul-weapons/yearning.png",
+      "iconSize": 70
+    },
+    {
+      "id": 13,
+      "name": "Pride",
+      "soulColor": "GREEN",
+      "attack": 440000,
+      "cost": 7500000,
+      "disassemblyReward": 3750000,
+      "requirement": {
+        "item": "Elf King's Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 320,
+        "name": "Lava Plateau"
+      },
+      "engraving": {
+        "atk": 1.7,
+        "hp": 4.7
+      },
+      "icon": "/art/soul-weapons/pride.png",
+      "iconSize": 70
+    },
+    {
+      "id": 14,
+      "name": "Bravery",
+      "soulColor": "BLUE",
+      "attack": 492000,
+      "cost": 9000000,
+      "disassemblyReward": 4500000,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 340,
+        "name": "Red Desert"
+      },
+      "engraving": {
+        "atk": 1.8,
+        "hp": 6.3
+      },
+      "icon": "/art/soul-weapons/bravery.png",
+      "iconSize": 70
+    },
+    {
+      "id": 15,
+      "name": "Runaway",
+      "soulColor": "RED",
+      "attack": 504000,
+      "cost": 10500000,
+      "disassemblyReward": 5250000,
+      "requirement": {
+        "item": "Burning Faith",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 360,
+        "name": "Plain of the White Night"
+      },
+      "engraving": {
+        "atk": 2.4,
+        "hp": 8.3
+      },
+      "icon": "/art/soul-weapons/runaway.png",
+      "iconSize": 70
+    },
+    {
+      "id": 16,
+      "name": "Dullness",
+      "soulColor": "GREEN",
+      "attack": 559000,
+      "cost": 22500000,
+      "disassemblyReward": 11250000,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 380,
+        "name": "Frozen lake"
+      },
+      "engraving": {
+        "atk": 4.2,
+        "hp": 13.1
+      },
+      "icon": "/art/soul-weapons/dullness.png",
+      "iconSize": 70
+    },
+    {
+      "id": 17,
+      "name": "Exciting",
+      "soulColor": "BLUE",
+      "attack": 616000,
+      "cost": 27000000,
+      "disassemblyReward": 13500000,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 400,
+        "name": "Moon Shelter"
+      },
+      "engraving": {
+        "atk": 4.5,
+        "hp": 14.9
+      },
+      "icon": "/art/soul-weapons/exciting.png",
+      "iconSize": 70
+    },
+    {
+      "id": 18,
+      "name": "Corruption",
+      "soulColor": "RED",
+      "attack": 675000,
+      "cost": 31500000,
+      "disassemblyReward": 15750000,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 420,
+        "name": "Capricious Hill"
+      },
+      "engraving": {
+        "atk": 4.5,
+        "hp": 15.5
+      },
+      "icon": "/art/soul-weapons/corruption.png",
+      "iconSize": 128
+    },
+    {
+      "id": 19,
+      "name": "Romance",
+      "soulColor": "GREEN",
+      "attack": 736000,
+      "cost": 67500000,
+      "disassemblyReward": 33750000,
+      "requirement": {
+        "item": "Elf King's Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 440,
+        "name": "Empty Forest"
+      },
+      "engraving": {
+        "atk": 8.1,
+        "hp": 21.8
+      },
+      "icon": "/art/soul-weapons/romance.png",
+      "iconSize": 128
+    },
+    {
+      "id": 20,
+      "name": "Silence",
+      "soulColor": "BLUE",
+      "attack": 799000,
+      "cost": 81000000,
+      "disassemblyReward": 40500000,
+      "requirement": {
+        "item": "Bone Blade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 460,
+        "name": "Nephilim Wood"
+      },
+      "engraving": {
+        "atk": 8.6,
+        "hp": 26.3
+      },
+      "icon": "/art/soul-weapons/silence.png",
+      "iconSize": 128
+    },
+    {
+      "id": 21,
+      "name": "Oblivion",
+      "soulColor": "RED",
+      "attack": 864000,
+      "cost": 94500000,
+      "disassemblyReward": 47250000,
+      "requirement": {
+        "item": "Vine Rapier",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 480,
+        "name": "Ancient Altar"
+      },
+      "engraving": {
+        "atk": 9,
+        "hp": 30.9
+      },
+      "icon": "/art/soul-weapons/oblivion.png",
+      "iconSize": 128
+    },
+    {
+      "id": 22,
+      "name": "Regret",
+      "soulColor": "GREEN",
+      "attack": 931000,
+      "cost": 202500000,
+      "disassemblyReward": 101250000,
+      "requirement": {
+        "item": "Silver Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 500,
+        "name": "Ruin of Ancient Kingdom"
+      },
+      "engraving": {
+        "atk": 10.7,
+        "hp": 32.6
+      },
+      "icon": "/art/soul-weapons/regret.png",
+      "iconSize": 128
+    },
+    {
+      "id": 23,
+      "name": "Willingness",
+      "soulColor": "BLUE",
+      "attack": 1000000,
+      "cost": 243000000,
+      "disassemblyReward": 121500000,
+      "requirement": {
+        "item": "Magic Sword - Styx",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 520,
+        "name": "Delusion Forest"
+      },
+      "engraving": {
+        "atk": 11.1,
+        "hp": 37.1
+      },
+      "icon": "/art/soul-weapons/willingness.png",
+      "iconSize": 128
+    },
+    {
+      "id": 24,
+      "name": "Grit",
+      "soulColor": "RED",
+      "attack": 1260000,
+      "cost": 283500000,
+      "disassemblyReward": 141750000,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 540,
+        "name": "Fireflies Cave"
+      },
+      "engraving": {
+        "atk": 11.6,
+        "hp": 56.6
+      },
+      "icon": "/art/soul-weapons/grit.png",
+      "iconSize": 128
+    },
+    {
+      "id": 25,
+      "name": "Hope",
+      "soulColor": "GREEN",
+      "attack": 1452000,
+      "cost": 607500000,
+      "disassemblyReward": 303750000,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 560,
+        "name": "Abandoned Pier"
+      },
+      "engraving": {
+        "atk": 13.5,
+        "hp": 61.4
+      },
+      "icon": "/art/soul-weapons/hope.png",
+      "iconSize": 128
+    },
+    {
+      "id": 26,
+      "name": "Calmness",
+      "soulColor": "BLUE",
+      "attack": 1669800,
+      "cost": 729000000,
+      "disassemblyReward": 364500000,
+      "requirement": {
+        "item": "Steel Sword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 580,
+        "name": "Sea of Stars"
+      },
+      "engraving": {
+        "atk": 13.8,
+        "hp": 64.4
+      },
+      "icon": "/art/soul-weapons/calmness.png",
+      "iconSize": 128
+    },
+    {
+      "id": 27,
+      "name": "Dream",
+      "soulColor": "RED",
+      "attack": 1916640,
+      "cost": 850500000,
+      "disassemblyReward": 425250000,
+      "requirement": {
+        "item": "Wide Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 600,
+        "name": "Land of the Dead"
+      },
+      "engraving": {
+        "atk": 14.4,
+        "hp": 70.4
+      },
+      "icon": "/art/soul-weapons/dream.png",
+      "iconSize": 128
+    },
+    {
+      "id": 28,
+      "name": "Faith",
+      "soulColor": "GREEN",
+      "attack": 2196150,
+      "cost": 1822500000,
+      "disassemblyReward": 911250000,
+      "requirement": {
+        "item": "Long Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 620,
+        "name": "Dark Wood"
+      },
+      "engraving": {
+        "atk": 17.6,
+        "hp": 70.7
+      },
+      "icon": "/art/soul-weapons/faith.png",
+      "iconSize": 128
+    },
+    {
+      "id": 29,
+      "name": "Temptation",
+      "soulColor": "BLUE",
+      "attack": 2512395,
+      "cost": 2187000000,
+      "disassemblyReward": 1093500000,
+      "requirement": {
+        "item": "Bone Blade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 640,
+        "name": "Ice Desert"
+      },
+      "engraving": {
+        "atk": 17.7,
+        "hp": 72.2
+      },
+      "icon": "/art/soul-weapons/temptation.png",
+      "iconSize": 128
+    },
+    {
+      "id": 30,
+      "name": "Wound",
+      "soulColor": "RED",
+      "attack": 2869928,
+      "cost": 2551500000,
+      "disassemblyReward": 1275750000,
+      "requirement": {
+        "item": "Silver Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 660,
+        "name": "Mysterious Hill"
+      },
+      "engraving": {
+        "atk": 18.2,
+        "hp": 75.3
+      },
+      "icon": "/art/soul-weapons/wound.png",
+      "iconSize": 128
+    },
+    {
+      "id": 31,
+      "name": "Wild",
+      "soulColor": "GREEN",
+      "attack": 3273844,
+      "cost": 5467500000,
+      "disassemblyReward": 2733750000,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 680,
+        "name": "Primeval Forest"
+      },
+      "engraving": {
+        "atk": 20.7,
+        "hp": 86
+      },
+      "icon": "/art/soul-weapons/wild.png",
+      "iconSize": 128
+    },
+    {
+      "id": 32,
+      "name": "Ambition",
+      "soulColor": "BLUE",
+      "attack": 3729844,
+      "cost": 6561000000,
+      "disassemblyReward": 3280500000,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 700,
+        "name": "Upside-down Forest"
+      },
+      "engraving": {
+        "atk": 21.2,
+        "hp": 90.6
+      },
+      "icon": "/art/soul-weapons/ambition.png",
+      "iconSize": 128
+    },
+    {
+      "id": 33,
+      "name": "Solitude",
+      "soulColor": "RED",
+      "attack": 4244305,
+      "cost": 7654500000,
+      "disassemblyReward": 3827250000,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 720,
+        "name": "Soul's Playground"
+      },
+      "engraving": {
+        "atk": 21.5,
+        "hp": 93.6
+      },
+      "icon": "/art/soul-weapons/solitude.png",
+      "iconSize": 128
+    },
+    {
+      "id": 34,
+      "name": "Envy",
+      "soulColor": "GREEN",
+      "attack": 4824360,
+      "cost": 16402500000,
+      "disassemblyReward": 8201250000,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 740,
+        "name": "Lost Forest"
+      },
+      "engraving": {
+        "atk": 23.9,
+        "hp": 102.8
+      },
+      "icon": "/art/soul-weapons/envy.png",
+      "iconSize": 128
+    },
+    {
+      "id": 35,
+      "name": "Wisdom",
+      "soulColor": "BLUE",
+      "attack": 5477984,
+      "cost": 19683000000,
+      "disassemblyReward": 9841500000,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 760,
+        "name": "Underground Cave"
+      },
+      "engraving": {
+        "atk": 24.2,
+        "hp": 105.9
+      },
+      "icon": "/art/soul-weapons/wisdom.png",
+      "iconSize": 128
+    },
+    {
+      "id": 36,
+      "name": "Vision",
+      "soulColor": "RED",
+      "attack": 6214088,
+      "cost": 22963500000,
+      "disassemblyReward": 11481750000,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 780,
+        "name": "Misty Road"
+      },
+      "engraving": {
+        "atk": 24.5,
+        "hp": 108.9
+      },
+      "icon": "/art/soul-weapons/vision.png",
+      "iconSize": 128
+    },
+    {
+      "id": 37,
+      "name": "Ordeal",
+      "soulColor": "GREEN",
+      "attack": 7042633,
+      "cost": 49207500000,
+      "disassemblyReward": 24603750000,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 800,
+        "name": "Cliff Edge"
+      },
+      "engraving": {
+        "atk": 27.6,
+        "hp": 110.7
+      },
+      "icon": "/art/soul-weapons/ordeal.png",
+      "iconSize": 128
+    },
+    {
+      "id": 38,
+      "name": "Friendship",
+      "soulColor": "BLUE",
+      "attack": 7974746,
+      "cost": 59049000000,
+      "disassemblyReward": 29524500000,
+      "requirement": {
+        "item": "Elf King's Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 820,
+        "name": "Underwater Cave"
+      },
+      "engraving": {
+        "atk": 27.9,
+        "hp": 113.7
+      },
+      "icon": "/art/soul-weapons/friendship.png",
+      "iconSize": 128
+    },
+    {
+      "id": 39,
+      "name": "Skilfulness",
+      "soulColor": "RED",
+      "attack": 9022856,
+      "cost": 68890500000,
+      "disassemblyReward": 34445250000,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 840,
+        "name": "Dragon Grave"
+      },
+      "engraving": {
+        "atk": 28.2,
+        "hp": 116.7
+      },
+      "icon": "/art/soul-weapons/skilfulness.png",
+      "iconSize": 128
+    },
+    {
+      "id": 40,
+      "name": "Relax",
+      "soulColor": "GREEN",
+      "attack": 10200840,
+      "cost": 147622500000,
+      "disassemblyReward": 73811250000,
+      "requirement": {
+        "item": "Burning Faith",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 860,
+        "name": "Forgotten Abyss"
+      },
+      "engraving": {
+        "atk": 29.7,
+        "hp": 131.9
+      },
+      "icon": "/art/soul-weapons/relax.png",
+      "iconSize": 128
+    },
+    {
+      "id": 41,
+      "name": "Conceit",
+      "soulColor": "BLUE",
+      "attack": 11524192,
+      "cost": 177147000000,
+      "disassemblyReward": 88573500000,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 880,
+        "name": "Sky Island"
+      },
+      "engraving": {
+        "atk": 31.5,
+        "hp": 133.5
+      },
+      "icon": "/art/soul-weapons/conceit.png",
+      "iconSize": 128
+    },
+    {
+      "id": 42,
+      "name": "Instinct",
+      "soulColor": "RED",
+      "attack": 13010206,
+      "cost": 206671500000,
+      "disassemblyReward": 103335750000,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 900,
+        "name": "Ancient Ruins"
+      },
+      "engraving": {
+        "atk": 31.7,
+        "hp": 135.2
+      },
+      "icon": "/art/soul-weapons/instinct.png",
+      "iconSize": 128
+    },
+    {
+      "id": 43,
+      "name": "Ecstasy",
+      "soulColor": "GREEN",
+      "attack": 14678181,
+      "cost": 442867500000,
+      "disassemblyReward": 221433750000,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 920,
+        "name": "Giant's Glass"
+      },
+      "engraving": {
+        "atk": 33.9,
+        "hp": 142.8
+      },
+      "icon": "/art/soul-weapons/ecstasy.png",
+      "iconSize": 128
+    },
+    {
+      "id": 44,
+      "name": "Honor",
+      "soulColor": "BLUE",
+      "attack": 16549649,
+      "cost": 531441000000,
+      "disassemblyReward": 265720500000,
+      "requirement": {
+        "item": "Elf King's Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 940,
+        "name": "Desert Gorge"
+      },
+      "engraving": {
+        "atk": 34.4,
+        "hp": 147.3
+      },
+      "icon": "/art/soul-weapons/honor.png",
+      "iconSize": 128
+    },
+    {
+      "id": 45,
+      "name": "Grand",
+      "soulColor": "RED",
+      "attack": 18648629,
+      "cost": 620014500000,
+      "disassemblyReward": 310007250000,
+      "requirement": {
+        "item": "Magic Sword - Styx",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 960,
+        "name": "Vortex"
+      },
+      "engraving": {
+        "atk": 34.5,
+        "hp": 154.8
+      },
+      "icon": "/art/soul-weapons/grand.png",
+      "iconSize": 128
+    },
+    {
+      "id": 46,
+      "name": "Blessing",
+      "soulColor": "GREEN",
+      "attack": 21001909,
+      "cost": 1328602500000,
+      "disassemblyReward": 664301250000,
+      "requirement": {
+        "item": "Cold Blade",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 980,
+        "name": "Land of Prophecy"
+      },
+      "engraving": {
+        "atk": 37.5,
+        "hp": 157.8
+      },
+      "icon": "/art/soul-weapons/blessing.png",
+      "iconSize": 128
+    },
+    {
+      "id": 47,
+      "name": "FightingWill",
+      "soulColor": "BLUE",
+      "attack": 23639358,
+      "cost": 1594323000000,
+      "disassemblyReward": 797161500000,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1000,
+        "name": "Story of the Stars"
+      },
+      "engraving": {
+        "atk": 38.3,
+        "hp": 173.3
+      },
+      "icon": "/art/soul-weapons/fightingwill.png",
+      "iconSize": 128
+    },
+    {
+      "id": 48,
+      "name": "Transition",
+      "soulColor": "RED",
+      "attack": 26110745,
+      "cost": 1860043500000,
+      "disassemblyReward": 930021750000,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1020,
+        "name": "Sea of Ashes"
+      },
+      "engraving": {
+        "atk": 38.6,
+        "hp": 176.3
+      },
+      "icon": "/art/soul-weapons/transition.png",
+      "iconSize": 128
+    },
+    {
+      "id": 49,
+      "name": "Interest",
+      "soulColor": "GREEN",
+      "attack": 29093173,
+      "cost": 3985807500000,
+      "disassemblyReward": 1992903750000,
+      "requirement": {
+        "item": "Blade of Madness",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1040,
+        "name": "Frozen Fog Forest"
+      },
+      "engraving": {
+        "atk": 40.4,
+        "hp": 179.4
+      },
+      "icon": "/art/soul-weapons/interest.png",
+      "iconSize": 128
+    },
+    {
+      "id": 50,
+      "name": "Intelligence",
+      "soulColor": "BLUE",
+      "attack": 32400940,
+      "cost": 4782969000000,
+      "disassemblyReward": 2391484500000,
+      "requirement": {
+        "item": "Long Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1060,
+        "name": "Hill of Memory"
+      },
+      "engraving": {
+        "atk": 40.5,
+        "hp": 181.1
+      },
+      "icon": "/art/soul-weapons/intelligence.png",
+      "iconSize": 128
+    },
+    {
+      "id": 51,
+      "name": "Greed",
+      "soulColor": "RED",
+      "attack": 36068451,
+      "cost": 5580130500000,
+      "disassemblyReward": 2790065250000,
+      "requirement": {
+        "item": "Rusty Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1080,
+        "name": "Blood Cave"
+      },
+      "engraving": {
+        "atk": 40.8,
+        "hp": 184.1
+      },
+      "icon": "/art/soul-weapons/greed.png",
+      "iconSize": 128
+    },
+    {
+      "id": 52,
+      "name": "Vow",
+      "soulColor": "GREEN",
+      "attack": 40133666,
+      "cost": 11957422500000,
+      "disassemblyReward": 5978711250000,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1100,
+        "name": "Golden Meadow"
+      },
+      "engraving": {
+        "atk": 43.5,
+        "hp": 196.4
+      },
+      "icon": "/art/soul-weapons/vow.png",
+      "iconSize": 128
+    },
+    {
+      "id": 53,
+      "name": "Anxiety",
+      "soulColor": "BLUE",
+      "attack": 44638465,
+      "cost": 14348907000000,
+      "disassemblyReward": 7174453500000,
+      "requirement": {
+        "item": "Blade of Madness",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1120,
+        "name": "Mushroom Cave"
+      },
+      "engraving": {
+        "atk": 43.8,
+        "hp": 199.4
+      },
+      "icon": "/art/soul-weapons/anxiety.png",
+      "iconSize": 128
+    },
+    {
+      "id": 54,
+      "name": "Vigor",
+      "soulColor": "RED",
+      "attack": 49629046,
+      "cost": 16740391500000,
+      "disassemblyReward": 8370195750000,
+      "requirement": {
+        "item": "Magic Sword - Styx",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1140,
+        "name": "Rising Strata"
+      },
+      "engraving": {
+        "atk": 45,
+        "hp": 200
+      },
+      "icon": "/art/soul-weapons/vigor.png",
+      "iconSize": 128
+    },
+    {
+      "id": 55,
+      "name": "Expectation",
+      "soulColor": "GREEN",
+      "attack": 55156359,
+      "cost": 35872267500000,
+      "disassemblyReward": 17936133750000,
+      "requirement": {
+        "item": "Vine Rapier",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1160,
+        "name": "Tightening Cave"
+      },
+      "engraving": {
+        "atk": 47.1,
+        "hp": 201.2
+      },
+      "icon": "/art/soul-weapons/expectation.png",
+      "iconSize": 128
+    },
+    {
+      "id": 56,
+      "name": "Wanderer",
+      "soulColor": "BLUE",
+      "attack": 61276594,
+      "cost": 43046721000000,
+      "disassemblyReward": 21523360500000,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1180,
+        "name": "Waterfall of Fate"
+      },
+      "engraving": {
+        "atk": 47.4,
+        "hp": 204.2
+      },
+      "icon": "/art/soul-weapons/wanderer.png",
+      "iconSize": 128
+    },
+    {
+      "id": 57,
+      "name": "Deviation",
+      "soulColor": "RED",
+      "attack": 68051704,
+      "cost": 50221174500000,
+      "disassemblyReward": 25110587250000,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1200,
+        "name": "Gray Area"
+      },
+      "engraving": {
+        "atk": 48,
+        "hp": 210.3
+      },
+      "icon": "/art/soul-weapons/deviation.png",
+      "iconSize": 128
+    },
+    {
+      "id": 58,
+      "name": "Thirst",
+      "soulColor": "GREEN",
+      "attack": 75549993,
+      "cost": 107616802500000,
+      "disassemblyReward": 53808401250000,
+      "requirement": {
+        "item": "Blade of Madness",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1220,
+        "name": "Awl Rock"
+      },
+      "engraving": {
+        "atk": 50.6,
+        "hp": 221
+      },
+      "icon": "/art/soul-weapons/thirst.png",
+      "iconSize": 128
+    },
+    {
+      "id": 59,
+      "name": "Sincerity",
+      "soulColor": "BLUE",
+      "attack": 83846756,
+      "cost": 129140163000000,
+      "disassemblyReward": 64570081500000,
+      "requirement": {
+        "item": "Saber",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1240,
+        "name": "Dream Tree"
+      },
+      "engraving": {
+        "atk": 50.9,
+        "hp": 224
+      },
+      "icon": "/art/soul-weapons/sincerity.png",
+      "iconSize": 128
+    },
+    {
+      "id": 60,
+      "name": "Valor",
+      "soulColor": "RED",
+      "attack": 93024982,
+      "cost": 150663523500000,
+      "disassemblyReward": 75331761750000,
+      "requirement": {
+        "item": "Burning Faith",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1260,
+        "name": "Valley of Judgment"
+      },
+      "engraving": {
+        "atk": 51.3,
+        "hp": 227.1
+      },
+      "icon": "/art/soul-weapons/valor.png",
+      "iconSize": 128
+    },
+    {
+      "id": 61,
+      "name": "Elevation",
+      "soulColor": "GREEN",
+      "attack": 103176129,
+      "cost": 322850407500000,
+      "disassemblyReward": 161425203750000,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1280,
+        "name": "Thunder Highlands"
+      },
+      "engraving": {
+        "atk": 54,
+        "hp": 239.3
+      },
+      "icon": "/art/soul-weapons/elevation.png",
+      "iconSize": 128
+    },
+    {
+      "id": 62,
+      "name": "Force",
+      "soulColor": "BLUE",
+      "attack": 114400980,
+      "cost": 387420489000000,
+      "disassemblyReward": 193710244500000,
+      "requirement": {
+        "item": "Steel Sword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1300,
+        "name": "Forgotten Shrine"
+      },
+      "engraving": {
+        "atk": 54.2,
+        "hp": 240.9
+      },
+      "icon": "/art/soul-weapons/force.png",
+      "iconSize": 128
+    },
+    {
+      "id": 63,
+      "name": "Illusion",
+      "soulColor": "RED",
+      "attack": 126810578,
+      "cost": 451990570500000,
+      "disassemblyReward": 225995285250000,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1320,
+        "name": "Forest of Illusion"
+      },
+      "engraving": {
+        "atk": 54.6,
+        "hp": 245.4
+      },
+      "icon": "/art/soul-weapons/illusion.png",
+      "iconSize": 128
+    },
+    {
+      "id": 64,
+      "name": "Skepticism",
+      "soulColor": "GREEN",
+      "attack": 140527256,
+      "cost": 968551222500000,
+      "disassemblyReward": 484275611250000,
+      "requirement": {
+        "item": "Burning Faith",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1340,
+        "name": "Fortress of Oblivion"
+      },
+      "engraving": {
+        "atk": 57,
+        "hp": 254.6
+      },
+      "icon": "/art/soul-weapons/skepticism.png",
+      "iconSize": 128
+    },
+    {
+      "id": 65,
+      "name": "Emptiness",
+      "soulColor": "BLUE",
+      "attack": 155685770,
+      "cost": 1162261467000000,
+      "disassemblyReward": 581130733500000,
+      "requirement": {
+        "item": "Vine Rapier",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1360,
+        "name": "Abyssal Rift"
+      },
+      "engraving": {
+        "atk": 57.2,
+        "hp": 256.2
+      },
+      "icon": "/art/soul-weapons/emptiness.png",
+      "iconSize": 128
+    },
+    {
+      "id": 66,
+      "name": "Obsession",
+      "soulColor": "RED",
+      "attack": 172434545,
+      "cost": 1355971711500000,
+      "disassemblyReward": 677985855750000,
+      "requirement": {
+        "item": "Pirate's Guandao",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1380,
+        "name": "Foothills of the Crimson Roots"
+      },
+      "engraving": {
+        "atk": 57.3,
+        "hp": 257.7
+      },
+      "icon": "/art/soul-weapons/obsession.png",
+      "iconSize": 128
+    },
+    {
+      "id": 67,
+      "name": "Afterglow",
+      "soulColor": "GREEN",
+      "attack": 190937046,
+      "cost": 2905653667500000,
+      "disassemblyReward": 1452826833750000,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1400,
+        "name": "Forgotten Paradise"
+      },
+      "engraving": {
+        "atk": 60,
+        "hp": 269.9
+      },
+      "icon": "/art/soul-weapons/afterglow.png",
+      "iconSize": 128
+    },
+    {
+      "id": 68,
+      "name": "Serenity",
+      "soulColor": "BLUE",
+      "attack": 211373276,
+      "cost": 3486784401000000,
+      "disassemblyReward": 1743392200500000,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1420,
+        "name": "Frozen Daybreak"
+      },
+      "engraving": {
+        "atk": 60.2,
+        "hp": 270
+      },
+      "icon": "/art/soul-weapons/serenity.png",
+      "iconSize": 128
+    },
+    {
+      "id": 69,
+      "name": "Sorrow",
+      "soulColor": "RED",
+      "attack": 233941438,
+      "cost": 4067915134500000,
+      "disassemblyReward": 2033957567250000,
+      "requirement": {
+        "item": "Blade of Madness",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1440,
+        "name": "Red Twilight"
+      },
+      "engraving": {
+        "atk": 60.5,
+        "hp": 273
+      },
+      "icon": "/art/soul-weapons/sorrow.png",
+      "iconSize": 128
+    },
+    {
+      "id": 70,
+      "name": "Eternity",
+      "soulColor": "GREEN",
+      "attack": 258859746,
+      "cost": 8716961002500000,
+      "disassemblyReward": 4358480501250000,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1460,
+        "name": "Valley of Ghosts"
+      },
+      "engraving": {
+        "atk": 63.8,
+        "hp": 276.3
+      },
+      "icon": "/art/soul-weapons/eternity.png",
+      "iconSize": 128
+    },
+    {
+      "id": 71,
+      "name": "Sanctitude",
+      "soulColor": "BLUE",
+      "attack": 286368424,
+      "cost": 10460353203000000,
+      "disassemblyReward": 5230176601500000,
+      "requirement": {
+        "item": "Pirate's Guandao",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1480,
+        "name": "Ocean Where the Moon Slumbers"
+      },
+      "engraving": {
+        "atk": 64.1,
+        "hp": 279.3
+      },
+      "icon": "/art/soul-weapons/sanctitude.png",
+      "iconSize": 128
+    },
+    {
+      "id": 72,
+      "name": "Experience",
+      "soulColor": "RED",
+      "attack": 316731899,
+      "cost": 12203745403500000,
+      "disassemblyReward": 6101872701750000,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1500,
+        "name": "Immortality Plain"
+      },
+      "engraving": {
+        "atk": 64.5,
+        "hp": 283.8
+      },
+      "icon": "/art/soul-weapons/experience.png",
+      "iconSize": 128
+    },
+    {
+      "id": 73,
+      "name": "Independence",
+      "soulColor": "GREEN",
+      "attack": 350241216,
+      "cost": 26150883007500000,
+      "disassemblyReward": 13075441503750000,
+      "requirement": {
+        "item": "Silver Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1520,
+        "name": "Verdure Sanctuary"
+      },
+      "engraving": {
+        "atk": 66.9,
+        "hp": 293.1
+      },
+      "icon": "/art/soul-weapons/independence.png",
+      "iconSize": 128
+    },
+    {
+      "id": 74,
+      "name": "Inspiration",
+      "soulColor": "BLUE",
+      "attack": 387216682,
+      "cost": 31381059609000000,
+      "disassemblyReward": 15690529804500000,
+      "requirement": {
+        "item": "Sealed Demon - Xellos",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1540,
+        "name": "Eternity Garden"
+      },
+      "engraving": {
+        "atk": 67.4,
+        "hp": 297.6
+      },
+      "icon": "/art/soul-weapons/inspiration.png",
+      "iconSize": 128
+    },
+    {
+      "id": 75,
+      "name": "Phantasma",
+      "soulColor": "RED",
+      "attack": 428010777,
+      "cost": 36611236210500000,
+      "disassemblyReward": 18305618105250000,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1560,
+        "name": "Blooming Peach Garden"
+      },
+      "engraving": {
+        "atk": 67.5,
+        "hp": 308.1
+      },
+      "icon": "/art/soul-weapons/phantasma.png",
+      "iconSize": 128
+    },
+    {
+      "id": 76,
+      "name": "Devotion",
+      "soulColor": "GREEN",
+      "attack": 473011355,
+      "cost": 78452649022500000,
+      "disassemblyReward": 39226324511250000,
+      "requirement": {
+        "item": "Burning Faith",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1580,
+        "name": "Dwarf Village"
+      },
+      "engraving": {
+        "atk": 70.5,
+        "hp": 311.1
+      },
+      "icon": "/art/soul-weapons/devotion.png",
+      "iconSize": 128
+    },
+    {
+      "id": 77,
+      "name": "Composure",
+      "soulColor": "BLUE",
+      "attack": 522645149,
+      "cost": 94143178827000000,
+      "disassemblyReward": 47071589413500000,
+      "requirement": {
+        "item": "Bone Blade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1600,
+        "name": "Silence Plain"
+      },
+      "engraving": {
+        "atk": 70.7,
+        "hp": 317.6
+      },
+      "icon": "/art/soul-weapons/composure.png",
+      "iconSize": 128
+    },
+    {
+      "id": 78,
+      "name": "Flutter",
+      "soulColor": "RED",
+      "attack": 577381635,
+      "cost": 109833740012560000,
+      "disassemblyReward": 54916870006280000,
+      "requirement": {
+        "item": "Cold Blade",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1620,
+        "name": "Sweet Garden Hill"
+      },
+      "engraving": {
+        "atk": 71,
+        "hp": 320.6
+      },
+      "icon": "/art/soul-weapons/flutter.png",
+      "iconSize": 128
+    },
+    {
+      "id": 79,
+      "name": "Content",
+      "soulColor": "GREEN",
+      "attack": 637737262,
+      "cost": 235357998622092992,
+      "disassemblyReward": 117678999311046496,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1640,
+        "name": "Ethereal Fruit"
+      },
+      "engraving": {
+        "atk": 73.1,
+        "hp": 326.7
+      },
+      "icon": "/art/soul-weapons/content.png",
+      "iconSize": 128
+    },
+    {
+      "id": 80,
+      "name": "Echo",
+      "soulColor": "BLUE",
+      "attack": 704280110,
+      "cost": 282429598346512000,
+      "disassemblyReward": 141214799173256000,
+      "requirement": {
+        "item": "Magic Sword - Styx",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1660,
+        "name": "Corridor of the Blue Boundry"
+      },
+      "engraving": {
+        "atk": 73.5,
+        "hp": 331.4
+      },
+      "icon": "/art/soul-weapons/echo.png",
+      "iconSize": 128
+    },
+    {
+      "id": 81,
+      "name": "Omen",
+      "soulColor": "RED",
+      "attack": 777635000,
+      "cost": 329501125894500032,
+      "disassemblyReward": 164750562947250016,
+      "requirement": {
+        "item": "Vine Rapier",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1680,
+        "name": "Turbulent Earth"
+      },
+      "engraving": {
+        "atk": 73.8,
+        "hp": 334.4
+      },
+      "icon": "/art/soul-weapons/omen.png",
+      "iconSize": 128
+    },
+    {
+      "id": 82,
+      "name": "Purification",
+      "soulColor": "GREEN",
+      "attack": 858489100,
+      "cost": 706073841202500096,
+      "disassemblyReward": 353036920601250048,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1700,
+        "name": "Shelter of Small Life"
+      },
+      "engraving": {
+        "atk": 76.4,
+        "hp": 343.7
+      },
+      "icon": "/art/soul-weapons/purification.png",
+      "iconSize": 128
+    },
+    {
+      "id": 83,
+      "name": "Projection",
+      "soulColor": "BLUE",
+      "attack": 947598095,
+      "cost": 847288609443000064,
+      "disassemblyReward": 423644304721500032,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1720,
+        "name": "Mirror Sanctuary"
+      },
+      "engraving": {
+        "atk": 76.5,
+        "hp": 345.3
+      },
+      "icon": "/art/soul-weapons/projection.png",
+      "iconSize": 128
+    },
+    {
+      "id": 84,
+      "name": "Reunion",
+      "soulColor": "RED",
+      "attack": 1045792948,
+      "cost": 988503377683500032,
+      "disassemblyReward": 494251688841750016,
+      "requirement": {
+        "item": "Blade of Madness",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1740,
+        "name": "Reunited World"
+      },
+      "engraving": {
+        "atk": 76.8,
+        "hp": 348.3
+      },
+      "icon": "/art/soul-weapons/reunion.png",
+      "iconSize": 128
+    },
+    {
+      "id": 85,
+      "name": "Temperance",
+      "soulColor": "GREEN",
+      "attack": 1153987330,
+      "cost": 2118221523607500032,
+      "disassemblyReward": 1059110761803750016,
+      "requirement": {
+        "item": "Saber",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1760,
+        "name": "Morningstar Valley"
+      },
+      "engraving": {
+        "atk": 79.4,
+        "hp": 359
+      },
+      "icon": "/art/soul-weapons/temperance.png",
+      "iconSize": 128
+    },
+    {
+      "id": 86,
+      "name": "Nostalgia",
+      "soulColor": "BLUE",
+      "attack": 1273185777,
+      "cost": 2541867498698189824,
+      "disassemblyReward": 1270933749349094912,
+      "requirement": {
+        "item": "Burning Faith",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1780,
+        "name": "Azure Coral Reef Area"
+      },
+      "engraving": {
+        "atk": 79.7,
+        "hp": 362.1
+      },
+      "icon": "/art/soul-weapons/nostalgia.png",
+      "iconSize": 128
+    },
+    {
+      "id": 87,
+      "name": "Tranquility",
+      "soulColor": "RED",
+      "attack": 1404492648,
+      "cost": 2965512929103719936,
+      "disassemblyReward": 1482756464551859968,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1800,
+        "name": "The Twilight Garden"
+      },
+      "engraving": {
+        "atk": 80,
+        "hp": 365.1
+      },
+      "icon": "/art/soul-weapons/tranquility.png",
+      "iconSize": 128
+    },
+    {
+      "id": 88,
+      "name": "Sublime",
+      "soulColor": "GREEN",
+      "attack": 1549121950,
+      "cost": 6354670138720419840,
+      "disassemblyReward": 3177335069360209920,
+      "requirement": {
+        "item": "Elf King's Sword",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1820,
+        "name": "Runic Mountain Range"
+      },
+      "engraving": {
+        "atk": 83.4,
+        "hp": 375.2
+      },
+      "icon": "/art/soul-weapons/sublime.png",
+      "iconSize": 128
+    },
+    {
+      "id": 89,
+      "name": "Silence 1840",
+      "soulColor": "BLUE",
+      "attack": 1708408137,
+      "cost": 7625604166464499712,
+      "disassemblyReward": 3812802083232249856,
+      "requirement": {
+        "item": "Pirate's Guandao",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1840,
+        "name": "The Slumbering Light Forest"
+      },
+      "engraving": {
+        "atk": 83.9,
+        "hp": 376.4
+      },
+      "icon": "/art/soul-weapons/silence-1840.png",
+      "iconSize": 128
+    },
+    {
+      "id": 90,
+      "name": "Unnamed (stage 1860)",
+      "soulColor": "RED",
+      "attack": 1883817949,
+      "cost": 8896530399151502336,
+      "disassemblyReward": 4448265199575751168,
+      "requirement": {
+        "item": "Royal Sword - Excalibur",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1860,
+        "name": "The Crossroads of Agony"
+      },
+      "engraving": {
+        "atk": 84.2,
+        "hp": 377.7
+      },
+      "icon": "/art/soul-weapons/unnamed-stage-1860.png",
+      "iconSize": 128
+    },
+    {
+      "id": 91,
+      "name": "Unnamed (stage 1880)",
+      "soulColor": "GREEN",
+      "attack": 2076963421,
+      "cost": 19063993712467505152,
+      "disassemblyReward": 9531996856233752576,
+      "requirement": {
+        "item": "Bone Blade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1880,
+        "name": "Azure Wind Pasture"
+      },
+      "engraving": {
+        "atk": 86.7,
+        "hp": 390.2
+      },
+      "icon": "/art/soul-weapons/unnamed-stage-1880.png",
+      "iconSize": 128
+    },
+    {
+      "id": 92,
+      "name": "Unnamed (stage 1900)",
+      "soulColor": "BLUE",
+      "attack": 2289616154,
+      "cost": 22876792454961004544,
+      "disassemblyReward": 11438396227480502272,
+      "requirement": {
+        "item": "Silver Sword",
+        "grade": "Grade 4"
+      },
+      "stage": {
+        "number": 1900,
+        "name": null
+      },
+      "engraving": {
+        "atk": 87.2,
+        "hp": 391.5
+      },
+      "icon": null,
+      "iconSize": null
+    },
+    {
+      "id": 93,
+      "name": "Unnamed (stage 1920)",
+      "soulColor": "RED",
+      "attack": 2523722974,
+      "cost": 26689591197454508032,
+      "disassemblyReward": 13344795598727254016,
+      "requirement": {
+        "item": "Cursed Sawblade",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1920,
+        "name": null
+      },
+      "engraving": {
+        "atk": 87.5,
+        "hp": 392.7
+      },
+      "icon": null,
+      "iconSize": null
+    },
+    {
+      "id": 94,
+      "name": "Unnamed (stage 1940)",
+      "soulColor": "GREEN",
+      "attack": 2781423131,
+      "cost": 57191981137402519552,
+      "disassemblyReward": 28595990568701259776,
+      "requirement": {
+        "item": "Sealed Demon - Xellos",
+        "grade": "Grade 2"
+      },
+      "stage": {
+        "number": 1940,
+        "name": null
+      },
+      "engraving": {
+        "atk": 90,
+        "hp": 405.3
+      },
+      "icon": null,
+      "iconSize": null
+    },
+    {
+      "id": 95,
+      "name": "Unnamed (stage 1960)",
+      "soulColor": "BLUE",
+      "attack": 3065067160,
+      "cost": 68630377364883021824,
+      "disassemblyReward": 34315188682441510912,
+      "requirement": {
+        "item": "Elven Longsword",
+        "grade": "Grade 1"
+      },
+      "stage": {
+        "number": 1960,
+        "name": null
+      },
+      "engraving": {
+        "atk": 90.5,
+        "hp": 406.7
+      },
+      "icon": null,
+      "iconSize": null
+    },
+    {
+      "id": 96,
+      "name": "Unnamed (stage 1980)",
+      "soulColor": "RED",
+      "attack": 3377237587,
+      "cost": 80068773592363532288,
+      "disassemblyReward": 40034386796181766144,
+      "requirement": {
+        "item": "Black Knight Long Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 1980,
+        "name": null
+      },
+      "engraving": {
+        "atk": 90.8,
+        "hp": 407.9
+      },
+      "icon": null,
+      "iconSize": null
+    },
+    {
+      "id": 97,
+      "name": "Unnamed (stage 2000)",
+      "soulColor": "GREEN",
+      "attack": 3720771647,
+      "cost": 171575943412207550464,
+      "disassemblyReward": 85787971706103775232,
+      "requirement": {
+        "item": "Ornamental Sword",
+        "grade": "Grade 3"
+      },
+      "stage": {
+        "number": 2000,
+        "name": null
+      },
+      "engraving": {
+        "atk": 93.3,
+        "hp": 420.5
+      },
+      "icon": null,
+      "iconSize": null
+    }
+  ]
+}

@@ -1,0 +1,1225 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Skills Data",
+    "extractedOn": "2026-09-13"
+  },
+  "skills": [
+    {
+      "id": 1,
+      "name": "Fire Slash",
+      "element": "Fire",
+      "grade": "Common",
+      "maxLevel": 250,
+      "mpCost": 25,
+      "baseValue": 400,
+      "upgradeValue": 40,
+      "cooldown": 12,
+      "range": 3,
+      "duration": 0,
+      "description": {
+        "basic": "Wrap fire around the sword and set enemies on fire",
+        "specific": "Attack all enemies within range 3 once with X% of their ATK"
+      },
+      "icon": "/art/skills/fire-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 2,
+      "name": "Flame Slash",
+      "element": "Fire",
+      "grade": "Rare",
+      "maxLevel": 250,
+      "mpCost": 25,
+      "baseValue": 1350,
+      "upgradeValue": 135,
+      "cooldown": 13,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Wrap fire around the sword and set enemies on fire",
+        "specific": "Attack all enemies within range 4 once with X% of their ATK"
+      },
+      "icon": "/art/skills/flame-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 3,
+      "name": "Hellfire Slash",
+      "element": "Fire",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 30,
+      "baseValue": 1920,
+      "upgradeValue": 192,
+      "cooldown": 15,
+      "range": 7,
+      "duration": 0,
+      "description": {
+        "basic": "Wrap fire around the sword and set enemies on fire",
+        "specific": "Attack all enemies within range 6 once with X% of their ATK"
+      },
+      "icon": "/art/skills/hellfire-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 4,
+      "name": "Hot Blast",
+      "element": "Fire",
+      "grade": "Great",
+      "maxLevel": 250,
+      "mpCost": 45,
+      "baseValue": 1500,
+      "upgradeValue": 150,
+      "cooldown": 12,
+      "range": 3,
+      "duration": 0,
+      "description": {
+        "basic": "Creates a hot wind to attack the enemy",
+        "specific": "Attack all enemies within range 3 once with X% of their ATK"
+      },
+      "icon": "/art/skills/hot-blast.png",
+      "iconSize": 128
+    },
+    {
+      "id": 5,
+      "name": "Fire Blast",
+      "element": "Fire",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 45,
+      "baseValue": 3330,
+      "upgradeValue": 333,
+      "cooldown": 12,
+      "range": 3,
+      "duration": 0,
+      "description": {
+        "basic": "Creates a burning wind to attack the enemy",
+        "specific": "Attack all enemies within range 3 once with X% of their ATK"
+      },
+      "icon": "/art/skills/fire-blast.png",
+      "iconSize": 128
+    },
+    {
+      "id": 6,
+      "name": "Flame Wave",
+      "element": "Fire",
+      "grade": "Epic",
+      "maxLevel": 250,
+      "mpCost": 15,
+      "baseValue": 700,
+      "upgradeValue": 70,
+      "cooldown": 4,
+      "range": 7,
+      "duration": 0,
+      "description": {
+        "basic": "Sword of fire attacks far away enemies",
+        "specific": "Send a sword storm at the found enemy. X% splash damage of ATK"
+      },
+      "icon": "/art/skills/flame-wave.png",
+      "iconSize": 128
+    },
+    {
+      "id": 7,
+      "name": "Pillar of Fire",
+      "element": "Fire",
+      "grade": "Mythic",
+      "maxLevel": 250,
+      "mpCost": 40,
+      "baseValue": 700,
+      "upgradeValue": 70,
+      "cooldown": 10,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Summons fire pillars in quick succession to burn enemies",
+        "specific": "Summon a pillar of fire that grows stronger and stronger. X% DMG of ATK"
+      },
+      "icon": "/art/skills/pillar-of-fire.png",
+      "iconSize": 128
+    },
+    {
+      "id": 8,
+      "name": "Fire Sword",
+      "element": "Fire",
+      "grade": "Common",
+      "maxLevel": 20,
+      "mpCost": 50,
+      "baseValue": 80,
+      "upgradeValue": 3,
+      "cooldown": 17,
+      "range": 0,
+      "duration": 10,
+      "description": {
+        "basic": "Instantly Raise ATK with the power of fire",
+        "specific": "Total ATK +X% for 10sec"
+      },
+      "icon": "/art/skills/fire-sword.png",
+      "iconSize": 128
+    },
+    {
+      "id": 9,
+      "name": "Burning Sword",
+      "element": "Fire",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 16,
+      "upgradeValue": 0.8,
+      "cooldown": 5,
+      "range": 10,
+      "duration": 5,
+      "description": {
+        "basic": "The blazing sword grows stronger without limits",
+        "specific": "After entering the battle, total ATK +X% every 5 seconds"
+      },
+      "icon": "/art/skills/burning-sword.png",
+      "iconSize": 128
+    },
+    {
+      "id": 10,
+      "name": "Rage",
+      "element": "Fire",
+      "grade": "Legendary",
+      "maxLevel": 20,
+      "mpCost": 50,
+      "baseValue": 2,
+      "upgradeValue": 0.1,
+      "cooldown": 15,
+      "range": 0,
+      "duration": 10,
+      "description": {
+        "basic": "ATK increases as HP decreases",
+        "specific": "Increase total ATK for 10 seconds as HP decreases +X% ATK per -1% HP, HP recovery stops while is lasts"
+      },
+      "icon": "/art/skills/rage.png",
+      "iconSize": 128
+    },
+    {
+      "id": 11,
+      "name": "Warrior Burn",
+      "element": "Fire",
+      "grade": "Mythic",
+      "maxLevel": 20,
+      "mpCost": 30,
+      "baseValue": 250,
+      "upgradeValue": 7,
+      "cooldown": 18,
+      "range": 0,
+      "duration": 5,
+      "description": {
+        "basic": "Creates explosive power with fire. Inflicts heavy damage with strong recoil",
+        "specific": "Consume 50% HP of current HP total ATK +X% for 5 seconds"
+      },
+      "icon": "/art/skills/warrior-burn.png",
+      "iconSize": 128
+    },
+    {
+      "id": 12,
+      "name": "Ice Stone",
+      "element": "Water",
+      "grade": "Common",
+      "maxLevel": 250,
+      "mpCost": 20,
+      "baseValue": 110,
+      "upgradeValue": 11,
+      "cooldown": 5,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Summons ice rocks and strike the enemy",
+        "specific": "Summon ice meteors with X% damage to any enemy within range 5"
+      },
+      "icon": "/art/skills/ice-stone.png",
+      "iconSize": 128
+    },
+    {
+      "id": 13,
+      "name": "Ice Shower",
+      "element": "Water",
+      "grade": "Great",
+      "maxLevel": 250,
+      "mpCost": 25,
+      "baseValue": 310,
+      "upgradeValue": 31,
+      "cooldown": 7,
+      "range": 8,
+      "duration": 0,
+      "description": {
+        "basic": "Summons ice rocks and strike the enemy",
+        "specific": "Summon ice meteors with X% damage to any enemy within range 8"
+      },
+      "icon": "/art/skills/ice-shower.png",
+      "iconSize": 128
+    },
+    {
+      "id": 14,
+      "name": "Ice Time",
+      "element": "Water",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 35,
+      "baseValue": 670,
+      "upgradeValue": 67,
+      "cooldown": 9,
+      "range": 10,
+      "duration": 0,
+      "description": {
+        "basic": "Summon ice rocks and strike the enemy",
+        "specific": "Summon ice meteors with X% damage to any enemy within range 10"
+      },
+      "icon": "/art/skills/ice-time.png",
+      "iconSize": 128
+    },
+    {
+      "id": 15,
+      "name": "Water Slash",
+      "element": "Water",
+      "grade": "Rare",
+      "maxLevel": 250,
+      "mpCost": 25,
+      "baseValue": 170,
+      "upgradeValue": 17,
+      "cooldown": 12,
+      "range": 3,
+      "duration": 0,
+      "description": {
+        "basic": "Slashes the enemy with a fast and accurate sword",
+        "specific": "7 consecutive attacks on enemies within 3 range. DMG X%"
+      },
+      "icon": "/art/skills/water-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 16,
+      "name": "Mana's Blessing",
+      "element": "Water",
+      "grade": "Common",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 30,
+      "upgradeValue": 2,
+      "cooldown": 8,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Recovers mana with the energy of water",
+        "specific": "Mana recovery +X%"
+      },
+      "icon": "/art/skills/mana-s-blessing.png",
+      "iconSize": 128
+    },
+    {
+      "id": 17,
+      "name": "Meditation",
+      "element": "Water",
+      "grade": "Legendary",
+      "maxLevel": 10,
+      "mpCost": 40,
+      "baseValue": 30,
+      "upgradeValue": 1,
+      "cooldown": 15,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Focuses your mind and shortens skill activation time",
+        "specific": "Concentrate and charge X% cooldown for all skills"
+      },
+      "icon": "/art/skills/meditation.png",
+      "iconSize": 128
+    },
+    {
+      "id": 18,
+      "name": "Blizzard",
+      "element": "Water",
+      "grade": "Mythic",
+      "maxLevel": 250,
+      "mpCost": 35,
+      "baseValue": 650,
+      "upgradeValue": 65,
+      "cooldown": 10,
+      "range": 30,
+      "duration": 0,
+      "description": {
+        "basic": "Freezes multiple enemies with a blizzard ice attack",
+        "specific": "X% damage of ATK per second. Freeze all enemies in front 100%"
+      },
+      "icon": "/art/skills/blizzard.png",
+      "iconSize": 128
+    },
+    {
+      "id": 19,
+      "name": "Strong Current",
+      "element": "Water",
+      "grade": "Mythic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 350,
+      "upgradeValue": 10,
+      "cooldown": 50,
+      "range": 0,
+      "duration": 6,
+      "description": {
+        "basic": "ATK SPD is greatly increased with the power of water to drive enemies away",
+        "specific": "Increases ATK SPD by X% for 6 seconds after 2 seconds into battle"
+      },
+      "icon": "/art/skills/strong-current.png",
+      "iconSize": 128
+    },
+    {
+      "id": 20,
+      "name": "Flowing Blade",
+      "element": "Water",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": 30,
+      "baseValue": 100,
+      "upgradeValue": 4,
+      "cooldown": 18,
+      "range": 0,
+      "duration": 10,
+      "description": {
+        "basic": "Increases ATK SPD by flowing the energy of water",
+        "specific": "ATK SPD +X% for 10 sec"
+      },
+      "icon": "/art/skills/flowing-blade.png",
+      "iconSize": 128
+    },
+    {
+      "id": 21,
+      "name": "Curved Blade",
+      "element": "Water",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 18,
+      "upgradeValue": 0.9,
+      "cooldown": 4,
+      "range": 10,
+      "duration": 0,
+      "description": {
+        "basic": "As time passes, the ATK SPD gradually increases",
+        "specific": "After entering the battle, ATK SPD +X% every 4 seconds"
+      },
+      "icon": "/art/skills/curved-blade.png",
+      "iconSize": 128
+    },
+    {
+      "id": 22,
+      "name": "Dancing Waves",
+      "element": "Water",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 40,
+      "baseValue": 3.5,
+      "upgradeValue": 0.1,
+      "cooldown": 15,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Defends against various types of attacks",
+        "specific": "Dodge enemy attacks for X seconds (except for some special attacks)"
+      },
+      "icon": "/art/skills/dancing-waves.png",
+      "iconSize": 128
+    },
+    {
+      "id": 23,
+      "name": "Lightning Slash",
+      "element": "Wind",
+      "grade": "Common",
+      "maxLevel": 250,
+      "mpCost": 15,
+      "baseValue": 150,
+      "upgradeValue": 15,
+      "cooldown": 6,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Wields a lightning sword to inflict damage on enemies",
+        "specific": "Inflicts X% damage to 5 enemies within range 5"
+      },
+      "icon": "/art/skills/lightning-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 24,
+      "name": "Thunder Slash",
+      "element": "Wind",
+      "grade": "Rare",
+      "maxLevel": 250,
+      "mpCost": 15,
+      "baseValue": 500,
+      "upgradeValue": 50,
+      "cooldown": 7,
+      "range": 7,
+      "duration": 0,
+      "description": {
+        "basic": "Wields a lightning sword to inflict damage on enemies",
+        "specific": "Inflicts X% damage to 7 enemies within range 7"
+      },
+      "icon": "/art/skills/thunder-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 25,
+      "name": "Thunderbolt Slash",
+      "element": "Wind",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 15,
+      "baseValue": 860,
+      "upgradeValue": 86,
+      "cooldown": 8,
+      "range": 10,
+      "duration": 0,
+      "description": {
+        "basic": "Wields lightning sword to inflict strong damage on enemies",
+        "specific": "Inflicts X% damage to 10 enemies within range 10"
+      },
+      "icon": "/art/skills/thunderbolt-slash.png",
+      "iconSize": 128
+    },
+    {
+      "id": 26,
+      "name": "Lightning Stroke",
+      "element": "Wind",
+      "grade": "Great",
+      "maxLevel": 250,
+      "mpCost": 20,
+      "baseValue": 80,
+      "upgradeValue": 8,
+      "cooldown": 10,
+      "range": 15,
+      "duration": 0,
+      "description": {
+        "basic": "Summons lightning to strike enemies",
+        "specific": "Summon 30 lightning strikes of X% damage to locations within 15 range"
+      },
+      "icon": "/art/skills/lightning-stroke.png",
+      "iconSize": 128
+    },
+    {
+      "id": 27,
+      "name": "Red Lightning",
+      "element": "Wind",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 25,
+      "baseValue": 170,
+      "upgradeValue": 17,
+      "cooldown": 12,
+      "range": 20,
+      "duration": 0,
+      "description": {
+        "basic": "Summons red lightning to strike enemies",
+        "specific": "Summon 60 lightning strikes of X% damage to locations within 20 range"
+      },
+      "icon": "/art/skills/red-lightning.png",
+      "iconSize": 128
+    },
+    {
+      "id": 28,
+      "name": "Fulgurous",
+      "element": "Wind",
+      "grade": "Epic",
+      "maxLevel": 250,
+      "mpCost": 10,
+      "baseValue": 80,
+      "upgradeValue": 8,
+      "cooldown": 0.5,
+      "range": 3,
+      "duration": 0,
+      "description": {
+        "basic": "Charges as fast as lightning and attacks the enemy",
+        "specific": "Quickly charges to all enemies within 3 range, attacking with X% of ATK once"
+      },
+      "icon": "/art/skills/fulgurous.png",
+      "iconSize": 128
+    },
+    {
+      "id": 29,
+      "name": "Supersonic",
+      "element": "Wind",
+      "grade": "Mythic",
+      "maxLevel": 250,
+      "mpCost": 20,
+      "baseValue": 260,
+      "upgradeValue": 26,
+      "cooldown": 5,
+      "range": 7,
+      "duration": 0,
+      "description": {
+        "basic": "A wind-type ultimate that rushes at supersonic speed and penetrates enemy lines",
+        "specific": "Charge and damage enemies within range 7 by X% of ATK. 6 consecutive charge attacks"
+      },
+      "icon": "/art/skills/supersonic.png",
+      "iconSize": 128
+    },
+    {
+      "id": 30,
+      "name": "Speed Sword",
+      "element": "Wind",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 7,
+      "upgradeValue": 0.35,
+      "cooldown": 5,
+      "range": 20,
+      "duration": 0,
+      "description": {
+        "basic": "ATK SPD increases with every swing of your sword",
+        "specific": "After entering battle, ATK SPD +X% for every 5 attacks"
+      },
+      "icon": "/art/skills/speed-sword.png",
+      "iconSize": 128
+    },
+    {
+      "id": 31,
+      "name": "Wind Sword",
+      "element": "Wind",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 40,
+      "upgradeValue": 2,
+      "cooldown": 1,
+      "range": 10,
+      "duration": 0,
+      "description": {
+        "basic": "Increases basic ATK SPD with the power of wind",
+        "specific": "ATK SPD +X%"
+      },
+      "icon": "/art/skills/wind-sword.png",
+      "iconSize": 128
+    },
+    {
+      "id": 32,
+      "name": "Agile",
+      "element": "Wind",
+      "grade": "Great",
+      "maxLevel": 20,
+      "mpCost": 30,
+      "baseValue": 30,
+      "upgradeValue": 3,
+      "cooldown": 20,
+      "range": 0,
+      "duration": 10,
+      "description": {
+        "basic": "MSPD increases rapidly",
+        "specific": "MSPD +X% for 10sec"
+      },
+      "icon": "/art/skills/agile.png",
+      "iconSize": 128
+    },
+    {
+      "id": 33,
+      "name": "Lightning Body",
+      "element": "Wind",
+      "grade": "Mythic",
+      "maxLevel": 20,
+      "mpCost": 30,
+      "baseValue": 250,
+      "upgradeValue": 6,
+      "cooldown": 20,
+      "range": 0,
+      "duration": 5,
+      "description": {
+        "basic": "Lightning increases the attack speed for a while. Inflicts heavy damage with strong recoil from overcurrent",
+        "specific": "Cosume 50% of current HP. ATK SPD +X% for 5 seconds"
+      },
+      "icon": "/art/skills/lightning-body.png",
+      "iconSize": 128
+    },
+    {
+      "id": 34,
+      "name": "Stone Strike",
+      "element": "Earth",
+      "grade": "Common",
+      "maxLevel": 250,
+      "mpCost": 20,
+      "baseValue": 610,
+      "upgradeValue": 61,
+      "cooldown": 9,
+      "range": 1,
+      "duration": 0,
+      "description": {
+        "basic": "Slams the ground to explode the sword's energy",
+        "specific": "Attacks enemies within range 1 at X% of earth DMG 1 time"
+      },
+      "icon": "/art/skills/stone-strike.png",
+      "iconSize": 128
+    },
+    {
+      "id": 35,
+      "name": "Power Strike",
+      "element": "Earth",
+      "grade": "Great",
+      "maxLevel": 250,
+      "mpCost": 25,
+      "baseValue": 660,
+      "upgradeValue": 66,
+      "cooldown": 12,
+      "range": 1,
+      "duration": 0,
+      "description": {
+        "basic": "Slams the ground to explode the sword's energy",
+        "specific": "Attacks enemies within range 1 at X% of earth DMG 2 time"
+      },
+      "icon": "/art/skills/power-strike.png",
+      "iconSize": 128
+    },
+    {
+      "id": 36,
+      "name": "Giga Strike",
+      "element": "Earth",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 30,
+      "baseValue": 750,
+      "upgradeValue": 75,
+      "cooldown": 15,
+      "range": 1,
+      "duration": 0,
+      "description": {
+        "basic": "Slams the ground to explode the sword's energy",
+        "specific": "Attacks enemies within range 1 at X% of earth dmg 3 times"
+      },
+      "icon": "/art/skills/giga-strike.png",
+      "iconSize": 120
+    },
+    {
+      "id": 37,
+      "name": "Power Impact",
+      "element": "Earth",
+      "grade": "Great",
+      "maxLevel": 250,
+      "mpCost": 40,
+      "baseValue": 1060,
+      "upgradeValue": 106,
+      "cooldown": 10,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Shock wave that can stun enemies in mid-range",
+        "specific": "Attacks with X% earth DMG that penetrates enemies within a 5 range. 50% extra stun"
+      },
+      "icon": "/art/skills/power-impact.png",
+      "iconSize": 128
+    },
+    {
+      "id": 38,
+      "name": "Giga Impact",
+      "element": "Earth",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 40,
+      "baseValue": 2580,
+      "upgradeValue": 258,
+      "cooldown": 10,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Strong shock wave that can stun enemies in mid-range",
+        "specific": "Attacks with X% earth DMG that penetrates enemies within a 5 range. 100% extra stun"
+      },
+      "icon": "/art/skills/giga-impact.png",
+      "iconSize": 128
+    },
+    {
+      "id": 39,
+      "name": "Demon Hunt",
+      "element": "Earth",
+      "grade": "Mythic",
+      "maxLevel": 250,
+      "mpCost": 55,
+      "baseValue": 1000,
+      "upgradeValue": 100,
+      "cooldown": 33,
+      "range": 4,
+      "duration": 0,
+      "description": {
+        "basic": "The ultimate skill that cuts through the air and attack the enemy with superhuman power. Shockwaves generated during movement explode the air",
+        "specific": "Attacks enemies within a 4 range 7 times. Damage X% per time, in the 7th time, it deals much stronger damage"
+      },
+      "icon": "/art/skills/demon-hunt.png",
+      "iconSize": 128
+    },
+    {
+      "id": 40,
+      "name": "Wrath of Gods",
+      "element": "Earth",
+      "grade": "Mythic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 500,
+      "upgradeValue": 25,
+      "cooldown": 30,
+      "range": 0,
+      "duration": 5,
+      "description": {
+        "basic": "Gathers the power of the earth and explodes with a momentary transcental blast",
+        "specific": "After 20 seconds into battle, total ATK +X% for 5 seconds"
+      },
+      "icon": "/art/skills/wrath-of-gods.png",
+      "iconSize": 128
+    },
+    {
+      "id": 41,
+      "name": "Iron Will",
+      "element": "Earth",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 50,
+      "upgradeValue": 2.5,
+      "cooldown": 1,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Increase ATK",
+        "specific": "Total ATK +X%"
+      },
+      "icon": "/art/skills/iron-will.png",
+      "iconSize": 128
+    },
+    {
+      "id": 42,
+      "name": "Earth's Will",
+      "element": "Earth",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 8,
+      "upgradeValue": 0.4,
+      "cooldown": 7,
+      "range": 20,
+      "duration": 0,
+      "description": {
+        "basic": "The power of the earth is gathered and the ATK gradually increases",
+        "specific": "After entering battle, total ATK +X% for every 7 attacks"
+      },
+      "icon": "/art/skills/earth-s-will.png",
+      "iconSize": 128
+    },
+    {
+      "id": 43,
+      "name": "Ground's Blessing",
+      "element": "Earth",
+      "grade": "Common",
+      "maxLevel": 20,
+      "mpCost": 30,
+      "baseValue": 50,
+      "upgradeValue": 2,
+      "cooldown": 7,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Instantly restore HP",
+        "specific": "HP recovery X%"
+      },
+      "icon": "/art/skills/ground-s-blessing.png",
+      "iconSize": 128
+    },
+    {
+      "id": 44,
+      "name": "Life Mana",
+      "element": "Earth",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 30,
+      "upgradeValue": 2,
+      "cooldown": 20,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Instantly restores HP and mana",
+        "specific": "X% recovery of total HP, 30% recovery of mana"
+      },
+      "icon": "/art/skills/life-mana.png",
+      "iconSize": 128
+    },
+    {
+      "id": 45,
+      "name": "Rave",
+      "element": null,
+      "grade": "Immortal",
+      "maxLevel": 5,
+      "mpCost": 50,
+      "baseValue": 70,
+      "upgradeValue": 10,
+      "cooldown": 60,
+      "range": 6,
+      "duration": 0,
+      "description": {
+        "basic": "Inflicts an additional damage of X% of the damage done to one enemy for 5 seconds",
+        "specific": "Deals an additional damage of X% of the damage done to one enemy for 5 seconds"
+      },
+      "icon": "/art/skills/rave.png",
+      "iconSize": 125
+    },
+    {
+      "id": 46,
+      "name": "Mantra",
+      "element": null,
+      "grade": "Immortal",
+      "maxLevel": 5,
+      "mpCost": 0,
+      "baseValue": 30,
+      "upgradeValue": 10,
+      "cooldown": 0,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Absorbs the energy condensed in the orb and greatly aplifies basic abilities",
+        "specific": "Total ATK, HP +X%. The effect is applied without equipped in the slot"
+      },
+      "icon": "/art/skills/mantra.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1001,
+      "name": "Breath of Waves",
+      "element": "Water",
+      "grade": "Mythic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 81,
+      "upgradeValue": 1,
+      "cooldown": 19,
+      "range": 0,
+      "duration": 5,
+      "description": {
+        "basic": "Calm your breath to match the rhythm of the ferocious waves. and accelerate the flow of the skill with areat balance.",
+        "specific": "Recover 50% of current HP. and increase Cooldown recharge speed by X% for 5 seconds."
+      },
+      "icon": "/art/skills/breath-of-waves.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1002,
+      "name": "Heart of Fire",
+      "element": "Fire",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 25,
+      "upgradeValue": 1,
+      "cooldown": 4,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Enhance strength with the power of flaming mind.",
+        "specific": "Fire attribute skill DMG increases by X% once 4 fire skills are equipped (After 5 skills, DMG increases by X% for each additional skill)"
+      },
+      "icon": "/art/skills/heart-of-fire.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1003,
+      "name": "Blast Wind",
+      "element": "Wind",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 10.5,
+      "upgradeValue": 0.5,
+      "cooldown": 5,
+      "range": 20,
+      "duration": 0,
+      "description": {
+        "basic": "The more you try to tame free wind, the wilder it gets.",
+        "specific": "After entering the battle. increase wind skill DMG by X% per every 5 wind attribute skills used"
+      },
+      "icon": "/art/skills/blast-wind.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1004,
+      "name": "Demolition",
+      "element": "Earth",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 166,
+      "upgradeValue": 2,
+      "cooldown": 0,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Increase DMG inflicted to immobile enemies.",
+        "specific": "Increase DMG by X% when attacking a Frozen or Stunned enemy. Additional DMG equal to Y% of ATK"
+      },
+      "icon": "/art/skills/demolition.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1005,
+      "name": "Heaven's Punishment",
+      "element": "Wind",
+      "grade": "Legendary",
+      "maxLevel": 250,
+      "mpCost": 50,
+      "baseValue": 500,
+      "upgradeValue": 115,
+      "cooldown": 30,
+      "range": 4,
+      "duration": 6,
+      "description": {
+        "basic": "Summon lightning from the sky and wrap it around the sword.",
+        "specific": "When normal attack continues for 6 seconds, consumes mana to cast 1 lightning with X% DMG"
+      },
+      "icon": "/art/skills/heaven-s-punishment.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1006,
+      "name": "Sea Judgment",
+      "element": "Water",
+      "grade": "Rare",
+      "maxLevel": 250,
+      "mpCost": 0,
+      "baseValue": 1000,
+      "upgradeValue": 530,
+      "cooldown": 3,
+      "range": 7,
+      "duration": 0,
+      "description": {
+        "basic": "Condense the scattered water energy into a spear shape and pierce the enemy.",
+        "specific": "After using a water attribute skill 3 times, cast 1 Sea God's Spear that deals X% DMG. Add 1 each time you use it. (Maximum 7)"
+      },
+      "icon": "/art/skills/sea-judgment.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1007,
+      "name": "Ignition",
+      "element": "Fire",
+      "grade": "Legendary",
+      "maxLevel": 20,
+      "mpCost": 50,
+      "baseValue": 120,
+      "upgradeValue": 6,
+      "cooldown": 15,
+      "range": 0,
+      "duration": 0,
+      "description": {
+        "basic": "Compress the inner flame until just before the explosion.",
+        "specific": "When used, increases the next Fire attribute skill DMG by X%"
+      },
+      "icon": "/art/skills/ignition.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1008,
+      "name": "Blooming",
+      "element": "Earth",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": 30,
+      "baseValue": 150,
+      "upgradeValue": 12,
+      "cooldown": 19,
+      "range": 0,
+      "duration": 6,
+      "description": {
+        "basic": "Protect your body and increase ATK with the power of nature.",
+        "specific": "Create a shield equal to Y% of total HP for 6 seconds. While the shield is activated. total ATK increases by X%"
+      },
+      "icon": "/art/skills/blooming.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1009,
+      "name": "Phantom",
+      "element": "Water",
+      "grade": "Legendary",
+      "maxLevel": 10,
+      "mpCost": 0,
+      "baseValue": 105,
+      "upgradeValue": 5,
+      "cooldown": 1,
+      "range": 1,
+      "duration": 0,
+      "description": {
+        "basic": "My phantom reflects on the calm lake.",
+        "specific": "Copy the last used active attack skill of Epic grade or lower, applying X% of its damage."
+      },
+      "icon": "/art/skills/phantom.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1010,
+      "name": "Full Moon",
+      "element": "Earth",
+      "grade": "Mythic",
+      "maxLevel": 20,
+      "mpCost": 50,
+      "baseValue": 250,
+      "upgradeValue": 25,
+      "cooldown": 40,
+      "range": 3,
+      "duration": 5,
+      "description": {
+        "basic": "When the Full Moon rises, the power of its dark side awakens.",
+        "specific": "When used. gathers the energy of the Moon for 3 seconds. When all Moon energy is gathered and it becomes a Full Moon, total ATK increases by X% for 5 seconds"
+      },
+      "icon": "/art/skills/full-moon.png",
+      "iconSize": 64
+    },
+    {
+      "id": 1011,
+      "name": "Storm Rush",
+      "element": "Wind",
+      "grade": "Great",
+      "maxLevel": 20,
+      "mpCost": 0,
+      "baseValue": 5,
+      "upgradeValue": 0.2,
+      "cooldown": 10,
+      "range": 10,
+      "duration": 0,
+      "description": {
+        "basic": "Sweeps enemies quickly as the battle escalates.",
+        "specific": "Movement speed +X% based on the number of monsters killed during the battle."
+      },
+      "icon": "/art/skills/storm-rush.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1012,
+      "name": "Flame Strike",
+      "element": "Fire",
+      "grade": "Mythic",
+      "maxLevel": 250,
+      "mpCost": 50,
+      "baseValue": 5920,
+      "upgradeValue": 580,
+      "cooldown": 7,
+      "range": 5,
+      "duration": 0,
+      "description": {
+        "basic": "Summons a flaming axe to subdue enemies.",
+        "specific": "Attacks all enemies within 5 range once with X% of ATK. Can be charged up to 2 times."
+      },
+      "icon": "/art/skills/flame-strike.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1013,
+      "name": "Waterspout",
+      "element": "Water",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": null,
+      "baseValue": null,
+      "upgradeValue": null,
+      "cooldown": null,
+      "range": null,
+      "duration": null,
+      "description": {
+        "basic": "Protects one with a rising water spout, then strikes back.",
+        "specific": "Dodges enemy attacks once for 1 second(s> (excluding some special attacks). Upon dodging, deals X% damage to all enemies within 4 Range and increases Attack Speed by Y% for 7 seconds"
+      },
+      "icon": "/art/skills/waterspout.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1014,
+      "name": "Goblin Fire",
+      "element": "Fire",
+      "grade": "Epic",
+      "maxLevel": 250,
+      "mpCost": null,
+      "baseValue": null,
+      "upgradeValue": null,
+      "cooldown": null,
+      "range": null,
+      "duration": null,
+      "description": {
+        "basic": "Releases a Goblin Fire that flies toward enemies, absorbing their life force.",
+        "specific": "Upon detecting an enemy, cast 3 Goblin Fire dealing X% damage. Total ATK Y% per monster killed with Goblin Fire during battle,"
+      },
+      "icon": "/art/skills/goblin-fire.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1015,
+      "name": "Predator",
+      "element": "Earth",
+      "grade": "Rare",
+      "maxLevel": 20,
+      "mpCost": null,
+      "baseValue": null,
+      "upgradeValue": null,
+      "cooldown": null,
+      "range": null,
+      "duration": null,
+      "description": {
+        "basic": "Overwhelm the enemy as if to imprint the power difference.",
+        "specific": "+X% damage to enemies with Y% or less of their Max HP"
+      },
+      "icon": "/art/skills/predator.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1016,
+      "name": "Circular Sword Dance",
+      "element": "Wind",
+      "grade": "Epic",
+      "maxLevel": 250,
+      "mpCost": null,
+      "baseValue": null,
+      "upgradeValue": null,
+      "cooldown": null,
+      "range": null,
+      "duration": null,
+      "description": {
+        "basic": "Attacks by spinning quickly, like a whirlwind, to generate wind pressure.",
+        "specific": "Charges forward while spinning to attack enemies within 5 range. Deals X% of ATK as damage Cooldown resets upon eliminating an enemy"
+      },
+      "icon": "/art/skills/circular-sword-dance.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1017,
+      "name": "Fierce Attack",
+      "element": "Wind",
+      "grade": "Epic",
+      "maxLevel": 20,
+      "mpCost": null,
+      "baseValue": null,
+      "upgradeValue": null,
+      "cooldown": null,
+      "range": null,
+      "duration": null,
+      "description": {
+        "basic": "Grants Acceleration to every attack, unleashing explosive power.",
+        "specific": "Total ATK increases by X% for every 1% increase in MSPD."
+      },
+      "icon": "/art/skills/fierce-attack.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1018,
+      "name": "Rekindle",
+      "element": "Fire",
+      "grade": "Common",
+      "maxLevel": 20,
+      "mpCost": null,
+      "baseValue": null,
+      "upgradeValue": null,
+      "cooldown": null,
+      "range": null,
+      "duration": null,
+      "description": {
+        "basic": "The flame of an indomitable Slayer burns twice.",
+        "specific": "Damage taken in battle greatly increases. Revives with 100% HP upon death. Total ATK increases by X% for 60 seconds after reviving."
+      },
+      "icon": "/art/skills/rekindle.png",
+      "iconSize": 128
+    }
+  ]
+}

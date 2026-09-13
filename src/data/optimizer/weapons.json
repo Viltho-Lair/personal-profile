@@ -1,0 +1,409 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Equipment Data, EQUIPMENT",
+    "extractedOn": "2026-09-13"
+  },
+  "weapons": [
+    {
+      "grade": "Common 4",
+      "tier": "Common",
+      "gradeNumber": 4,
+      "tierRank": 0,
+      "multiplier": 7,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/common-4.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Common 3",
+      "tier": "Common",
+      "gradeNumber": 3,
+      "tierRank": 0,
+      "multiplier": 10,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/common-3.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Common 2",
+      "tier": "Common",
+      "gradeNumber": 2,
+      "tierRank": 0,
+      "multiplier": 15,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/common-2.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Common 1",
+      "tier": "Common",
+      "gradeNumber": 1,
+      "tierRank": 0,
+      "multiplier": 20,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/common-1.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Great 4",
+      "tier": "Great",
+      "gradeNumber": 4,
+      "tierRank": 1,
+      "multiplier": 35,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/great-4.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Great 3",
+      "tier": "Great",
+      "gradeNumber": 3,
+      "tierRank": 1,
+      "multiplier": 50,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/great-3.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Great 2",
+      "tier": "Great",
+      "gradeNumber": 2,
+      "tierRank": 1,
+      "multiplier": 80,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/great-2.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Great 1",
+      "tier": "Great",
+      "gradeNumber": 1,
+      "tierRank": 1,
+      "multiplier": 120,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/great-1.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Rare 4",
+      "tier": "Rare",
+      "gradeNumber": 4,
+      "tierRank": 2,
+      "multiplier": 170,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.01
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/rare-4.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Rare 3",
+      "tier": "Rare",
+      "gradeNumber": 3,
+      "tierRank": 2,
+      "multiplier": 240,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.011
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/rare-3.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Rare 2",
+      "tier": "Rare",
+      "gradeNumber": 2,
+      "tierRank": 2,
+      "multiplier": 330,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.012
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/rare-2.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Rare 1",
+      "tier": "Rare",
+      "gradeNumber": 1,
+      "tierRank": 2,
+      "multiplier": 460,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.013
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/rare-1.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Epic 4",
+      "tier": "Epic",
+      "gradeNumber": 4,
+      "tierRank": 3,
+      "multiplier": 800,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.02
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/epic-4.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Epic 3",
+      "tier": "Epic",
+      "gradeNumber": 3,
+      "tierRank": 3,
+      "multiplier": 1500,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.022
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/epic-3.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Epic 2",
+      "tier": "Epic",
+      "gradeNumber": 2,
+      "tierRank": 3,
+      "multiplier": 2500,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.024
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/epic-2.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Epic 1",
+      "tier": "Epic",
+      "gradeNumber": 1,
+      "tierRank": 3,
+      "multiplier": 4000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.026
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/epic-1.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Legendary 4",
+      "tier": "Legendary",
+      "gradeNumber": 4,
+      "tierRank": 4,
+      "multiplier": 10000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.05
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/legendary-4.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Legendary 3",
+      "tier": "Legendary",
+      "gradeNumber": 3,
+      "tierRank": 4,
+      "multiplier": 15000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.055
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/legendary-3.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Legendary 2",
+      "tier": "Legendary",
+      "gradeNumber": 2,
+      "tierRank": 4,
+      "multiplier": 24000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.06
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/legendary-2.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Legendary 1",
+      "tier": "Legendary",
+      "gradeNumber": 1,
+      "tierRank": 4,
+      "multiplier": 30000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": null,
+        "critHitIncreaseAt0": 0.065
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/legendary-1.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Mythic 4",
+      "tier": "Mythic",
+      "gradeNumber": 4,
+      "tierRank": 5,
+      "multiplier": 100000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": 0,
+        "critHitIncreaseAt0": 0.1
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/mythic-4.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Mythic 3",
+      "tier": "Mythic",
+      "gradeNumber": 3,
+      "tierRank": 5,
+      "multiplier": 300000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": 0,
+        "critHitIncreaseAt0": 0.11
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/mythic-3.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Mythic 2",
+      "tier": "Mythic",
+      "gradeNumber": 2,
+      "tierRank": 5,
+      "multiplier": 850000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": 0,
+        "critHitIncreaseAt0": 0.12
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/mythic-2.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Mythic 1",
+      "tier": "Mythic",
+      "gradeNumber": 1,
+      "tierRank": 5,
+      "multiplier": 3000000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": 0,
+        "critHitIncreaseAt0": 0.13
+      },
+      "maxLevel": 1700,
+      "icon": "/art/weapons/mythic-1.png",
+      "iconSize": 128
+    },
+    {
+      "grade": "Immortal",
+      "tier": "Immortal",
+      "gradeNumber": null,
+      "tierRank": 6,
+      "multiplier": 10000000,
+      "baseMaxLevel": 200,
+      "secondary": {
+        "critHitAt0": 0,
+        "goldBonus": 0,
+        "critHitIncreaseAt0": 0.15
+      },
+      "maxLevel": 1700,
+      "icon": null,
+      "iconSize": null
+    }
+  ]
+}

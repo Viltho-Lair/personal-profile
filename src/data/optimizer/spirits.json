@@ -1,0 +1,443 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Equipment Data",
+    "extractedOn": "2026-09-13"
+  },
+  "spirits": [
+    {
+      "id": 0,
+      "name": "Ark",
+      "maxLevel": 1000,
+      "element": "Water",
+      "skill": {
+        "name": "Time Freeze",
+        "description": "After 8 seconds from the start of the battle stop time for 4-10 seconds. Once per battle.",
+        "type": "Crowd Control",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "4 seconds time stop"
+          },
+          {
+            "level": 2,
+            "effect": "5 seconds time stop"
+          },
+          {
+            "level": 3,
+            "effect": "6 seconds time stop"
+          },
+          {
+            "level": 4,
+            "effect": "8 seconds time stop"
+          },
+          {
+            "level": 5,
+            "effect": "10 seconds time stop"
+          }
+        ]
+      },
+      "icon": "/art/spirits/ark.png",
+      "iconSize": 128
+    },
+    {
+      "id": 1,
+      "name": "Bo",
+      "maxLevel": 1000,
+      "element": "Fire",
+      "skill": {
+        "name": "Wild Heart",
+        "description": "Total HP increased by 100-500%.",
+        "type": "HP Boost",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "100% HP increase"
+          },
+          {
+            "level": 2,
+            "effect": "180% HP increase"
+          },
+          {
+            "level": 3,
+            "effect": "Unknown",
+            "note": "Data missing"
+          },
+          {
+            "level": 4,
+            "effect": "Unknown",
+            "note": "Data missing"
+          },
+          {
+            "level": 5,
+            "effect": "500% HP increase"
+          }
+        ]
+      },
+      "icon": "/art/spirits/bo.png",
+      "iconSize": 128
+    },
+    {
+      "id": 2,
+      "name": "Herh",
+      "maxLevel": 1000,
+      "element": "Wind",
+      "skill": {
+        "name": "Wind Force",
+        "description": "Skill cooldown + 4-6% recovery every 10 seconds.",
+        "type": "Cooldown Reduction",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "4% cooldown recovery"
+          },
+          {
+            "level": 2,
+            "effect": "4.5% cooldown recovery"
+          },
+          {
+            "level": 3,
+            "effect": "5% cooldown recovery"
+          },
+          {
+            "level": 4,
+            "effect": "5.5% cooldown recovery"
+          },
+          {
+            "level": 5,
+            "effect": "6% cooldown recovery"
+          }
+        ]
+      },
+      "icon": "/art/spirits/herh.png",
+      "iconSize": 128
+    },
+    {
+      "id": 3,
+      "name": "Kart",
+      "maxLevel": 1000,
+      "element": "Wind",
+      "skill": {
+        "name": "Thief Wind",
+        "description": "When attacking a normal monster for the first time, HP is reduced by 13-25%.",
+        "type": "First Strike",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "13% HP reduction on first hit"
+          },
+          {
+            "level": 2,
+            "effect": "16% HP reduction on first hit"
+          },
+          {
+            "level": 3,
+            "effect": "19% HP reduction on first hit"
+          },
+          {
+            "level": 4,
+            "effect": "22% HP reduction on first hit"
+          },
+          {
+            "level": 5,
+            "effect": "25% HP reduction on first hit"
+          }
+        ]
+      },
+      "icon": "/art/spirits/kart.png",
+      "iconSize": 128
+    },
+    {
+      "id": 4,
+      "name": "Loar",
+      "maxLevel": 1000,
+      "element": "Earth",
+      "skill": {
+        "name": "Wilderness Roar",
+        "description": "Increase skill damage to boss monsters by 10-80%.",
+        "type": "Damage Boost",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "10% boss damage"
+          },
+          {
+            "level": 2,
+            "effect": "22% boss damage"
+          },
+          {
+            "level": 3,
+            "effect": "35% boss damage"
+          },
+          {
+            "level": 4,
+            "effect": "50% boss damage"
+          },
+          {
+            "level": 5,
+            "effect": "80% boss damage"
+          }
+        ]
+      },
+      "icon": "/art/spirits/loar.png",
+      "iconSize": 128
+    },
+    {
+      "id": 5,
+      "name": "Luga",
+      "maxLevel": 1000,
+      "element": "Water",
+      "skill": {
+        "name": "Understanding of the Abyss",
+        "description": "When gaining exp 10-80% chance for double exp.",
+        "type": "EXP Farming",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "10% chance for 2x exp"
+          },
+          {
+            "level": 2,
+            "effect": "22% chance for 2x exp"
+          },
+          {
+            "level": 3,
+            "effect": "35% chance for 2x exp"
+          },
+          {
+            "level": 4,
+            "effect": "50% chance for 2x exp"
+          },
+          {
+            "level": 5,
+            "effect": "80% chance for 2x exp"
+          }
+        ]
+      },
+      "icon": "/art/spirits/luga.png",
+      "iconSize": 128
+    },
+    {
+      "id": 6,
+      "name": "Mum",
+      "maxLevel": 1000,
+      "element": "Fire",
+      "skill": {
+        "name": "Reign",
+        "description": "Skill damage 10-80% against normal monsters",
+        "type": "Damage Boost",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "10% normal monster damage"
+          },
+          {
+            "level": 2,
+            "effect": "22% normal monster damage"
+          },
+          {
+            "level": 3,
+            "effect": "35% normal monster damage"
+          },
+          {
+            "level": 4,
+            "effect": "50% normal monster damage"
+          },
+          {
+            "level": 5,
+            "effect": "80% normal monster damage"
+          }
+        ]
+      },
+      "icon": "/art/spirits/mum.png",
+      "iconSize": 128
+    },
+    {
+      "id": 7,
+      "name": "Noah",
+      "maxLevel": 1000,
+      "element": "Earth",
+      "skill": {
+        "name": "Last Fight",
+        "description": "5 seconds before the end of a battle increase your damage by 1.2-2X.",
+        "type": "Burst Damage",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "1.2x damage multiplier"
+          },
+          {
+            "level": 2,
+            "effect": "1.4x damage multiplier"
+          },
+          {
+            "level": 3,
+            "effect": "1.6x damage multiplier"
+          },
+          {
+            "level": 4,
+            "effect": "1.8x damage multiplier"
+          },
+          {
+            "level": 5,
+            "effect": "2x damage multiplier"
+          }
+        ]
+      },
+      "icon": "/art/spirits/noah.png",
+      "iconSize": 128
+    },
+    {
+      "id": 8,
+      "name": "Radon",
+      "maxLevel": 1000,
+      "element": "Earth",
+      "skill": {
+        "name": "Leveling",
+        "description": "Increases damage dealt to enemies by 10-80% when the enemy's HP is above 70%.",
+        "type": "Conditional Damage",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "10% damage (HP > 70%)"
+          },
+          {
+            "level": 2,
+            "effect": "22% damage (HP > 70%)"
+          },
+          {
+            "level": 3,
+            "effect": "35% damage (HP > 70%)"
+          },
+          {
+            "level": 4,
+            "effect": "50% damage (HP > 70%)"
+          },
+          {
+            "level": 5,
+            "effect": "80% damage (HP > 70%)"
+          }
+        ]
+      },
+      "icon": "/art/spirits/radon.png",
+      "iconSize": 128
+    },
+    {
+      "id": 9,
+      "name": "Sala",
+      "maxLevel": 1000,
+      "element": "Fire",
+      "skill": {
+        "name": "Breath of Fire",
+        "description": "Every 12 seconds after the start of the battle deal remaining 6-10% of hp.",
+        "type": "Damage Over Time",
+        "cooldown": 12,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "6% HP damage"
+          },
+          {
+            "level": 2,
+            "effect": "7% HP damage"
+          },
+          {
+            "level": 3,
+            "effect": "8% HP damage"
+          },
+          {
+            "level": 4,
+            "effect": "9% HP damage"
+          },
+          {
+            "level": 5,
+            "effect": "10% HP damage"
+          }
+        ]
+      },
+      "icon": "/art/spirits/sala.png",
+      "iconSize": 128
+    },
+    {
+      "id": 10,
+      "name": "Todd",
+      "maxLevel": 1000,
+      "element": "Water",
+      "skill": {
+        "name": "Gold Rumble",
+        "description": "10-80% chance of obtaining 2x gold whenever acquired.",
+        "type": "Gold Farming",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "10% chance for 2x gold"
+          },
+          {
+            "level": 2,
+            "effect": "22% chance for 2x gold"
+          },
+          {
+            "level": 3,
+            "effect": "35% chance for 2x gold"
+          },
+          {
+            "level": 4,
+            "effect": "50% chance for 2x gold"
+          },
+          {
+            "level": 5,
+            "effect": "80% chance for 2x gold"
+          }
+        ]
+      },
+      "icon": "/art/spirits/todd.png",
+      "iconSize": 128
+    },
+    {
+      "id": 11,
+      "name": "Zappy",
+      "maxLevel": 1000,
+      "element": "Wind",
+      "skill": {
+        "name": "Judge's Torpedo",
+        "description": "Instantly kills normal monsters with less than 14-30% HP.",
+        "type": "Execute",
+        "cooldown": null,
+        "levels": [
+          {
+            "level": 1,
+            "effect": "Execute below 14% HP"
+          },
+          {
+            "level": 2,
+            "effect": "Execute below 18% HP"
+          },
+          {
+            "level": 3,
+            "effect": "Execute below 22% HP"
+          },
+          {
+            "level": 4,
+            "effect": "Execute below 26% HP"
+          },
+          {
+            "level": 5,
+            "effect": "Execute below 30% HP"
+          }
+        ]
+      },
+      "icon": "/art/spirits/zappy.png",
+      "iconSize": 128
+    }
+  ]
+}
