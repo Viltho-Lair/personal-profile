@@ -21,6 +21,7 @@ import openpyxl  # noqa: E402
 from PIL import Image  # noqa: E402
 
 from optimizer.art import find_existing_art  # noqa: E402
+from optimizer.character import extract_character  # noqa: E402
 from optimizer.companions import extract_companions  # noqa: E402
 from optimizer.familiars import extract_familiars  # noqa: E402
 from optimizer.gear import (  # noqa: E402
@@ -200,6 +201,9 @@ def main():
         soul_weapons, soul_icons = extract_soul_weapons(values["Equipment Data"])
         mastery_pages, mastery_icons = extract_mastery(formulas["SKILL MASTERY"])
         familiars, mana_altar, familiar_art = extract_familiars(formulas["Familiar Data"])
+        character = extract_character(
+            formulas["CHARACTER"], values["CHARACTER"], values["Character Data"], values["Equipment Data"]
+        )
         companions, promotion, companion_art = extract_companions(
             formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
         )
@@ -303,6 +307,13 @@ def main():
         "manaAltar": mana_altar,
     })
     print(f"familiars: {len(familiars)} familiars, mana altar levels 1-{len(mana_altar)}")
+
+    write_json(DATA / "character.json", {
+        "source": {"file": source.name, "sheet": "CHARACTER, Character Data, Equipment Data", "extractedOn": today},
+        **character,
+    })
+    print(f"character: {len(character['enhance'])} enhance stats, {len(character['growth'])} growth stats, "
+          f"{len(character['promotions'])} promotions, {len(character['classes'])} classes")
 
     published = publish_files("companion-skins", companion_art)
     for companion in companions:

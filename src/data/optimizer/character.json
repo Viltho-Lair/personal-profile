@@ -1,0 +1,2305 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "CHARACTER, Character Data, Equipment Data",
+    "extractedOn": "2026-09-13"
+  },
+  "enhance": [
+    {
+      "name": "ATK",
+      "maxLevel": 2200000
+    },
+    {
+      "name": "CRIT DMG",
+      "maxLevel": 10000
+    },
+    {
+      "name": "CRIT %",
+      "maxLevel": 1000
+    },
+    {
+      "name": "DEATH STRIKE",
+      "maxLevel": null,
+      "requiresCrit": 1000,
+      "cap": "growingKnowledge"
+    },
+    {
+      "name": "DEATH STRIKE %",
+      "maxLevel": null,
+      "requiresCrit": 1000,
+      "cap": 1000
+    },
+    {
+      "name": "HP",
+      "maxLevel": 2200000
+    },
+    {
+      "name": "HP Recovery",
+      "maxLevel": 2200000
+    }
+  ],
+  "growingKnowledge": [
+    {
+      "grade": "Not Obtained",
+      "atk": 0,
+      "maxDeathStrike": 4000,
+      "superhuman": 0
+    },
+    {
+      "grade": "Grade 1",
+      "atk": 15000,
+      "maxDeathStrike": 4050,
+      "superhuman": 30
+    },
+    {
+      "grade": "Grade 2",
+      "atk": 36500,
+      "maxDeathStrike": 4150,
+      "superhuman": 90
+    },
+    {
+      "grade": "Grade 3",
+      "atk": 60055,
+      "maxDeathStrike": 4300,
+      "superhuman": 180
+    },
+    {
+      "grade": "Grade 4",
+      "atk": 101158,
+      "maxDeathStrike": 4500,
+      "superhuman": 300
+    },
+    {
+      "grade": "Grade 5",
+      "atk": 143716,
+      "maxDeathStrike": 4750,
+      "superhuman": 450
+    },
+    {
+      "grade": "Grade 6",
+      "atk": 194652,
+      "maxDeathStrike": 5050,
+      "superhuman": 630
+    },
+    {
+      "grade": "Grade 7",
+      "atk": 254385,
+      "maxDeathStrike": 5400,
+      "superhuman": 840
+    },
+    {
+      "grade": "Grade 8",
+      "atk": 323354,
+      "maxDeathStrike": 5800,
+      "superhuman": 1080
+    },
+    {
+      "grade": "Grade 9",
+      "atk": 402022,
+      "maxDeathStrike": 6250,
+      "superhuman": 1350
+    },
+    {
+      "grade": "Grade 10",
+      "atk": 490873,
+      "maxDeathStrike": 6750,
+      "superhuman": 1650
+    },
+    {
+      "grade": "Grade 11",
+      "atk": 590417,
+      "maxDeathStrike": 7300,
+      "superhuman": 1980
+    },
+    {
+      "grade": "Grade 12",
+      "atk": 701188,
+      "maxDeathStrike": 7900,
+      "superhuman": 2340
+    },
+    {
+      "grade": "Grade 13",
+      "atk": 823747,
+      "maxDeathStrike": 8550,
+      "superhuman": 2730
+    },
+    {
+      "grade": "Grade 14",
+      "atk": 958684,
+      "maxDeathStrike": 9250,
+      "superhuman": 3150
+    },
+    {
+      "grade": "Grade 15",
+      "atk": 1106618,
+      "maxDeathStrike": 10000,
+      "superhuman": 3600
+    },
+    {
+      "grade": "Grade 16",
+      "atk": 1268199,
+      "maxDeathStrike": 10800,
+      "superhuman": 4080
+    },
+    {
+      "grade": "Grade 17",
+      "atk": 1444109,
+      "maxDeathStrike": 11650,
+      "superhuman": 4590
+    },
+    {
+      "grade": "Grade 18",
+      "atk": 1635064,
+      "maxDeathStrike": 12550,
+      "superhuman": 5130
+    },
+    {
+      "grade": "Grade 19",
+      "atk": 1841817,
+      "maxDeathStrike": 13500,
+      "superhuman": 5700
+    },
+    {
+      "grade": "Grade 20",
+      "atk": 2065158,
+      "maxDeathStrike": 14500,
+      "superhuman": 6300
+    },
+    {
+      "grade": "Grade 21",
+      "atk": 2305916,
+      "maxDeathStrike": 15550,
+      "superhuman": 6930
+    },
+    {
+      "grade": "Grade 22",
+      "atk": 2564962,
+      "maxDeathStrike": 16650,
+      "superhuman": 7590
+    },
+    {
+      "grade": "Grade 23",
+      "atk": 2843210,
+      "maxDeathStrike": 17800,
+      "superhuman": 8280
+    },
+    {
+      "grade": "Grade 24",
+      "atk": 3141621,
+      "maxDeathStrike": 19000,
+      "superhuman": 9000
+    },
+    {
+      "grade": "Grade 25",
+      "atk": 3461202,
+      "maxDeathStrike": 20250,
+      "superhuman": 9750
+    },
+    {
+      "grade": "Grade 26",
+      "atk": 3803012,
+      "maxDeathStrike": 21550,
+      "superhuman": 10530
+    },
+    {
+      "grade": "Grade 27",
+      "atk": 4168163,
+      "maxDeathStrike": 22900,
+      "superhuman": 11340
+    },
+    {
+      "grade": "Grade 28",
+      "atk": 4557821,
+      "maxDeathStrike": 24300,
+      "superhuman": 12180
+    },
+    {
+      "grade": "Grade 29",
+      "atk": 4973212,
+      "maxDeathStrike": 25750,
+      "superhuman": 13050
+    },
+    {
+      "grade": "Grade 30",
+      "atk": 5415623,
+      "maxDeathStrike": 27250,
+      "superhuman": 13950
+    },
+    {
+      "grade": "Grade 31",
+      "atk": 5886404,
+      "maxDeathStrike": 28800,
+      "superhuman": 14880
+    },
+    {
+      "grade": "Grade 32",
+      "atk": 6386974,
+      "maxDeathStrike": 30400,
+      "superhuman": 15840
+    },
+    {
+      "grade": "Grade 33",
+      "atk": 6918823,
+      "maxDeathStrike": 32050,
+      "superhuman": 16830
+    },
+    {
+      "grade": "Grade 34",
+      "atk": 7483514,
+      "maxDeathStrike": 33750,
+      "superhuman": 17850
+    },
+    {
+      "grade": "Grade 35",
+      "atk": 8082690,
+      "maxDeathStrike": 35500,
+      "superhuman": 18900
+    },
+    {
+      "grade": "Grade 36",
+      "atk": 8718074,
+      "maxDeathStrike": 37300,
+      "superhuman": 19980
+    },
+    {
+      "grade": "Grade 37",
+      "atk": 9391478,
+      "maxDeathStrike": 39150,
+      "superhuman": 21090
+    },
+    {
+      "grade": "Grade 38",
+      "atk": 10104802,
+      "maxDeathStrike": 41050,
+      "superhuman": 22230
+    },
+    {
+      "grade": "Grade 39",
+      "atk": 10860042,
+      "maxDeathStrike": 43000,
+      "superhuman": 23400
+    },
+    {
+      "grade": "Grade 40",
+      "atk": 11659294,
+      "maxDeathStrike": 45000,
+      "superhuman": 24600
+    },
+    {
+      "grade": "Grade 41",
+      "atk": 12504759,
+      "maxDeathStrike": 47050,
+      "superhuman": 25830
+    },
+    {
+      "grade": "Grade 42",
+      "atk": 13398747,
+      "maxDeathStrike": 49150,
+      "superhuman": 27090
+    },
+    {
+      "grade": "Grade 43",
+      "atk": 14343684,
+      "maxDeathStrike": 51300,
+      "superhuman": 28380
+    },
+    {
+      "grade": "Grade 44",
+      "atk": 15342118,
+      "maxDeathStrike": 53500,
+      "superhuman": 29700
+    },
+    {
+      "grade": "Grade 45",
+      "atk": 16396724,
+      "maxDeathStrike": 55750,
+      "superhuman": 31050
+    },
+    {
+      "grade": "Grade 46",
+      "atk": 17510310,
+      "maxDeathStrike": 58050,
+      "superhuman": 32430
+    },
+    {
+      "grade": "Grade 47",
+      "atk": 18685825,
+      "maxDeathStrike": 60400,
+      "superhuman": 33840
+    },
+    {
+      "grade": "Grade 48",
+      "atk": 19926366,
+      "maxDeathStrike": 62800,
+      "superhuman": 35280
+    },
+    {
+      "grade": "Grade 49",
+      "atk": 21235184,
+      "maxDeathStrike": 65250,
+      "superhuman": 36750
+    },
+    {
+      "grade": "Grade 50",
+      "atk": 22615693,
+      "maxDeathStrike": 67750,
+      "superhuman": 38250
+    },
+    {
+      "grade": "Grade 51",
+      "atk": 24071478,
+      "maxDeathStrike": 70300,
+      "superhuman": 39780
+    },
+    {
+      "grade": "Grade 52",
+      "atk": 25606302,
+      "maxDeathStrike": 72900,
+      "superhuman": 41340
+    },
+    {
+      "grade": "Grade 53",
+      "atk": 27224117,
+      "maxDeathStrike": 75550,
+      "superhuman": 42930
+    },
+    {
+      "grade": "Grade 54",
+      "atk": 28929073,
+      "maxDeathStrike": 78250,
+      "superhuman": 44550
+    },
+    {
+      "grade": "Grade 55",
+      "atk": 30725527,
+      "maxDeathStrike": 81000,
+      "superhuman": 46200
+    },
+    {
+      "grade": "Grade 56",
+      "atk": 32611804,
+      "maxDeathStrike": 83800,
+      "superhuman": 47880
+    },
+    {
+      "grade": "Grade 57",
+      "atk": 34592395,
+      "maxDeathStrike": 86650,
+      "superhuman": 49590
+    },
+    {
+      "grade": "Grade 58",
+      "atk": 36672016,
+      "maxDeathStrike": 89550,
+      "superhuman": 51330
+    },
+    {
+      "grade": "Grade 59",
+      "atk": 38855618,
+      "maxDeathStrike": 92500,
+      "superhuman": 53100
+    },
+    {
+      "grade": "Grade 60",
+      "atk": 41148400,
+      "maxDeathStrike": 95500,
+      "superhuman": 54900
+    },
+    {
+      "grade": "Grade 61",
+      "atk": 43555821,
+      "maxDeathStrike": 98550,
+      "superhuman": 56730
+    },
+    {
+      "grade": "Grade 62",
+      "atk": 46083613,
+      "maxDeathStrike": 101650,
+      "superhuman": 58590
+    },
+    {
+      "grade": "Grade 63",
+      "atk": 48737795,
+      "maxDeathStrike": 104800,
+      "superhuman": 60480
+    },
+    {
+      "grade": "Grade 64",
+      "atk": 51524686,
+      "maxDeathStrike": 108000,
+      "superhuman": 62400
+    },
+    {
+      "grade": "Grade 65",
+      "atk": 54450922,
+      "maxDeathStrike": 111250,
+      "superhuman": 64350
+    },
+    {
+      "grade": "Grade 66",
+      "atk": 57523470,
+      "maxDeathStrike": 114550,
+      "superhuman": 66330
+    },
+    {
+      "grade": "Grade 67",
+      "atk": 60749645,
+      "maxDeathStrike": 117900,
+      "superhuman": 68340
+    },
+    {
+      "grade": "Grade 68",
+      "atk": 64137129,
+      "maxDeathStrike": 121300,
+      "superhuman": 70380
+    },
+    {
+      "grade": "Grade 69",
+      "atk": 67693987,
+      "maxDeathStrike": 124750,
+      "superhuman": 72450
+    },
+    {
+      "grade": "Grade 70",
+      "atk": 71428688,
+      "maxDeathStrike": 128250,
+      "superhuman": 74550
+    },
+    {
+      "grade": "Grade 71",
+      "atk": 75350124,
+      "maxDeathStrike": 131800,
+      "superhuman": 76680
+    },
+    {
+      "grade": "Grade 72",
+      "atk": 79467632,
+      "maxDeathStrike": 135400,
+      "superhuman": 78840
+    },
+    {
+      "grade": "Grade 73",
+      "atk": 83791015,
+      "maxDeathStrike": 139050,
+      "superhuman": 81030
+    },
+    {
+      "grade": "Grade 74",
+      "atk": 88330567,
+      "maxDeathStrike": 142750,
+      "superhuman": 83250
+    },
+    {
+      "grade": "Grade 75",
+      "atk": 93097097,
+      "maxDeathStrike": 146500,
+      "superhuman": 85500
+    },
+    {
+      "grade": "Grade 76",
+      "atk": 98101954,
+      "maxDeathStrike": 150300,
+      "superhuman": 87780
+    },
+    {
+      "grade": "Grade 77",
+      "atk": 103357054,
+      "maxDeathStrike": 154150,
+      "superhuman": 90090
+    },
+    {
+      "grade": "Grade 78",
+      "atk": 108874909,
+      "maxDeathStrike": 158050,
+      "superhuman": 92430
+    },
+    {
+      "grade": "Grade 79",
+      "atk": 114668657,
+      "maxDeathStrike": 162000,
+      "superhuman": 94800
+    },
+    {
+      "grade": "Grade 80",
+      "atk": 120752092,
+      "maxDeathStrike": 166000,
+      "superhuman": 97200
+    },
+    {
+      "grade": "Grade 81",
+      "atk": 127139699,
+      "maxDeathStrike": 170050,
+      "superhuman": 99630
+    },
+    {
+      "grade": "Grade 82",
+      "atk": 133846686,
+      "maxDeathStrike": 174150,
+      "superhuman": 102090
+    },
+    {
+      "grade": "Grade 83",
+      "atk": 140889022,
+      "maxDeathStrike": 178300,
+      "superhuman": 104580
+    },
+    {
+      "grade": "Grade 84",
+      "atk": 148283475,
+      "maxDeathStrike": 182500,
+      "superhuman": 107100
+    },
+    {
+      "grade": "Grade 85",
+      "atk": 156047651,
+      "maxDeathStrike": 186750,
+      "superhuman": 109650
+    },
+    {
+      "grade": "Grade 86",
+      "atk": 164200036,
+      "maxDeathStrike": 191050,
+      "superhuman": 112230
+    },
+    {
+      "grade": "Grade 87",
+      "atk": 172760040,
+      "maxDeathStrike": 195400,
+      "superhuman": 114840
+    },
+    {
+      "grade": "Grade 88",
+      "atk": 181748044,
+      "maxDeathStrike": 199800,
+      "superhuman": 117480
+    },
+    {
+      "grade": "Grade 89",
+      "atk": 191185448,
+      "maxDeathStrike": 204250,
+      "superhuman": 120150
+    },
+    {
+      "grade": "Grade 90",
+      "atk": 201094722,
+      "maxDeathStrike": 208750,
+      "superhuman": 122850
+    }
+  ],
+  "growth": [
+    {
+      "key": "STR",
+      "detail": "ATK Damage",
+      "perLevel": 5
+    },
+    {
+      "key": "HP",
+      "detail": "Health",
+      "perLevel": 30
+    },
+    {
+      "key": "VIT",
+      "detail": "Health Regen",
+      "perLevel": 5
+    },
+    {
+      "key": "CRI",
+      "detail": "Crit Damage",
+      "perLevel": 3
+    },
+    {
+      "key": "LUK",
+      "detail": "Gold Gain",
+      "perLevel": 0.005
+    },
+    {
+      "key": "ACC",
+      "detail": "ATK Accuracy",
+      "perLevel": 3.0
+    },
+    {
+      "key": "DODGE",
+      "detail": "Dodge Chance",
+      "perLevel": 1
+    }
+  ],
+  "latentAwakening": {
+    "stats": [
+      {
+        "grade": 1,
+        "level": 0,
+        "multiplier": 1
+      },
+      {
+        "grade": 1,
+        "level": 1,
+        "multiplier": 1.02
+      },
+      {
+        "grade": 1,
+        "level": 2,
+        "multiplier": 1.0404
+      },
+      {
+        "grade": 1,
+        "level": 3,
+        "multiplier": 1.061208
+      },
+      {
+        "grade": 1,
+        "level": 4,
+        "multiplier": 1.08243216
+      },
+      {
+        "grade": 1,
+        "level": 5,
+        "multiplier": 1.104080803
+      },
+      {
+        "grade": 2,
+        "level": 0,
+        "multiplier": 1.324896964
+      },
+      {
+        "grade": 2,
+        "level": 1,
+        "multiplier": 1.351394903
+      },
+      {
+        "grade": 2,
+        "level": 2,
+        "multiplier": 1.378422801
+      },
+      {
+        "grade": 2,
+        "level": 3,
+        "multiplier": 1.405991257
+      },
+      {
+        "grade": 2,
+        "level": 4,
+        "multiplier": 1.434111082
+      },
+      {
+        "grade": 2,
+        "level": 5,
+        "multiplier": 1.462793304
+      },
+      {
+        "grade": 3,
+        "level": 0,
+        "multiplier": 1.609072634
+      },
+      {
+        "grade": 3,
+        "level": 1,
+        "multiplier": 1.625163361
+      },
+      {
+        "grade": 3,
+        "level": 2,
+        "multiplier": 1.641414994
+      },
+      {
+        "grade": 3,
+        "level": 3,
+        "multiplier": 1.657829144
+      },
+      {
+        "grade": 3,
+        "level": 4,
+        "multiplier": 1.674407436
+      },
+      {
+        "grade": 3,
+        "level": 5,
+        "multiplier": 1.69115151
+      },
+      {
+        "grade": 4,
+        "level": 0,
+        "multiplier": 1.860266661
+      },
+      {
+        "grade": 4,
+        "level": 1,
+        "multiplier": 1.878869328
+      },
+      {
+        "grade": 4,
+        "level": 2,
+        "multiplier": 1.897658021
+      },
+      {
+        "grade": 4,
+        "level": 3,
+        "multiplier": 1.916634601
+      },
+      {
+        "grade": 4,
+        "level": 4,
+        "multiplier": 1.935800947
+      },
+      {
+        "grade": 4,
+        "level": 5,
+        "multiplier": 1.955158957
+      },
+      {
+        "grade": 5,
+        "level": 0,
+        "multiplier": 2.150674852
+      },
+      {
+        "grade": 5,
+        "level": 1,
+        "multiplier": 2.172181601
+      },
+      {
+        "grade": 5,
+        "level": 2,
+        "multiplier": 2.193903417
+      },
+      {
+        "grade": 5,
+        "level": 3,
+        "multiplier": 2.215842451
+      },
+      {
+        "grade": 5,
+        "level": 4,
+        "multiplier": 2.238000876
+      },
+      {
+        "grade": 5,
+        "level": 5,
+        "multiplier": 2.260380884
+      },
+      {
+        "grade": 6,
+        "level": 0,
+        "multiplier": 2.486418973
+      },
+      {
+        "grade": 6,
+        "level": 1,
+        "multiplier": 2.511283162
+      },
+      {
+        "grade": 6,
+        "level": 2,
+        "multiplier": 2.536395994
+      },
+      {
+        "grade": 6,
+        "level": 3,
+        "multiplier": 2.561759954
+      },
+      {
+        "grade": 6,
+        "level": 4,
+        "multiplier": 2.587377554
+      },
+      {
+        "grade": 6,
+        "level": 5,
+        "multiplier": 2.613251329
+      },
+      {
+        "grade": 7,
+        "level": 0,
+        "multiplier": 2.874576462
+      },
+      {
+        "grade": 7,
+        "level": 1,
+        "multiplier": 2.903322227
+      },
+      {
+        "grade": 7,
+        "level": 2,
+        "multiplier": 2.932355449
+      },
+      {
+        "grade": 7,
+        "level": 3,
+        "multiplier": 2.961679003
+      },
+      {
+        "grade": 7,
+        "level": 4,
+        "multiplier": 2.991295793
+      },
+      {
+        "grade": 7,
+        "level": 5,
+        "multiplier": 3.021208751
+      },
+      {
+        "grade": 8,
+        "level": 0,
+        "multiplier": 3.323329627
+      },
+      {
+        "grade": 8,
+        "level": 1,
+        "multiplier": 3.356562923
+      },
+      {
+        "grade": 8,
+        "level": 2,
+        "multiplier": 3.390128552
+      },
+      {
+        "grade": 8,
+        "level": 3,
+        "multiplier": 3.424029838
+      },
+      {
+        "grade": 8,
+        "level": 4,
+        "multiplier": 3.458270136
+      },
+      {
+        "grade": 8,
+        "level": 5,
+        "multiplier": 3.492852837
+      },
+      {
+        "grade": 9,
+        "level": 0,
+        "multiplier": 3.667495479
+      },
+      {
+        "grade": 9,
+        "level": 1,
+        "multiplier": 3.704170434
+      },
+      {
+        "grade": 9,
+        "level": 2,
+        "multiplier": 3.741212138
+      },
+      {
+        "grade": 9,
+        "level": 3,
+        "multiplier": 3.77862426
+      },
+      {
+        "grade": 9,
+        "level": 4,
+        "multiplier": 3.816410502
+      },
+      {
+        "grade": 9,
+        "level": 5,
+        "multiplier": 3.854574607
+      },
+      {
+        "grade": 10,
+        "level": 0,
+        "multiplier": 4.047303338
+      },
+      {
+        "grade": 10,
+        "level": 1,
+        "multiplier": 4.087776371
+      },
+      {
+        "grade": 10,
+        "level": 2,
+        "multiplier": 4.128654135
+      },
+      {
+        "grade": 10,
+        "level": 3,
+        "multiplier": 4.169940676
+      },
+      {
+        "grade": 10,
+        "level": 4,
+        "multiplier": 4.211640083
+      },
+      {
+        "grade": 10,
+        "level": 5,
+        "multiplier": 4.253756484
+      },
+      {
+        "grade": 11,
+        "level": 0,
+        "multiplier": 4.466444308
+      },
+      {
+        "grade": 11,
+        "level": 1,
+        "multiplier": 4.511108751
+      },
+      {
+        "grade": 11,
+        "level": 2,
+        "multiplier": 4.556219838
+      },
+      {
+        "grade": 11,
+        "level": 3,
+        "multiplier": 4.601782037
+      },
+      {
+        "grade": 11,
+        "level": 4,
+        "multiplier": 4.647799857
+      },
+      {
+        "grade": 11,
+        "level": 5,
+        "multiplier": 4.694277856
+      },
+      {
+        "grade": 12,
+        "level": 0,
+        "multiplier": 4.928991749
+      },
+      {
+        "grade": 12,
+        "level": 1,
+        "multiplier": 4.978281666
+      },
+      {
+        "grade": 12,
+        "level": 2,
+        "multiplier": 5.028064483
+      },
+      {
+        "grade": 12,
+        "level": 3,
+        "multiplier": 5.078345127
+      },
+      {
+        "grade": 12,
+        "level": 4,
+        "multiplier": 5.129128579
+      },
+      {
+        "grade": 12,
+        "level": 5,
+        "multiplier": 5.180419865
+      },
+      {
+        "grade": 13,
+        "level": 0,
+        "multiplier": 5.439440858
+      },
+      {
+        "grade": 13,
+        "level": 1,
+        "multiplier": 5.493835266
+      },
+      {
+        "grade": 13,
+        "level": 2,
+        "multiplier": 5.548773619
+      },
+      {
+        "grade": 13,
+        "level": 3,
+        "multiplier": 5.604261355
+      },
+      {
+        "grade": 13,
+        "level": 4,
+        "multiplier": 5.660303969
+      },
+      {
+        "grade": 13,
+        "level": 5,
+        "multiplier": 5.716907008
+      },
+      {
+        "grade": 14,
+        "level": 0,
+        "multiplier": 6.002752359
+      },
+      {
+        "grade": 14,
+        "level": 1,
+        "multiplier": 6.062779882
+      },
+      {
+        "grade": 14,
+        "level": 2,
+        "multiplier": 6.123407681
+      },
+      {
+        "grade": 14,
+        "level": 3,
+        "multiplier": 6.184641758
+      },
+      {
+        "grade": 14,
+        "level": 4,
+        "multiplier": 6.246488176
+      },
+      {
+        "grade": 14,
+        "level": 5,
+        "multiplier": 6.308953057
+      },
+      {
+        "grade": 15,
+        "level": 0,
+        "multiplier": 6.62440071
+      }
+    ],
+    "crit": [
+      {
+        "grade": 1,
+        "level": 0,
+        "multiplier": 1
+      },
+      {
+        "grade": 1,
+        "level": 1,
+        "multiplier": 1.008
+      },
+      {
+        "grade": 1,
+        "level": 2,
+        "multiplier": 1.016064
+      },
+      {
+        "grade": 1,
+        "level": 3,
+        "multiplier": 1.024192512
+      },
+      {
+        "grade": 1,
+        "level": 4,
+        "multiplier": 1.032386052
+      },
+      {
+        "grade": 1,
+        "level": 5,
+        "multiplier": 1.040645141
+      },
+      {
+        "grade": 2,
+        "level": 0,
+        "multiplier": 1.123896752
+      },
+      {
+        "grade": 2,
+        "level": 1,
+        "multiplier": 1.132887926
+      },
+      {
+        "grade": 2,
+        "level": 2,
+        "multiplier": 1.141951029
+      },
+      {
+        "grade": 2,
+        "level": 3,
+        "multiplier": 1.151086637
+      },
+      {
+        "grade": 2,
+        "level": 4,
+        "multiplier": 1.160295331
+      },
+      {
+        "grade": 2,
+        "level": 5,
+        "multiplier": 1.169577693
+      },
+      {
+        "grade": 3,
+        "level": 0,
+        "multiplier": 1.216360801
+      },
+      {
+        "grade": 3,
+        "level": 1,
+        "multiplier": 1.221226244
+      },
+      {
+        "grade": 3,
+        "level": 2,
+        "multiplier": 1.226111149
+      },
+      {
+        "grade": 3,
+        "level": 3,
+        "multiplier": 1.231015594
+      },
+      {
+        "grade": 3,
+        "level": 4,
+        "multiplier": 1.235939656
+      },
+      {
+        "grade": 3,
+        "level": 5,
+        "multiplier": 1.240883415
+      },
+      {
+        "grade": 4,
+        "level": 0,
+        "multiplier": 1.290518751
+      },
+      {
+        "grade": 4,
+        "level": 1,
+        "multiplier": 1.295680826
+      },
+      {
+        "grade": 4,
+        "level": 2,
+        "multiplier": 1.30086355
+      },
+      {
+        "grade": 4,
+        "level": 3,
+        "multiplier": 1.306067004
+      },
+      {
+        "grade": 4,
+        "level": 4,
+        "multiplier": 1.311291272
+      },
+      {
+        "grade": 4,
+        "level": 5,
+        "multiplier": 1.316536437
+      },
+      {
+        "grade": 5,
+        "level": 0,
+        "multiplier": 1.369197894
+      },
+      {
+        "grade": 5,
+        "level": 1,
+        "multiplier": 1.374674686
+      },
+      {
+        "grade": 5,
+        "level": 2,
+        "multiplier": 1.380173385
+      },
+      {
+        "grade": 5,
+        "level": 3,
+        "multiplier": 1.385694078
+      },
+      {
+        "grade": 5,
+        "level": 4,
+        "multiplier": 1.391236854
+      },
+      {
+        "grade": 5,
+        "level": 5,
+        "multiplier": 1.396801802
+      },
+      {
+        "grade": 6,
+        "level": 0,
+        "multiplier": 1.452673874
+      },
+      {
+        "grade": 6,
+        "level": 1,
+        "multiplier": 1.458484569
+      },
+      {
+        "grade": 6,
+        "level": 2,
+        "multiplier": 1.464318508
+      },
+      {
+        "grade": 6,
+        "level": 3,
+        "multiplier": 1.470175782
+      },
+      {
+        "grade": 6,
+        "level": 4,
+        "multiplier": 1.476056485
+      },
+      {
+        "grade": 6,
+        "level": 5,
+        "multiplier": 1.481960711
+      },
+      {
+        "grade": 7,
+        "level": 0,
+        "multiplier": 1.541239139
+      },
+      {
+        "grade": 7,
+        "level": 1,
+        "multiplier": 1.547404096
+      },
+      {
+        "grade": 7,
+        "level": 2,
+        "multiplier": 1.553593712
+      },
+      {
+        "grade": 7,
+        "level": 3,
+        "multiplier": 1.559808087
+      },
+      {
+        "grade": 7,
+        "level": 4,
+        "multiplier": 1.566047319
+      },
+      {
+        "grade": 7,
+        "level": 5,
+        "multiplier": 1.572311509
+      },
+      {
+        "grade": 8,
+        "level": 0,
+        "multiplier": 1.635203969
+      },
+      {
+        "grade": 8,
+        "level": 1,
+        "multiplier": 1.641744785
+      },
+      {
+        "grade": 8,
+        "level": 2,
+        "multiplier": 1.648311764
+      },
+      {
+        "grade": 8,
+        "level": 3,
+        "multiplier": 1.654905011
+      },
+      {
+        "grade": 8,
+        "level": 4,
+        "multiplier": 1.661524631
+      },
+      {
+        "grade": 8,
+        "level": 5,
+        "multiplier": 1.66817073
+      },
+      {
+        "grade": 9,
+        "level": 0,
+        "multiplier": 1.701534144
+      },
+      {
+        "grade": 9,
+        "level": 1,
+        "multiplier": 1.708340281
+      },
+      {
+        "grade": 9,
+        "level": 2,
+        "multiplier": 1.715173642
+      },
+      {
+        "grade": 9,
+        "level": 3,
+        "multiplier": 1.722034337
+      },
+      {
+        "grade": 9,
+        "level": 4,
+        "multiplier": 1.728922474
+      },
+      {
+        "grade": 9,
+        "level": 5,
+        "multiplier": 1.735838164
+      },
+      {
+        "grade": 10,
+        "level": 0,
+        "multiplier": 1.770554927
+      },
+      {
+        "grade": 10,
+        "level": 1,
+        "multiplier": 1.777637147
+      },
+      {
+        "grade": 10,
+        "level": 2,
+        "multiplier": 1.784747695
+      },
+      {
+        "grade": 10,
+        "level": 3,
+        "multiplier": 1.791886686
+      },
+      {
+        "grade": 10,
+        "level": 4,
+        "multiplier": 1.799054233
+      },
+      {
+        "grade": 10,
+        "level": 5,
+        "multiplier": 1.80625045
+      },
+      {
+        "grade": 11,
+        "level": 0,
+        "multiplier": 1.842375459
+      },
+      {
+        "grade": 11,
+        "level": 1,
+        "multiplier": 1.849744961
+      },
+      {
+        "grade": 11,
+        "level": 2,
+        "multiplier": 1.857143941
+      },
+      {
+        "grade": 11,
+        "level": 3,
+        "multiplier": 1.864572516
+      },
+      {
+        "grade": 11,
+        "level": 4,
+        "multiplier": 1.872030806
+      },
+      {
+        "grade": 11,
+        "level": 5,
+        "multiplier": 1.87951893
+      },
+      {
+        "grade": 12,
+        "level": 0,
+        "multiplier": 1.917109308
+      },
+      {
+        "grade": 12,
+        "level": 1,
+        "multiplier": 1.924777745
+      },
+      {
+        "grade": 12,
+        "level": 2,
+        "multiplier": 1.932476856
+      },
+      {
+        "grade": 12,
+        "level": 3,
+        "multiplier": 1.940206764
+      },
+      {
+        "grade": 12,
+        "level": 4,
+        "multiplier": 1.947967591
+      },
+      {
+        "grade": 12,
+        "level": 5,
+        "multiplier": 1.955759461
+      },
+      {
+        "grade": 13,
+        "level": 0,
+        "multiplier": 1.99487465
+      },
+      {
+        "grade": 13,
+        "level": 1,
+        "multiplier": 2.002854149
+      },
+      {
+        "grade": 13,
+        "level": 2,
+        "multiplier": 2.010865566
+      },
+      {
+        "grade": 13,
+        "level": 3,
+        "multiplier": 2.018909028
+      },
+      {
+        "grade": 13,
+        "level": 4,
+        "multiplier": 2.026984664
+      },
+      {
+        "grade": 13,
+        "level": 5,
+        "multiplier": 2.035092603
+      },
+      {
+        "grade": 14,
+        "level": 0,
+        "multiplier": 2.075794455
+      },
+      {
+        "grade": 14,
+        "level": 1,
+        "multiplier": 2.084097633
+      },
+      {
+        "grade": 14,
+        "level": 2,
+        "multiplier": 2.092434023
+      },
+      {
+        "grade": 14,
+        "level": 3,
+        "multiplier": 2.100803759
+      },
+      {
+        "grade": 14,
+        "level": 4,
+        "multiplier": 2.109206974
+      },
+      {
+        "grade": 14,
+        "level": 5,
+        "multiplier": 2.117643802
+      },
+      {
+        "grade": 15,
+        "level": 0,
+        "multiplier": 2.159996678
+      }
+    ]
+  },
+  "promotions": [
+    {
+      "number": 1,
+      "name": "Stone",
+      "atkHpBonus": 1,
+      "extraAtk": 0.4,
+      "monsterGold": 0,
+      "extraExp": 0.15,
+      "extraHp": 0.7
+    },
+    {
+      "number": 2,
+      "name": "Bronze",
+      "atkHpBonus": 2,
+      "extraAtk": 0.8,
+      "monsterGold": 0,
+      "extraExp": 0.3,
+      "extraHp": 1.4
+    },
+    {
+      "number": 3,
+      "name": "Iron",
+      "atkHpBonus": 5,
+      "extraAtk": 1.2,
+      "monsterGold": 0,
+      "extraExp": 0.45,
+      "extraHp": 2.1
+    },
+    {
+      "number": 4,
+      "name": "Silver",
+      "atkHpBonus": 18,
+      "extraAtk": 1.6,
+      "monsterGold": 0,
+      "extraExp": 0.6,
+      "extraHp": 2.8
+    },
+    {
+      "number": 5,
+      "name": "Gold",
+      "atkHpBonus": 25,
+      "extraAtk": 2,
+      "monsterGold": 0,
+      "extraExp": 0.75,
+      "extraHp": 3.5
+    },
+    {
+      "number": 6,
+      "name": "Mithril",
+      "atkHpBonus": 100,
+      "extraAtk": 2.4,
+      "monsterGold": 0,
+      "extraExp": 0.9,
+      "extraHp": 4.2
+    },
+    {
+      "number": 7,
+      "name": "Orichalcum",
+      "atkHpBonus": 300,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 8,
+      "name": "Arcanite",
+      "atkHpBonus": 550,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 9,
+      "name": "Adamant",
+      "atkHpBonus": 1000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 10,
+      "name": "Ether",
+      "atkHpBonus": 2000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 11,
+      "name": "Black Mythril",
+      "atkHpBonus": 5000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 12,
+      "name": "Demon Metal",
+      "atkHpBonus": 10000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 13,
+      "name": "Dragonos",
+      "atkHpBonus": 20000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 14,
+      "name": "Ragnablood",
+      "atkHpBonus": 40000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 15,
+      "name": "Warfrost",
+      "atkHpBonus": 80000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 16,
+      "name": "Dark Nox",
+      "atkHpBonus": 160000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 17,
+      "name": "Blue Abyssal",
+      "atkHpBonus": 320000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 18,
+      "name": "Infinaut",
+      "atkHpBonus": 640000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 19,
+      "name": "Cyclos",
+      "atkHpBonus": 1300000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 20,
+      "name": "Ancient Canine",
+      "atkHpBonus": 2600000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 21,
+      "name": "Gigarock",
+      "atkHpBonus": 5200000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 22,
+      "name": "Eisenhart",
+      "atkHpBonus": 10400000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 23,
+      "name": "Diadust",
+      "atkHpBonus": 21000000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 24,
+      "name": "Eldenwood",
+      "atkHpBonus": 42000000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 25,
+      "name": "Blitz Gold",
+      "atkHpBonus": 84000000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    },
+    {
+      "number": 26,
+      "name": "Aurorite",
+      "atkHpBonus": 168000000,
+      "extraAtk": 2.8,
+      "monsterGold": 0,
+      "extraExp": 1.05,
+      "extraHp": 4.9
+    }
+  ],
+  "abilityOptions": [
+    {
+      "name": "Extra ATK(%)",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ]
+    },
+    {
+      "name": "CRIT Dmg(%)",
+      "values": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    {
+      "name": "Extra HP(%)",
+      "values": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    {
+      "name": "Extra HP Recovery(%)",
+      "values": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    {
+      "name": "Extra Mana(%)",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    {
+      "name": "Extra Mana Recovery(%)",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    {
+      "name": "Monster Gold(%)",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ]
+    },
+    {
+      "name": "Accuracy",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    {
+      "name": "Dodge",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    {
+      "name": "Extra EXP(%)",
+      "values": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "name": "CC Resist",
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ]
+    }
+  ],
+  "classes": [
+    {
+      "name": "Trainee",
+      "multiplier": 1
+    },
+    {
+      "name": "Adventurer",
+      "multiplier": 4
+    },
+    {
+      "name": "Swordsman",
+      "multiplier": 7
+    },
+    {
+      "name": "Warrior",
+      "multiplier": 10
+    },
+    {
+      "name": "Defender",
+      "multiplier": 18
+    },
+    {
+      "name": "Lancer",
+      "multiplier": 30
+    },
+    {
+      "name": "Breaker",
+      "multiplier": 45
+    },
+    {
+      "name": "Ranger",
+      "multiplier": 72
+    },
+    {
+      "name": "Paladin",
+      "multiplier": 90
+    },
+    {
+      "name": "Gladiator",
+      "multiplier": 150
+    },
+    {
+      "name": "Red Gladiator",
+      "multiplier": 220
+    },
+    {
+      "name": "Crusader",
+      "multiplier": 300
+    },
+    {
+      "name": "Weapon Master",
+      "multiplier": 450
+    },
+    {
+      "name": "Shadow Hunter",
+      "multiplier": 800
+    },
+    {
+      "name": "Champion",
+      "multiplier": 1000
+    },
+    {
+      "name": "Guardian",
+      "multiplier": 1500
+    },
+    {
+      "name": "Dark Knight",
+      "multiplier": 2000
+    },
+    {
+      "name": "Warlord",
+      "multiplier": 3000
+    },
+    {
+      "name": "Dark Rain",
+      "multiplier": 4500
+    },
+    {
+      "name": "Blast",
+      "multiplier": 7000
+    },
+    {
+      "name": "Tera",
+      "multiplier": 7000
+    },
+    {
+      "name": "Seed",
+      "multiplier": 7000
+    },
+    {
+      "name": "Nova",
+      "multiplier": 7000
+    }
+  ]
+}
