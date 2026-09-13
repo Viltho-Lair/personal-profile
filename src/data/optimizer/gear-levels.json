@@ -1716,7 +1716,8 @@
       "weaponGold": 0.25,
       "accessoryMaxMana": 4,
       "accessoryExp": 1,
-      "accessoryMultiplier": 1
+      "accessoryMultiplier": 1,
+      "blastMultiplier": 1
     },
     {
       "awakening": 1,
@@ -1726,7 +1727,8 @@
       "weaponGold": 0.46,
       "accessoryMaxMana": 4.1,
       "accessoryExp": 1.4,
-      "accessoryMultiplier": 1.18
+      "accessoryMultiplier": 1.18,
+      "blastMultiplier": 1.21428571428571
     },
     {
       "awakening": 2,
@@ -1736,7 +1738,8 @@
       "weaponGold": 0.67,
       "accessoryMaxMana": 4.2,
       "accessoryExp": 1.8,
-      "accessoryMultiplier": 1.379999667
+      "accessoryMultiplier": 1.379999667,
+      "blastMultiplier": 1.44285714285714
     },
     {
       "awakening": 3,
@@ -1746,7 +1749,8 @@
       "weaponGold": 0.88,
       "accessoryMaxMana": 4.3,
       "accessoryExp": 2.2,
-      "accessoryMultiplier": 1.61
+      "accessoryMultiplier": 1.61,
+      "blastMultiplier": 1.68571428571429
     },
     {
       "awakening": 4,
@@ -1756,7 +1760,8 @@
       "weaponGold": 1.09,
       "accessoryMaxMana": 4.4,
       "accessoryExp": 2.6,
-      "accessoryMultiplier": 1.88
+      "accessoryMultiplier": 1.88,
+      "blastMultiplier": 1.94285714285714
     },
     {
       "awakening": 5,
@@ -1766,7 +1771,8 @@
       "weaponGold": 1.3,
       "accessoryMaxMana": 4.5,
       "accessoryExp": 3,
-      "accessoryMultiplier": 2.2
+      "accessoryMultiplier": 2.2,
+      "blastMultiplier": 2.21428571428571
     },
     {
       "awakening": 6,
@@ -1776,7 +1782,8 @@
       "weaponGold": 2.14,
       "accessoryMaxMana": 5,
       "accessoryExp": 4.6,
-      "accessoryMultiplier": 3.626666667
+      "accessoryMultiplier": 3.626666667,
+      "blastMultiplier": 3.35714285714286
     },
     {
       "awakening": 7,
@@ -1786,7 +1793,8 @@
       "weaponGold": 2.35,
       "accessoryMaxMana": 5.1,
       "accessoryExp": 5,
-      "accessoryMultiplier": 4.063333333
+      "accessoryMultiplier": 4.063333333,
+      "blastMultiplier": 3.64285714285714
     },
     {
       "awakening": 8,
@@ -1796,7 +1804,8 @@
       "weaponGold": 2.56,
       "accessoryMaxMana": 5.2,
       "accessoryExp": 5.4,
-      "accessoryMultiplier": 4.55
+      "accessoryMultiplier": 4.55,
+      "blastMultiplier": 4
     },
     {
       "awakening": 9,
@@ -1806,7 +1815,8 @@
       "weaponGold": 2.77,
       "accessoryMaxMana": 5.3,
       "accessoryExp": 5.8,
-      "accessoryMultiplier": 5.096666667
+      "accessoryMultiplier": 5.096666667,
+      "blastMultiplier": 4.42857142857143
     },
     {
       "awakening": 10,
@@ -1816,7 +1826,8 @@
       "weaponGold": 2.98,
       "accessoryMaxMana": 5.4,
       "accessoryExp": 6.2,
-      "accessoryMultiplier": 5.706666667
+      "accessoryMultiplier": 5.706666667,
+      "blastMultiplier": 4.92857142857143
     },
     {
       "awakening": 11,
@@ -1826,7 +1837,8 @@
       "weaponGold": 3.19,
       "accessoryMaxMana": 5.5,
       "accessoryExp": 6.6,
-      "accessoryMultiplier": 6.39
+      "accessoryMultiplier": 6.39,
+      "blastMultiplier": 5.5
     },
     {
       "awakening": 12,
@@ -1836,7 +1848,8 @@
       "weaponGold": 5.03,
       "accessoryMaxMana": 6,
       "accessoryExp": 8.2,
-      "accessoryMultiplier": 8.946666667
+      "accessoryMultiplier": 8.946666667,
+      "blastMultiplier": 7.64285714285714
     },
     {
       "awakening": 13,
@@ -1846,7 +1859,8 @@
       "weaponGold": 5.52,
       "accessoryMaxMana": 6.1,
       "accessoryExp": 8.6,
-      "accessoryMultiplier": 10.02388467
+      "accessoryMultiplier": 10.02388467,
+      "blastMultiplier": 9.17142857142857
     },
     {
       "awakening": 14,
@@ -1856,7 +1870,8 @@
       "weaponGold": 6.01,
       "accessoryMaxMana": 6.2,
       "accessoryExp": 9,
-      "accessoryMultiplier": 11.22444833
+      "accessoryMultiplier": 11.22444833,
+      "blastMultiplier": 10.6285714285714
     },
     {
       "awakening": 15,
@@ -1866,7 +1881,8 @@
       "weaponGold": 6.5,
       "accessoryMaxMana": 6.3,
       "accessoryExp": 9.4,
-      "accessoryMultiplier": 12.57302667
+      "accessoryMultiplier": 12.57302667,
+      "blastMultiplier": 12.2142857142857
     },
     {
       "awakening": 16,
@@ -1876,7 +1892,8 @@
       "weaponGold": 6.99,
       "accessoryMaxMana": 6.4,
       "accessoryExp": 9.8,
-      "accessoryMultiplier": 14.07784267
+      "accessoryMultiplier": 14.07784267,
+      "blastMultiplier": 13.9142857142857
     },
     {
       "awakening": 17,
@@ -1886,7 +1903,8 @@
       "weaponGold": 7.48,
       "accessoryMaxMana": 6.5,
       "accessoryExp": 10.2,
-      "accessoryMultiplier": 15.76356567
+      "accessoryMultiplier": 15.76356567,
+      "blastMultiplier": 15.5714285714286
     },
     {
       "awakening": 18,
@@ -1896,7 +1914,8 @@
       "weaponGold": 11.79,
       "accessoryMaxMana": 7,
       "accessoryExp": 11.8,
-      "accessoryMultiplier": 22.07063667
+      "accessoryMultiplier": 22.07063667,
+      "blastMultiplier": 24.2857142857143
     },
     {
       "awakening": 19,
@@ -1906,7 +1925,8 @@
       "weaponGold": 12.28,
       "accessoryMaxMana": 7.1,
       "accessoryExp": 12.2,
-      "accessoryMultiplier": 24.623688
+      "accessoryMultiplier": 24.623688,
+      "blastMultiplier": null
     },
     {
       "awakening": 20,
@@ -1916,7 +1936,8 @@
       "weaponGold": 12.77,
       "accessoryMaxMana": 7.2,
       "accessoryExp": 12.6,
-      "accessoryMultiplier": 27.476809
+      "accessoryMultiplier": 27.476809,
+      "blastMultiplier": null
     },
     {
       "awakening": 21,
@@ -1926,7 +1947,8 @@
       "weaponGold": 13.26,
       "accessoryMaxMana": 7.3,
       "accessoryExp": 13,
-      "accessoryMultiplier": 30.672496
+      "accessoryMultiplier": 30.672496,
+      "blastMultiplier": null
     },
     {
       "awakening": 22,
@@ -1936,7 +1958,8 @@
       "weaponGold": 13.75,
       "accessoryMaxMana": 7.4,
       "accessoryExp": 13.4,
-      "accessoryMultiplier": 34.24871967
+      "accessoryMultiplier": 34.24871967,
+      "blastMultiplier": null
     },
     {
       "awakening": 23,
@@ -1946,7 +1969,8 @@
       "weaponGold": 14.24,
       "accessoryMaxMana": 7.5,
       "accessoryExp": 13.8,
-      "accessoryMultiplier": 38.23464
+      "accessoryMultiplier": 38.23464,
+      "blastMultiplier": null
     },
     {
       "awakening": 24,
@@ -1956,7 +1980,8 @@
       "weaponGold": 23.55,
       "accessoryMaxMana": 8,
       "accessoryExp": 15.4,
-      "accessoryMultiplier": 60.81008533
+      "accessoryMultiplier": 60.81008533,
+      "blastMultiplier": null
     },
     {
       "awakening": 25,
@@ -1966,7 +1991,8 @@
       "weaponGold": 25.26,
       "accessoryMaxMana": 8.1,
       "accessoryExp": 15.799999999999999,
-      "accessoryMultiplier": 68.23738032055404
+      "accessoryMultiplier": 68.23738032055404,
+      "blastMultiplier": null
     },
     {
       "awakening": 26,
@@ -1976,7 +2002,8 @@
       "weaponGold": 27.7,
       "accessoryMaxMana": 8.2,
       "accessoryExp": 16.199999999999996,
-      "accessoryMultiplier": 76.6936839864871
+      "accessoryMultiplier": 76.6936839864871,
+      "blastMultiplier": null
     },
     {
       "awakening": 27,
@@ -1986,7 +2013,8 @@
       "weaponGold": 29.13,
       "accessoryMaxMana": 8.3,
       "accessoryExp": 16.599999999999998,
-      "accessoryMultiplier": 86.22547432518513
+      "accessoryMultiplier": 86.22547432518513,
+      "blastMultiplier": null
     },
     {
       "awakening": 28,
@@ -1996,7 +2024,8 @@
       "weaponGold": 31.57,
       "accessoryMaxMana": 8.4,
       "accessoryExp": 16.999999999999996,
-      "accessoryMultiplier": 97.10525798592558
+      "accessoryMultiplier": 97.10525798592558,
+      "blastMultiplier": null
     },
     {
       "awakening": 29,
@@ -2006,7 +2035,8 @@
       "weaponGold": 33,
       "accessoryMaxMana": 8.5,
       "accessoryExp": 17.4,
-      "accessoryMultiplier": 109.45103598911963
+      "accessoryMultiplier": 109.45103598911963,
+      "blastMultiplier": null
     },
     {
       "awakening": 30,
@@ -2016,7 +2046,8 @@
       "weaponGold": 37.45,
       "accessoryMaxMana": 9,
       "accessoryExp": 18.999999999999996,
-      "accessoryMultiplier": 155.741698984721
+      "accessoryMultiplier": 155.741698984721,
+      "blastMultiplier": null
     }
   ],
   "immortalArt": {

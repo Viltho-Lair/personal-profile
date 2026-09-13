@@ -11,7 +11,13 @@
 
 import re
 
-from optimizer.workbook import MissingHeader, find_cell, number, rows_until_blank, text
+from optimizer.workbook import MissingHeader, find_cell, images_by_cell, number, rows_until_blank, slug, text
+
+# Enhance stats that grow by a level tier multiplier (Equipment Data "... LEVEL UP BONUS"
+# tables); HP's stat is also x10 (DMG Efficiency Data B331).
+TIERED_ENHANCE = {"ATK": ("ATK LEVEL UP BONUS", 1), "HP": ("HP LEVEL UP BONUS", 10), "HP Recovery": ("HP Regen LEVEL UP BONUS", 1)}
+# The rest are a flat fraction per level (DMG Efficiency Data B279, M4, P4, S4).
+LINEAR_ENHANCE = {"CRIT DMG": 0.01, "CRIT %": 0.001, "DEATH STRIKE": 0.01, "DEATH STRIKE %": 0.001}
 
 GROWTH_REF = re.compile(r"^=\s*[A-Z]+\d+\s*(?:\*\s*(?:'[^']+'!)?\$?([A-Z]+)\$?(\d+)|\*\s*(\d+(?:\.\d+)?))?\s*(?:/\s*(\d+))?\s*$")
 
@@ -175,13 +181,79 @@ def _classes(equipment_data):
     ]
 
 
+def _level_tiers(equipment_data, title):
+    title_row, col = find_cell(equipment_data, title)
+    tiers = []
+    row = title_row + 1
+    while isinstance(number(equipment_data.cell(row, col).value), (int, float)):
+        tiers.append({"from": number(equipment_data.cell(row, col).value), "multiplier": number(equipment_data.cell(row, col + 1).value)})
+        row += 1
+    if not tiers:
+        raise MissingHeader(f"{equipment_data.title}: {title!r} has no level tiers")
+    return tiers
+
+
+def _enhance_formulas(stats, equipment_data):
+    for stat in stats:
+        if stat["name"] in TIERED_ENHANCE:
+            title, scale = TIERED_ENHANCE[stat["name"]]
+            stat["formula"] = {"kind": "tiered", "tiers": _level_tiers(equipment_data, title), "scale": scale}
+        elif stat["name"] in LINEAR_ENHANCE:
+            stat["formula"] = {"kind": "percent", "perLevel": LINEAR_ENHANCE[stat["name"]]}
+        else:
+            raise ValueError(f"no stat formula known for enhance stat {stat['name']!r}")
+    return stats
+
+
+def _art(character_formulas, data, promotions, classes, growth):
+    """{stem: bytes} and the stems attached to promotions, classes and growth stats."""
+    art = {}
+    data_images = images_by_cell(data)
+
+    title_row, bonus_col = find_cell(data, "ATK / HP BONUS", max_col=12)
+    title_col = next(c for c in range(1, bonus_col) if text(data.cell(title_row, c).value) == "PROMOTION")
+    for index, promotion in enumerate(promotions):
+        found = next((img for (r, c), img in data_images.items() if r == title_row + 1 + index and title_col < c < bonus_col), None)
+        promotion["icon"] = f"promotion-{promotion['number']:02d}" if found else None
+        if found:
+            art[promotion["icon"]] = found
+
+    name_row, name_col = find_cell(data, "Class Name")
+    icon_rows = {text(data.cell(r, name_col).value): r for r in rows_until_blank(data, name_row + 1, name_col)}
+    for cls in classes:
+        row = icon_rows.get(cls["name"])
+        found = data_images.get((row, name_col + 1)) if row else None
+        cls["icon"] = f"class-{slug(cls['name'])}" if found else None
+        if found:
+            art[cls["icon"]] = found
+
+    character_images = images_by_cell(character_formulas)
+    title_row, _ = find_cell(character_formulas, "GROWTH")
+    header_row, _ = find_cell(character_formulas, "CURRENT LVL", min_row=title_row)
+    for row in range(header_row + 1, header_row + 16):
+        label = text(character_formulas.cell(row, 5).value)
+        stat = next((g for g in growth if label and label.startswith(g["key"] + " ")), None)
+        if not stat:
+            continue
+        found = next((img for (r, c), img in character_images.items() if r == row and c < 5), None)
+        stat["icon"] = f"growth-{slug(stat['key'])}" if found else None
+        if found:
+            art[stat["icon"]] = found
+    return art
+
+
 def extract_character(character_formulas, character_values, data_values, equipment_values):
+    """Return (tables, art); art maps a file stem to image bytes."""
+    promotions = _promotions(data_values)
+    classes = _classes(equipment_values)
+    growth = _growth(character_formulas, data_values)
+    art = _art(character_formulas, data_values, promotions, classes, growth)
     return {
-        "enhance": _enhance(character_formulas, character_values),
+        "enhance": _enhance_formulas(_enhance(character_formulas, character_values), equipment_values),
         "growingKnowledge": _growing_knowledge(data_values),
-        "growth": _growth(character_formulas, data_values),
+        "growth": growth,
         "latentAwakening": _latent_awakening(data_values),
-        "promotions": _promotions(data_values),
+        "promotions": promotions,
         "abilityOptions": _ability_options(data_values),
-        "classes": _classes(equipment_values),
-    }
+        "classes": classes,
+    }, art

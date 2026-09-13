@@ -32,6 +32,7 @@ from optimizer.gear import (  # noqa: E402
     extract_level_factors,
 )
 from optimizer.mastery import extract_mastery  # noqa: E402
+from optimizer.navigation import extract_navigation_icons  # noqa: E402
 from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
@@ -201,7 +202,8 @@ def main():
         soul_weapons, soul_icons = extract_soul_weapons(values["Equipment Data"])
         mastery_pages, mastery_icons = extract_mastery(formulas["SKILL MASTERY"])
         familiars, mana_altar, familiar_art = extract_familiars(formulas["Familiar Data"])
-        character = extract_character(
+        navigation_icons = extract_navigation_icons(formulas["HOME"])
+        character, character_art = extract_character(
             formulas["CHARACTER"], values["CHARACTER"], values["Character Data"], values["Equipment Data"]
         )
         companions, promotion, companion_art = extract_companions(
@@ -308,6 +310,21 @@ def main():
     })
     print(f"familiars: {len(familiars)} familiars, mana altar levels 1-{len(mana_altar)}")
 
+    published = publish_files("navigation", navigation_icons)
+    write_json(DATA / "navigation.json", {
+        "source": {"file": source.name, "sheet": "HOME", "extractedOn": today},
+        "icons": {tab: {"icon": url, "iconSize": width} for tab, (url, width) in published.items()},
+    })
+
+    published = publish_files("character", character_art)
+    for group in ("promotions", "classes", "growth"):
+        for item in character[group]:
+            item["icon"], item["iconSize"] = attach(published, item.get("icon"))
+    # Enhance icons aren't in the workbook; scripts/fetch-wiki-enhance-icons.py saves them.
+    for stat in character["enhance"]:
+        found = next(iter(sorted((ART / "enhance-icons").glob(f"{slug(stat['name'].replace('%', ' percent'))}.*"))), None) if (ART / "enhance-icons").exists() else None
+        stat["icon"] = f"/art/enhance-icons/{found.name}" if found else None
+        stat["iconSize"] = image_size(found.read_bytes())[0] if found else None
     write_json(DATA / "character.json", {
         "source": {"file": source.name, "sheet": "CHARACTER, Character Data, Equipment Data", "extractedOn": today},
         **character,

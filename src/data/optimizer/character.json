@@ -7,35 +7,155 @@
   "enhance": [
     {
       "name": "ATK",
-      "maxLevel": 2200000
+      "maxLevel": 2200000,
+      "formula": {
+        "kind": "tiered",
+        "tiers": [
+          {
+            "from": 0,
+            "multiplier": 1
+          },
+          {
+            "from": 100,
+            "multiplier": 2
+          },
+          {
+            "from": 1000,
+            "multiplier": 3
+          },
+          {
+            "from": 10000,
+            "multiplier": 4
+          },
+          {
+            "from": 100000,
+            "multiplier": 5
+          },
+          {
+            "from": 1000000,
+            "multiplier": 6
+          }
+        ],
+        "scale": 1
+      },
+      "icon": "/art/enhance-icons/atk.png",
+      "iconSize": 128
     },
     {
       "name": "CRIT DMG",
-      "maxLevel": 10000
+      "maxLevel": 10000,
+      "formula": {
+        "kind": "percent",
+        "perLevel": 0.01
+      },
+      "icon": "/art/enhance-icons/crit-dmg.png",
+      "iconSize": 128
     },
     {
       "name": "CRIT %",
-      "maxLevel": 1000
+      "maxLevel": 1000,
+      "formula": {
+        "kind": "percent",
+        "perLevel": 0.001
+      },
+      "icon": "/art/enhance-icons/crit-percent.png",
+      "iconSize": 128
     },
     {
       "name": "DEATH STRIKE",
       "maxLevel": null,
       "requiresCrit": 1000,
-      "cap": "growingKnowledge"
+      "cap": "growingKnowledge",
+      "formula": {
+        "kind": "percent",
+        "perLevel": 0.01
+      },
+      "icon": "/art/enhance-icons/death-strike.png",
+      "iconSize": 128
     },
     {
       "name": "DEATH STRIKE %",
       "maxLevel": null,
       "requiresCrit": 1000,
-      "cap": 1000
+      "cap": 1000,
+      "formula": {
+        "kind": "percent",
+        "perLevel": 0.001
+      },
+      "icon": "/art/enhance-icons/death-strike-percent.png",
+      "iconSize": 67
     },
     {
       "name": "HP",
-      "maxLevel": 2200000
+      "maxLevel": 2200000,
+      "formula": {
+        "kind": "tiered",
+        "tiers": [
+          {
+            "from": 0,
+            "multiplier": 1
+          },
+          {
+            "from": 100,
+            "multiplier": 2
+          },
+          {
+            "from": 1000,
+            "multiplier": 3
+          },
+          {
+            "from": 10000,
+            "multiplier": 4
+          },
+          {
+            "from": 100000,
+            "multiplier": 5
+          },
+          {
+            "from": 1000000,
+            "multiplier": 6
+          }
+        ],
+        "scale": 10
+      },
+      "icon": "/art/enhance-icons/hp.png",
+      "iconSize": 64
     },
     {
       "name": "HP Recovery",
-      "maxLevel": 2200000
+      "maxLevel": 2200000,
+      "formula": {
+        "kind": "tiered",
+        "tiers": [
+          {
+            "from": 0,
+            "multiplier": 1
+          },
+          {
+            "from": 100,
+            "multiplier": 2
+          },
+          {
+            "from": 1000,
+            "multiplier": 3
+          },
+          {
+            "from": 10000,
+            "multiplier": 4
+          },
+          {
+            "from": 100000,
+            "multiplier": 5
+          },
+          {
+            "from": 1000000,
+            "multiplier": 6
+          }
+        ],
+        "scale": 1
+      },
+      "icon": "/art/enhance-icons/hp-recovery.png",
+      "iconSize": 64
     }
   ],
   "growingKnowledge": [
@@ -590,37 +710,51 @@
     {
       "key": "STR",
       "detail": "ATK Damage",
-      "perLevel": 5
+      "perLevel": 5,
+      "icon": "/art/character/growth-str.png",
+      "iconSize": 128
     },
     {
       "key": "HP",
       "detail": "Health",
-      "perLevel": 30
+      "perLevel": 30,
+      "icon": "/art/character/growth-hp.png",
+      "iconSize": 64
     },
     {
       "key": "VIT",
       "detail": "Health Regen",
-      "perLevel": 5
+      "perLevel": 5,
+      "icon": "/art/character/growth-vit.png",
+      "iconSize": 64
     },
     {
       "key": "CRI",
       "detail": "Crit Damage",
-      "perLevel": 3
+      "perLevel": 3,
+      "icon": "/art/character/growth-cri.png",
+      "iconSize": 128
     },
     {
       "key": "LUK",
       "detail": "Gold Gain",
-      "perLevel": 0.005
+      "perLevel": 0.005,
+      "icon": "/art/character/growth-luk.png",
+      "iconSize": 64
     },
     {
       "key": "ACC",
       "detail": "ATK Accuracy",
-      "perLevel": 3.0
+      "perLevel": 3.0,
+      "icon": "/art/character/growth-acc.png",
+      "iconSize": 64
     },
     {
       "key": "DODGE",
       "detail": "Dodge Chance",
-      "perLevel": 1
+      "perLevel": 1,
+      "icon": "/art/character/growth-dodge.png",
+      "iconSize": 64
     }
   ],
   "latentAwakening": {
@@ -1487,7 +1621,9 @@
       "extraAtk": 0.4,
       "monsterGold": 0,
       "extraExp": 0.15,
-      "extraHp": 0.7
+      "extraHp": 0.7,
+      "icon": "/art/character/promotion-01.png",
+      "iconSize": 25
     },
     {
       "number": 2,
@@ -1496,7 +1632,9 @@
       "extraAtk": 0.8,
       "monsterGold": 0,
       "extraExp": 0.3,
-      "extraHp": 1.4
+      "extraHp": 1.4,
+      "icon": "/art/character/promotion-02.png",
+      "iconSize": 32
     },
     {
       "number": 3,
@@ -1505,7 +1643,9 @@
       "extraAtk": 1.2,
       "monsterGold": 0,
       "extraExp": 0.45,
-      "extraHp": 2.1
+      "extraHp": 2.1,
+      "icon": "/art/character/promotion-03.png",
+      "iconSize": 25
     },
     {
       "number": 4,
@@ -1514,7 +1654,9 @@
       "extraAtk": 1.6,
       "monsterGold": 0,
       "extraExp": 0.6,
-      "extraHp": 2.8
+      "extraHp": 2.8,
+      "icon": "/art/character/promotion-04.png",
+      "iconSize": 38
     },
     {
       "number": 5,
@@ -1523,7 +1665,9 @@
       "extraAtk": 2,
       "monsterGold": 0,
       "extraExp": 0.75,
-      "extraHp": 3.5
+      "extraHp": 3.5,
+      "icon": "/art/character/promotion-05.png",
+      "iconSize": 37
     },
     {
       "number": 6,
@@ -1532,7 +1676,9 @@
       "extraAtk": 2.4,
       "monsterGold": 0,
       "extraExp": 0.9,
-      "extraHp": 4.2
+      "extraHp": 4.2,
+      "icon": "/art/character/promotion-06.png",
+      "iconSize": 40
     },
     {
       "number": 7,
@@ -1541,7 +1687,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-07.png",
+      "iconSize": 44
     },
     {
       "number": 8,
@@ -1550,7 +1698,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-08.png",
+      "iconSize": 46
     },
     {
       "number": 9,
@@ -1559,7 +1709,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-09.png",
+      "iconSize": 49
     },
     {
       "number": 10,
@@ -1568,7 +1720,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-10.png",
+      "iconSize": 62
     },
     {
       "number": 11,
@@ -1577,7 +1731,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-11.png",
+      "iconSize": 56
     },
     {
       "number": 12,
@@ -1586,7 +1742,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-12.png",
+      "iconSize": 61
     },
     {
       "number": 13,
@@ -1595,7 +1753,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-13.png",
+      "iconSize": 56
     },
     {
       "number": 14,
@@ -1604,7 +1764,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-14.png",
+      "iconSize": 64
     },
     {
       "number": 15,
@@ -1613,7 +1775,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-15.png",
+      "iconSize": 58
     },
     {
       "number": 16,
@@ -1622,7 +1786,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-16.png",
+      "iconSize": 64
     },
     {
       "number": 17,
@@ -1631,7 +1797,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-17.png",
+      "iconSize": 64
     },
     {
       "number": 18,
@@ -1640,7 +1808,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-18.png",
+      "iconSize": 64
     },
     {
       "number": 19,
@@ -1649,7 +1819,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-19.png",
+      "iconSize": 64
     },
     {
       "number": 20,
@@ -1658,7 +1830,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-20.png",
+      "iconSize": 64
     },
     {
       "number": 21,
@@ -1667,7 +1841,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-21.png",
+      "iconSize": 64
     },
     {
       "number": 22,
@@ -1676,7 +1852,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-22.png",
+      "iconSize": 64
     },
     {
       "number": 23,
@@ -1685,7 +1863,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-23.png",
+      "iconSize": 64
     },
     {
       "number": 24,
@@ -1694,7 +1874,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-24.png",
+      "iconSize": 64
     },
     {
       "number": 25,
@@ -1703,7 +1885,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-25.png",
+      "iconSize": 64
     },
     {
       "number": 26,
@@ -1712,7 +1896,9 @@
       "extraAtk": 2.8,
       "monsterGold": 0,
       "extraExp": 1.05,
-      "extraHp": 4.9
+      "extraHp": 4.9,
+      "icon": "/art/character/promotion-26.png",
+      "iconSize": 64
     }
   ],
   "abilityOptions": [
@@ -2211,95 +2397,141 @@
   "classes": [
     {
       "name": "Trainee",
-      "multiplier": 1
+      "multiplier": 1,
+      "icon": "/art/character/class-trainee.png",
+      "iconSize": 128
     },
     {
       "name": "Adventurer",
-      "multiplier": 4
+      "multiplier": 4,
+      "icon": "/art/character/class-adventurer.png",
+      "iconSize": 128
     },
     {
       "name": "Swordsman",
-      "multiplier": 7
+      "multiplier": 7,
+      "icon": "/art/character/class-swordsman.png",
+      "iconSize": 128
     },
     {
       "name": "Warrior",
-      "multiplier": 10
+      "multiplier": 10,
+      "icon": "/art/character/class-warrior.png",
+      "iconSize": 128
     },
     {
       "name": "Defender",
-      "multiplier": 18
+      "multiplier": 18,
+      "icon": "/art/character/class-defender.png",
+      "iconSize": 128
     },
     {
       "name": "Lancer",
-      "multiplier": 30
+      "multiplier": 30,
+      "icon": "/art/character/class-lancer.png",
+      "iconSize": 128
     },
     {
       "name": "Breaker",
-      "multiplier": 45
+      "multiplier": 45,
+      "icon": "/art/character/class-breaker.png",
+      "iconSize": 128
     },
     {
       "name": "Ranger",
-      "multiplier": 72
+      "multiplier": 72,
+      "icon": "/art/character/class-ranger.png",
+      "iconSize": 128
     },
     {
       "name": "Paladin",
-      "multiplier": 90
+      "multiplier": 90,
+      "icon": "/art/character/class-paladin.png",
+      "iconSize": 128
     },
     {
       "name": "Gladiator",
-      "multiplier": 150
+      "multiplier": 150,
+      "icon": "/art/character/class-gladiator.png",
+      "iconSize": 128
     },
     {
       "name": "Red Gladiator",
-      "multiplier": 220
+      "multiplier": 220,
+      "icon": "/art/character/class-red-gladiator.png",
+      "iconSize": 128
     },
     {
       "name": "Crusader",
-      "multiplier": 300
+      "multiplier": 300,
+      "icon": "/art/character/class-crusader.png",
+      "iconSize": 128
     },
     {
       "name": "Weapon Master",
-      "multiplier": 450
+      "multiplier": 450,
+      "icon": "/art/character/class-weapon-master.png",
+      "iconSize": 128
     },
     {
       "name": "Shadow Hunter",
-      "multiplier": 800
+      "multiplier": 800,
+      "icon": "/art/character/class-shadow-hunter.png",
+      "iconSize": 128
     },
     {
       "name": "Champion",
-      "multiplier": 1000
+      "multiplier": 1000,
+      "icon": "/art/character/class-champion.png",
+      "iconSize": 128
     },
     {
       "name": "Guardian",
-      "multiplier": 1500
+      "multiplier": 1500,
+      "icon": "/art/character/class-guardian.png",
+      "iconSize": 128
     },
     {
       "name": "Dark Knight",
-      "multiplier": 2000
+      "multiplier": 2000,
+      "icon": "/art/character/class-dark-knight.png",
+      "iconSize": 128
     },
     {
       "name": "Warlord",
-      "multiplier": 3000
+      "multiplier": 3000,
+      "icon": "/art/character/class-warlord.png",
+      "iconSize": 128
     },
     {
       "name": "Dark Rain",
-      "multiplier": 4500
+      "multiplier": 4500,
+      "icon": "/art/character/class-dark-rain.png",
+      "iconSize": 128
     },
     {
       "name": "Blast",
-      "multiplier": 7000
+      "multiplier": 7000,
+      "icon": "/art/character/class-blast.png",
+      "iconSize": 128
     },
     {
       "name": "Tera",
-      "multiplier": 7000
+      "multiplier": 7000,
+      "icon": "/art/character/class-tera.png",
+      "iconSize": 128
     },
     {
       "name": "Seed",
-      "multiplier": 7000
+      "multiplier": 7000,
+      "icon": "/art/character/class-seed.png",
+      "iconSize": 128
     },
     {
       "name": "Nova",
-      "multiplier": 7000
+      "multiplier": 7000,
+      "icon": "/art/character/class-nova.png",
+      "iconSize": 128
     }
   ]
 }

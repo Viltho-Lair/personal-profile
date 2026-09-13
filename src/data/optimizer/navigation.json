@@ -1,0 +1,25 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "HOME",
+    "extractedOn": "2026-09-13"
+  },
+  "icons": {
+    "char": {
+      "icon": "/art/navigation/char.png",
+      "iconSize": 110
+    },
+    "equips": {
+      "icon": "/art/navigation/equips.png",
+      "iconSize": 128
+    },
+    "companion": {
+      "icon": "/art/navigation/companion.png",
+      "iconSize": 128
+    },
+    "skill": {
+      "icon": "/art/navigation/skill.png",
+      "iconSize": 128
+    }
+  }
+}

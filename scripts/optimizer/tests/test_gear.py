@@ -105,6 +105,7 @@ class ExtractAwakening(unittest.TestCase):
         self.assertEqual(rows[1], {
             "awakening": 1, "maxLevel": 250, "weaponMultiplier": 1.18, "weaponCritHit": 0.17,
             "weaponGold": 0.46, "accessoryMaxMana": 4.1, "accessoryExp": 1.4, "accessoryMultiplier": 1.18,
+            "blastMultiplier": None,
         })
 
     def test_awakenings_must_count_up(self):

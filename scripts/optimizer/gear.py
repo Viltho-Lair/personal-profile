@@ -112,6 +112,9 @@ AWAKEN_HEADERS = {
 }
 
 
+BLAST_MULTIPLIER = "Blast Equipped Multiplier"
+
+
 def extract_awakening(sheet):
     """One row per awakening (0-30): the max enhance level every weapon or
     accessory reaches, and the Immortal grade's awakened multipliers.
@@ -119,13 +122,20 @@ def extract_awakening(sheet):
     Weapons are awakened with Orr, accessories with Orb.
     """
     header_row, col = find_header_row(sheet, list(AWAKEN_HEADERS))
+    blast_col = next(
+        (c for c in range(1, sheet.max_column + 1) if text(sheet.cell(header_row, c).value) == BLAST_MULTIPLIER),
+        None,
+    )
     rows = []
     for row in rows_until_blank(sheet, header_row + 1, col["Awakened Level"]):
         entry = {key: number(sheet.cell(row, col[header]).value) for header, key in AWAKEN_HEADERS.items()}
+        # Awakened Blast only goes to 18, so this column ends before the others.
+        blast = number(sheet.cell(row, blast_col).value) if blast_col else None
         if entry["awakening"] != len(rows):
             raise ValueError(f"{sheet.title} row {row}: expected awakening {len(rows)}, found {entry['awakening']}")
         if any(value is None for value in entry.values()):
             raise ValueError(f"{sheet.title} row {row}: awakening {entry['awakening']} has a blank value")
+        entry["blastMultiplier"] = blast
         rows.append(entry)
     if not rows:
         raise MissingHeader(f"{sheet.title}: the awakening table has no rows")
