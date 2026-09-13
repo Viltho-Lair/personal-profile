@@ -1,0 +1,2009 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Constellation Data",
+    "extractedOn": "2026-09-13"
+  },
+  "signs": [
+    {
+      "name": "Aries",
+      "nodes": [
+        {
+          "id": 1,
+          "number": 1,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 1
+        },
+        {
+          "id": 2,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Fire",
+          "unlockLevel": 1
+        },
+        {
+          "id": 3,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 1
+        },
+        {
+          "id": 4,
+          "number": 4,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 1
+        }
+      ],
+      "icon": "aries",
+      "unlockLevel": 1,
+      "element": "Fire"
+    },
+    {
+      "name": "Cancer",
+      "nodes": [
+        {
+          "id": 5,
+          "number": 1,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 2
+        },
+        {
+          "id": 6,
+          "number": 2,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 2
+        },
+        {
+          "id": 7,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 2
+        },
+        {
+          "id": 8,
+          "number": 4,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Water",
+          "unlockLevel": 2
+        },
+        {
+          "id": 9,
+          "number": 5,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Water",
+          "unlockLevel": 2
+        },
+        {
+          "id": 10,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 2
+        }
+      ],
+      "icon": "cancer",
+      "unlockLevel": 2,
+      "element": "Water"
+    },
+    {
+      "name": "Libra",
+      "nodes": [
+        {
+          "id": 11,
+          "number": 1,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 12,
+          "number": 2,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 13,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 14,
+          "number": 4,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 15,
+          "number": 5,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 16,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 17,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 3
+        },
+        {
+          "id": 18,
+          "number": 8,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Wind",
+          "unlockLevel": 3
+        }
+      ],
+      "icon": "libra",
+      "unlockLevel": 3,
+      "element": "Wind"
+    },
+    {
+      "name": "Taurus",
+      "nodes": [
+        {
+          "id": 19,
+          "number": 1,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 20,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 21,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 22,
+          "number": 4,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 23,
+          "number": 5,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 24,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 25,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 26,
+          "number": 8,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 27,
+          "number": 9,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 28,
+          "number": 10,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        },
+        {
+          "id": 29,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 4
+        }
+      ],
+      "icon": "taurus",
+      "unlockLevel": 4,
+      "element": "Earth"
+    },
+    {
+      "name": "Capricorn",
+      "nodes": [
+        {
+          "id": 30,
+          "number": 1,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 31,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 32,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 33,
+          "number": 4,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 34,
+          "number": 5,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 35,
+          "number": 6,
+          "size": "Large",
+          "energy": 100,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 36,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 37,
+          "number": 8,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 38,
+          "number": 9,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 39,
+          "number": 10,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 40,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Earth",
+          "unlockLevel": 5
+        },
+        {
+          "id": 41,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 5
+        }
+      ],
+      "icon": "capricorn",
+      "unlockLevel": 5,
+      "element": "Earth"
+    },
+    {
+      "name": "Aquarius",
+      "nodes": [
+        {
+          "id": 42,
+          "number": 1,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 43,
+          "number": 2,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 44,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 45,
+          "number": 4,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 46,
+          "number": 5,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 47,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 48,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 49,
+          "number": 8,
+          "size": "Large",
+          "energy": 100,
+          "buff": "EXP",
+          "appliesTo": "All",
+          "value": 6,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 50,
+          "number": 9,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 51,
+          "number": 10,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 52,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 53,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 6
+        },
+        {
+          "id": 54,
+          "number": 13,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 6
+        }
+      ],
+      "icon": "aquarius",
+      "unlockLevel": 6,
+      "element": "Wind"
+    },
+    {
+      "name": "Leo",
+      "nodes": [
+        {
+          "id": 55,
+          "number": 1,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 56,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 57,
+          "number": 3,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 58,
+          "number": 4,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 59,
+          "number": 5,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 60,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 61,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 62,
+          "number": 8,
+          "size": "Large",
+          "energy": 100,
+          "buff": "Cube",
+          "appliesTo": "All",
+          "value": 7,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 63,
+          "number": 9,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 64,
+          "number": 10,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 65,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 66,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        },
+        {
+          "id": 67,
+          "number": 13,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 7
+        }
+      ],
+      "icon": "leo",
+      "unlockLevel": 7,
+      "element": "Fire"
+    },
+    {
+      "name": "Pisces",
+      "nodes": [
+        {
+          "id": 68,
+          "number": 1,
+          "size": "Large",
+          "energy": 100,
+          "buff": "EXP",
+          "appliesTo": "All",
+          "value": 6,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 69,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 70,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 71,
+          "number": 4,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 72,
+          "number": 5,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 73,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 74,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 75,
+          "number": 8,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 76,
+          "number": 9,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "All",
+          "value": 7,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 77,
+          "number": 10,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 78,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 79,
+          "number": 12,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 80,
+          "number": 13,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        },
+        {
+          "id": 81,
+          "number": 14,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 8
+        }
+      ],
+      "icon": "pisces",
+      "unlockLevel": 8,
+      "element": "Water"
+    },
+    {
+      "name": "Virgo",
+      "nodes": [
+        {
+          "id": 82,
+          "number": 1,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 83,
+          "number": 2,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 84,
+          "number": 3,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 85,
+          "number": 4,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 86,
+          "number": 5,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 87,
+          "number": 6,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 88,
+          "number": 7,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 89,
+          "number": 8,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 90,
+          "number": 9,
+          "size": "Large",
+          "energy": 100,
+          "buff": "Mana Crystal",
+          "appliesTo": "FoC",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 91,
+          "number": 10,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 92,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 93,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 94,
+          "number": 13,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Earth",
+          "unlockLevel": 9
+        },
+        {
+          "id": 95,
+          "number": 14,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "All",
+          "value": 6,
+          "element": "Earth",
+          "unlockLevel": 9
+        }
+      ],
+      "icon": "virgo",
+      "unlockLevel": 9,
+      "element": "Earth"
+    },
+    {
+      "name": "Gemini",
+      "nodes": [
+        {
+          "id": 96,
+          "number": 1,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 97,
+          "number": 2,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Mana Crystal",
+          "appliesTo": "FoC",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 98,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 99,
+          "number": 4,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 100,
+          "number": 5,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "All",
+          "value": 7,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 101,
+          "number": 6,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 102,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 103,
+          "number": 8,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 104,
+          "number": 9,
+          "size": "Large",
+          "energy": 100,
+          "buff": "Gold",
+          "appliesTo": "All",
+          "value": 8,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 105,
+          "number": 10,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 106,
+          "number": 11,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 107,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 108,
+          "number": 13,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 109,
+          "number": 14,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 110,
+          "number": 15,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Wind",
+          "unlockLevel": 10
+        },
+        {
+          "id": 111,
+          "number": 16,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "All",
+          "value": 6,
+          "element": "Wind",
+          "unlockLevel": 10
+        }
+      ],
+      "icon": "gemini",
+      "unlockLevel": 10,
+      "element": "Wind"
+    },
+    {
+      "name": "Scorpio",
+      "nodes": [
+        {
+          "id": 112,
+          "number": 1,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 113,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "All",
+          "value": 7,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 114,
+          "number": 3,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 115,
+          "number": 4,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 116,
+          "number": 5,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 117,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 118,
+          "number": 7,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 119,
+          "number": 8,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Mana Crystal",
+          "appliesTo": "FoC",
+          "value": 10,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 120,
+          "number": 9,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 121,
+          "number": 10,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "All",
+          "value": 8,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 122,
+          "number": 11,
+          "size": "Large",
+          "energy": 100,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 123,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "All",
+          "value": 6,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 124,
+          "number": 13,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 125,
+          "number": 14,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 126,
+          "number": 15,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 127,
+          "number": 16,
+          "size": "Small",
+          "energy": 5,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        },
+        {
+          "id": 128,
+          "number": 17,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Water",
+          "unlockLevel": 11
+        }
+      ],
+      "icon": "scorpio",
+      "unlockLevel": 11,
+      "element": "Water"
+    },
+    {
+      "name": "Sagittarius",
+      "nodes": [
+        {
+          "id": 129,
+          "number": 1,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 130,
+          "number": 2,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Closed Mine",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 131,
+          "number": 3,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Mana Crystal",
+          "appliesTo": "FoC",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 132,
+          "number": 4,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "All",
+          "value": 7,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 133,
+          "number": 5,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Closed Mine",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 134,
+          "number": 6,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 135,
+          "number": 7,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Stage",
+          "value": 9,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 136,
+          "number": 8,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "All",
+          "value": 8,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 137,
+          "number": 9,
+          "size": "Large",
+          "energy": 100,
+          "buff": "EXP",
+          "appliesTo": "All",
+          "value": 6,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 138,
+          "number": 10,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 139,
+          "number": 11,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 140,
+          "number": 12,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dragon Spark",
+          "appliesTo": "SoSF",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 141,
+          "number": 13,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 142,
+          "number": 14,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Dimensional Rift",
+          "value": 6,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 143,
+          "number": 15,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Chaos Soul",
+          "appliesTo": "All",
+          "value": 10,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 144,
+          "number": 16,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "Gold",
+          "appliesTo": "Dragon Valley",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 145,
+          "number": 17,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Cube",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 146,
+          "number": 18,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Dice",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 147,
+          "number": 19,
+          "size": "Medium",
+          "energy": 25,
+          "buff": "EXP",
+          "appliesTo": "Training Cave",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        },
+        {
+          "id": 148,
+          "number": 20,
+          "size": "Small",
+          "energy": 5,
+          "buff": "Gold",
+          "appliesTo": "Stage",
+          "value": 5,
+          "element": "Fire",
+          "unlockLevel": 12
+        }
+      ],
+      "icon": "sagittarius",
+      "unlockLevel": 12,
+      "element": "Fire"
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "starsNeeded": 0,
+      "extraAtk": 0,
+      "extraHp": 0,
+      "extraHpRecovery": 0,
+      "craftingTimeReduced": 0,
+      "classLevelCap": 0
+    },
+    {
+      "level": 2,
+      "starsNeeded": 4,
+      "extraAtk": 50,
+      "extraHp": 30,
+      "extraHpRecovery": 20,
+      "craftingTimeReduced": 2,
+      "classLevelCap": 50
+    },
+    {
+      "level": 3,
+      "starsNeeded": 10,
+      "extraAtk": 150,
+      "extraHp": 90,
+      "extraHpRecovery": 60,
+      "craftingTimeReduced": 4,
+      "classLevelCap": 100
+    },
+    {
+      "level": 4,
+      "starsNeeded": 18,
+      "extraAtk": 300,
+      "extraHp": 180,
+      "extraHpRecovery": 120,
+      "craftingTimeReduced": 6,
+      "classLevelCap": 150
+    },
+    {
+      "level": 5,
+      "starsNeeded": 29,
+      "extraAtk": 500,
+      "extraHp": 300,
+      "extraHpRecovery": 200,
+      "craftingTimeReduced": 8,
+      "classLevelCap": 200
+    },
+    {
+      "level": 6,
+      "starsNeeded": 41,
+      "extraAtk": 750,
+      "extraHp": 450,
+      "extraHpRecovery": 300,
+      "craftingTimeReduced": 10,
+      "classLevelCap": 250
+    },
+    {
+      "level": 7,
+      "starsNeeded": 54,
+      "extraAtk": 1050,
+      "extraHp": 630,
+      "extraHpRecovery": 420,
+      "craftingTimeReduced": 12,
+      "classLevelCap": 300
+    },
+    {
+      "level": 8,
+      "starsNeeded": 67,
+      "extraAtk": 1400,
+      "extraHp": 840,
+      "extraHpRecovery": 560,
+      "craftingTimeReduced": 14,
+      "classLevelCap": 350
+    },
+    {
+      "level": 9,
+      "starsNeeded": 81,
+      "extraAtk": 1800,
+      "extraHp": 1080,
+      "extraHpRecovery": 720,
+      "craftingTimeReduced": 16,
+      "classLevelCap": 400
+    },
+    {
+      "level": 10,
+      "starsNeeded": 95,
+      "extraAtk": 2250,
+      "extraHp": 1350,
+      "extraHpRecovery": 900,
+      "craftingTimeReduced": 18,
+      "classLevelCap": 450
+    },
+    {
+      "level": 11,
+      "starsNeeded": 111,
+      "extraAtk": 2750,
+      "extraHp": 1650,
+      "extraHpRecovery": 1100,
+      "craftingTimeReduced": 20,
+      "classLevelCap": 500
+    },
+    {
+      "level": 12,
+      "starsNeeded": 128,
+      "extraAtk": 3300,
+      "extraHp": 1980,
+      "extraHpRecovery": 1320,
+      "craftingTimeReduced": 22,
+      "classLevelCap": 600
+    }
+  ],
+  "art": {
+    "extra-atk": {
+      "icon": "/art/constellation/extra-atk.png",
+      "iconSize": 128
+    },
+    "extra-hp": {
+      "icon": "/art/constellation/extra-hp.png",
+      "iconSize": 128
+    },
+    "extra-hp-recovery": {
+      "icon": "/art/constellation/extra-hp-recovery.png",
+      "iconSize": 128
+    },
+    "atk": {
+      "icon": "/art/constellation/atk.png",
+      "iconSize": 100
+    },
+    "chaos-soul": {
+      "icon": "/art/constellation/chaos-soul.png",
+      "iconSize": 64
+    },
+    "dragon-spark": {
+      "icon": "/art/constellation/dragon-spark.png",
+      "iconSize": 64
+    },
+    "geen-nebula": {
+      "icon": "/art/constellation/geen-nebula.png",
+      "iconSize": 256
+    },
+    "yellow-nebula": {
+      "icon": "/art/constellation/yellow-nebula.png",
+      "iconSize": 256
+    },
+    "red-nebula": {
+      "icon": "/art/constellation/red-nebula.png",
+      "iconSize": 256
+    },
+    "blue-nebula": {
+      "icon": "/art/constellation/blue-nebula.png",
+      "iconSize": 256
+    },
+    "cube": {
+      "icon": "/art/constellation/cube.png",
+      "iconSize": 64
+    },
+    "dice": {
+      "icon": "/art/constellation/dice.png",
+      "iconSize": 49
+    },
+    "exp": {
+      "icon": "/art/constellation/exp.png",
+      "iconSize": 64
+    },
+    "gold": {
+      "icon": "/art/constellation/gold.png",
+      "iconSize": 56
+    },
+    "mana-crystal": {
+      "icon": "/art/constellation/mana-crystal.png",
+      "iconSize": 64
+    },
+    "aries": {
+      "icon": "/art/constellation/aries.png",
+      "iconSize": 256
+    },
+    "taurus": {
+      "icon": "/art/constellation/taurus.png",
+      "iconSize": 238
+    },
+    "gemini": {
+      "icon": "/art/constellation/gemini.png",
+      "iconSize": 252
+    },
+    "cancer": {
+      "icon": "/art/constellation/cancer.png",
+      "iconSize": 256
+    },
+    "leo": {
+      "icon": "/art/constellation/leo.png",
+      "iconSize": 256
+    },
+    "virgo": {
+      "icon": "/art/constellation/virgo.png",
+      "iconSize": 157
+    },
+    "libra": {
+      "icon": "/art/constellation/libra.png",
+      "iconSize": 238
+    },
+    "scorpio": {
+      "icon": "/art/constellation/scorpio.png",
+      "iconSize": 256
+    },
+    "sagittarius": {
+      "icon": "/art/constellation/sagittarius.png",
+      "iconSize": 256
+    },
+    "capricorn": {
+      "icon": "/art/constellation/capricorn.png",
+      "iconSize": 256
+    },
+    "aquarius": {
+      "icon": "/art/constellation/aquarius.png",
+      "iconSize": 256
+    },
+    "pisces": {
+      "icon": "/art/constellation/pisces.png",
+      "iconSize": 256
+    },
+    "star": {
+      "icon": "/art/constellation/star.png",
+      "iconSize": 128
+    },
+    "none": {
+      "icon": "/art/constellation/none.png",
+      "iconSize": 84
+    },
+    "star-of-fire-small": {
+      "icon": "/art/constellation/star-of-fire-small.png",
+      "iconSize": 73
+    },
+    "star-of-fire-medium": {
+      "icon": "/art/constellation/star-of-fire-medium.png",
+      "iconSize": 128
+    },
+    "star-of-fire-large": {
+      "icon": "/art/constellation/star-of-fire-large.png",
+      "iconSize": 100
+    },
+    "star-of-water-small": {
+      "icon": "/art/constellation/star-of-water-small.png",
+      "iconSize": 128
+    },
+    "star-of-water-medium": {
+      "icon": "/art/constellation/star-of-water-medium.png",
+      "iconSize": 128
+    },
+    "star-of-water-large": {
+      "icon": "/art/constellation/star-of-water-large.png",
+      "iconSize": 105
+    },
+    "star-of-wind-small": {
+      "icon": "/art/constellation/star-of-wind-small.png",
+      "iconSize": 128
+    },
+    "star-of-wind-medium": {
+      "icon": "/art/constellation/star-of-wind-medium.png",
+      "iconSize": 128
+    },
+    "star-of-wind-large": {
+      "icon": "/art/constellation/star-of-wind-large.png",
+      "iconSize": 128
+    },
+    "star-of-earth-small": {
+      "icon": "/art/constellation/star-of-earth-small.png",
+      "iconSize": 128
+    },
+    "star-of-earth-medium": {
+      "icon": "/art/constellation/star-of-earth-medium.png",
+      "iconSize": 84
+    },
+    "star-of-earth-large": {
+      "icon": "/art/constellation/star-of-earth-large.png",
+      "iconSize": 128
+    }
+  }
+}

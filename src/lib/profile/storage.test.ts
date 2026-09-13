@@ -185,6 +185,8 @@ describe("parseProfile", () => {
         abilities: [{ option: "Extra ATK(%)", value: 40, multiplier: 4 }, { multiplier: 7 }],
         classes: { Trainee: { owned: true, level: 20 } },
         equippedClass: "Trainee",
+        memoryTree: { "1": 1, "2": "x" },
+        constellation: { "1": 2, "2": 1, "3": 7 },
       },
     });
     const c = parseProfile(raw)?.character;
@@ -197,6 +199,8 @@ describe("parseProfile", () => {
     expect(c?.abilities[1]).toEqual({ option: null, value: null, multiplier: 1 });
     expect(c?.classes).toEqual({ Trainee: { owned: true, level: 20 } });
     expect(c?.slayerLevel).toBe(1);
+    expect(c?.memoryTree).toEqual({ "1": 1 });
+    expect(c?.constellation).toEqual({ "1": 2, "2": 1 });
   });
 
   it("a profile saved before skill settings existed gets their defaults", () => {

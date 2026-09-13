@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, type ReactNode } from "react";
 import characterData from "@/data/optimizer/character.json";
+import constellationData from "@/data/optimizer/constellation.json";
 import {
   abilityRowOpen,
   awakenedClassName,
@@ -15,12 +16,15 @@ import {
   type KnowledgeGrade,
   type LatentMultiplier,
 } from "@/lib/game/character";
+import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { awakeningStage, gearEffects } from "@/lib/game/formulas";
 import { clampLevel } from "@/lib/profile/rules";
 import { ABILITY_SLOTS, LATENT_SLOTS, LATENT_STATS, type CharacterState } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
 import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./data";
+import { ConstellationTab } from "./constellation-tab";
 import { InlineLevel } from "./level-input";
+import { MemoryTreeTab } from "./memory-tree-tab";
 
 type Icon = { icon?: string | null; iconSize?: number | null };
 
@@ -379,13 +383,14 @@ function GrowthSection() {
 
 function ClassesTab() {
   const { character, set } = useCharacter();
-  const max = classMaxLevel(character.classAwakening);
+  const constellationCap = constellationTotals(constellationData as unknown as Constellation, character.constellation).current.classLevelCap;
+  const max = classMaxLevel(character.classAwakening) + constellationCap;
   const blastMultiplier = AWAKENING[character.classAwakening]?.blastMultiplier ?? 1;
 
   return (
     <div className="flex flex-col gap-3">
       <p className={LABEL}>
-        All classes: max level {max} (200 + 50 per Blast awakening)
+        All classes: max level {max} (200 + 50 per Blast awakening + {constellationCap} from Constellation)
       </p>
       <ul className="flex flex-col gap-1">
         {CLASSES.map((cls, index) => {
@@ -588,11 +593,10 @@ function PromotionSection() {
           <ClassesTab />
         ) : tab === "ability" ? (
           <AbilityTab />
+        ) : tab === "memory" ? (
+          <MemoryTreeTab />
         ) : (
-          <p className="text-xs text-dim">
-            {tab === "memory" ? "Memory Tree" : "Constellation"} settings are coming next, from the workbook&apos;s{" "}
-            {tab === "memory" ? "MEMORY TREE" : "CONSTELLATION"} sheet.
-          </p>
+          <ConstellationTab />
         )}
       </div>
     </>

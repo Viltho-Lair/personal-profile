@@ -64,6 +64,10 @@ export type CharacterState = {
   equippedClass: string | null;
   /** Awakened Blast, 0-18. */
   classAwakening: number;
+  /** Memory Tree sub node levels by sub node id. */
+  memoryTree: Record<string, number>;
+  /** Constellation stars by node id: 1 = another star, 2 = the matching star (none when absent). */
+  constellation: Record<string, number>;
 };
 
 export function emptyCharacter(): CharacterState {
@@ -80,6 +84,8 @@ export function emptyCharacter(): CharacterState {
     classes: {},
     equippedClass: null,
     classAwakening: 0,
+    memoryTree: {},
+    constellation: {},
   };
 }
 

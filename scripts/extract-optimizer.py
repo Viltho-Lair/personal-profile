@@ -33,6 +33,8 @@ from optimizer.gear import (  # noqa: E402
 )
 from optimizer.mastery import extract_mastery  # noqa: E402
 from optimizer.navigation import extract_navigation_icons  # noqa: E402
+from optimizer.memory_tree import extract_memory_tree  # noqa: E402
+from optimizer.constellation import extract_constellation  # noqa: E402
 from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
@@ -206,6 +208,8 @@ def main():
         character, character_art = extract_character(
             formulas["CHARACTER"], values["CHARACTER"], values["Character Data"], values["Equipment Data"]
         )
+        memory_tree, memory_tree_icons = extract_memory_tree(values["Tree Data"])
+        constellation, constellation_art = extract_constellation(values["Constellation Data"])
         companions, promotion, companion_art = extract_companions(
             formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
         )
@@ -331,6 +335,24 @@ def main():
     })
     print(f"character: {len(character['enhance'])} enhance stats, {len(character['growth'])} growth stats, "
           f"{len(character['promotions'])} promotions, {len(character['classes'])} classes")
+
+    published = publish_files("memory-tree", memory_tree_icons)
+    write_json(DATA / "memory-tree.json", {
+        "source": {"file": source.name, "sheet": "Tree Data", "extractedOn": today},
+        **memory_tree,
+        "icons": {stem: {"icon": url, "iconSize": width} for stem, (url, width) in published.items()},
+    })
+    print(f"memory tree: {len(memory_tree['mainNodes'])} main nodes, "
+          f"{sum(len(n['subNodes']) for n in memory_tree['mainNodes'])} sub nodes, {len(memory_tree['levels'])} level rows")
+
+    published = publish_files("constellation", constellation_art)
+    write_json(DATA / "constellation.json", {
+        "source": {"file": source.name, "sheet": "Constellation Data", "extractedOn": today},
+        **constellation,
+        "art": {stem: {"icon": url, "iconSize": width} for stem, (url, width) in published.items()},
+    })
+    print(f"constellation: {len(constellation['signs'])} signs, "
+          f"{sum(len(s['nodes']) for s in constellation['signs'])} nodes, {len(constellation['levels'])} levels")
 
     published = publish_files("companion-skins", companion_art)
     for companion in companions:

@@ -1,0 +1,2029 @@
+{
+  "source": {
+    "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
+    "sheet": "Tree Data",
+    "extractedOn": "2026-09-13"
+  },
+  "mainNodes": [
+    {
+      "id": 1,
+      "requires": [],
+      "subNodes": [
+        {
+          "id": 1,
+          "number": 1,
+          "requiresTreeLevel": 1,
+          "requires": [],
+          "maxLevel": 1,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.05,
+          "costPerLevel": 105,
+          "reward": null
+        },
+        {
+          "id": 2,
+          "number": 2,
+          "requiresTreeLevel": 1,
+          "requires": [
+            1
+          ],
+          "maxLevel": 4,
+          "buff": "EXP",
+          "mode": "STAGE",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 45,
+          "reward": null
+        },
+        {
+          "id": 3,
+          "number": 3,
+          "requiresTreeLevel": 2,
+          "requires": [
+            2
+          ],
+          "maxLevel": 4,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 50,
+          "reward": null
+        },
+        {
+          "id": 4,
+          "number": 4,
+          "requiresTreeLevel": 2,
+          "requires": [
+            2
+          ],
+          "maxLevel": 4,
+          "buff": "EXP",
+          "mode": "TC",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 50,
+          "reward": null
+        },
+        {
+          "id": 5,
+          "number": 5,
+          "requiresTreeLevel": 3,
+          "requires": [
+            3,
+            4
+          ],
+          "maxLevel": 3,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 80,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "requires": [
+        1
+      ],
+      "subNodes": [
+        {
+          "id": 6,
+          "number": 1,
+          "requiresTreeLevel": 4,
+          "requires": [],
+          "maxLevel": 3,
+          "buff": "GOLD",
+          "mode": "CM",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 90,
+          "reward": null
+        },
+        {
+          "id": 7,
+          "number": 2,
+          "requiresTreeLevel": 4,
+          "requires": [
+            1
+          ],
+          "maxLevel": 4,
+          "buff": "EXP",
+          "mode": "CM",
+          "valuePerLevel": 0.05,
+          "costPerLevel": 90,
+          "reward": null
+        },
+        {
+          "id": 8,
+          "number": 3,
+          "requiresTreeLevel": 4,
+          "requires": [
+            1
+          ],
+          "maxLevel": 6,
+          "buff": "CUBE",
+          "mode": "CM",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 90,
+          "reward": null
+        },
+        {
+          "id": 9,
+          "number": 4,
+          "requiresTreeLevel": 4,
+          "requires": [
+            3
+          ],
+          "maxLevel": 6,
+          "buff": "Dragon Power",
+          "mode": "Shelter of Sleeping Flame",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 90,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "requires": [
+        2
+      ],
+      "subNodes": [
+        {
+          "id": 10,
+          "number": 1,
+          "requiresTreeLevel": 5,
+          "requires": [],
+          "maxLevel": 6,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.01,
+          "costPerLevel": 120,
+          "reward": null
+        },
+        {
+          "id": 11,
+          "number": 2,
+          "requiresTreeLevel": 5,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Purple Feather",
+            "amount": 5
+          }
+        },
+        {
+          "id": 12,
+          "number": 3,
+          "requiresTreeLevel": 5,
+          "requires": [
+            2
+          ],
+          "maxLevel": 4,
+          "buff": "Dice",
+          "mode": "STAGE",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 120,
+          "reward": null
+        },
+        {
+          "id": 13,
+          "number": 4,
+          "requiresTreeLevel": 5,
+          "requires": [
+            3
+          ],
+          "maxLevel": 4,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 120,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "requires": [
+        2
+      ],
+      "subNodes": [
+        {
+          "id": 14,
+          "number": 1,
+          "requiresTreeLevel": 6,
+          "requires": [],
+          "maxLevel": 4,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 125,
+          "reward": null
+        },
+        {
+          "id": 15,
+          "number": 2,
+          "requiresTreeLevel": 6,
+          "requires": [
+            1
+          ],
+          "maxLevel": 4,
+          "buff": "EXP",
+          "mode": "STAGE",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 150,
+          "reward": null
+        },
+        {
+          "id": 16,
+          "number": 3,
+          "requiresTreeLevel": 6,
+          "requires": [
+            1
+          ],
+          "maxLevel": 4,
+          "buff": "Dice",
+          "mode": "STAGE",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 150,
+          "reward": null
+        },
+        {
+          "id": 17,
+          "number": 4,
+          "requiresTreeLevel": 6,
+          "requires": [
+            2,
+            3
+          ],
+          "maxLevel": 4,
+          "buff": "CUBE",
+          "mode": "STAGE",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 150,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "requires": [
+        2
+      ],
+      "subNodes": [
+        {
+          "id": 18,
+          "number": 1,
+          "requiresTreeLevel": 7,
+          "requires": [],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "TC",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 300,
+          "reward": null
+        },
+        {
+          "id": 19,
+          "number": 2,
+          "requiresTreeLevel": 7,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "EXP",
+          "mode": "CM",
+          "valuePerLevel": 0.07,
+          "costPerLevel": 175,
+          "reward": null
+        },
+        {
+          "id": 20,
+          "number": 3,
+          "requiresTreeLevel": 8,
+          "requires": [
+            2
+          ],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "STAGE",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 525,
+          "reward": null
+        },
+        {
+          "id": 21,
+          "number": 4,
+          "requiresTreeLevel": 8,
+          "requires": [
+            2
+          ],
+          "maxLevel": 1,
+          "buff": "EXP",
+          "mode": "ALL",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 1050,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "requires": [
+        5
+      ],
+      "subNodes": [
+        {
+          "id": 22,
+          "number": 1,
+          "requiresTreeLevel": 9,
+          "requires": [],
+          "maxLevel": 3,
+          "buff": "GOLD",
+          "mode": "CM",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 200,
+          "reward": null
+        },
+        {
+          "id": 23,
+          "number": 2,
+          "requiresTreeLevel": 9,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Green Feather",
+            "amount": 5
+          }
+        },
+        {
+          "id": 24,
+          "number": 3,
+          "requiresTreeLevel": 9,
+          "requires": [
+            1
+          ],
+          "maxLevel": 5,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 210,
+          "reward": null
+        },
+        {
+          "id": 25,
+          "number": 4,
+          "requiresTreeLevel": 10,
+          "requires": [
+            2,
+            3
+          ],
+          "maxLevel": 2,
+          "buff": "GOLD",
+          "mode": "ALL",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 630,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "requires": [
+        5
+      ],
+      "subNodes": [
+        {
+          "id": 26,
+          "number": 1,
+          "requiresTreeLevel": 9,
+          "requires": [],
+          "maxLevel": 1,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 840,
+          "reward": null
+        },
+        {
+          "id": 27,
+          "number": 2,
+          "requiresTreeLevel": 10,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "CUBE",
+          "mode": "CM",
+          "valuePerLevel": 0.21,
+          "costPerLevel": 630,
+          "reward": null
+        },
+        {
+          "id": 28,
+          "number": 3,
+          "requiresTreeLevel": 10,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "STAGE",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 630,
+          "reward": null
+        },
+        {
+          "id": 29,
+          "number": 4,
+          "requiresTreeLevel": 10,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 630,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "requires": [
+        7
+      ],
+      "subNodes": [
+        {
+          "id": 30,
+          "number": 1,
+          "requiresTreeLevel": 11,
+          "requires": [],
+          "maxLevel": 3,
+          "buff": "GOLD",
+          "mode": "ALL",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 280,
+          "reward": null
+        },
+        {
+          "id": 31,
+          "number": 2,
+          "requiresTreeLevel": 11,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "Dragon Power",
+          "mode": "Shelter of Sleeping Flame",
+          "valuePerLevel": 0.09,
+          "costPerLevel": 840,
+          "reward": null
+        },
+        {
+          "id": 32,
+          "number": 3,
+          "requiresTreeLevel": 12,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "CUBE",
+          "mode": "CM",
+          "valuePerLevel": 0.24,
+          "costPerLevel": 840,
+          "reward": null
+        },
+        {
+          "id": 33,
+          "number": 4,
+          "requiresTreeLevel": 12,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "White Feather",
+            "amount": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "requires": [
+        7
+      ],
+      "subNodes": [
+        {
+          "id": 34,
+          "number": 1,
+          "requiresTreeLevel": 11,
+          "requires": [],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "ALL",
+          "valuePerLevel": 0.1,
+          "costPerLevel": 700,
+          "reward": null
+        },
+        {
+          "id": 35,
+          "number": 2,
+          "requiresTreeLevel": 11,
+          "requires": [
+            1
+          ],
+          "maxLevel": 5,
+          "buff": "EXP",
+          "mode": "CM",
+          "valuePerLevel": 0.05,
+          "costPerLevel": 280,
+          "reward": null
+        },
+        {
+          "id": 36,
+          "number": 3,
+          "requiresTreeLevel": 12,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 1120,
+          "reward": null
+        },
+        {
+          "id": 37,
+          "number": 4,
+          "requiresTreeLevel": 12,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Black Feather",
+            "amount": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "requires": [
+        7
+      ],
+      "subNodes": [
+        {
+          "id": 38,
+          "number": 1,
+          "requiresTreeLevel": 13,
+          "requires": [],
+          "maxLevel": 2,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 960,
+          "reward": null
+        },
+        {
+          "id": 39,
+          "number": 2,
+          "requiresTreeLevel": 13,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "STAGE",
+          "valuePerLevel": 0.09,
+          "costPerLevel": 960,
+          "reward": null
+        },
+        {
+          "id": 40,
+          "number": 3,
+          "requiresTreeLevel": 13,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "CUBE",
+          "mode": "STAGE",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 640,
+          "reward": null
+        },
+        {
+          "id": 41,
+          "number": 4,
+          "requiresTreeLevel": 13,
+          "requires": [
+            2,
+            3
+          ],
+          "maxLevel": 1,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 1280,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "requires": [
+        8
+      ],
+      "subNodes": [
+        {
+          "id": 42,
+          "number": 1,
+          "requiresTreeLevel": 14,
+          "requires": [],
+          "maxLevel": 4,
+          "buff": "GOLD",
+          "mode": "CM",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 43,
+          "number": 2,
+          "requiresTreeLevel": 14,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "EXP",
+          "mode": "TC",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 44,
+          "number": 3,
+          "requiresTreeLevel": 14,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "Dragon Power",
+          "mode": "Shelter of Sleeping Flame",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 45,
+          "number": 4,
+          "requiresTreeLevel": 16,
+          "requires": [
+            2
+          ],
+          "maxLevel": 5,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 420,
+          "reward": null
+        },
+        {
+          "id": 46,
+          "number": 5,
+          "requiresTreeLevel": 16,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.1,
+          "costPerLevel": 2000,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "requires": [
+        9
+      ],
+      "subNodes": [
+        {
+          "id": 47,
+          "number": 1,
+          "requiresTreeLevel": 14,
+          "requires": [],
+          "maxLevel": 4,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 48,
+          "number": 2,
+          "requiresTreeLevel": 14,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "GOLD",
+          "mode": "ALL",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 1600,
+          "reward": null
+        },
+        {
+          "id": 49,
+          "number": 3,
+          "requiresTreeLevel": 14,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "Dragon Power",
+          "mode": "Shelter of Sleeping Flame",
+          "valuePerLevel": 0.27,
+          "costPerLevel": 1350,
+          "reward": null
+        },
+        {
+          "id": 50,
+          "number": 4,
+          "requiresTreeLevel": 16,
+          "requires": [
+            2
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 1200,
+          "reward": null
+        },
+        {
+          "id": 51,
+          "number": 5,
+          "requiresTreeLevel": 16,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Green Feather",
+            "amount": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "requires": [
+        8
+      ],
+      "subNodes": [
+        {
+          "id": 52,
+          "number": 1,
+          "requiresTreeLevel": 15,
+          "requires": [],
+          "maxLevel": 4,
+          "buff": "EXP",
+          "mode": "CM",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 53,
+          "number": 2,
+          "requiresTreeLevel": 15,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "ALL",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 1600,
+          "reward": null
+        },
+        {
+          "id": 54,
+          "number": 3,
+          "requiresTreeLevel": 17,
+          "requires": [
+            2
+          ],
+          "maxLevel": 1,
+          "buff": "Dice",
+          "mode": "STAGE",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 2700,
+          "reward": null
+        },
+        {
+          "id": 55,
+          "number": 4,
+          "requiresTreeLevel": 17,
+          "requires": [
+            2
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "CM",
+          "valuePerLevel": 0.15,
+          "costPerLevel": 1200,
+          "reward": null
+        },
+        {
+          "id": 56,
+          "number": 5,
+          "requiresTreeLevel": 18,
+          "requires": [
+            2
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Purple Feather",
+            "amount": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "requires": [
+        9
+      ],
+      "subNodes": [
+        {
+          "id": 57,
+          "number": 1,
+          "requiresTreeLevel": 15,
+          "requires": [],
+          "maxLevel": 4,
+          "buff": "GOLD",
+          "mode": "CM",
+          "valuePerLevel": 0.05,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 58,
+          "number": 2,
+          "requiresTreeLevel": 15,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "EXP",
+          "mode": "TC",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 400,
+          "reward": null
+        },
+        {
+          "id": 59,
+          "number": 3,
+          "requiresTreeLevel": 17,
+          "requires": [
+            2
+          ],
+          "maxLevel": 3,
+          "buff": "Dice",
+          "mode": "STAGE",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 900,
+          "reward": null
+        },
+        {
+          "id": 60,
+          "number": 4,
+          "requiresTreeLevel": 17,
+          "requires": [
+            2
+          ],
+          "maxLevel": 5,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 900,
+          "reward": null
+        },
+        {
+          "id": 61,
+          "number": 5,
+          "requiresTreeLevel": 18,
+          "requires": [
+            2
+          ],
+          "maxLevel": 1,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.1,
+          "costPerLevel": 2500,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "requires": [
+        10
+      ],
+      "subNodes": [
+        {
+          "id": 62,
+          "number": 1,
+          "requiresTreeLevel": 18,
+          "requires": [],
+          "maxLevel": 2,
+          "buff": "GOLD",
+          "mode": "ALL",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 1800,
+          "reward": null
+        },
+        {
+          "id": 63,
+          "number": 2,
+          "requiresTreeLevel": 18,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "Dice",
+          "mode": "STAGE",
+          "valuePerLevel": 0.1,
+          "costPerLevel": 450,
+          "reward": null
+        },
+        {
+          "id": 64,
+          "number": 3,
+          "requiresTreeLevel": 19,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "ALL",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 1350,
+          "reward": null
+        },
+        {
+          "id": 65,
+          "number": 4,
+          "requiresTreeLevel": 19,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.1,
+          "costPerLevel": 4500,
+          "reward": null
+        },
+        {
+          "id": 66,
+          "number": 5,
+          "requiresTreeLevel": 19,
+          "requires": [
+            3,
+            4
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 2000,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "requires": [
+        8
+      ],
+      "subNodes": [
+        {
+          "id": 67,
+          "number": 1,
+          "requiresTreeLevel": 20,
+          "requires": [],
+          "maxLevel": 3,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.07,
+          "costPerLevel": 500,
+          "reward": null
+        },
+        {
+          "id": 68,
+          "number": 2,
+          "requiresTreeLevel": 20,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "EXP",
+          "mode": "STAGE",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 540,
+          "reward": null
+        },
+        {
+          "id": 69,
+          "number": 3,
+          "requiresTreeLevel": 20,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "Dragon Power",
+          "mode": "Shelter of Sleeping Flame",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 2100,
+          "reward": null
+        },
+        {
+          "id": 70,
+          "number": 4,
+          "requiresTreeLevel": 20,
+          "requires": [
+            1,
+            3
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "White Feather",
+            "amount": 50
+          }
+        },
+        {
+          "id": 71,
+          "number": 5,
+          "requiresTreeLevel": 22,
+          "requires": [
+            4
+          ],
+          "maxLevel": 2,
+          "buff": "GOLD",
+          "mode": "ALL",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 2300,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "requires": [
+        14
+      ],
+      "subNodes": [
+        {
+          "id": 72,
+          "number": 1,
+          "requiresTreeLevel": 21,
+          "requires": [],
+          "maxLevel": 1,
+          "buff": "EXP",
+          "mode": "TC",
+          "valuePerLevel": 0.15,
+          "costPerLevel": 2700,
+          "reward": null
+        },
+        {
+          "id": 73,
+          "number": 2,
+          "requiresTreeLevel": 21,
+          "requires": [
+            1
+          ],
+          "maxLevel": 4,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.02,
+          "costPerLevel": 1100,
+          "reward": null
+        },
+        {
+          "id": 74,
+          "number": 3,
+          "requiresTreeLevel": 21,
+          "requires": [
+            2
+          ],
+          "maxLevel": 2,
+          "buff": "GOLD",
+          "mode": "CM",
+          "valuePerLevel": 0.08,
+          "costPerLevel": 2200,
+          "reward": null
+        },
+        {
+          "id": 75,
+          "number": 4,
+          "requiresTreeLevel": 22,
+          "requires": [
+            3
+          ],
+          "maxLevel": 5,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.03,
+          "costPerLevel": 540,
+          "reward": null
+        },
+        {
+          "id": 76,
+          "number": 5,
+          "requiresTreeLevel": 22,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 3300,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "requires": [
+        13
+      ],
+      "subNodes": [
+        {
+          "id": 77,
+          "number": 1,
+          "requiresTreeLevel": 23,
+          "requires": [],
+          "maxLevel": 3,
+          "buff": "GOLD",
+          "mode": "STAGE",
+          "valuePerLevel": 0.07,
+          "costPerLevel": 700,
+          "reward": null
+        },
+        {
+          "id": 78,
+          "number": 2,
+          "requiresTreeLevel": 23,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "CUBE",
+          "mode": "STAGE",
+          "valuePerLevel": 0.04,
+          "costPerLevel": 600,
+          "reward": null
+        },
+        {
+          "id": 79,
+          "number": 3,
+          "requiresTreeLevel": 23,
+          "requires": [
+            2
+          ],
+          "maxLevel": 2,
+          "buff": "Dice",
+          "mode": "STAGE",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 300,
+          "reward": null
+        },
+        {
+          "id": 80,
+          "number": 4,
+          "requiresTreeLevel": 24,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Green Feather",
+            "amount": 20
+          }
+        },
+        {
+          "id": 81,
+          "number": 5,
+          "requiresTreeLevel": 24,
+          "requires": [
+            3
+          ],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "ALL",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 2400,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "requires": [
+        9
+      ],
+      "subNodes": [
+        {
+          "id": 82,
+          "number": 1,
+          "requiresTreeLevel": 23,
+          "requires": [],
+          "maxLevel": 1,
+          "buff": "GOLD",
+          "mode": "CM",
+          "valuePerLevel": 0.25,
+          "costPerLevel": 3000,
+          "reward": null
+        },
+        {
+          "id": 83,
+          "number": 2,
+          "requiresTreeLevel": 23,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.06,
+          "costPerLevel": 1200,
+          "reward": null
+        },
+        {
+          "id": 84,
+          "number": 3,
+          "requiresTreeLevel": 25,
+          "requires": [
+            1
+          ],
+          "maxLevel": 2,
+          "buff": "EXP",
+          "mode": "TC",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 1800,
+          "reward": null
+        },
+        {
+          "id": 85,
+          "number": 4,
+          "requiresTreeLevel": 25,
+          "requires": [
+            1,
+            3
+          ],
+          "maxLevel": 3,
+          "buff": "MANA CRYSTAL",
+          "mode": "FoC",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 1200,
+          "reward": null
+        },
+        {
+          "id": 86,
+          "number": 5,
+          "requiresTreeLevel": 25,
+          "requires": [
+            4
+          ],
+          "maxLevel": 1,
+          "buff": "CUBE",
+          "mode": "RIFT",
+          "valuePerLevel": 0.24,
+          "costPerLevel": 3600,
+          "reward": null
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "requires": [
+        15
+      ],
+      "subNodes": [
+        {
+          "id": 87,
+          "number": 1,
+          "requiresTreeLevel": 24,
+          "requires": [],
+          "maxLevel": 3,
+          "buff": "EXP",
+          "mode": "STAGE",
+          "valuePerLevel": 0.1,
+          "costPerLevel": 1200,
+          "reward": null
+        },
+        {
+          "id": 88,
+          "number": 2,
+          "requiresTreeLevel": 24,
+          "requires": [
+            1
+          ],
+          "maxLevel": 3,
+          "buff": "CUBE",
+          "mode": "STAGE",
+          "valuePerLevel": 0.12,
+          "costPerLevel": 700,
+          "reward": null
+        },
+        {
+          "id": 89,
+          "number": 3,
+          "requiresTreeLevel": 24,
+          "requires": [
+            1
+          ],
+          "maxLevel": 1,
+          "buff": "Dragon Power",
+          "mode": "Shelter of Sleeping Flame",
+          "valuePerLevel": 0.36,
+          "costPerLevel": 2700,
+          "reward": null
+        },
+        {
+          "id": 90,
+          "number": 4,
+          "requiresTreeLevel": 25,
+          "requires": [
+            3
+          ],
+          "maxLevel": 1,
+          "buff": null,
+          "mode": null,
+          "valuePerLevel": null,
+          "costPerLevel": 0,
+          "reward": {
+            "type": "Purple Feather",
+            "amount": 20
+          }
+        },
+        {
+          "id": 91,
+          "number": 5,
+          "requiresTreeLevel": 25,
+          "requires": [
+            3
+          ],
+          "maxLevel": 2,
+          "buff": "CUBE",
+          "mode": "ALL",
+          "valuePerLevel": 0.16,
+          "costPerLevel": 2400,
+          "reward": null
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "grade": 0,
+      "needsSubNodeLevels": 0,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "type": 2,
+          "value": 0.1
+        },
+        {
+          "type": 3,
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "grade": 0,
+      "needsSubNodeLevels": 5,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.25
+        },
+        {
+          "type": 3,
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "grade": 0,
+      "needsSubNodeLevels": 13,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1.5
+        },
+        {
+          "type": 2,
+          "value": 0.45
+        },
+        {
+          "type": 3,
+          "value": 0.15
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "grade": 1,
+      "needsSubNodeLevels": 16,
+      "buffs": [
+        {
+          "type": 100,
+          "value": 0.2
+        },
+        {
+          "type": 101,
+          "value": 0.2
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "grade": 1,
+      "needsSubNodeLevels": 16,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.2
+        },
+        {
+          "type": 3,
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "level": 5,
+      "grade": 1,
+      "needsSubNodeLevels": 35,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1.3
+        },
+        {
+          "type": 2,
+          "value": 0.3
+        },
+        {
+          "type": 3,
+          "value": 0.15
+        }
+      ]
+    },
+    {
+      "level": 6,
+      "grade": 1,
+      "needsSubNodeLevels": 50,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1.7
+        },
+        {
+          "type": 2,
+          "value": 0.5
+        },
+        {
+          "type": 3,
+          "value": 0.25
+        }
+      ]
+    },
+    {
+      "level": 7,
+      "grade": 2,
+      "needsSubNodeLevels": 66,
+      "buffs": [
+        {
+          "type": 100,
+          "value": 0.4
+        },
+        {
+          "type": 101,
+          "value": 0.4
+        }
+      ]
+    },
+    {
+      "level": 7,
+      "grade": 2,
+      "needsSubNodeLevels": 66,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "type": 2,
+          "value": 0.1
+        },
+        {
+          "type": 3,
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "level": 8,
+      "grade": 2,
+      "needsSubNodeLevels": 71,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.25
+        },
+        {
+          "type": 3,
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "level": 9,
+      "grade": 2,
+      "needsSubNodeLevels": 74,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1.5
+        },
+        {
+          "type": 2,
+          "value": 0.35
+        },
+        {
+          "type": 3,
+          "value": 0.2
+        }
+      ]
+    },
+    {
+      "level": 10,
+      "grade": 2,
+      "needsSubNodeLevels": 84,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "value": 0.5
+        },
+        {
+          "type": 3,
+          "value": 0.35
+        }
+      ]
+    },
+    {
+      "level": 11,
+      "grade": 3,
+      "needsSubNodeLevels": 91,
+      "buffs": [
+        {
+          "type": 100,
+          "value": 0.6
+        },
+        {
+          "type": 101,
+          "value": 0.6
+        }
+      ]
+    },
+    {
+      "level": 11,
+      "grade": 3,
+      "needsSubNodeLevels": 91,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.3
+        },
+        {
+          "type": 3,
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "level": 12,
+      "grade": 3,
+      "needsSubNodeLevels": 103,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "value": 0.45
+        },
+        {
+          "type": 3,
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "level": 13,
+      "grade": 3,
+      "needsSubNodeLevels": 107,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 3
+        },
+        {
+          "type": 2,
+          "value": 0.65
+        },
+        {
+          "type": 3,
+          "value": 0.5
+        }
+      ]
+    },
+    {
+      "level": 14,
+      "grade": 4,
+      "needsSubNodeLevels": 115,
+      "buffs": [
+        {
+          "type": 100,
+          "value": 0.8
+        },
+        {
+          "type": 101,
+          "value": 0.8
+        }
+      ]
+    },
+    {
+      "level": 14,
+      "grade": 4,
+      "needsSubNodeLevels": 115,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "type": 2,
+          "value": 0.05
+        },
+        {
+          "type": 3,
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "level": 15,
+      "grade": 4,
+      "needsSubNodeLevels": 132,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "type": 2,
+          "value": 0.15
+        },
+        {
+          "type": 3,
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "level": 16,
+      "grade": 4,
+      "needsSubNodeLevels": 145,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.2
+        },
+        {
+          "type": 3,
+          "value": 0.15
+        }
+      ]
+    },
+    {
+      "level": 17,
+      "grade": 4,
+      "needsSubNodeLevels": 154,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.3
+        },
+        {
+          "type": 3,
+          "value": 0.2
+        }
+      ]
+    },
+    {
+      "level": 18,
+      "grade": 4,
+      "needsSubNodeLevels": 165,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1.5
+        },
+        {
+          "type": 2,
+          "value": 0.4
+        },
+        {
+          "type": 3,
+          "value": 0.25
+        }
+      ]
+    },
+    {
+      "level": 19,
+      "grade": 4,
+      "needsSubNodeLevels": 172,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 2.5
+        },
+        {
+          "type": 2,
+          "value": 0.5
+        },
+        {
+          "type": 3,
+          "value": 0.35
+        }
+      ]
+    },
+    {
+      "level": 20,
+      "grade": 5,
+      "needsSubNodeLevels": 177,
+      "buffs": [
+        {
+          "type": 100,
+          "value": 1
+        },
+        {
+          "type": 101,
+          "value": 1
+        }
+      ]
+    },
+    {
+      "level": 20,
+      "grade": 5,
+      "needsSubNodeLevels": 177,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "type": 2,
+          "value": 0.05
+        },
+        {
+          "type": 3,
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "level": 21,
+      "grade": 5,
+      "needsSubNodeLevels": 185,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "type": 2,
+          "value": 0.15
+        },
+        {
+          "type": 3,
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "level": 22,
+      "grade": 5,
+      "needsSubNodeLevels": 192,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.25
+        },
+        {
+          "type": 3,
+          "value": 0.15
+        }
+      ]
+    },
+    {
+      "level": 23,
+      "grade": 5,
+      "needsSubNodeLevels": 200,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "value": 0.35
+        },
+        {
+          "type": 3,
+          "value": 0.2
+        }
+      ]
+    },
+    {
+      "level": 24,
+      "grade": 5,
+      "needsSubNodeLevels": 211,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "value": 0.45
+        },
+        {
+          "type": 3,
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "level": 25,
+      "grade": 5,
+      "needsSubNodeLevels": 221,
+      "buffs": [
+        {
+          "type": 1,
+          "value": 3
+        },
+        {
+          "type": 2,
+          "value": 0.55
+        },
+        {
+          "type": 3,
+          "value": 0.4
+        }
+      ]
+    }
+  ],
+  "icons": {
+    "cube": {
+      "icon": "/art/memory-tree/cube.png",
+      "iconSize": 64
+    },
+    "dice": {
+      "icon": "/art/memory-tree/dice.png",
+      "iconSize": 64
+    },
+    "dragon-power": {
+      "icon": "/art/memory-tree/dragon-power.png",
+      "iconSize": 64
+    },
+    "exp": {
+      "icon": "/art/memory-tree/exp.png",
+      "iconSize": 64
+    },
+    "gold": {
+      "icon": "/art/memory-tree/gold.png",
+      "iconSize": 128
+    },
+    "mana-crystal": {
+      "icon": "/art/memory-tree/mana-crystal.png",
+      "iconSize": 64
+    },
+    "black-feather": {
+      "icon": "/art/memory-tree/black-feather.png",
+      "iconSize": 56
+    },
+    "green-feather": {
+      "icon": "/art/memory-tree/green-feather.png",
+      "iconSize": 56
+    },
+    "purple-feather": {
+      "icon": "/art/memory-tree/purple-feather.png",
+      "iconSize": 56
+    },
+    "white-feather": {
+      "icon": "/art/memory-tree/white-feather.png",
+      "iconSize": 56
+    }
+  }
+}

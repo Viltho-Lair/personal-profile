@@ -147,6 +147,10 @@ function character(value: unknown): CharacterState {
     classes: entries(value.classes, ownedLevelEntry),
     equippedClass: name(value.equippedClass),
     classAwakening: wholeLevel(value.classAwakening) ?? 0,
+    memoryTree: wholeRecord(value.memoryTree),
+    constellation: Object.fromEntries(
+      Object.entries(wholeRecord(value.constellation)).filter(([, star]) => star === 1 || star === 2),
+    ),
   };
 }
 
