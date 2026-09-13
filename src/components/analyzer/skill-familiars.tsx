@@ -137,8 +137,8 @@ export function SkillFamiliars() {
   const altar = manaAltar(stars, MANA_ALTAR);
 
   return (
-    <div className="relative grid h-full min-h-0 grid-cols-2">
-      <div className="flex min-h-0 flex-col gap-4 overflow-auto border-r border-ink/15 p-3 sm:p-4">
+    <div className="relative flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
+      <div className="flex min-h-0 flex-col gap-4 overflow-auto border-b border-ink/15 p-3 sm:p-4 md:border-r md:border-b-0">
         {FAMILIAR_GROUPS.map((group) => (
           <section key={group} className="flex flex-col gap-2">
             <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">{GROUP_LABEL[group]}</h3>

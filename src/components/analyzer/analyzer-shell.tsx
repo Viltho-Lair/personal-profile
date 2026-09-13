@@ -54,21 +54,21 @@ export function AnalyzerShell() {
           fill the left two columns, the ad sits top right, reset below it. */}
       <section
         aria-label="Overview"
-        className="grid h-1/2 shrink-0 grid-cols-3 grid-rows-2 border-b border-ink/15"
+        className="flex shrink-0 flex-col border-b border-ink/15 md:grid md:h-1/2 md:grid-cols-3 md:grid-rows-2"
       >
-        <div className="col-span-2 row-span-2 grid min-h-0 grid-cols-2 border-r border-ink/15">
-          <div className="flex min-h-0 flex-col border-r border-ink/15">
+        <div className="flex flex-col md:col-span-2 md:row-span-2 md:grid md:min-h-0 md:grid-cols-2 md:border-r md:border-ink/15">
+          <div className="flex h-72 min-h-0 flex-col border-b border-ink/15 md:h-auto md:border-r md:border-b-0">
             <ProgressChart />
           </div>
           <StatsSummary />
         </div>
         <aside
           aria-label="Advertisement"
-          className="col-start-3 row-start-1 flex min-h-0 items-center justify-center overflow-hidden border-b border-ink/15 p-2"
+          className="flex min-h-24 items-center justify-center overflow-hidden border-y border-ink/15 p-2 md:col-start-3 md:row-start-1 md:min-h-0 md:border-t-0"
         >
           <AdSlot slot={ANALYZER_AD_SLOT} />
         </aside>
-        <div className="col-start-3 row-start-2 flex items-end justify-end p-3">
+        <div className="flex items-end justify-end p-3 md:col-start-3 md:row-start-2">
           <ResetProfileButton onReset={resetProfile} />
         </div>
       </section>

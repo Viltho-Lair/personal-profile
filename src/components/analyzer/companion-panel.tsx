@@ -40,6 +40,8 @@ type Companion = {
 
 type Promotion = {
   options: string[];
+  /** Options shown as plain numbers (Accuracy, Dodge, CC Resist) rather than percents. */
+  flatOptions: string[];
   tiers: { colour: string; values: Record<string, number> }[];
   rankMultipliers: Record<string, number>;
   slotsByAdvancement: (string | null)[][];
@@ -48,6 +50,7 @@ type Promotion = {
 const COMPANIONS = companionsData.companions as unknown as Companion[];
 const PROMOTION = companionsData.promotion as unknown as Promotion;
 const MAX_ADVANCEMENT = PROMOTION.slotsByAdvancement.length - 1;
+const optionDisplay = (option: string | null) => (option && PROMOTION.flatOptions.includes(option) ? "flat" : "percent");
 
 const GROUP_LABEL = ["", "Passive I", "Passive II", "Passive III"];
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -148,7 +151,8 @@ function CompanionColumn({
   );
 
   return (
-    <section className="flex min-w-0 flex-col gap-2">
+    // On a phone only the selected companion's column shows; the picker above switches it.
+    <section className={`min-w-0 flex-col gap-2 ${selected ? "flex" : "hidden md:flex"}`}>
       <button
         type="button"
         onClick={onSelect}
@@ -291,12 +295,12 @@ function PromotionTab({ companion }: { companion: Companion }) {
               {PROMOTION.tiers.map((tier, index) => (
                 <option key={tier.colour} value={index}>
                   {tier.colour}
-                  {roll.option ? ` ${formatEffect("percent", tier.values[roll.option] ?? 0)}` : ""}
+                  {roll.option ? ` ${formatEffect(optionDisplay(roll.option), tier.values[roll.option] ?? 0)}` : ""}
                 </option>
               ))}
             </select>
             <span className="ml-auto font-mono text-[11px] text-ink tabular-nums">
-              {buff ? formatEffect("percent", buff) : "—"}
+              {buff ? formatEffect(optionDisplay(roll.option), buff) : "—"}
             </span>
           </li>
         ))}
@@ -306,7 +310,7 @@ function PromotionTab({ companion }: { companion: Companion }) {
           {[...totals].map(([option, value]) => (
             <div key={option} className="contents">
               <dt className="text-dim">{option}</dt>
-              <dd className="text-right text-ink tabular-nums">{formatEffect("percent", value)}</dd>
+              <dd className="text-right text-ink tabular-nums">{formatEffect(optionDisplay(option), value)}</dd>
             </div>
           ))}
         </dl>
@@ -340,7 +344,26 @@ function CompanionSection() {
         <p className="mb-2 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
           All companions to max: <span className="text-ink">{cost(everything)}</span>
         </p>
-        <div className="grid min-w-[52rem] grid-cols-4 gap-2">
+        <div role="radiogroup" aria-label="Companion" className="mb-2 grid grid-cols-4 gap-1 md:hidden">
+          {COMPANIONS.map((companion) => (
+            <button
+              key={companion.id}
+              type="button"
+              role="radio"
+              aria-checked={companion.name === selected.name}
+              onClick={() => setSelectedName(companion.name)}
+              className={`flex flex-col items-center gap-0.5 rounded-md border p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                companion.name === selected.name ? "border-ink bg-ink/[0.08]" : "border-ink/20"
+              }`}
+            >
+              <span className="flex size-9 items-center justify-center overflow-hidden [&_img]:size-9">
+                <Portrait companion={companion} advancement={advancementOf(profile, companion)} />
+              </span>
+              <span className={`text-[10px] ${(companion.element && ELEMENT_TEXT[companion.element]) || "text-dim"}`}>{companion.name}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2 md:grid md:min-w-[52rem] md:grid-cols-4">
           {COMPANIONS.map((companion) => (
             <CompanionColumn
               key={companion.id}
@@ -352,7 +375,7 @@ function CompanionSection() {
         </div>
       </div>
 
-      <aside className="flex max-h-[45%] min-h-0 shrink-0 flex-col border-t border-ink/15 lg:max-h-none lg:w-[22rem] lg:border-t-0 lg:border-l">
+      <aside className="flex min-h-0 shrink-0 flex-col border-t border-ink/15 md:max-h-[45%] lg:max-h-none lg:w-[22rem] lg:border-t-0 lg:border-l">
         <div className="flex shrink-0 items-center gap-2 border-b border-ink/10 px-3 py-2">
           <span className="text-sm font-medium">{selected.name}</span>
           <div className="ml-auto flex gap-1">

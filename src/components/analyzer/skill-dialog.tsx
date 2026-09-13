@@ -56,7 +56,7 @@ export function SkillDialog({
     <div
       role="dialog"
       aria-labelledby={titleId}
-      className={`z-20 flex flex-col gap-4 overflow-auto border-ink/15 bg-ground p-4 shadow-2xl sm:border-l ${className}`}
+      className={`z-20 flex flex-col gap-4 overflow-auto border-ink/15 bg-ground p-4 shadow-2xl md:border-l ${className}`}
     >
       <header className="flex items-start gap-3">
         {skill.icon && skill.iconSize ? (

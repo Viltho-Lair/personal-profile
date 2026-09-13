@@ -51,8 +51,8 @@ function SkillWorkspace({ skills }: { skills: Skill[] }) {
   const preset = profile.activeSkillPreset;
 
   return (
-    <div className="relative grid h-full min-h-0 grid-cols-2">
-      <div className="flex min-h-0 flex-col border-r border-ink/15">
+    <div className="relative flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
+      <div className="flex min-h-0 flex-col border-b border-ink/15 md:border-r md:border-b-0">
         <SkillTiles
           skills={skills}
           profile={profile}
@@ -85,8 +85,8 @@ function SkillWorkspace({ skills }: { skills: Skill[] }) {
           profile={profile}
           onLevelChange={(level) => setSkillLevel(open.name, level, open.maxLevel)}
           onClose={() => setOpenName(null)}
-          // Over the settings half; on a phone the halves are too narrow, so it covers both.
-          className="absolute inset-0 sm:left-1/2"
+          // Over the settings half; on a phone it's a full-screen sheet above the bottom bar.
+          className="fixed inset-x-0 top-0 bottom-12 md:absolute md:inset-0 md:left-1/2"
         />
       ) : null}
     </div>

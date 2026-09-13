@@ -40,13 +40,14 @@ export function StatsSummary() {
     ["Mana Recovery", formatValue(stats.manaRecovery)],
     ["Accuracy", formatValue(stats.accuracy)],
     ["Dodge", formatValue(stats.dodge)],
+    ["CC Resist", formatValue(stats.ccResist)],
     ["Extra Gold", pct(stats.extraGold)],
     ["Extra EXP", pct(stats.extraExp)],
     ...ELEMENTS.map((element): [string, string] => [`Extra ${element} Damage`, pct(stats.extraDamage[element])]),
   ];
 
   return (
-    <section aria-label="Stats Summary" className="flex min-h-0 flex-col gap-2 overflow-auto p-3">
+    <section aria-label="Stats Summary" className="flex min-h-0 flex-col gap-2 p-3 md:overflow-auto">
       <h2 className="text-sm font-semibold">Stats Summary</h2>
       <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 text-[11px] leading-snug">
         {rows.map(([label, value]) => (

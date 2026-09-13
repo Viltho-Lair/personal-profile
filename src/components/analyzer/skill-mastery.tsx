@@ -266,8 +266,8 @@ export function SkillMastery() {
   const filled = page.nodes.filter((node) => masteryLevel(profile, node.id, node.maxLevel) >= node.maxLevel).length;
 
   return (
-    <div className="relative grid h-full min-h-0 grid-cols-2">
-      <div className="flex min-h-0 flex-col border-r border-ink/15">
+    <div className="relative flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
+      <div className="flex min-h-0 flex-col border-b border-ink/15 md:border-r md:border-b-0">
         <div className="flex shrink-0 flex-wrap gap-1 border-b border-ink/10 px-3 py-2 sm:px-4">
           {MASTERY_PAGES.map((p, i) => {
             const pageLocked = i >= open;

@@ -28,10 +28,13 @@ export type StatSources = {
   knowledge: number;
   soulWeapon: { atk: number; completionAtk: number; completionHp: number };
   relics: { atk: number; critDamage: number; hp: number; hpRecovery: number; gold: number; accuracy: number; dodge: number; element: ByElement };
-  companionPromotion: { atk: number; hp: number; exp: number; gold: number };
+  companionPromotion: {
+    atk: number; critDamage: number; hp: number; hpRecovery: number; mana: number; manaRecovery: number;
+    gold: number; accuracy: number; dodge: number; exp: number; ccResist: number;
+  };
   slayerPromotion: {
     atk: number; hp: number; hpRecovery: number; critDamage: number; mana: number; manaRecovery: number;
-    gold: number; exp: number; accuracy: number; dodge: number;
+    gold: number; exp: number; accuracy: number; dodge: number; ccResist: number;
   };
   mastery: { atk: number; hp: number; hpRegen: number; gold: number; exp: number; hpAmp: number; hpRegenAmp: number };
   companions: {
@@ -58,6 +61,7 @@ export type Stats = {
   manaRecovery: number;
   accuracy: number;
   dodge: number;
+  ccResist: number;
   extraGold: number;
   extraExp: number;
   extraDamage: ByElement;
@@ -111,13 +115,13 @@ export function computeStats(s: StatSources): Stats {
     (1 + s.spirits.hp) *
     (s.enhance.hpRecovery + s.growth.hpRecovery + s.knowledge) *
     (1 + s.soulWeapon.completionHp) *
-    (1 + s.relics.hpRecovery + s.slayerPromotion.hpRecovery + s.mastery.hpRegen + s.memoryTree.vit + s.constellation.hpRecovery) *
+    (1 + s.relics.hpRecovery + s.companionPromotion.hpRecovery + s.slayerPromotion.hpRecovery + s.mastery.hpRegen + s.memoryTree.vit + s.constellation.hpRecovery) *
     (1 + s.mastery.hpRegenAmp) *
     breakthrough *
     familiarHp;
 
   const critDamage = round(
-    (1 + s.enhance.critDamage + down(s.growth.crit, 2) + s.companions.lunatic + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
+    (1 + s.enhance.critDamage + down(s.growth.crit, 2) + s.companions.lunatic + s.companionPromotion.critDamage + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
     3,
   );
 
@@ -155,10 +159,11 @@ export function computeStats(s: StatSources): Stats {
     hpRecovery,
     critChance: s.enhance.critChance,
     critDamage,
-    mana: 100 * (1 + s.companions.manaAmplification + s.slayerPromotion.mana),
-    manaRecovery: 10 * (1 + s.companions.manaDope + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
-    accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.slayerPromotion.accuracy,
-    dodge: 10 + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.slayerPromotion.dodge,
+    mana: 100 * (1 + s.companions.manaAmplification + s.companionPromotion.mana + s.slayerPromotion.mana),
+    manaRecovery: 10 * (1 + s.companions.manaDope + s.companionPromotion.manaRecovery + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
+    accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
+    dodge: 10 + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.companionPromotion.dodge + s.slayerPromotion.dodge,
+    ccResist: s.companionPromotion.ccResist + s.slayerPromotion.ccResist,
     extraGold: gold,
     extraExp: exp,
     extraDamage,
@@ -179,8 +184,8 @@ export function emptySources(): StatSources {
     knowledge: 0,
     soulWeapon: { atk: 0, completionAtk: 0, completionHp: 0 },
     relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, element: noElements() },
-    companionPromotion: { atk: 0, hp: 0, exp: 0, gold: 0 },
-    slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0 },
+    companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },
+    slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0, ccResist: 0 },
     mastery: { atk: 0, hp: 0, hpRegen: 0, gold: 0, exp: 0, hpAmp: 0, hpRegenAmp: 0 },
     companions: {
       blessingOfForest: 0, bladeDance: 0, fortitude: 0, lunatic: 0, intensiveFire: 0, shadowDance: 0,

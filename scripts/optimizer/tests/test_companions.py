@@ -92,9 +92,14 @@ class ExtractCompanions(unittest.TestCase):
         self.assertEqual(sorted(self.art), ["ellie-000", "ellie-001"])
 
     def test_promotion_tiers_and_slot_ranks(self):
-        self.assertEqual(self.promotion["options"], ["Extra ATK", "Extra EXP", "Monster Gold", "Extra HP"])
-        self.assertEqual(self.promotion["tiers"][1], {"colour": "Green", "values": {
-            "Extra ATK": 0.04, "Extra EXP": 0.02, "Monster Gold": 0.04, "Extra HP": 0.07}})
+        self.assertEqual(self.promotion["options"][:3], ["Extra ATK", "CRIT Dmg", "Extra HP"])
+        self.assertEqual(len(self.promotion["options"]), 11)
+        green = self.promotion["tiers"][1]
+        self.assertEqual(green["colour"], "Green")
+        self.assertEqual({k: green["values"][k] for k in ["Extra ATK", "Extra EXP", "Monster Gold", "Extra HP"]},
+                         {"Extra ATK": 0.04, "Extra EXP": 0.02, "Monster Gold": 0.04, "Extra HP": 0.07})
+        self.assertEqual(green["values"]["Accuracy"], 4)
+        self.assertEqual(self.promotion["flatOptions"], ["Accuracy", "Dodge", "CC Resist"])
         self.assertEqual(self.promotion["slotsByAdvancement"][1][:3], ["2nd", "1st", None])
         self.assertEqual(self.promotion["rankMultipliers"]["7th"], 4)
 

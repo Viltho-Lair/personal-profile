@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function AnalyzerLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-svh flex-col overflow-hidden bg-ground text-ink">
+    <div className="flex min-h-svh flex-col md:h-svh md:overflow-hidden bg-ground text-ink">
       {children}
     </div>
   );

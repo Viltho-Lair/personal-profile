@@ -133,6 +133,46 @@ def _cost_tables(data_sheet, names):
     return tables
 
 
+# The game's Companion Promotion Options screen lists 11 options; the workbook's
+# PROMOTION OPTIONS TABLE has 4 of them. Values per colour tier (White ... Aqua),
+# in whole percents except the flat options.
+GAME_PROMOTION_OPTIONS = {
+    "Extra ATK": [3, 4, 6, 9, 14, 20],
+    "CRIT Dmg": [5, 7, 10, 15, 24, 35],
+    "Extra HP": [5, 7, 10, 15, 24, 35],
+    "Extra HP Recovery": [5, 7, 10, 15, 24, 35],
+    "Extra Mana": [3, 4, 5, 8, 10, 15],
+    "Extra Mana Recovery": [3, 4, 5, 8, 10, 15],
+    "Monster Gold": [3, 4, 6, 9, 14, 20],
+    "Accuracy": [3, 4, 5, 8, 10, 15],
+    "Dodge": [3, 4, 5, 8, 10, 15],
+    "Extra EXP": [1, 2, 3, 4, 5, 8],
+    "CC Resist": [3, 4, 6, 9, 14, 20],
+}
+FLAT_PROMOTION_OPTIONS = ["Accuracy", "Dodge", "CC Resist"]
+
+
+def _with_game_options(options, tiers):
+    """All 11 options in the game's order; the workbook's own values must agree."""
+    for option in options:
+        game = GAME_PROMOTION_OPTIONS.get(option)
+        if game is None:
+            raise ValueError(f"promotion option {option!r} is not on the game's options screen")
+        for tier, value in zip(tiers, game):
+            if tier["values"][option] is not None and round(tier["values"][option] * 100, 6) != value:
+                raise ValueError(f"promotion option {option!r} {tier['colour']}: workbook {tier['values'][option]} vs game {value}%")
+    merged = []
+    for i, tier in enumerate(tiers):
+        merged.append({
+            "colour": tier["colour"],
+            "values": {
+                option: (values[i] if option in FLAT_PROMOTION_OPTIONS else values[i] / 100)
+                for option, values in GAME_PROMOTION_OPTIONS.items()
+            },
+        })
+    return list(GAME_PROMOTION_OPTIONS), merged
+
+
 def _promotion(data_sheet):
     title_row, title_col = find_cell(data_sheet, "PROMOTION OPTIONS TABLE", max_row=1)
     header_row = title_row + 1
@@ -156,8 +196,10 @@ def _promotion(data_sheet):
         ranks = [text(data_sheet.cell(row, rank_col + 1 + i).value) for i in range(7)]
         slots.append([rank if rank in RANKS else None for rank in ranks])
         row += 1
+    options, tiers = _with_game_options(options, tiers)
     return {
         "options": options,
+        "flatOptions": FLAT_PROMOTION_OPTIONS,
         "tiers": tiers,
         "rankMultipliers": RANK_MULTIPLIERS,
         # index 0 is advancement 000; each entry is the 7 slots' ranks (null = locked)

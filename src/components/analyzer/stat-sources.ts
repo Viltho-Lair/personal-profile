@@ -66,6 +66,20 @@ type PromotionData = {
   slotsByAdvancement: (string | null)[][];
 };
 const COMPANIONS = companionsData.companions as unknown as Companion[];
+/** Companion promotion options, by the summary source they add to. */
+const COMPANION_PROMOTION_TARGET: Record<string, keyof StatSources["companionPromotion"]> = {
+  "Extra ATK": "atk",
+  "CRIT Dmg": "critDamage",
+  "Extra HP": "hp",
+  "Extra HP Recovery": "hpRecovery",
+  "Extra Mana": "mana",
+  "Extra Mana Recovery": "manaRecovery",
+  "Monster Gold": "gold",
+  Accuracy: "accuracy",
+  Dodge: "dodge",
+  "Extra EXP": "exp",
+  "CC Resist": "ccResist",
+};
 const COMPANION_PROMOTION = companionsData.promotion as unknown as PromotionData;
 
 const rawBase = (key: string, perLevel: number) => (key === "LUK" ? perLevel * 100 : perLevel);
@@ -235,10 +249,8 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     state.promotion.forEach((roll, slot) => {
       const value = roll.option !== null && roll.tier !== null ? (COMPANION_PROMOTION.tiers[roll.tier]?.values[roll.option] ?? null) : null;
       const buff = promotionBuff(value, ranks[slot] ?? null, COMPANION_PROMOTION.rankMultipliers);
-      if (roll.option === "Extra ATK") s.companionPromotion.atk += buff;
-      if (roll.option === "Extra HP") s.companionPromotion.hp += buff;
-      if (roll.option === "Extra EXP") s.companionPromotion.exp += buff;
-      if (roll.option === "Monster Gold") s.companionPromotion.gold += buff;
+      const target = roll.option ? COMPANION_PROMOTION_TARGET[roll.option] : undefined;
+      if (target) s.companionPromotion[target] += buff;
     });
   }
 
@@ -263,11 +275,12 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     "Extra EXP(%)": "exp",
     Accuracy: "accuracy",
     Dodge: "dodge",
+    "CC Resist": "ccResist",
   };
   ability.rows.forEach((row, index) => {
     const target = row.option ? ROW_TARGET[row.option] : undefined;
     if (!target || row.value === null || c.promotion <= index) return;
-    const flat = target === "accuracy" || target === "dodge";
+    const flat = target === "accuracy" || target === "dodge" || target === "ccResist";
     s.slayerPromotion[target] += (row.value * row.multiplier) / (flat ? 1 : 100);
   });
 

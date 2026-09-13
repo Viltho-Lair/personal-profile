@@ -89,9 +89,9 @@ function Tabs<T extends string>({
 
 function Split({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
-    <div className="grid h-full min-h-0 grid-cols-2">
-      <div className="min-h-0 overflow-auto border-r border-ink/15 p-3 sm:p-4">{left}</div>
-      <div className="flex min-h-0 flex-col overflow-hidden">{right}</div>
+    <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
+      <div className="min-h-0 overflow-auto border-b border-ink/15 p-3 sm:p-4 md:border-r md:border-b-0">{left}</div>
+      <div className="flex min-h-0 flex-col md:overflow-hidden">{right}</div>
     </div>
   );
 }
