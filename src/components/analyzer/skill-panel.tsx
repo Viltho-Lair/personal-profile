@@ -19,8 +19,7 @@ import { SkillTiles } from "./skill-tiles";
 
 type Section = "core" | "familiars" | "proficiency" | "mastery" | "immortals" | "seasonal";
 
-const SECTIONS: { id: Section; label: string }[] = [
-  { id: "core", label: "Skills" },
+const SECTIONS: { id: Exclude<Section, "core">; label: string }[] = [
   { id: "familiars", label: "Familiars" },
   { id: "proficiency", label: "Skill Proficiency" },
   { id: "mastery", label: "Skill Mastery" },
@@ -136,6 +135,25 @@ export function SkillPanel() {
     <div className="flex h-full min-h-0 flex-col">
       <nav aria-label="Skill sections" className="shrink-0 overflow-x-auto border-b border-ink/15 [scrollbar-width:none]">
         <div className="flex w-max gap-1.5 px-3 py-2 sm:px-4">
+          <button
+            type="button"
+            aria-pressed={section === "core"}
+            aria-label="Core skills"
+            title="Core skills"
+            onClick={() => setSection("core")}
+            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
+              section === "core"
+                ? "border-ink bg-ink text-ground"
+                : "border-ink/40 text-ink hover:border-ink"
+            }`}
+          >
+            <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 11.5 12 4l9 7.5" />
+              <path d="M5.5 10v10h13V10" />
+              <path d="M10 20v-5h4v5" />
+            </svg>
+            Core
+          </button>
           {SECTIONS.map(({ id, label }) => (
             <button
               key={id}

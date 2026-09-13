@@ -5,6 +5,7 @@ import {
   awakenedClassName,
   classMaxLevel,
   enhanceMax,
+  enhanceStat,
   latentMultiplier,
   latentPerLevel,
   type EnhanceStat,
@@ -22,6 +23,20 @@ describe("enhanceMax", () => {
     expect(enhanceMax(stat("DEATH STRIKE"), 999, grades[5], grades[5])).toBe(1);
     expect(enhanceMax(stat("DEATH STRIKE"), 1000, grades[1], grades[2])).toBe(4050 + 90);
     expect(enhanceMax(stat("DEATH STRIKE %"), 1000, grades[0], grades[0])).toBe(1000);
+  });
+});
+
+describe("enhanceStat", () => {
+  it("multiplies the level by its tier (and HP by 10)", () => {
+    expect(enhanceStat(stat("ATK").formula, 99)).toEqual({ value: 99, perLevel: 1 });
+    expect(enhanceStat(stat("ATK").formula, 100)).toEqual({ value: 200, perLevel: 2 });
+    expect(enhanceStat(stat("ATK").formula, 1_000_000)).toEqual({ value: 6_000_000, perLevel: 6 });
+    expect(enhanceStat(stat("HP").formula, 1000)).toEqual({ value: 30_000, perLevel: 30 });
+  });
+
+  it("gives crit stats a fraction per level", () => {
+    expect(enhanceStat(stat("CRIT %").formula, 1000).value).toBeCloseTo(1);
+    expect(enhanceStat(stat("CRIT DMG").formula, 250).value).toBeCloseTo(2.5);
   });
 });
 

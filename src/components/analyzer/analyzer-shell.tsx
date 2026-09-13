@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
 import { unknownEntries } from "@/lib/profile/rules";
 import { useProfile } from "@/lib/profile/use-profile";
+import Image from "next/image";
+import navigationData from "@/data/optimizer/navigation.json";
 import { AdSlot } from "./ad-slot";
 import { CharacterPanel } from "./character-panel";
 import { CompanionPanel } from "./companion-panel";
@@ -14,6 +16,8 @@ import { EquipmentPanel } from "./equipment-panel";
 import { ResetProfileButton } from "./profile-controls";
 import { SkillPanel } from "./skill-panel";
 import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
+
+const TAB_ICONS: Record<string, { icon: string; iconSize: number } | undefined> = navigationData.icons;
 
 export function AnalyzerShell() {
   const router = useRouter();
@@ -105,9 +109,21 @@ export function AnalyzerShell() {
               key={tab.id}
               value={tab.id}
               aria-label={tab.name}
+              title={tab.name}
               className="h-12 w-12 flex-none rounded-lg border border-ink/25 bg-ground! px-1 text-[10px] leading-tight font-medium whitespace-normal [overflow-wrap:anywhere] text-dim data-active:border-ink! data-active:bg-ink! data-active:text-ground! sm:h-14 sm:w-14 sm:text-[11px]"
             >
-              {tab.label}
+              {TAB_ICONS[tab.id] ? (
+                <Image
+                  src={TAB_ICONS[tab.id]!.icon}
+                  alt=""
+                  width={TAB_ICONS[tab.id]!.iconSize}
+                  height={TAB_ICONS[tab.id]!.iconSize}
+                  draggable={false}
+                  className="size-9 object-contain sm:size-11"
+                />
+              ) : (
+                tab.label
+              )}
             </TabsTrigger>
           ))}
         </TabsList>

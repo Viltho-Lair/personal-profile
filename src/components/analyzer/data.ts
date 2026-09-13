@@ -146,6 +146,8 @@ export type AwakeningRow = {
   accessoryMaxMana: number;
   accessoryExp: number;
   accessoryMultiplier: number;
+  /** Blast class equip multiplier; only awakenings 0-18 have one. */
+  blastMultiplier: number | null;
 };
 
 /** Index is the number of awakenings (0-30). */
@@ -196,14 +198,10 @@ export const KNOWN_NAMES: KnownNames = {
   familiars: FAMILIARS.map((familiar) => familiar.name),
 };
 
-/** Values run into the trillions, so long digit strings get compacted. */
-const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 });
-
+/** Full numbers with thousands separators; no compact notation for now. */
 export function formatValue(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
-  return Math.abs(value) >= 100_000
-    ? compact.format(value)
-    : value.toLocaleString("en", { maximumFractionDigits: 2 });
+  return value.toLocaleString("en", { maximumFractionDigits: 2 });
 }
 
 export function formatPercent(value: number | null): string {

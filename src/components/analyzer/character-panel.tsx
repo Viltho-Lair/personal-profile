@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, type ReactNode } from "react";
 import characterData from "@/data/optimizer/character.json";
 import {
@@ -7,20 +8,23 @@ import {
   awakenedClassName,
   classMaxLevel,
   enhanceMax,
+  enhanceStat,
   latentMultiplier,
   latentPerLevel,
   type EnhanceStat,
   type KnowledgeGrade,
   type LatentMultiplier,
 } from "@/lib/game/character";
-import { gearEffects } from "@/lib/game/formulas";
+import { awakeningStage, gearEffects } from "@/lib/game/formulas";
 import { clampLevel } from "@/lib/profile/rules";
 import { ABILITY_SLOTS, LATENT_SLOTS, LATENT_STATS, type CharacterState } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
-import { formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./data";
+import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./data";
 import { InlineLevel } from "./level-input";
 
-type Promotion = {
+type Icon = { icon?: string | null; iconSize?: number | null };
+
+type Promotion = Icon & {
   number: number;
   name: string;
   atkHpBonus: number | null;
@@ -30,13 +34,14 @@ type Promotion = {
   extraHp: number | null;
 };
 
-const ENHANCE = characterData.enhance as EnhanceStat[];
+const ENHANCE = characterData.enhance as (EnhanceStat & Icon)[];
 const KNOWLEDGE = characterData.growingKnowledge as KnowledgeGrade[];
-const GROWTH = characterData.growth as { key: string; detail: string | null; perLevel: number }[];
+const GROWTH = characterData.growth as ({ key: string; detail: string | null; perLevel: number } & Icon)[];
 const LATENT = characterData.latentAwakening as { stats: LatentMultiplier[]; crit: LatentMultiplier[] };
 const PROMOTIONS = characterData.promotions as Promotion[];
 const ABILITY_OPTIONS = characterData.abilityOptions as { name: string; values: number[] }[];
-const CLASSES = characterData.classes as { name: string; multiplier: number }[];
+const CLASSES = characterData.classes as ({ name: string; multiplier: number } & Icon)[];
+const CLASS_ICON = new Map(CLASSES.map((cls) => [cls.name, cls]));
 
 const MAX_LATENT_GRADE = Math.max(...LATENT.stats.map((row) => row.grade)) - 1;
 const MAX_CLASS_AWAKENING = 18;
@@ -95,6 +100,21 @@ function Missing({ what }: { what: string }) {
   );
 }
 
+function Art({ item, className = "size-8" }: { item: Icon | undefined; className?: string }) {
+  return item?.icon && item.iconSize ? (
+    <Image
+      src={item.icon}
+      alt=""
+      width={item.iconSize}
+      height={item.iconSize}
+      draggable={false}
+      className={`shrink-0 object-contain ${className}`}
+    />
+  ) : (
+    <span className={`shrink-0 ${className}`} />
+  );
+}
+
 function useCharacter() {
   const { profile, updateCharacter } = useProfile();
   return { character: profile.character, set: updateCharacter };
@@ -116,8 +136,18 @@ function EnhanceSection() {
         const locked = stat.requiresCrit !== undefined && critLevel < stat.requiresCrit;
         return (
           <li key={stat.name} className={`flex items-center justify-between gap-3 rounded-md border border-ink/10 p-2 ${locked ? "opacity-60" : ""}`}>
-            <div className="min-w-0">
-              <p className="text-sm leading-tight font-medium">{stat.name}</p>
+            <Art item={stat} className="size-9" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm leading-tight font-medium">
+                {stat.name}{" "}
+                <span className="text-xs font-normal text-ink tabular-nums">
+                  {(() => {
+                    const { value, perLevel } = enhanceStat(stat.formula, level);
+                    const show = stat.formula.kind === "percent" ? pct : (n: number) => formatValue(n);
+                    return `+${show(value)} (+${show(perLevel)} per level)`;
+                  })()}
+                </span>
+              </p>
               <p className={LABEL}>
                 {locked ? `Opens at CRIT % ${stat.requiresCrit}` : `Max ${formatValue(max)}`}
               </p>
@@ -301,7 +331,8 @@ function GrowthSection() {
         const latent = totals[stat.key];
         return (
           <li key={stat.key} className="flex items-center justify-between gap-3 rounded-md border border-ink/10 p-2">
-            <div className="min-w-0">
+            <Art item={stat} className="size-9" />
+            <div className="min-w-0 flex-1">
               <p className="text-sm leading-tight font-medium">
                 {stat.key} <span className="text-xs font-normal text-dim">{stat.detail}</span>
               </p>
@@ -349,32 +380,22 @@ function GrowthSection() {
 function ClassesTab() {
   const { character, set } = useCharacter();
   const max = classMaxLevel(character.classAwakening);
+  const blastMultiplier = AWAKENING[character.classAwakening]?.blastMultiplier ?? 1;
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="flex items-center gap-2">
-        <span className={LABEL}>Awakened Blast</span>
-        <select
-          value={character.classAwakening}
-          onChange={(event) => set((c) => ({ ...c, classAwakening: Number(event.target.value) }))}
-          className={SELECT}
-        >
-          {Array.from({ length: MAX_CLASS_AWAKENING + 1 }, (_, n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
-        <span className={LABEL}>Max level {max}</span>
-      </label>
+      <p className={LABEL}>
+        All classes: max level {max} (200 + 50 per Blast awakening)
+      </p>
       <ul className="flex flex-col gap-1">
         {CLASSES.map((cls, index) => {
           const isLast = index === CLASSES.length - 1;
           if (index >= CLASSES.length - 4 && !isLast) return null; // Blast, Tera, Seed and Nova are one class that awakens
           const displayName = isLast ? awakenedClassName(character.classAwakening) : cls.name;
+          const art = isLast ? CLASS_ICON.get(displayName) : cls;
           const state = character.classes[cls.name] ?? { owned: false, level: 0 };
           const level = clampLevel(state.level, max);
-          const effects = gearEffects(cls.multiplier, GEAR_LEVEL_FACTORS, level);
+          const effects = gearEffects(cls.multiplier, GEAR_LEVEL_FACTORS, level, isLast ? blastMultiplier : 1);
           const equipped = character.equippedClass === cls.name;
           const setState = (next: { owned?: boolean; level?: number }) =>
             set((c) => ({
@@ -383,7 +404,8 @@ function ClassesTab() {
             }));
           return (
             <li key={cls.name} className={`flex flex-wrap items-center gap-2 rounded-md border p-1.5 ${equipped ? "border-ink" : "border-ink/10"} ${state.owned ? "" : "opacity-60"}`}>
-              <span className="w-28 truncate text-xs font-medium">{displayName}</span>
+              <Art item={art} className="size-8" />
+              <span className="w-24 truncate text-xs font-medium">{displayName}</span>
               <label className="flex items-center gap-1 font-mono text-[10px] text-dim uppercase">
                 <input
                   type="checkbox"
@@ -407,6 +429,32 @@ function ClassesTab() {
               <span className="ml-auto font-mono text-[10px] text-dim tabular-nums">
                 Equip {formatPercent(effects.equip)} · Owned {formatPercent(effects.owned)}
               </span>
+              {isLast ? (
+                <div className="flex w-full flex-wrap items-center gap-2 border-t border-ink/10 pt-1.5">
+                  <label className="flex items-center gap-1.5">
+                    <span className={LABEL}>Awakening</span>
+                    <select
+                      aria-label="Blast awakening"
+                      value={character.classAwakening}
+                      onChange={(event) => set((c) => ({ ...c, classAwakening: Number(event.target.value) }))}
+                      className={SELECT}
+                    >
+                      {Array.from({ length: MAX_CLASS_AWAKENING + 1 }, (_, n) => (
+                        <option key={n} value={n}>
+                          {n} · {awakenedClassName(n)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <span aria-hidden className="font-mono text-[11px] leading-none text-tier-legendary">
+                    {"★".repeat(awakeningStage(character.classAwakening).stars)}
+                    <span className="text-ink/20">{"★".repeat(5 - awakeningStage(character.classAwakening).stars)}</span>
+                  </span>
+                  <span className="font-mono text-[10px] text-dim tabular-nums">
+                    Equip multiplier ×{formatValue(blastMultiplier)}
+                  </span>
+                </div>
+              ) : null}
             </li>
           );
         })}
@@ -505,6 +553,7 @@ function PromotionSection() {
                 <td className="py-1">
                   <label className="flex cursor-pointer items-center gap-1.5">
                     <input type="radio" name="promotion" checked={current} onChange={() => set((c) => ({ ...c, promotion: promotion.number }))} className="accent-ink" />
+                    <Art item={promotion} className="size-6" />
                     {promotion.number ? `${promotion.number}. ` : ""}
                     {promotion.name}
                   </label>

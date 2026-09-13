@@ -1,12 +1,30 @@
 /** Growing Knowledge grade row: its ATK effect, Death Strike cap and the Superhuman bonus at that grade. */
 export type KnowledgeGrade = { grade: string; atk: number; maxDeathStrike: number | null; superhuman: number };
 
+export type EnhanceFormula =
+  | { kind: "tiered"; tiers: { from: number; multiplier: number }[]; scale: number }
+  | { kind: "percent"; perLevel: number };
+
 export type EnhanceStat = {
   name: string;
   maxLevel: number | null;
   requiresCrit?: number;
   cap?: "growingKnowledge" | number;
+  formula: EnhanceFormula;
 };
+
+/**
+ * An enhance stat at a level. ATK, HP and HP Recovery are level x the
+ * multiplier of the highest tier reached (x1 from 0, x2 from 100 ... x6 from
+ * 1,000,000), HP also x10. The crit stats are a fraction per level.
+ */
+export function enhanceStat(formula: EnhanceFormula, level: number): { value: number; perLevel: number } {
+  const l = Math.max(0, Math.floor(level));
+  if (formula.kind === "percent") return { value: l * formula.perLevel, perLevel: formula.perLevel };
+  const tier = [...formula.tiers].reverse().find((t) => l >= t.from) ?? formula.tiers[0];
+  const perLevel = (tier?.multiplier ?? 1) * formula.scale;
+  return { value: l * perLevel, perLevel };
+}
 
 /**
  * An enhance stat's max level. Death Strike and Death Strike % stay at 1
