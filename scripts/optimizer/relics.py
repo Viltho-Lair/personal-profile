@@ -26,8 +26,14 @@ MIN_NAME_SIMILARITY = 0.8
 
 
 def parse_bands(formula):
-    """Turn a nested IF(level<N, factor, ...) formula into level bands."""
-    source = formula or ""
+    """Level bands from a nested IF(level<N, factor, ...) formula.
+
+    A plain number is a flat factor that applies at every level.
+    """
+    if isinstance(formula, (int, float)) and not isinstance(formula, bool):
+        return [{"from": 0, "to": None, "factor": float(formula)}]
+
+    source = formula if isinstance(formula, str) else ""
     thresholds = [(int(limit), float(factor)) for limit, factor in BAND.findall(source)]
     final = FINAL.search(source)
     if not thresholds or final is None:
@@ -60,6 +66,8 @@ def _relic_block(sheet):
                 "name": MAX_LEVEL.sub("", raw),
                 "maxLevel": int(match.group(1)),
                 "buff": BUFF_VALUE.sub("", bonus) or None,
+                # "Extra Dmg +0%" is a percentage; "Accuracy Rate +0" is flat.
+                "percent": bonus.rstrip().endswith("%"),
             })
         row += 1
     return entries, col["ICON"]
@@ -91,6 +99,7 @@ def extract_relics(equipment_sheet, data_formula_sheet):
             "id": index,
             "name": entry["name"],
             "buff": entry["buff"],
+            "percent": entry["percent"],
             "maxLevel": entry["maxLevel"],
             "bands": parse_bands(data_formula_sheet.cell(data_row, col["MULTIPLIER"]).value),
         })

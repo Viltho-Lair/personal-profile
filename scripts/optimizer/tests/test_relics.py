@@ -47,6 +47,14 @@ class ParseBands(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_bands("=X138*2")
 
+    def test_a_plain_number_is_one_flat_band(self):
+        self.assertEqual(parse_bands(0.007), [{"from": 0, "to": None, "factor": 0.007}])
+        self.assertEqual(parse_bands(3), [{"from": 0, "to": None, "factor": 3.0}])
+
+    def test_rejects_a_boolean(self):
+        with self.assertRaises(ValueError):
+            parse_bands(True)
+
 
 class ExtractRelics(unittest.TestCase):
     def test_names_and_buffs_come_from_the_equipment_sheet(self):
@@ -76,6 +84,17 @@ class ExtractRelics(unittest.TestCase):
         _, icons = extract_relics(equipment(), equipment_data())
         self.assertEqual(image_size(icons["Strength Gloves"]), (64, 64))
         self.assertNotIn("Emperor Ring", icons)
+
+    def test_percent_comes_from_the_bonus_text(self):
+        relics, _ = extract_relics(
+            equipment(D75="Focus Ring Max Level 100", F75="Accuracy Rate +0"),
+            equipment_data(W139="Focus Ring", AA139=3),
+        )
+        self.assertEqual([(r["name"], r["percent"]) for r in relics], [
+            ("Strength Gloves", True),
+            ("Focus Ring", False),
+        ])
+        self.assertEqual(relics[1]["bands"], [{"from": 0, "to": None, "factor": 3.0}])
 
 
 if __name__ == "__main__":
