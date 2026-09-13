@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ANALYZER_AD_SLOT } from "@/lib/adsense";
+import { AdSlot } from "./ad-slot";
 import { EquipmentPanel } from "./equipment-panel";
 import { SkillGrid } from "./skill-grid";
 import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
@@ -20,14 +22,24 @@ export function AnalyzerShell() {
       }
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
-      {/* Top half is reserved for the scatter chart; the tabs own the bottom half. */}
+      {/* Top half is a 3 x 2 grid: the scatter chart fills the left two
+          columns, the ad sits top right, and the cell below it is spare. */}
       <section
-        aria-label="Scatter chart"
-        className="flex h-1/2 shrink-0 items-center justify-center border-b border-ink/15"
+        aria-label="Overview"
+        className="grid h-1/2 shrink-0 grid-cols-3 grid-rows-2 border-b border-ink/15"
       >
-        <p className="font-mono text-xs tracking-[0.08em] text-dim uppercase">
-          Scatter chart
-        </p>
+        <div className="col-span-2 row-span-2 flex items-center justify-center border-r border-ink/15">
+          <p className="font-mono text-xs tracking-[0.08em] text-dim uppercase">
+            Scatter chart
+          </p>
+        </div>
+        <aside
+          aria-label="Advertisement"
+          className="col-start-3 row-start-1 flex min-h-0 items-center justify-center overflow-hidden border-b border-ink/15 p-2"
+        >
+          <AdSlot slot={ANALYZER_AD_SLOT} />
+        </aside>
+        <div className="col-start-3 row-start-2" />
       </section>
 
       {ANALYZER_TABS.map((tab) => (
