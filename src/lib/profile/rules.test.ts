@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addToSkillPreset,
   awakening,
+  companionState,
   clampLevel,
   clearSkillPresetSlot,
   effectiveSkillLevel,
@@ -17,6 +18,9 @@ import {
   relicLevel,
   selectSkillPreset,
   setAwakening,
+  setCompanionAdvancement,
+  setCompanionPromotion,
+  setCompanionSkillLevel,
   setFamiliarStars,
   setGearLevel,
   setMasteryLevel,
@@ -339,6 +343,26 @@ describe("spirit awakening and enhance", () => {
     expect(spiritState(p, "Bo", 1000).awakening).toBe("Common");
     p = setOwned(p, "spirits", "Bo", false);
     expect(spiritState(p, "Bo", 1000).awakening).toBeNull();
+  });
+});
+
+describe("companions", () => {
+  it("default to advancement 0, no skill levels and seven empty promotion rows", () => {
+    const ellie = companionState(emptyProfile(), "Ellie");
+    expect(ellie.advancement).toBe(0);
+    expect(ellie.promotion).toHaveLength(7);
+  });
+
+  it("save advancement, skill levels and promotion rolls per companion", () => {
+    let p = setCompanionAdvancement(emptyProfile(), "Zeke", 60, 48);
+    p = setCompanionSkillLevel(p, "Zeke", "Lunatic", 140, 100);
+    p = setCompanionPromotion(p, "Zeke", 2, { option: "Extra HP" });
+    p = setCompanionPromotion(p, "Zeke", 2, { tier: 4 });
+    const zeke = companionState(p, "Zeke");
+    expect(zeke.advancement).toBe(48);
+    expect(zeke.skills.Lunatic).toBe(100);
+    expect(zeke.promotion[2]).toEqual({ option: "Extra HP", tier: 4 });
+    expect(companionState(p, "Ellie").skills).toEqual({});
   });
 });
 

@@ -155,6 +155,25 @@ describe("parseProfile", () => {
     expect(profile?.weaponAwakening).toBe(12);
   });
 
+  it("reads companion advancement, skill levels and promotion rolls", () => {
+    const raw = JSON.stringify({
+      ...emptyProfile(),
+      companions: {
+        Ellie: {
+          advancement: 17,
+          skills: { "Intensive Fire": 40, Bad: "x" },
+          promotion: [{ option: "Extra ATK", tier: 5 }, "oops"],
+        },
+      },
+    });
+    const ellie = parseProfile(raw)?.companions.Ellie;
+    expect(ellie?.advancement).toBe(17);
+    expect(ellie?.skills).toEqual({ "Intensive Fire": 40 });
+    expect(ellie?.promotion).toHaveLength(7);
+    expect(ellie?.promotion[0]).toEqual({ option: "Extra ATK", tier: 5 });
+    expect(ellie?.promotion[1]).toEqual({ option: null, tier: null });
+  });
+
   it("a profile saved before skill settings existed gets their defaults", () => {
     const raw = JSON.stringify({ version: 1, skills: { "Fire Slash": { level: 5 } } });
     const profile = parseProfile(raw);
@@ -176,15 +195,15 @@ describe("parseProfile", () => {
 
   it("keeps an unknown top-level key (e.g. a later build's field) after load and save", () => {
     const { storage } = memoryStorage();
-    const raw = JSON.stringify({ ...emptyProfile(), companions: { x: 1 } });
+    const raw = JSON.stringify({ ...emptyProfile(), beasts: { x: 1 } });
     const profile = parseProfile(raw);
     expect(profile).not.toBeNull();
-    const withCompanions = profile as unknown as { companions: unknown };
-    expect(withCompanions.companions).toEqual({ x: 1 });
+    const withBeasts = profile as unknown as { beasts: unknown };
+    expect(withBeasts.beasts).toEqual({ x: 1 });
 
     expect(saveProfile(storage, profile as ProfileV1)).toBe(true);
     const roundTripped = JSON.parse(storage.getItem(PROFILE_KEY) ?? "null");
-    expect(roundTripped.companions).toEqual({ x: 1 });
+    expect(roundTripped.beasts).toEqual({ x: 1 });
   });
 });
 

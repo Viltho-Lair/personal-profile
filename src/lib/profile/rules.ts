@@ -1,11 +1,14 @@
 import {
+  emptyCompanion,
   FIRST_SPIRIT_TIER,
   MAX_FAMILIAR_STARS,
   MAX_SPIRIT_ENHANCE,
   MIN_SPIRIT_ENHANCE,
   SKILL_PRESET_COUNT,
+  type CompanionState,
   type EquippableKind,
   type FamiliarGroup,
+  type PromotionRoll,
   type GearKind,
   type GearState,
   type KnownNames,
@@ -169,6 +172,43 @@ export function setSpiritEnhance(profile: ProfileV1, name: string, enhance: numb
     ...current,
     enhance: Math.min(MAX_SPIRIT_ENHANCE, Math.max(MIN_SPIRIT_ENHANCE, whole)),
   });
+}
+
+export function companionState(profile: ProfileV1, name: string): CompanionState {
+  return profile.companions[name] ?? emptyCompanion();
+}
+
+function withCompanion(profile: ProfileV1, name: string, change: (state: CompanionState) => CompanionState): ProfileV1 {
+  return { ...profile, companions: { ...profile.companions, [name]: change(companionState(profile, name)) } };
+}
+
+export function setCompanionAdvancement(profile: ProfileV1, name: string, advancement: number, max: number): ProfileV1 {
+  return withCompanion(profile, name, (state) => ({ ...state, advancement: clampLevel(advancement, max) }));
+}
+
+export function setCompanionSkillLevel(
+  profile: ProfileV1,
+  name: string,
+  skill: string,
+  level: number,
+  maxLevel: number,
+): ProfileV1 {
+  return withCompanion(profile, name, (state) => ({
+    ...state,
+    skills: { ...state.skills, [skill]: clampLevel(level, maxLevel) },
+  }));
+}
+
+export function setCompanionPromotion(
+  profile: ProfileV1,
+  name: string,
+  slot: number,
+  roll: Partial<PromotionRoll>,
+): ProfileV1 {
+  return withCompanion(profile, name, (state) => ({
+    ...state,
+    promotion: state.promotion.map((current, i) => (i === slot ? { ...current, ...roll } : current)),
+  }));
 }
 
 export function awakening(profile: ProfileV1, kind: GearKind, maxAwakening: number): number {

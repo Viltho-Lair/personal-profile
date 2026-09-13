@@ -1,11 +1,14 @@
 import { importLegacyLevels } from "./migration";
 import {
+  emptyCompanion,
   emptyProfile,
   FIRST_SPIRIT_TIER,
   MAX_SPIRIT_ENHANCE,
   MIN_SPIRIT_ENHANCE,
+  PROMOTION_SLOTS,
   SKILL_PRESET_COUNT,
   SKILL_PRESET_SLOTS,
+  type CompanionState,
   type GearState,
   type ProfileV1,
   type SkillPreset,
@@ -69,6 +72,22 @@ const spiritEntry = (entry: Json): SpiritState | null => {
   };
 };
 
+function companionEntry(entry: Json): CompanionState {
+  const skills: Record<string, number> = {};
+  if (isRecord(entry.skills)) {
+    for (const [skill, level] of Object.entries(entry.skills)) {
+      const whole = wholeLevel(level);
+      if (skill !== "__proto__" && whole !== null) skills[skill] = whole;
+    }
+  }
+  const rolls = Array.isArray(entry.promotion) ? entry.promotion : [];
+  const promotion = Array.from({ length: PROMOTION_SLOTS }, (_, slot) => {
+    const roll = isRecord(rolls[slot]) ? rolls[slot] : {};
+    return { option: name(roll.option), tier: wholeLevel(roll.tier) };
+  });
+  return { ...emptyCompanion(), advancement: wholeLevel(entry.advancement) ?? 0, skills, promotion };
+}
+
 const ownedEntry = (entry: Json) =>
   typeof entry.owned === "boolean" ? { owned: entry.owned } : null;
 
@@ -124,6 +143,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     equippedFamiliars: equippedFamiliars(data.equippedFamiliars),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,
+    companions: entries(data.companions, companionEntry),
   };
 }
 

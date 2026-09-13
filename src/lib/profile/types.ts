@@ -18,6 +18,26 @@ export const SKILL_PRESET_SLOTS = 10;
 /** Skill names per slot, filled top row left to right, then the bottom row. */
 export type SkillPreset = (string | null)[];
 
+export const PROMOTION_SLOTS = 7;
+
+/** One promotion row: the rolled option ("Extra ATK") and its colour tier (index, 0 = White). */
+export type PromotionRoll = { option: string | null; tier: number | null };
+
+/** A companion's advancement (skin number, 0 = "Elf 000"), passive skill levels by name, and promotion rolls. */
+export type CompanionState = {
+  advancement: number;
+  skills: Record<string, number>;
+  promotion: PromotionRoll[];
+};
+
+export function emptyCompanion(): CompanionState {
+  return {
+    advancement: 0,
+    skills: {},
+    promotion: Array.from({ length: PROMOTION_SLOTS }, () => ({ option: null, tier: null })),
+  };
+}
+
 export type FamiliarGroup = "weapon" | "attribute" | "battle";
 export const FAMILIAR_GROUPS: readonly FamiliarGroup[] = ["weapon", "attribute", "battle"];
 export const MAX_FAMILIAR_STARS = 11;
@@ -51,6 +71,7 @@ export type ProfileV1 = {
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
   weaponAwakening: number;
   accessoryAwakening: number;
+  companions: Record<string, CompanionState>;
 };
 
 export type KnownNames = Record<
@@ -85,5 +106,6 @@ export function emptyProfile(): ProfileV1 {
     equippedFamiliars: { weapon: null, attribute: null, battle: null },
     weaponAwakening: 0,
     accessoryAwakening: 0,
+    companions: {},
   };
 }

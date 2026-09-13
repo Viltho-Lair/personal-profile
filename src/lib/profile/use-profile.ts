@@ -9,6 +9,7 @@ import {
   type EquippableKind,
   type FamiliarGroup,
   type GearKind,
+  type PromotionRoll,
   type OwnableKind,
 } from "./types";
 
@@ -93,6 +94,12 @@ export function useProfile() {
       update((p) => rules.setFamiliarStars(p, name, group, stars)),
     equipFamiliar: (group: FamiliarGroup, name: string | null) =>
       update((p) => rules.equipFamiliar(p, group, name)),
+    setCompanionAdvancement: (name: string, advancement: number, max: number) =>
+      update((p) => rules.setCompanionAdvancement(p, name, advancement, max)),
+    setCompanionSkillLevel: (name: string, skill: string, level: number, maxLevel: number) =>
+      update((p) => rules.setCompanionSkillLevel(p, name, skill, level, maxLevel)),
+    setCompanionPromotion: (name: string, slot: number, roll: Partial<PromotionRoll>) =>
+      update((p) => rules.setCompanionPromotion(p, name, slot, roll)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }

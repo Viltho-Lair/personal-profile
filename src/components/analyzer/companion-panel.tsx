@@ -1,284 +1,413 @@
 "use client";
 
 import { useState } from "react";
+import companionsData from "@/data/optimizer/companions.json";
 import {
-  COMPANION_SOURCE,
-  COMPANIONS,
-  passiveKey,
-  PROMOTION,
-  skillKey,
-  type Companion,
-} from "./companions";
-import { formatValue } from "./equipment";
+  companionEffect,
+  companionLevel,
+  costToMax,
+  formatEffect,
+  nextLevelCost,
+  promotionBuff,
+  type CompanionFormula,
+  type CostTable,
+} from "@/lib/game/companions";
+import { clampLevel, companionState } from "@/lib/profile/rules";
+import type { ProfileV1 } from "@/lib/profile/types";
+import { useProfile } from "@/lib/profile/use-profile";
+import { formatValue } from "./data";
 import { InlineLevel } from "./level-input";
 import { Sprite } from "./sprite";
-import { ELEMENT_BORDER, ELEMENT_TEXT, TIER_TEXT } from "./tiers";
-import { useLevels } from "./use-levels";
+import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
 
+type CompanionSkill = {
+  name: string;
+  group: number;
+  maxLevel: number;
+  effect: string | null;
+  formula: CompanionFormula;
+  unlock: { advancement: number; allCompanions: boolean } | null;
+  costs: CostTable;
+};
+
+type Companion = {
+  id: number;
+  name: string;
+  element: string | null;
+  skills: CompanionSkill[];
+  skins: { advancement: number; name: string; icon: string | null; iconSize: number | null }[];
+};
+
+type Promotion = {
+  options: string[];
+  tiers: { colour: string; values: Record<string, number> }[];
+  rankMultipliers: Record<string, number>;
+  slotsByAdvancement: (string | null)[][];
+};
+
+const COMPANIONS = companionsData.companions as unknown as Companion[];
+const PROMOTION = companionsData.promotion as unknown as Promotion;
+const MAX_ADVANCEMENT = PROMOTION.slotsByAdvancement.length - 1;
+
+const GROUP_LABEL = ["", "Passive I", "Passive II", "Passive III"];
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
+const TIER_COLOUR: Record<string, string> = {
+  White: "text-ink",
+  Green: "text-tier-great",
+  Orange: "text-tier-legendary",
+  Purple: "text-tier-epic",
+  Red: "text-element-fire",
+  Aqua: "text-element-water",
+};
 
-function CompanionCard({
-  companion,
-  levelFor,
-  setLevel,
-}: {
-  companion: Companion;
-  levelFor: (id: number) => number;
-  setLevel: (id: number, level: number) => void;
-}) {
-  const elementText = companion.element
-    ? (ELEMENT_TEXT[companion.element] ?? "text-dim")
-    : "text-dim";
-  const elementBorder = companion.element
-    ? (ELEMENT_BORDER[companion.element] ?? "border-ink/20")
-    : "border-ink/20";
-  const { passive } = companion;
+const cost = ([stones, emeralds]: readonly [number, number]) =>
+  `${formatValue(stones)} stones · ${formatValue(emeralds)} emeralds`;
+
+function advancementOf(profile: ProfileV1, companion: Companion) {
+  return clampLevel(companionState(profile, companion.name).advancement, MAX_ADVANCEMENT);
+}
+
+function skinFor(companion: Companion, advancement: number) {
+  return companion.skins.find((skin) => skin.advancement === advancement) ?? companion.skins[0];
+}
+
+function isUnlocked(skill: CompanionSkill, companion: Companion, profile: ProfileV1) {
+  if (!skill.unlock) return true;
+  const { advancement, allCompanions } = skill.unlock;
+  return allCompanions
+    ? COMPANIONS.every((c) => advancementOf(profile, c) >= advancement)
+    : advancementOf(profile, companion) >= advancement;
+}
+
+function Portrait({ companion, advancement, size = 64 }: { companion: Companion; advancement: number; size?: number }) {
+  const skin = skinFor(companion, advancement);
+  return skin?.icon && skin.iconSize ? (
+    <Sprite src={skin.icon} native={skin.iconSize} size={size} className="rounded-md" />
+  ) : null;
+}
+
+function SkillRow({ companion, skill }: { companion: Companion; skill: CompanionSkill }) {
+  const { profile, setCompanionSkillLevel } = useProfile();
+  const level = clampLevel(companionState(profile, companion.name).skills[skill.name] ?? 0, skill.maxLevel);
+  const unlocked = isUnlocked(skill, companion, profile);
+  const next = nextLevelCost(skill.costs, level, skill.maxLevel);
 
   return (
-    <article className="flex flex-col gap-3 rounded-lg border border-ink/15 p-3 transition-colors hover:border-ink/40">
-      <header className="flex items-center gap-3">
-        {companion.portrait ? (
-          <div
-            className={`shrink-0 overflow-hidden rounded-md border bg-ink/[0.04] ${elementBorder}`}
-          >
-            <Sprite src={companion.portrait} native={128} size={128} />
-          </div>
-        ) : null}
-        <div className="flex min-w-0 flex-col gap-1">
-          <p
-            className={`font-mono text-[10px] tracking-[0.08em] uppercase ${elementText}`}
-          >
-            {[companion.element, companion.className]
-              .filter(Boolean)
-              .join(" · ")}
+    <li className={`flex flex-col gap-1 rounded-md border border-ink/10 p-2 ${unlocked ? "" : "opacity-50"}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs leading-tight font-medium">{skill.name}</p>
+          <p className="text-[11px] leading-tight text-dim">
+            {skill.effect}{" "}
+            <span className="text-ink tabular-nums">
+              {formatEffect(skill.formula.display, companionEffect(skill.formula, level))}
+            </span>
           </p>
-          <h3 className="text-base leading-tight font-medium">
-            {companion.name}
-          </h3>
-          {companion.specialty ? (
-            <p className="text-xs leading-snug text-dim">
-              {companion.specialty}
-            </p>
-          ) : null}
         </div>
-      </header>
-
-      <section className="flex flex-col gap-2 border-t border-ink/10 pt-3">
-        <h4 className={LABEL}>Skills</h4>
-        {companion.skills.map((skill, index) => {
-          const key = skillKey(companion, index);
-          return (
-            <div key={skill.name} className="flex items-center gap-2.5">
-              {skill.icon ? (
-                <Sprite
-                  src={skill.icon}
-                  native={64}
-                  size={32}
-                  className="rounded border border-ink/15"
-                />
-              ) : null}
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-xs leading-tight">
-                  {skill.name}
-                </span>
-                <span className="truncate font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
-                  {skill.effect}
-                </span>
-              </div>
-              <InlineLevel
-                value={levelFor(key)}
-                min={0}
-                max={skill.maxLevel}
-                onChange={(value) => setLevel(key, value)}
-                name={`${companion.name} ${skill.name}`}
-              />
-            </div>
-          );
-        })}
-      </section>
-
-      {passive.name && passive.maxLevel ? (
-        <section className="flex flex-col gap-1.5 border-t border-ink/10 pt-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 flex-col">
-              <h4 className={LABEL}>Passive</h4>
-              <span className="truncate text-xs leading-tight">
-                {passive.name}
-              </span>
-            </div>
-            <InlineLevel
-              value={levelFor(passiveKey(companion))}
-              min={0}
-              max={passive.maxLevel}
-              onChange={(value) => setLevel(passiveKey(companion), value)}
-              name={`${companion.name} ${passive.name}`}
-            />
-          </div>
-          <dl className="grid gap-y-0.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
-            <div className="flex items-baseline justify-between gap-2">
-              <dt>Stones to max</dt>
-              <dd className="text-ink">{formatValue(passive.stoneCost)}</dd>
-            </div>
-            <div className="flex items-baseline justify-between gap-2">
-              <dt>Emeralds to max</dt>
-              <dd className="text-ink">{formatValue(passive.emeraldCost)}</dd>
-            </div>
-          </dl>
-        </section>
-      ) : null}
-
-      {companion.lockedSkills.length > 0 ? (
-        <section className="mt-auto flex flex-col gap-1 border-t border-ink/10 pt-3">
-          <h4 className={LABEL}>Unlocks later</h4>
-          <ul className="flex flex-col gap-0.5 text-xs leading-snug text-dim">
-            {companion.lockedSkills.map((skill) => (
-              <li key={skill.name}>{skill.name}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </article>
+        <InlineLevel
+          value={level}
+          min={0}
+          max={skill.maxLevel}
+          name={`${companion.name} ${skill.name}`}
+          onChange={(value) => unlocked && setCompanionSkillLevel(companion.name, skill.name, value, skill.maxLevel)}
+        />
+      </div>
+      <p className="font-mono text-[9px] leading-snug tracking-[0.04em] text-dim uppercase">
+        {!unlocked && skill.unlock
+          ? `Unlocks at advancement ${skill.unlock.advancement}${skill.unlock.allCompanions ? " (all companions)" : ""}`
+          : next
+            ? `Next: ${cost(next)}`
+            : "Max level"}
+      </p>
+      <p className="font-mono text-[9px] leading-snug tracking-[0.04em] text-dim uppercase">
+        Max Lv {formatValue(skill.maxLevel)} · to max: {cost(costToMax(skill.costs, level, skill.maxLevel))}
+      </p>
+    </li>
   );
 }
 
-/** Page rows multiply the rolled value, so 1.5x can land on a half. */
-function scaled(value: number, multiplier: number) {
-  return Math.round(value * multiplier * 10) / 10;
-}
-
-function PromotionTable() {
-  const [page, setPage] = useState(PROMOTION.pages[0]);
+function CompanionColumn({
+  companion,
+  selected,
+  onSelect,
+}: {
+  companion: Companion;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const { profile } = useProfile();
+  const state = companionState(profile, companion.name);
+  const advancement = advancementOf(profile, companion);
+  const levels = companion.skills.map((skill) => clampLevel(state.skills[skill.name] ?? 0, skill.maxLevel));
+  const total = companion.skills.reduce<[number, number]>(
+    (sum, skill, i) => {
+      const [s, e] = costToMax(skill.costs, levels[i], skill.maxLevel);
+      return [sum[0] + s, sum[1] + e];
+    },
+    [0, 0],
+  );
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-medium">Promotion options</h3>
-          <p className="text-xs leading-snug text-dim">
-            Dice roll a random option at a random tier into each slot.
-          </p>
-        </div>
+    <section className="flex min-w-0 flex-col gap-2">
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={selected}
+        className={`flex items-center gap-2 rounded-lg border p-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          selected
+            ? "border-ink ring-1 ring-ink"
+            : `${(companion.element && ELEMENT_BORDER[companion.element]) || "border-ink/20"} hover:brightness-125`
+        }`}
+      >
+        <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-ink/[0.05] [&_img]:size-12">
+          <Portrait companion={companion} advancement={advancement} />
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="text-sm leading-tight font-medium">{companion.name}</span>
+          <span className={`font-mono text-[9px] tracking-[0.06em] uppercase ${(companion.element && ELEMENT_TEXT[companion.element]) || "text-dim"}`}>
+            {companion.element} · Lv {companionLevel(levels.reduce((a, b) => a + b, 0))}
+          </span>
+          <span className="truncate font-mono text-[9px] tracking-[0.04em] text-dim uppercase">
+            Adv {String(advancement).padStart(3, "0")} · {skinFor(companion, advancement)?.name}
+          </span>
+        </span>
+      </button>
 
-        <div
-          role="radiogroup"
-          aria-label="Option page"
-          className="flex gap-1.5"
-        >
-          {PROMOTION.pages.map((entry) => (
-            <button
-              key={entry.page}
-              type="button"
-              role="radio"
-              aria-checked={entry.page === page.page}
-              onClick={() => setPage(entry)}
-              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.06em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                entry.page === page.page
-                  ? "border-ink bg-ink text-ground"
-                  : "border-ink/25 text-dim hover:text-ink"
-              }`}
-            >
-              Page {entry.page} · {entry.multiplier}x
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="overflow-x-auto rounded-lg border border-ink/15">
-        <table className="w-full min-w-[34rem] font-mono text-[11px] tabular-nums">
-          <thead>
-            <tr className="border-b border-ink/15">
-              <th
-                scope="col"
-                className="px-3 py-2 text-left text-[10px] font-normal tracking-[0.08em] text-dim uppercase"
-              >
-                Option
-              </th>
-              {PROMOTION.tiers.map((tier) => (
-                <th
-                  key={tier.rarity}
-                  scope="col"
-                  className={`px-3 py-2 text-right text-[10px] font-normal tracking-[0.08em] uppercase ${TIER_TEXT[tier.rarity] ?? "text-dim"}`}
-                >
-                  <span className="block">{tier.rarity}</span>
-                  <span className="block text-dim">{tier.probability}%</span>
-                </th>
+      {[1, 2, 3].map((group) => (
+        <div key={group} className="flex flex-col gap-1">
+          <h4 className={LABEL}>{GROUP_LABEL[group]}</h4>
+          <ul className="flex flex-col gap-1">
+            {companion.skills
+              .filter((skill) => skill.group === group)
+              .map((skill) => (
+                <SkillRow key={skill.name} companion={companion} skill={skill} />
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {PROMOTION.options.map((option) => (
-              <tr
-                key={option.name}
-                className="border-b border-ink/10 last:border-0"
-              >
-                <th
-                  scope="row"
-                  className="px-3 py-1.5 text-left font-sans text-xs font-normal"
-                >
-                  {option.name}
-                </th>
-                {option.values.map((value, index) => (
-                  <td key={index} className="px-3 py-1.5 text-right">
-                    {scaled(value, page.multiplier)}
-                    {option.percent ? "%" : ""}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+        </div>
+      ))}
 
-      <p className="font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
-        {COMPANIONS[0]?.promotionSlots ?? 7} slots per companion. More pages
-        open through advancement battles, and their rows count at the page
-        multiplier.
-        {PROMOTION.maxRollDice
-          ? ` From Ether promotion, ${PROMOTION.maxRollDice.toLocaleString("en")} dice sets every option to its top tier, permanently.`
-          : ""}
+      <p className="rounded-md bg-ink/[0.04] p-2 font-mono text-[9px] leading-snug tracking-[0.04em] text-dim uppercase">
+        All skills to max: <span className="text-ink">{cost(total)}</span>
       </p>
     </section>
   );
 }
 
-export function CompanionPanel() {
-  const { levelFor, setLevel } = useLevels("analyzer.companionLevels", 0);
+function AdvancementTab({ companion }: { companion: Companion }) {
+  const { profile, setCompanionAdvancement } = useProfile();
+  const advancement = advancementOf(profile, companion);
+  const ranks = PROMOTION.slotsByAdvancement[advancement] ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6">
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="max-w-[60ch] text-xs leading-snug text-dim">
-          One companion per element. Skills level to 100 and passives to 1500
-          with attribute stones and emeralds. Your levels are saved in this
-          browser.
-        </p>
-        <a
-          href={COMPANION_SOURCE.url}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="hidden shrink-0 font-mono text-[10px] tracking-[0.06em] text-dim uppercase underline-offset-4 hover:text-ink hover:underline lg:block"
-        >
-          Data: Slayer Legend Wiki
-        </a>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <span className="flex size-20 shrink-0 items-center justify-center rounded-md bg-ink/[0.05]">
+          <Portrait companion={companion} advancement={advancement} size={64} />
+        </span>
+        <label className="flex flex-col gap-1">
+          <span className={LABEL}>Advancement</span>
+          <select
+            value={advancement}
+            onChange={(event) => setCompanionAdvancement(companion.name, Number(event.target.value), MAX_ADVANCEMENT)}
+            className="rounded-md border border-ink/20 bg-ground px-2 py-1 font-mono text-xs text-ink outline-none focus-visible:border-ink"
+          >
+            {companion.skins.map((skin) => (
+              <option key={skin.advancement} value={skin.advancement}>
+                {skin.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
-        {COMPANIONS.map((companion) => (
-          <CompanionCard
-            key={companion.id}
-            companion={companion}
-            levelFor={levelFor}
-            setLevel={setLevel}
-          />
-        ))}
-      </div>
-
-      <PromotionTable />
-
-      <p className="font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
-        The wiki doesn&apos;t publish skill or passive values per level yet, so
-        levels are tracked but not turned into stats.
+      <p className="text-[11px] leading-snug text-dim">
+        Advancement sets each promotion row&apos;s rank: 1st ×1 up to 7th ×4. Locked rows give nothing.
       </p>
+      <table className="w-full font-mono text-[10px] tracking-[0.04em] uppercase">
+        <tbody>
+          {ranks.map((rank, slot) => (
+            <tr key={slot} className="border-t border-ink/10">
+              <td className="py-1 text-dim">Row {slot + 1}</td>
+              <td className="py-1 text-ink">{rank ?? "Locked"}</td>
+              <td className="py-1 text-right text-ink tabular-nums">
+                {rank ? `×${PROMOTION.rankMultipliers[rank]}` : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PromotionTab({ companion }: { companion: Companion }) {
+  const { profile, setCompanionPromotion } = useProfile();
+  const state = companionState(profile, companion.name);
+  const ranks = PROMOTION.slotsByAdvancement[advancementOf(profile, companion)] ?? [];
+  const totals = new Map<string, number>();
+
+  const rows = state.promotion.map((roll, slot) => {
+    const rank = ranks[slot] ?? null;
+    const value =
+      roll.option !== null && roll.tier !== null ? (PROMOTION.tiers[roll.tier]?.values[roll.option] ?? null) : null;
+    const buff = promotionBuff(value, rank, PROMOTION.rankMultipliers);
+    if (roll.option && buff) totals.set(roll.option, (totals.get(roll.option) ?? 0) + buff);
+    return { roll, slot, rank, value, buff };
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-1.5">
+        {rows.map(({ roll, slot, rank, buff }) => (
+          <li key={slot} className={`flex flex-wrap items-center gap-2 rounded-md border border-ink/10 p-1.5 ${rank ? "" : "opacity-50"}`}>
+            <span className="w-16 font-mono text-[10px] tracking-[0.04em] text-dim uppercase">
+              {rank ? `${rank} ×${PROMOTION.rankMultipliers[rank]}` : "Locked"}
+            </span>
+            <select
+              aria-label={`Row ${slot + 1} option`}
+              value={roll.option ?? ""}
+              onChange={(event) => setCompanionPromotion(companion.name, slot, { option: event.target.value || null })}
+              className="rounded-md border border-ink/20 bg-ground px-1.5 py-0.5 font-mono text-[11px] text-ink outline-none"
+            >
+              <option value="">—</option>
+              {PROMOTION.options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label={`Row ${slot + 1} tier`}
+              value={roll.tier ?? ""}
+              onChange={(event) =>
+                setCompanionPromotion(companion.name, slot, {
+                  tier: event.target.value === "" ? null : Number(event.target.value),
+                })
+              }
+              className={`rounded-md border border-ink/20 bg-ground px-1.5 py-0.5 font-mono text-[11px] outline-none ${
+                roll.tier !== null ? (TIER_COLOUR[PROMOTION.tiers[roll.tier]?.colour] ?? "") : "text-ink"
+              }`}
+            >
+              <option value="">—</option>
+              {PROMOTION.tiers.map((tier, index) => (
+                <option key={tier.colour} value={index}>
+                  {tier.colour}
+                  {roll.option ? ` ${formatEffect("percent", tier.values[roll.option] ?? 0)}` : ""}
+                </option>
+              ))}
+            </select>
+            <span className="ml-auto font-mono text-[11px] text-ink tabular-nums">
+              {buff ? formatEffect("percent", buff) : "—"}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {totals.size > 0 ? (
+        <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 rounded-md bg-ink/[0.04] p-2 font-mono text-[10px] tracking-[0.04em] uppercase">
+          {[...totals].map(([option, value]) => (
+            <div key={option} className="contents">
+              <dt className="text-dim">{option}</dt>
+              <dd className="text-right text-ink tabular-nums">{formatEffect("percent", value)}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+    </div>
+  );
+}
+
+function CompanionSection() {
+  const { profile } = useProfile();
+  const [selectedName, setSelectedName] = useState(COMPANIONS[0]?.name ?? "");
+  const [tab, setTab] = useState<"advancement" | "promotion">("advancement");
+  const selected = COMPANIONS.find((c) => c.name === selectedName) ?? COMPANIONS[0];
+
+  const everything = COMPANIONS.reduce<[number, number]>(
+    (sum, companion) => {
+      const state = companionState(profile, companion.name);
+      for (const skill of companion.skills) {
+        const [s, e] = costToMax(skill.costs, clampLevel(state.skills[skill.name] ?? 0, skill.maxLevel), skill.maxLevel);
+        sum[0] += s;
+        sum[1] += e;
+      }
+      return sum;
+    },
+    [0, 0],
+  );
+
+  return (
+    <div className="flex h-full min-h-0 flex-col lg:flex-row">
+      <div className="min-h-0 flex-1 overflow-auto p-3 sm:p-4">
+        <p className="mb-2 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
+          All companions to max: <span className="text-ink">{cost(everything)}</span>
+        </p>
+        <div className="grid min-w-[52rem] grid-cols-4 gap-2">
+          {COMPANIONS.map((companion) => (
+            <CompanionColumn
+              key={companion.id}
+              companion={companion}
+              selected={companion.name === selected.name}
+              onSelect={() => setSelectedName(companion.name)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <aside className="flex max-h-[45%] min-h-0 shrink-0 flex-col border-t border-ink/15 lg:max-h-none lg:w-[22rem] lg:border-t-0 lg:border-l">
+        <div className="flex shrink-0 items-center gap-2 border-b border-ink/10 px-3 py-2">
+          <span className="text-sm font-medium">{selected.name}</span>
+          <div className="ml-auto flex gap-1">
+            {(["advancement", "promotion"] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={tab === id}
+                onClick={() => setTab(id)}
+                className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  tab === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink hover:text-ink"
+                }`}
+              >
+                {id === "advancement" ? "Advancement" : "Promotion"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto p-3">
+          {tab === "advancement" ? <AdvancementTab companion={selected} /> : <PromotionTab companion={selected} />}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+export function CompanionPanel() {
+  const [section, setSection] = useState<"companion" | "beasts">("companion");
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <nav aria-label="Companion sections" className="flex shrink-0 gap-1.5 border-b border-ink/15 px-3 py-2 sm:px-4">
+        {(["companion", "beasts"] as const).map((id) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={section === id}
+            onClick={() => setSection(id)}
+            className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
+              section === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink/60 hover:text-ink"
+            }`}
+          >
+            {id === "companion" ? "Companion" : "Beasts"}
+          </button>
+        ))}
+      </nav>
+      <div className="min-h-0 flex-1">
+        {section === "companion" ? (
+          <CompanionSection />
+        ) : (
+          <div className="flex h-full items-center justify-center p-6">
+            <p className="font-mono text-xs tracking-[0.08em] text-dim uppercase">Beasts are coming later.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
