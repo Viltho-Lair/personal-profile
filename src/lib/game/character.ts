@@ -73,6 +73,26 @@ export function latentPerLevel(stat: string, base: number, slayerLevel: number, 
   }
 }
 
+/** Slayer level the first Training Diary level unlocks at; each further level needs 100 more. */
+export const DIARY_FIRST_LEVEL = 500;
+export const DIARY_LEVEL_STEP = 100;
+
+/** Highest Training Diary level the slayer's level allows: level 1 at 500, level 24 at 2,800. */
+export function diaryMaxLevel(slayerLevel: number): number {
+  if (slayerLevel < DIARY_FIRST_LEVEL) return 0;
+  return Math.floor((slayerLevel - DIARY_FIRST_LEVEL) / DIARY_LEVEL_STEP) + 1;
+}
+
+/** Slayer level a Training Diary level unlocks at. */
+export const diaryUnlockLevel = (diaryLevel: number) => DIARY_FIRST_LEVEL + (diaryLevel - 1) * DIARY_LEVEL_STEP;
+
+/** Growth skill points: 3 per slayer level, plus 100 per Training Diary level the slayer's level has unlocked. */
+export function skillPoints(slayerLevel: number, diaryLevel: number) {
+  const level = Math.max(0, Math.floor(slayerLevel));
+  const diary = Math.min(Math.max(0, Math.floor(diaryLevel)), diaryMaxLevel(level));
+  return { fromLevel: level * 3, fromDiary: diary * 100, diary, total: level * 3 + diary * 100 };
+}
+
 /** Class max level: 200, +50 per Awakened Blast. */
 export function classMaxLevel(awakening: number): number {
   return 200 + 50 * Math.max(0, Math.floor(awakening));

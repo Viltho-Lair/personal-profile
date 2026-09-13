@@ -8,6 +8,9 @@ import {
   abilityRowOpen,
   awakenedClassName,
   classMaxLevel,
+  diaryMaxLevel,
+  diaryUnlockLevel,
+  skillPoints,
   enhanceMax,
   enhanceStat,
   type EnhanceStat,
@@ -223,6 +226,38 @@ function EnhanceSection() {
 
 /* ---------------------------------------------------------------- Growth */
 
+function TrainingDiary() {
+  const { character, set } = useCharacter();
+  const max = diaryMaxLevel(character.slayerLevel);
+  const level = Math.min(character.trainingDiary, max);
+  const next = level + 1;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <label className="flex items-center gap-2">
+        <span className={LABEL}>Training Diary</span>
+        <InlineLevel
+          value={level}
+          min={0}
+          max={max}
+          name="Training Diary"
+          onChange={(value) => set((c) => ({ ...c, trainingDiary: clampLevel(value, max) }))}
+        />
+        <span className={LABEL}>of {max} unlocked</span>
+      </label>
+      <p className="text-[11px] leading-snug text-dim">
+        Each Training Diary level adds 100 growth skill points. Level 1 unlocks at slayer level {formatValue(diaryUnlockLevel(1))},
+        and each level after it needs 100 more slayer levels (level 24 at {formatValue(diaryUnlockLevel(24))}).
+      </p>
+      <p className="font-mono text-[10px] text-dim uppercase">
+        {max === 0
+          ? `Unlocks at slayer level ${formatValue(diaryUnlockLevel(1))} (now ${formatValue(character.slayerLevel)})`
+          : `Next level (${next}) unlocks at slayer level ${formatValue(diaryUnlockLevel(next))}`}
+      </p>
+    </div>
+  );
+}
+
 function LatentPower() {
   const { character, set, shrineLevels } = useCharacter();
   const totals = latentTotals(character, shrineLevels);
@@ -315,8 +350,23 @@ function GrowthSection() {
   const [tab, setTab] = useState<"diary" | "latent">("latent");
   const totals = latentTotals(character, shrineLevels);
 
+  const points = skillPoints(character.slayerLevel, character.trainingDiary);
+  const spent = GROWTH.reduce((sum, stat) => sum + (character.growth[stat.key] ?? 0), 0);
   const left = (
     <ul className="flex flex-col gap-1.5">
+      <li className="flex flex-col gap-1 rounded-md border border-ink/15 bg-ink/[0.03] p-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <span className={LABEL}>Skill points</span>
+          <span className="font-mono text-sm text-ink tabular-nums">{formatValue(points.total)}</span>
+        </div>
+        <p className="font-mono text-[10px] text-dim tabular-nums">
+          3 × slayer level {formatValue(character.slayerLevel)} = {formatValue(points.fromLevel)} · Training Diary {points.diary} × 100 ={" "}
+          {formatValue(points.fromDiary)}
+        </p>
+        <p className={`font-mono text-[10px] tabular-nums ${spent > points.total ? "text-red-500" : "text-dim"}`}>
+          Spent {formatValue(spent)} · {spent > points.total ? `${formatValue(spent - points.total)} over` : `${formatValue(points.total - spent)} left`}
+        </p>
+      </li>
       {GROWTH.map((stat) => {
         const level = character.growth[stat.key] ?? 0;
         const latent = totals[stat.key];
@@ -328,9 +378,15 @@ function GrowthSection() {
                 {stat.key} <span className="text-xs font-normal text-dim">{stat.detail}</span>
               </p>
               <p className={LABEL}>
-                Base +{formatValue(level * stat.perLevel)}
-                {latent ? ` · with latent +${formatValue(latent.total)}` : ""}
+                {latent
+                  ? `Per level +${formatValue(Math.round(latent.perLevel * 100) / 100)} · Total +${formatValue(Math.round(latent.total * 100) / 100)}`
+                  : `Total +${formatValue(level * stat.perLevel)}`}
               </p>
+              {latent ? (
+                <p className="font-mono text-[9px] text-dim">
+                  Without latent: +{formatValue(level * stat.perLevel)} (base {formatValue(stat.perLevel)} a level)
+                </p>
+              ) : null}
             </div>
             <InlineLevel
               wide
@@ -358,7 +414,7 @@ function GrowthSection() {
         onChange={setTab}
       />
       <div className="min-h-0 flex-1 overflow-auto p-3 sm:p-4">
-        {tab === "diary" ? <Missing what="The Training Diary" /> : <LatentPower />}
+        {tab === "diary" ? <TrainingDiary /> : <LatentPower />}
       </div>
     </>
   );

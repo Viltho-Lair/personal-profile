@@ -4,6 +4,8 @@ import {
   abilityRowOpen,
   awakenedClassName,
   classMaxLevel,
+  diaryMaxLevel,
+  skillPoints,
   enhanceMax,
   enhanceStat,
   latentMultiplier,
@@ -56,6 +58,16 @@ describe("latent power", () => {
 describe("classes and abilities", () => {
   it("awakening raises the class cap and renames the last class", () => {
     expect(classMaxLevel(18)).toBe(1100);
+  });
+
+  it("counts growth skill points from slayer level and unlocked Training Diary levels", () => {
+    expect(diaryMaxLevel(499)).toBe(0);
+    expect(diaryMaxLevel(500)).toBe(1);
+    expect(diaryMaxLevel(2799)).toBe(23);
+    expect(diaryMaxLevel(2800)).toBe(24);
+    expect(skillPoints(2794, 23)).toEqual({ fromLevel: 8382, fromDiary: 2300, diary: 23, total: 10682 });
+    // A diary level the slayer hasn't unlocked yet doesn't count.
+    expect(skillPoints(2794, 24).diary).toBe(23);
     expect([0, 6, 12, 18].map(awakenedClassName)).toEqual(["Blast", "Tera", "Seed", "Nova"]);
   });
 
