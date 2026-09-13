@@ -3,6 +3,7 @@ import data from "@/data/optimizer/companions.json";
 import {
   companionEffect,
   companionLevel,
+  companionStatus,
   costToMax,
   formatEffect,
   nextLevelCost,
@@ -61,6 +62,11 @@ describe("companion level and promotion", () => {
   it("counts passive levels", () => {
     expect(companionLevel(299)).toBe(59);
     expect(companionLevel(320)).toBe(62);
+    const increments = (data.promotion as { elementIncrements: number[] }).elementIncrements;
+    // advancement 000 is promotion #1: 0.5% per level
+    expect(companionStatus(increments, 0, 20)).toBeCloseTo(0.1);
+    expect(companionStatus(increments, 4, 10)).toBeCloseTo(0.3);
+    expect(companionStatus(increments, 99, 1)).toBe(increments.at(-1));
   });
 
   it("multiplies a rolled value by the slot's rank", () => {

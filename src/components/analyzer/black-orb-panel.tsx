@@ -30,7 +30,7 @@ function AccessoryCard({ element }: { element: Element }) {
   const { profile, updateOrbAccessory } = useProfile();
   const orb = profile.blackOrb;
   const accessory = orb.accessories[element];
-  const owned = accessory.level > 0;
+  const owned = accessory.level > 0 || accessory.top > 0 || accessory.lines.some((line) => line.element !== null && line.value > 0);
   const awakened = orb.level >= AWAKENING_LEVEL;
   const matching = matchingLines(element, accessory);
   const setLine = (index: number, change: Partial<OrbLine>) => updateOrbAccessory(element, { line: { index, change } });

@@ -59,7 +59,11 @@ export type BlackOrbEffects = {
 };
 
 export function blackOrbEffects(data: BlackOrbData, orb: BlackOrbState): BlackOrbEffects {
-  const owned = ELEMENTS.filter((e) => orb.accessories[e].level > 0);
+  // An accessory counts once anything about it is filled in, even with its level left at 0.
+  const owned = ELEMENTS.filter((e) => {
+    const a = orb.accessories[e];
+    return a.level > 0 || a.top > 0 || a.lines.some((line) => line.element !== null && line.value > 0);
+  });
   const totalLevels = owned.reduce((sum, e) => sum + orb.accessories[e].level, 0);
   const reso = orb.level >= RESONANCE_LEVEL && totalLevels >= RESONANCE_MIN_LEVELS ? lookup(data.resonance, (r) => r.levels, totalLevels) : undefined;
   const resonanceAll = (reso?.all ?? 0) / 100;

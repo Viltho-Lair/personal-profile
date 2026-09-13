@@ -1,15 +1,21 @@
 /**
- * An approximate boss fight, hit by hit.
+ * An approximate boss fight, hit by hit, that can be played out in real time.
  *
- * - Basic attacks land one per second, faster with ATK SPD buffs.
+ * - Basic attacks land at the attack speed: one a second (the workbook has no
+ *   base attack speed), raised by the Bracelet of Speed and ATK SPD buffs.
  * - Attack skills and activated buffs each wait in their own queue once ready
- *   (a cooldown in seconds, or a number of basic-attack hits). Casts in a queue
- *   are 0.3s apart, and every cast pauses basic attacks for its animation.
- * - Passives run on their own: always on, stacking over time, hits or skill
- *   uses, or starting some seconds into the fight.
+ *   (a cooldown in seconds, or a number of basic-attack hits) and cast when
+ *   there's mana for them. Casts in a queue are 0.3s apart, and every cast
+ *   pauses basic attacks for its animation. Skills with auto off wait for a
+ *   manual cast once ready.
+ * - Life and mana pools refill every second by HP Recovery and Mana Recovery.
+ *   Lightning Body spends half of the current life; Rage adds ATK for each
+ *   percent of life missing and stops HP recovery while it lasts.
+ * - Passives run on their own: always on, stacking over time or hits up to
+ *   their stages (then they're complete), skill uses, or starting later.
  * - Rave stops the fight clock for its duration: the damage dealt meanwhile is
  *   stored and Rave adds its share of it. Demon Hunt plays its hits in stopped
- *   time. While the clock is stopped, cooldowns and buff durations don't run.
+ *   time. While the clock is stopped, cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
  *   refreshes it rather than stacking.
  */
@@ -17,6 +23,7 @@
 import type { ByElement, Element } from "./stats";
 
 export const ANIMATION_SECONDS = 0.3;
+export const DEFAULT_STEP = 0.02;
 
 export type SkillEffect =
   /** `growsTo`: one more hit per use, up to this many (Sea Judgment). */
@@ -28,10 +35,12 @@ export type SkillEffect =
   | { type: "rave"; power: number }
   /** Cooldowns recharge faster by `power` while it lasts (Breath of Waves). */
   | { type: "cooldownRate"; power: number }
-  /** Charges every cooldown by `power` of its length (Meditation). */
+  /** Charges every cooldown and required-strike count by `power` of its length (Meditation). */
   | { type: "chargeCooldowns"; power: number }
   /** The next attack skill of the same element deals +power (Ignition). */
-  | { type: "nextSkill"; power: number };
+  | { type: "nextSkill"; power: number }
+  /** Total ATK +power for each percent of life missing, no HP recovery while it lasts (Rage). */
+  | { type: "rage"; power: number };
 
 export type FightSkill = {
   name: string;
@@ -51,6 +60,12 @@ export type FightSkill = {
   effect: SkillEffect;
   /** Extra damage this skill deals from other sources (Heart of Fire), as a fraction. */
   bonus: number;
+  /** Mana spent per cast. */
+  mpCost?: number;
+  /** Share of the current life spent per cast (Lightning Body 0.5). */
+  hpCost?: number;
+  /** Stages a stacking passive completes; it stops once they're all done. */
+  maxStacks?: number | null;
 };
 
 export type FightInput = {
@@ -64,7 +79,16 @@ export type FightInput = {
   elementAmp?: ByElement;
   /** Extra damage against the boss on every hit (Black Orb). */
   bossDamage?: number;
+  /** Basic attacks a second before ATK SPD buffs (1 plus the Bracelet of Speed). */
+  attackSpeed?: number;
+  /** Life and mana pools and what they refill each second; no pools means skills cost nothing. */
+  maxHp?: number;
+  hpRecovery?: number;
+  maxMana?: number;
+  manaRecovery?: number;
   skills: FightSkill[];
+  /** Skills with auto off, by name: they wait for `cast` once ready. */
+  manual?: string[];
   duration: number;
   step?: number;
 };
@@ -76,6 +100,32 @@ export type FightResult = {
   total: number;
   basic: number;
   bySkill: Record<string, number>;
+};
+
+export type SkillStatus = {
+  name: string;
+  /** How far toward ready, 0..1. */
+  ready: number;
+  queued: boolean;
+  active: boolean;
+  stacks: number;
+  complete: boolean;
+  manual: boolean;
+  /** Real time of the latest cast, -1 before the first. */
+  lastCast: number;
+  uses: number;
+};
+
+export type FightState = FightResult & {
+  clock: number;
+  real: number;
+  hp: number;
+  maxHp: number;
+  mana: number;
+  maxMana: number;
+  attacksPerSecond: number;
+  done: boolean;
+  skills: SkillStatus[];
 };
 
 /** Expected damage of a hit (DMG Efficiency Data A51): it can crit, death strike, both or neither. */
@@ -103,13 +153,26 @@ type Live = {
   stacks: number;
   uses: number;
   started: boolean;
+  manual: boolean;
+  lastCast: number;
 };
 
 const isStack = (skill: FightSkill) =>
   skill.effect.type === "atkStack" || skill.effect.type === "speedStack" || skill.effect.type === "elementStack";
+const complete = (l: Live) => isStack(l.skill) && l.skill.maxStacks != null && l.stacks >= l.skill.maxStacks;
+const castable = (skill: FightSkill) => skill.kind !== "passive";
 
-export function simulateFight(input: FightInput): FightResult {
-  const step = input.step ?? 0.02;
+export type Fight = {
+  /** Plays the fight forward by this many real seconds (or until it ends). */
+  advance: (seconds: number) => void;
+  /** Queues a ready skill whose auto is off; false when it isn't ready. */
+  cast: (name: string) => boolean;
+  state: () => FightState;
+};
+
+export function createFight(input: FightInput): Fight {
+  const step = input.step ?? DEFAULT_STEP;
+  const manual = new Set(input.manual ?? []);
   // Cooldown skills are ready at the start; stacks and counters start from zero.
   const readyAtStart = (skill: FightSkill) => skill.trigger === "seconds" && !isStack(skill);
   const live: Live[] = input.skills.map((skill) => ({
@@ -121,9 +184,18 @@ export function simulateFight(input: FightInput): FightResult {
     stacks: 0,
     uses: 0,
     started: skill.startAt <= 0,
+    manual: castable(skill) && manual.has(skill.name),
+    lastCast: -1,
   }));
   const queues: Record<"attack" | "buff", Live[]> = { attack: [], buff: [] };
   const queueFreeAt = { attack: 0, buff: 0 }; // real time
+
+  const maxHp = input.maxHp ?? 0;
+  const maxMana = input.maxMana ?? 0;
+  const pools = maxMana > 0;
+  let hp = maxHp;
+  let mana = maxMana;
+  const baseSpeed = input.attackSpeed ?? 1;
 
   let real = 0;
   let clock = 0;
@@ -139,23 +211,30 @@ export function simulateFight(input: FightInput): FightResult {
   const points = [{ t: 0, damage: 0 }];
   const casts: { name: string; t: number }[] = [];
 
+  const isOn = (l: Live) => l.skill.trigger === "always" || (clock >= l.activeFrom && clock < l.activeUntil);
+
   const bonuses = () => {
     let atk = 0;
     let speed = 0;
     let cooldownRate = 0;
+    let rage = false;
     const element: Partial<Record<Element, number>> = {};
+    const missing = maxHp > 0 ? Math.max(0, 1 - hp / maxHp) * 100 : 0;
     for (const l of live) {
       const e = l.skill.effect;
       if (e.type === "atkStack") atk += e.power * l.stacks;
       if (e.type === "speedStack") speed += e.power * l.stacks;
       if (e.type === "elementStack" && l.skill.element) element[l.skill.element] = (element[l.skill.element] ?? 0) + e.power * l.stacks;
-      const on = l.skill.trigger === "always" || (clock >= l.activeFrom && clock < l.activeUntil);
-      if (!on) continue;
+      if (!isOn(l)) continue;
       if (e.type === "atk") atk += e.power;
       if (e.type === "speed") speed += e.power;
       if (e.type === "cooldownRate") cooldownRate += e.power;
+      if (e.type === "rage") {
+        atk += e.power * missing;
+        rage = true;
+      }
     }
-    return { atk, speed, cooldownRate, element };
+    return { atk, speed, cooldownRate, element, rage };
   };
 
   const boss = 1 + (input.bossDamage ?? 0);
@@ -181,6 +260,9 @@ export function simulateFight(input: FightInput): FightResult {
     l.progress = 0;
     l.queued = false;
     l.uses += 1;
+    l.lastCast = real;
+    if (pools) mana = Math.max(0, mana - (s.mpCost ?? 0));
+    if (s.hpCost) hp -= hp * s.hpCost;
     const now = bonuses();
     let animation = queue ? ANIMATION_SECONDS : 0;
 
@@ -210,7 +292,11 @@ export function simulateFight(input: FightInput): FightResult {
     } else if (e.type === "nextSkill") {
       if (s.element) nextSkillBonus[s.element] = e.power;
     } else if (e.type === "chargeCooldowns") {
-      for (const other of live) if (other !== l && other.skill.trigger === "seconds" && !isStack(other.skill)) other.progress += e.power * other.skill.every;
+      // Meditation charges cooldowns and required strikes alike.
+      for (const other of live) {
+        const t = other.skill.trigger;
+        if (other !== l && (t === "seconds" || t === "hits") && !isStack(other.skill)) other.progress += e.power * other.skill.every;
+      }
     } else if (isStack(s)) {
       l.stacks += 1;
     } else {
@@ -225,7 +311,9 @@ export function simulateFight(input: FightInput): FightResult {
     }
   };
 
-  while (clock < input.duration) {
+  const done = () => clock >= input.duration;
+
+  const tick = () => {
     const frozen = real < frozenUntil;
     const inRave = real < raveUntil;
     const now = bonuses();
@@ -241,11 +329,12 @@ export function simulateFight(input: FightInput): FightResult {
         l.started = true;
         if (readyAtStart(s)) l.progress = s.every;
       }
-      if (!l.started || s.trigger === "always" || l.queued) continue;
+      if (!l.started || s.trigger === "always" || l.queued || complete(l)) continue;
       if (s.trigger === "seconds" && !frozen) l.progress += step * (1 + now.cooldownRate);
       if (l.progress < s.every) continue;
+      l.progress = Math.min(l.progress, s.every);
       if (s.kind === "passive") go(l, null);
-      else {
+      else if (!l.manual) {
         l.queued = true;
         queues[s.kind === "attack" ? "attack" : "buff"].push(l);
       }
@@ -254,19 +343,82 @@ export function simulateFight(input: FightInput): FightResult {
     // Skills keep going during Rave's stopped time, but wait out a stopped-time attack.
     const blocked = frozen && !inRave;
     for (const queue of ["buff", "attack"] as const) {
-      if (queues[queue].length && real >= queueFreeAt[queue] && !blocked) go(queues[queue].shift()!, queue);
+      if (!queues[queue].length || real < queueFreeAt[queue] || blocked) continue;
+      // The first queued skill there's mana for goes; the rest keep waiting.
+      const index = pools ? queues[queue].findIndex((l) => (l.skill.mpCost ?? 0) <= mana) : 0;
+      if (index >= 0) go(queues[queue].splice(index, 1)[0]!, queue);
     }
 
+    const attacksPerSecond = baseSpeed * (1 + now.speed);
     if (real >= nextBasic && !blocked) {
       deal(expectedHit(input.attack * (1 + now.atk), input), null);
-      nextBasic = real + 1 / (1 + now.speed);
-      for (const l of live) if (l.skill.trigger === "hits" && l.started && !l.queued) l.progress += 1;
+      nextBasic = real + 1 / attacksPerSecond;
+      for (const l of live) if (l.skill.trigger === "hits" && l.started && !l.queued && !complete(l)) l.progress += 1;
+    }
+
+    if (!frozen) {
+      if (maxHp > 0 && !now.rage) hp = Math.min(maxHp, hp + (input.hpRecovery ?? 0) * step);
+      if (pools) mana = Math.min(maxMana, mana + (input.manaRecovery ?? 0) * step);
     }
 
     real += step;
     if (real >= frozenUntil) clock = Math.min(input.duration, clock + step);
-  }
+  };
 
+  let carry = 0;
+  return {
+    advance: (seconds) => {
+      carry += seconds;
+      while (carry >= step && !done()) {
+        tick();
+        carry -= step;
+      }
+    },
+    cast: (name) => {
+      const l = live.find((x) => x.skill.name === name);
+      if (!l || !l.manual || l.queued || !l.started || l.progress < l.skill.every || done()) return false;
+      l.queued = true;
+      queues[l.skill.kind === "attack" ? "attack" : "buff"].push(l);
+      return true;
+    },
+    state: () => {
+      const now = bonuses();
+      return {
+        points,
+        casts,
+        total,
+        basic,
+        bySkill,
+        clock,
+        real,
+        hp,
+        maxHp,
+        mana,
+        maxMana,
+        attacksPerSecond: baseSpeed * (1 + now.speed),
+        done: done(),
+        skills: live.map((l) => ({
+          name: l.skill.name,
+          ready: l.skill.trigger === "always" ? 1 : Math.min(1, l.progress / Math.max(1e-9, l.skill.every)),
+          queued: l.queued,
+          active: isOn(l) && !isStack(l.skill) && l.skill.duration > 0,
+          stacks: l.stacks,
+          complete: complete(l),
+          manual: l.manual,
+          lastCast: l.lastCast,
+          uses: l.uses,
+        })),
+      };
+    },
+  };
+}
+
+/** The whole fight at once. */
+export function simulateFight(input: FightInput): FightResult {
+  const fight = createFight(input);
+  // Stopped time adds real seconds past the fight's length; the loop ends on the fight clock.
+  fight.advance(Number.MAX_SAFE_INTEGER);
+  const { points, casts, total, basic, bySkill } = fight.state();
   return { points, casts, total, basic, bySkill };
 }
 

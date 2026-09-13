@@ -64,6 +64,15 @@ export function companionLevel(totalPassiveLevels: number): number {
   return total > 300 ? 60 + Math.floor((total - 300) / 10) : Math.floor(total / 5);
 }
 
+/**
+ * A companion's Status: element damage for its element, the increment of its
+ * promotion # (advancement + 1, Companions Data U7:V55) per companion level.
+ */
+export function companionStatus(increments: number[], advancement: number, level: number): number {
+  const index = Math.min(increments.length - 1, Math.max(0, Math.floor(advancement)));
+  return (increments[index] ?? 0) * Math.max(0, level);
+}
+
 /** A promotion rank ("3rd") multiplies its rolled value; `null` means the slot is still locked. */
 export function promotionBuff(value: number | null, rank: string | null, multipliers: Record<string, number>): number {
   if (value === null || rank === null) return 0;

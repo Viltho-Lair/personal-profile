@@ -4,7 +4,7 @@ import { useState } from "react";
 import companionsData from "@/data/optimizer/companions.json";
 import {
   companionEffect,
-  companionLevel,
+  companionLevel, companionStatus,
   costToMax,
   formatEffect,
   nextLevelCost,
@@ -46,6 +46,8 @@ type Promotion = {
   tiers: { colour: string; values: Record<string, number> }[];
   rankMultipliers: Record<string, number>;
   slotsByAdvancement: (string | null)[][];
+  /** Element damage per companion level, by advancement (the companion Status). */
+  elementIncrements: number[];
 };
 
 const COMPANIONS = companionsData.companions as unknown as Companion[];
@@ -170,7 +172,11 @@ function CompanionColumn({
         <span className="flex min-w-0 flex-col">
           <span className="text-sm leading-tight font-medium">{companion.name}</span>
           <span className={`font-mono text-[9px] tracking-[0.06em] uppercase ${(companion.element && ELEMENT_TEXT[companion.element]) || "text-dim"}`}>
-            {companion.element} · Lv {companionLevel(levels.reduce((a, b) => a + b, 0))}
+            {companion.element} · Lv {companionLevel(levels.reduce((a, b) => a + b, 0))} · {companion.element} Dmg +
+            {formatValue(
+              Math.round(companionStatus(PROMOTION.elementIncrements, advancement, companionLevel(levels.reduce((a, b) => a + b, 0))) * 10000) / 100,
+            )}
+            %
           </span>
           <span className="truncate font-mono text-[9px] tracking-[0.04em] text-dim uppercase">
             Adv {String(advancement).padStart(3, "0")} · {skinFor(companion, advancement)?.name}

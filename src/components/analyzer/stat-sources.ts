@@ -11,7 +11,7 @@ import {
   type KnowledgeGrade,
   type LatentMultiplier,
 } from "@/lib/game/character";
-import { companionEffect, promotionBuff, type CompanionFormula } from "@/lib/game/companions";
+import { companionEffect, companionLevel, companionStatus, promotionBuff, type CompanionFormula } from "@/lib/game/companions";
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { proficiencyBonuses } from "@/lib/game/familiars";
 import { gemTotals, plateComplete } from "@/lib/game/engraving";
@@ -28,7 +28,7 @@ import refinementData from "@/data/optimizer/skill-refinement.json";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
 import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
 import { totalSubNodeLevels, treeBonuses, treeBuffs, treeLevel, type MemoryTree } from "@/lib/game/memory-tree";
-import { ELEMENTS, emptySources, type Element, type StatSources } from "@/lib/game/stats";
+import { ELEMENTS, emptySources, noElements, type Element, type StatSources } from "@/lib/game/stats";
 import {
   activeAbilityPreset,
   mountedBeast,
@@ -79,6 +79,7 @@ type PromotionData = {
   tiers: { values: Record<string, number> }[];
   rankMultipliers: Record<string, number>;
   slotsByAdvancement: (string | null)[][];
+  elementIncrements: number[];
 };
 const COMPANIONS = companionsData.companions as unknown as Companion[];
 /** Companion promotion options, by the summary source they add to. */
@@ -325,6 +326,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     gold: relic("Lucky Pendant"),
     accuracy: relic("Focus Ring"),
     dodge: relic("Invisible Cloak"),
+    speed: relic("Bracelet of Speed"),
     element: { Fire: relic("Silence Flame"), Water: relic("Abyss's Water Drop"), Wind: relic("Eye of Typoon"), Earth: relic("Emperor Ring") },
   };
 
@@ -391,6 +393,14 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
       return [element, companion && skill ? companionSkill(profile, companion.name, skill.name) : 0];
     }),
   ) as Record<Element, number>;
+  const status = noElements();
+  for (const companion of COMPANIONS) {
+    const element = ELEMENTS.find((e) => e === companion.element);
+    if (!element) continue;
+    const state = companionState(profile, companion.name);
+    const levels = companion.skills.reduce((sum, skill) => sum + clampLevel(state.skills[skill.name] ?? 0, skill.maxLevel), 0);
+    status[element] += companionStatus(COMPANION_PROMOTION.elementIncrements, state.advancement, companionLevel(levels));
+  }
   s.companions = {
     blessingOfForest: companionSkill(profile, "Ellie", "Blessing of Forest"),
     bladeDance: companionSkill(profile, "Zeke", "Blade Dance"),
@@ -404,6 +414,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     manaDope: companionSkill(profile, "Luna", "Mana Dope"),
     manaAmplification: companionSkill(profile, "Luna", "Mana Amplification"),
     understanding,
+    status,
   };
 
   const { spent } = totalSubNodeLevels(TREE, c.memoryTree);

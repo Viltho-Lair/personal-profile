@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expectedHit, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
+import { createFight, expectedHit, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
 
 const base: FightInput = {
   attack: 100,
@@ -85,6 +85,50 @@ describe("simulateFight", () => {
     const amped = simulateFight({ ...base, skills: [slash], elementAmp: { Fire: 1, Water: 0, Wind: 0, Earth: 0 }, bossDamage: 0.5 });
     expect(amped.bySkill.Slash).toBeCloseTo(plain.bySkill.Slash * 3);
     expect(amped.basic).toBeCloseTo(plain.basic * 1.5);
+  });
+
+  it("stops a stacking passive once its stages are complete", () => {
+    const stack = skill({ name: "Speed Sword", kind: "passive", trigger: "hits", every: 2, maxStacks: 3, effect: { type: "speedStack", power: 0.1 } });
+    const result = simulateFight({ ...base, skills: [stack] });
+    expect(result.casts.filter((c) => c.name === "Speed Sword")).toHaveLength(3);
+  });
+
+  it("waits for mana, spends life on Lightning Body and grows Rage with missing life", () => {
+    const pools = { maxHp: 1000, hpRecovery: 0, maxMana: 50, manaRecovery: 0 };
+    const slash = skill({ name: "Slash", every: 1, mpCost: 30, effect: { type: "damage", power: 1, hits: 1 } });
+    const starved = simulateFight({ ...base, ...pools, skills: [slash] });
+    expect(starved.casts).toHaveLength(1);
+
+    const body = skill({ name: "Lightning Body", element: "Wind", kind: "buff", every: 100, duration: 5, hpCost: 0.5, effect: { type: "speed", power: 1 } });
+    const fight = createFight({ ...base, ...pools, skills: [body] });
+    fight.advance(1);
+    expect(fight.state().hp).toBeCloseTo(500);
+    expect(fight.state().attacksPerSecond).toBeCloseTo(2);
+
+    const rage = skill({ name: "Rage", kind: "buff", every: 100, duration: 20, effect: { type: "rage", power: 0.02 } });
+    const raged = simulateFight({ ...base, ...pools, skills: [body, rage] });
+    const plain = simulateFight({ ...base, ...pools, skills: [body] });
+    // 50% life missing: +100% ATK on the basics
+    expect(raged.basic).toBeGreaterThan(plain.basic * 1.8);
+  });
+
+  it("holds a skill with auto off until it's cast by hand", () => {
+    const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
+    const fight = createFight({ ...base, skills: [slash], manual: ["Slash"] });
+    fight.advance(2);
+    expect(fight.state().casts).toHaveLength(0);
+    expect(fight.state().skills[0]).toMatchObject({ ready: 1, manual: true });
+    expect(fight.cast("Slash")).toBe(true);
+    fight.advance(0.1);
+    expect(fight.state().casts).toHaveLength(1);
+    expect(fight.cast("Slash")).toBe(false);
+  });
+
+  it("charges required strikes with Meditation too", () => {
+    const strike = skill({ name: "Strike", trigger: "hits", every: 20, effect: { type: "damage", power: 1, hits: 1 } });
+    const meditation = skill({ name: "Meditation", element: "Water", kind: "buff", every: 100, effect: { type: "chargeCooldowns", power: 0.5 } });
+    const first = (skills: FightSkill[]) => simulateFight({ ...base, duration: 30, skills }).casts.find((c) => c.name === "Strike")?.t ?? 99;
+    expect(first([strike, meditation])).toBeLessThan(first([strike]) - 5);
   });
 
   it("applies skill stones only to their element", () => {

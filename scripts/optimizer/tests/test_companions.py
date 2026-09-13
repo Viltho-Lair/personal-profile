@@ -44,6 +44,7 @@ def data_sheet():
         "X3": 1, "Y3": "White", "Z3": 0.03, "AA3": 0.01, "AB3": 0.03, "AC3": 0.05, "AD3": 0,
         "X4": 2, "Y4": "Green", "Z4": 0.04, "AA4": 0.02, "AB4": 0.04, "AC4": 0.07, "AD4": 0,
         "X12": "Promotion #", "X13": 1, "Y13": "1st", "X14": 2, "Y14": "2nd", "Z14": "1st",
+        "U6": "ELEMENT DMG  INCREMENTS", "U7": 1, "V7": 0.005, "U8": 2, "V8": 0.01,
     }
     for i in range(4):
         col = 33 + 20 * i  # AG, BA, BU, CO
@@ -102,6 +103,7 @@ class ExtractCompanions(unittest.TestCase):
         self.assertEqual(self.promotion["flatOptions"], ["Accuracy", "Dodge", "CC Resist"])
         self.assertEqual(self.promotion["slotsByAdvancement"][1][:3], ["2nd", "1st", None])
         self.assertEqual(self.promotion["rankMultipliers"]["7th"], 4)
+        self.assertEqual(self.promotion["elementIncrements"], [0.005, 0.01])
 
 
 class Effect(unittest.TestCase):

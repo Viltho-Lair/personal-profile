@@ -60,5 +60,6 @@ export function refinementEffects(lines: RefinementLine[]) {
     cooldown: sum(COOLDOWN_OPTION),
     strikes: sum(STRIKES_OPTION),
     attribute: sum(ATTRIBUTE_OPTION),
+    mana: sum("Mana Consumption Reduction(%)"),
   };
 }

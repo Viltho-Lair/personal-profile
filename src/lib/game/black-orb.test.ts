@@ -23,6 +23,10 @@ describe("black orb", () => {
     // Awakening (+1) needs orb level 20.
     expect(effects.element.Fire).toBeCloseTo(342.43);
     expect(effects.element.Water).toBe(0);
+
+    // Lines and top stat count even when the accessory level is left at 0.
+    orb.accessories.Fire = { ...orb.accessories.Fire, level: 0 };
+    expect(blackOrbEffects(orbData, orb).amp.Fire).toBeCloseTo(0.23);
   });
 
   it("adds awakening, bonus effects, resonance and level buffs once the orb is high enough", () => {

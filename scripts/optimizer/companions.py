@@ -196,6 +196,17 @@ def _promotion(data_sheet):
         ranks = [text(data_sheet.cell(row, rank_col + 1 + i).value) for i in range(7)]
         slots.append([rank if rank in RANKS else None for rank in ranks])
         row += 1
+    # Companion Status: element damage per companion level, by promotion # (advancement + 1).
+    inc_row, inc_col = find_cell(data_sheet, "ELEMENT DMG INCREMENTS")
+    increments = []
+    row = inc_row + 1
+    while isinstance(number(data_sheet.cell(row, inc_col).value), int):
+        if number(data_sheet.cell(row, inc_col).value) != len(increments) + 1:
+            raise ValueError(f"{data_sheet.title} row {row}: element damage increments out of order")
+        increments.append(number(data_sheet.cell(row, inc_col + 1).value) or 0)
+        row += 1
+    if not increments:
+        raise MissingHeader(f"{data_sheet.title}: empty ELEMENT DMG INCREMENTS table")
     options, tiers = _with_game_options(options, tiers)
     return {
         "options": options,
@@ -204,6 +215,8 @@ def _promotion(data_sheet):
         "rankMultipliers": RANK_MULTIPLIERS,
         # index 0 is advancement 000; each entry is the 7 slots' ranks (null = locked)
         "slotsByAdvancement": slots,
+        # index 0 is advancement 000: element damage per companion level
+        "elementIncrements": increments,
     }
 
 

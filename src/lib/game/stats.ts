@@ -45,7 +45,7 @@ export type StatSources = {
   shrine: { soulWeaponAtk: number; atk: number; hp: number; element: ByElement };
   /** Soul gems on the equipped soul weapon's plate (the workbook's Additional Options). */
   engraving: { atk: number; hp: number; hpRecovery: number; critDamage: number; gold: number; accuracy: number; dodge: number };
-  relics: { atk: number; critDamage: number; hp: number; hpRecovery: number; gold: number; accuracy: number; dodge: number; element: ByElement };
+  relics: { atk: number; critDamage: number; hp: number; hpRecovery: number; gold: number; accuracy: number; dodge: number; speed: number; element: ByElement };
   companionPromotion: {
     atk: number; critDamage: number; hp: number; hpRecovery: number; mana: number; manaRecovery: number;
     gold: number; accuracy: number; dodge: number; exp: number; ccResist: number;
@@ -59,6 +59,8 @@ export type StatSources = {
     blessingOfForest: number; bladeDance: number; fortitude: number; lunatic: number; intensiveFire: number;
     shadowDance: number; goldRush: number; goldRush2: number; hymn: number; manaDope: number; manaAmplification: number;
     understanding: ByElement;
+    /** Each companion's Status: element damage by its element. */
+    status: ByElement;
   };
   memoryTree: { atk: number; hp: number; vit: number; atkMultiplier: number; hpMultiplier: number; goldAll: number; goldStage: number; expAll: number; expStage: number };
   constellation: { atk: number; hp: number; hpRecovery: number; promotion: number; goldAll: number; goldStage: number; expAll: number; expStage: number; amplify: ByElement };
@@ -80,6 +82,8 @@ export type Stats = {
   deathStrikeDamage: number;
   mana: number;
   manaRecovery: number;
+  /** Basic attacks a second: 1 (the workbook has no base attack speed) raised by the Bracelet of Speed. */
+  attackSpeed: number;
   accuracy: number;
   dodge: number;
   ccResist: number;
@@ -186,6 +190,7 @@ export function computeStats(s: StatSources): Stats {
   for (const element of ELEMENTS) {
     elementDamage[element] =
       s.companions.understanding[element] +
+      s.companions.status[element] +
       s.relics.element[element] +
       s.skillProficiency +
       s.familiarProficiency.attribute +
@@ -207,6 +212,7 @@ export function computeStats(s: StatSources): Stats {
     accuracy: 30 + s.appearance.accuracy + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.refinement.accuracy + s.engraving.accuracy + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
     dodge: 10 + s.appearance.dodge + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.refinement.dodge + s.engraving.dodge + s.companionPromotion.dodge + s.slayerPromotion.dodge,
     ccResist: s.companionPromotion.ccResist + s.slayerPromotion.ccResist,
+    attackSpeed: 1 + s.relics.speed,
     extraGold: gold,
     extraExp: exp,
     extraDamage,
@@ -237,13 +243,13 @@ export function emptySources(): StatSources {
     appearance: { atk: 0, hp: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0 },
     beasts: { combat: 0, mountedAtk: 0 },
     blackOrb: { amp: noElements(), element: noElements(), atk: 0, hp: 0, boss: 0, monster: 0 },
-    relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, element: noElements() },
+    relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, speed: 0, element: noElements() },
     companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },
     slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0, ccResist: 0 },
     mastery: { atk: 0, hp: 0, hpRegen: 0, gold: 0, exp: 0, hpAmp: 0, hpRegenAmp: 0 },
     companions: {
       blessingOfForest: 0, bladeDance: 0, fortitude: 0, lunatic: 0, intensiveFire: 0, shadowDance: 0,
-      goldRush: 0, goldRush2: 0, hymn: 0, manaDope: 0, manaAmplification: 0, understanding: noElements(),
+      goldRush: 0, goldRush2: 0, hymn: 0, manaDope: 0, manaAmplification: 0, understanding: noElements(), status: noElements(),
     },
     memoryTree: { atk: 0, hp: 0, vit: 0, atkMultiplier: 0, hpMultiplier: 0, goldAll: 0, goldStage: 0, expAll: 0, expStage: 0 },
     constellation: { atk: 0, hp: 0, hpRecovery: 0, promotion: 0, goldAll: 0, goldStage: 0, expAll: 0, expStage: 0, amplify: noElements() },

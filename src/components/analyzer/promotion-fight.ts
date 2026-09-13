@@ -1,6 +1,6 @@
 import characterData from "@/data/optimizer/character.json";
 import promotionBossData from "@/data/optimizer/promotion-bosses.json";
-import { simulateFight, withStones, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
+import { simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
 import { refinementEffects } from "@/lib/game/refinement";
@@ -74,7 +74,11 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   const power = (skillPower(skill.baseValue, skill.upgradeValue, level) ?? 0) / 100;
   const text = skill.description.specific ?? "";
   const element = (ELEMENTS as readonly string[]).includes(skill.element ?? "") ? (skill.element as Element) : null;
+  const refined = refinementEffects(profile.skillRefinement[skill.name] ?? []);
   const base: Omit<FightSkill, "effect"> = {
+    mpCost: Math.max(0, (skill.mpCost ?? 0) * (1 - refined.mana)),
+    // Stacking passives complete after their stages (Skills Data's Range column).
+    maxStacks: m.passive === "stack" ? (skill.range ?? null) : null,
     name: skill.name,
     element,
     kind: m.type ?? "attack",
@@ -99,6 +103,9 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   if (skill.name === "Sea Judgment")
     return make({ type: "damage", power, hits: 1, growsTo: 7 }, { kind: "passive", trigger: "elementCasts", every: m.additional[0] || 3 });
   if (skill.name === "Blast Wind") return make({ type: "elementStack", power }, { kind: "passive", trigger: "elementCasts", every: 5 });
+  if (skill.name === "Rage") return make({ type: "rage", power }, { kind: "buff" });
+  if (skill.name === "Lightning Body")
+    return make({ type: "speed", power }, { kind: "buff", hpCost: (num(/(\d+)% of current HP/i, text) ?? 50) / 100 });
 
   if (m.type === "attack") {
     if (!/X%.{0,20}(damage|DMG)|X% of (their )?ATK|(damage|DMG) X%/i.test(text) || /copy the last|frozen|Y%/i.test(text)) return skill.name;
@@ -112,7 +119,6 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
       bonus = heart * (1 + Math.max(0, fireSkills - 4));
     }
     // Refinement: extra damage, and a shorter cooldown or fewer required hits.
-    const refined = refinementEffects(profile.skillRefinement[skill.name] ?? []);
     const every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
     // Statue of Demon amplifies skill damage.
     const shrine = shrineEffects(SHRINE, profile.sealedShrine).skillDamage;
@@ -171,9 +177,10 @@ export function presetFightSkills(profile: ProfileV1) {
   return { skills, skipped };
 }
 
-function fight(sources: StatSources, skills: FightSkill[], duration: number, step?: number): FightResult {
+/** The fight's input from the stats: hit, element damage, attack speed, life and mana pools. */
+export function fightInput(sources: StatSources, skills: FightSkill[], duration: number, manual: string[] = [], step?: number): FightInput {
   const stats = computeStats(sources);
-  return simulateFight({
+  return {
     attack: stats.attack,
     critChance: stats.critChance,
     critDamage: stats.critDamage,
@@ -182,10 +189,20 @@ function fight(sources: StatSources, skills: FightSkill[], duration: number, ste
     extraDamage: stats.elementDamage,
     elementAmp: stats.elementAmp,
     bossDamage: stats.bossDamage,
+    attackSpeed: stats.attackSpeed,
+    maxHp: stats.hp,
+    hpRecovery: stats.hpRecovery,
+    maxMana: stats.mana,
+    manaRecovery: stats.manaRecovery,
     skills,
+    manual,
     duration,
     step,
-  });
+  };
+}
+
+function fight(sources: StatSources, skills: FightSkill[], duration: number, step?: number, manual: string[] = []): FightResult {
+  return simulateFight(fightInput(sources, skills, duration, manual, step));
 }
 
 export type Suggestion = { label: string; detail: string };
@@ -267,11 +284,11 @@ const HIT_LEVERS: { label: string; apply: (s: StatSources, x: number) => void; c
   },
 ];
 
-function solveHitLever(lever: (typeof HIT_LEVERS)[number], base: StatSources, skills: FightSkill[], duration: number, hp: number) {
+function solveHitLever(lever: (typeof HIT_LEVERS)[number], base: StatSources, skills: FightSkill[], duration: number, hp: number, manual: string[]) {
   const beats = (x: number) => {
     const s = structuredClone(base);
     lever.apply(s, x);
-    return fight(s, skills, duration, 0.1).total >= hp;
+    return fight(s, skills, duration, 0.1, manual).total >= hp;
   };
   const cap = lever.cap(base);
   let high = cap ?? 1;
@@ -292,34 +309,43 @@ function solveHitLever(lever: (typeof HIT_LEVERS)[number], base: StatSources, sk
   return high;
 }
 
-export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null, promotionIndex: number, duration: number) {
+/** Everything a fight needs before it's played: the boss, the preset's fight skills and the input. */
+export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null, promotionIndex: number, duration: number, manual: string[] = []) {
   const boss = promotionBoss(promotionIndex);
   // Skill buffs play out in the fight itself, so the stats come without them.
   const sources = collectSources(profile, factors, false);
   const { skills, skipped } = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
-  const result = fight(sources, skills, duration);
-  if (!boss) return { boss, result, skills, skipped, suggestions: [] as Suggestion[], spread: null, withSkills: null };
+  return { boss, sources, skills, skipped, input: fightInput(sources, skills, duration, manual) };
+}
 
+/** After a fight falls short: what alone would close the gap, and the same with skills when they were left out. */
+export function promotionSuggestions(
+  profile: ProfileV1,
+  fightSetup: ReturnType<typeof promotionFight>,
+  total: number,
+  duration: number,
+  manual: string[] = [],
+) {
+  const { boss, sources, skills } = fightSetup;
   let suggestions: Suggestion[] = [];
   let spread: number | null = null;
   let withSkills: number | null = null;
-  if (result.total > 0 && result.total < boss.hp) {
-    const ratio = boss.hp / result.total;
-    const atk = ATK_GROUPS.flatMap((lever) => {
-      const group = lever.group(sources);
-      const detail = lever.describe(sources, group * (ratio - 1));
-      return detail ? [{ label: lever.label, detail, rank: ratio }] : [];
-    });
-    const hits = HIT_LEVERS.flatMap((lever) => {
-      const x = solveHitLever(lever, sources, skills, duration, boss.hp);
-      return x === null ? [] : [{ label: lever.label, detail: lever.describe(x), rank: 1 + x }];
-    });
-    suggestions = [...hits, ...atk]
-      .sort((a, b) => a.rank - b.rank)
-      .slice(0, 4)
-      .map(({ label, detail }) => ({ label, detail }));
-    spread = Math.pow(ratio, 1 / 5);
-    if (!profile.includeSkills) withSkills = fight(sources, presetFightSkills(profile).skills, duration).total;
-  }
-  return { boss, result, skills, skipped, suggestions, spread, withSkills };
+  if (!boss || total <= 0 || total >= boss.hp) return { suggestions, spread, withSkills };
+  const ratio = boss.hp / total;
+  const atk = ATK_GROUPS.flatMap((lever) => {
+    const group = lever.group(sources);
+    const detail = lever.describe(sources, group * (ratio - 1));
+    return detail ? [{ label: lever.label, detail, rank: ratio }] : [];
+  });
+  const hits = HIT_LEVERS.flatMap((lever) => {
+    const x = solveHitLever(lever, sources, skills, duration, boss.hp, manual);
+    return x === null ? [] : [{ label: lever.label, detail: lever.describe(x), rank: 1 + x }];
+  });
+  suggestions = [...hits, ...atk]
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, 4)
+    .map(({ label, detail }) => ({ label, detail }));
+  spread = Math.pow(ratio, 1 / 5);
+  if (!profile.includeSkills) withSkills = fight(sources, presetFightSkills(profile).skills, duration).total;
+  return { suggestions, spread, withSkills };
 }
