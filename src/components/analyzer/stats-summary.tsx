@@ -7,7 +7,8 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue } from "./data";
 import { PresetPicker } from "./preset-picker";
 import { useSpiritFactors } from "./spirit-stats";
-import { collectSources, skillBuffs, UNTRACKED_SOURCES } from "./stat-sources";
+import { useLiveFight } from "./live-fight";
+import { collectSources, UNTRACKED_SOURCES } from "./stat-sources";
 
 const pct = (fraction: number) => `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -24,14 +25,13 @@ const PRESET_ROWS: { kind: PresetKind | "skills"; label: string; note?: string }
 export function StatsSummary() {
   const { profile, selectPreset, selectSkillPreset, setIncludeSkills } = useProfile();
   const factors = useSpiritFactors();
-  const stats = useMemo(
-    () => computeStats(collectSources(profile, factors, profile.includeSkills)),
-    [profile, factors],
-  );
-  const counted = profile.includeSkills ? skillBuffs(profile).counted : [];
+  // Skill buffs don't raise the summary on their own: they show on Attack only while the fight renders and they're on.
+  const stats = useMemo(() => computeStats(collectSources(profile, factors, false)), [profile, factors]);
+  const live = useLiveFight();
+  const liveAtk = live && profile.includeSkills ? live.atkBonus : 0;
 
   const rows: [string, string][] = [
-    ["Attack", formatValue(stats.attack)],
+    [liveAtk ? `Attack (buffs +${pct(liveAtk)})` : "Attack", formatValue(stats.attack * (1 + liveAtk))],
     ["HP", formatValue(stats.hp)],
     ["HP Recovery", formatValue(stats.hpRecovery)],
     ["Crit %", pct(stats.critChance)],
@@ -87,9 +87,9 @@ export function StatsSummary() {
       </ul>
       <p className="text-[10px] leading-snug text-dim">
         {profile.includeSkills
-          ? counted.length
-            ? `Skill buffs from preset ${profile.activeSkillPreset + 1}: ${counted.join(", ")}.`
-            : `No flat ATK or mana recovery buffs in skill preset ${profile.activeSkillPreset + 1}.`
+          ? live
+            ? `Attack shows the skill buffs on right now in the fight (preset ${profile.activeSkillPreset + 1}).`
+            : `Skill buffs from preset ${profile.activeSkillPreset + 1} raise Attack as they go on during a render.`
           : "Without skill buffs."}{" "}
         {UNTRACKED_SOURCES.length ? `Not counted yet: ${UNTRACKED_SOURCES.join(", ")}.` : null}
       </p>

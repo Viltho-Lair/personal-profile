@@ -145,6 +145,9 @@ export type FightState = FightResult & {
   /** Whether HP Recovery is running (Rage stops it). */
   recovering: boolean;
   attacksPerSecond: number;
+  /** Total ATK and ATK SPD the buffs, stacks and Rage add right now, as fractions. */
+  atkBonus: number;
+  speedBonus: number;
   done: boolean;
   skills: SkillStatus[];
 };
@@ -463,6 +466,8 @@ export function createFight(input: FightInput): Fight {
         manaRecovery: (input.manaRecovery ?? 0) * (1 + now.manaRate),
         recovering: !now.rage,
         attacksPerSecond: baseSpeed * (1 + now.speed),
+        atkBonus: now.atk,
+        speedBonus: now.speed,
         done: done(),
         skills: live.map((l) => ({
           name: l.skill.name,

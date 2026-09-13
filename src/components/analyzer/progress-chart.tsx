@@ -7,6 +7,7 @@ import { createFight, type Fight, type FightInput, type FightSkill, type FightSt
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME } from "./data";
 import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions } from "./promotion-fight";
+import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -54,6 +55,7 @@ export function ProgressChart() {
     if (frameRef.current !== null) window.clearTimeout(frameRef.current);
     frameRef.current = null;
     fightRef.current = null;
+    publishLiveFight(null);
   }, []);
 
   useEffect(() => {
@@ -81,8 +83,11 @@ export function ProgressChart() {
       if (state.done) {
         frameRef.current = null;
         fightRef.current = null;
+        publishLiveFight(null);
         setRun({ for: owner, phase: "done", snap: state });
       } else {
+        // The Stats Summary shows Attack with the buffs that are on as the fight plays.
+        publishLiveFight({ atkBonus: state.atkBonus, speedBonus: state.speedBonus });
         setRun({ for: owner, phase: "running", snap: state });
         frameRef.current = window.setTimeout(frame, FRAME_MS);
       }
