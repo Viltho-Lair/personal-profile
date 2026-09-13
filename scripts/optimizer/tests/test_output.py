@@ -54,6 +54,17 @@ class ExtractedOutput(unittest.TestCase):
         fire = next(s for s in items("skills.json") if s["name"] == "Fire Slash")
         self.assertEqual((fire["maxLevel"], fire["cooldown"], fire["baseValue"]), (250, 12, 400))
 
+    def test_skill_categories(self):
+        skills = items("skills.json")
+        by_category = {c: sorted(s["name"] for s in skills if s["category"] == c) for c in ("core", "seasonal", "immortal")}
+        self.assertEqual(by_category["immortal"], ["Mantra", "Rave"])
+        self.assertEqual((len(by_category["core"]), len(by_category["seasonal"])), (44, 18))
+        self.assertIn("Rekindle", by_category["seasonal"])
+
+    def test_proficiency_bonus_per_level(self):
+        bonuses = load("skill-proficiency.json")["bonuses"]
+        self.assertEqual((len(bonuses), bonuses[0], bonuses[1], bonuses[328]), (329, 0, 0.05, 1332.87))
+
     def test_gear_effect_matches_the_game(self):
         factors = load("gear-levels.json")["factors"]
         accessory = next(g for g in items("accessories.json") if g["grade"] == "Common 4")

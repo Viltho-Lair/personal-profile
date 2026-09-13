@@ -22,6 +22,7 @@ from PIL import Image  # noqa: E402
 
 from optimizer.art import find_existing_art  # noqa: E402
 from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors  # noqa: E402
+from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
@@ -150,6 +151,7 @@ def main():
 
     try:
         skills, skill_icons = extract_skills(values["Skills Data"])
+        proficiency = extract_proficiency(values["Skills Data"])
         weapons = extract_gear(values["Equipment Data"], "WEAPONS")
         accessories = extract_gear(values["Equipment Data"], "ACCESSORIES")
         level_factors = extract_level_factors(values["Equipment Data"])
@@ -194,6 +196,12 @@ def main():
         "factors": level_factors,
     })
     print(f"gear-levels: enhance levels 0-{gear_max_level}")
+
+    write_json(DATA / "skill-proficiency.json", {
+        "source": {"file": source.name, "sheet": "Skills Data", "extractedOn": today},
+        "bonuses": proficiency,
+    })
+    print(f"skill-proficiency: levels 0-{len(proficiency) - 1}")
     return 0
 
 

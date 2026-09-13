@@ -34,7 +34,7 @@ class ExtractSkills(unittest.TestCase):
         skills, _ = extract_skills(skills_sheet())
         self.assertEqual(skills[0], {
             "id": 1, "name": "Fire Slash", "element": "Fire", "grade": "Common",
-            "maxLevel": 250, "mpCost": 25, "baseValue": 400, "upgradeValue": 40,
+            "category": "core", "maxLevel": 250, "mpCost": 25, "baseValue": 400, "upgradeValue": 40,
             "cooldown": 12, "range": 3, "duration": 0,
             "description": {"basic": "Wrap fire around the sword", "specific": "Attack with X% of ATK"},
         })
@@ -46,6 +46,16 @@ class ExtractSkills(unittest.TestCase):
     def test_element_code_zero_means_no_element(self):
         skills, _ = extract_skills(skills_sheet())
         self.assertIsNone(skills[1]["element"])
+
+    def test_category_is_core_seasonal_or_immortal(self):
+        seasonal = {
+            "A5": "Rekindle", "G5": "Common", "H5": 1018.0, "J5": 1.0, "M5": 20.0,
+        }
+        skills, _ = extract_skills(skills_sheet(**seasonal))
+        self.assertEqual(
+            [(s["name"], s["category"]) for s in skills],
+            [("Fire Slash", "core"), ("Rave", "immortal"), ("Rekindle", "seasonal")],
+        )
 
     def test_never_reads_the_players_current_level(self):
         skills, _ = extract_skills(skills_sheet())

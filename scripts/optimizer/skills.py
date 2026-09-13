@@ -20,6 +20,14 @@ HEADERS = [
     "ActiveNeedValue", "Range", "Duration",
 ]
 PLACEHOLDER = "Locked"
+# Seasonal skills were added to the game later, numbered from 1001.
+FIRST_SEASONAL_ID = 1001
+
+
+def category(skill_id, grade):
+    if grade == "Immortal":
+        return "immortal"
+    return "seasonal" if skill_id >= FIRST_SEASONAL_ID else "core"
 
 
 def extract_skills(sheet):
@@ -41,11 +49,13 @@ def extract_skills(sheet):
         if skill_id is None or max_level is None:
             raise MissingHeader(f"{sheet.title} row {row}: {name!r} has no Id or MaxLevel")
 
+        grade = text(sheet.cell(row, col["Tier"]).value)
         skills.append({
             "id": skill_id,
             "name": name,
             "element": ELEMENTS.get(value("dmgType") or 0),
-            "grade": text(sheet.cell(row, col["Tier"]).value),
+            "grade": grade,
+            "category": category(skill_id, grade),
             "maxLevel": max_level,
             "mpCost": value("MpCost"),
             "baseValue": value("InitValue"),
