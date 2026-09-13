@@ -70,7 +70,7 @@ export type FightSkill = {
   bonus: number;
   /** Mana spent per cast. */
   mpCost?: number;
-  /** Share of the current life spent per cast (Lightning Body 0.5). */
+  /** Share of the current life spent per cast (Lightning Body 0.5); negative heals that share (Breath of Waves -0.5). */
   hpCost?: number;
   /** Stages a stacking passive completes; it stops once they're all done. */
   maxStacks?: number | null;
@@ -300,7 +300,7 @@ export function createFight(input: FightInput): Fight {
     l.lastCast = real;
     const release = e.type === "rave" && l.charged;
     if (pools && !release) mana = Math.max(0, mana - (s.mpCost ?? 0));
-    if (s.hpCost) hp -= hp * s.hpCost;
+    if (s.hpCost) hp = Math.min(maxHp, hp - hp * s.hpCost);
     const now = bonuses();
     const castSeconds = s.animation ?? ANIMATION_SECONDS;
     let animation = queue ? castSeconds : 0;

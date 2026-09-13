@@ -123,7 +123,12 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   if (skill.name === "Heart of Fire") return "";
   if (skill.name === "Rave") return make({ type: "rave", power }, { kind: "attack", trigger: "seconds", duration: num(/for (\d+) seconds/i, text) ?? 5 });
   if (skill.name === "Meditation") return make({ type: "chargeCooldowns", power }, { kind: "buff" });
-  if (skill.name === "Breath of Waves") return make({ type: "cooldownRate", power }, { kind: "buff" });
+  // Breath of Waves recovers 50% of current HP as it speeds cooldowns up.
+  if (skill.name === "Breath of Waves")
+    return make({ type: "cooldownRate", power }, { kind: "buff", hpCost: -((num(/Recover (\d+)% of current HP/i, text) ?? 50) / 100) });
+  // Warrior Burn spends 50% of current HP for its ATK.
+  if (skill.name === "Warrior Burn")
+    return make({ type: "atk", power }, { kind: "buff", hpCost: (num(/Consume (\d+)% HP of current HP/i, text) ?? 50) / 100 });
   if (skill.name === "Ignition") return make({ type: "nextSkill", power }, { kind: "buff" });
   if (skill.name === "Full Moon") return make({ type: "atk", power }, { kind: "buff", delay: num(/for (\d+) seconds/i, text) ?? 3 });
   // Wrath of Gods starts on its cooldown, goes when it comes round and restarts it straight away.

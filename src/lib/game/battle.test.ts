@@ -203,6 +203,18 @@ describe("simulateFight", () => {
     expect(casts.map((c) => c.t)).toEqual([0, 0, 0]);
   });
 
+  it("heals a share of current life with a negative life cost, up to max life", () => {
+    const pools = { maxHp: 1000, hpRecovery: 0, maxMana: 100, manaRecovery: 0 };
+    const burn = skill({ name: "Warrior Burn", kind: "buff", every: 100, duration: 5, hpCost: 0.5, effect: { type: "atk", power: 0 } });
+    const breath = skill({ name: "Breath of Waves", kind: "buff", every: 100, duration: 5, hpCost: -0.5, effect: { type: "cooldownRate", power: 0 } });
+    const fight = createFight({ ...base, ...pools, skills: [burn, breath] });
+    fight.advance(0.5);
+    expect(fight.state().hp).toBeCloseTo(750);
+    const full = createFight({ ...base, ...pools, skills: [breath] });
+    full.advance(0.5);
+    expect(full.state().hp).toBe(1000);
+  });
+
   it("holds a skill with auto off until it's cast by hand", () => {
     const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
     const fight = createFight({ ...base, skills: [slash], manual: ["Slash"] });
