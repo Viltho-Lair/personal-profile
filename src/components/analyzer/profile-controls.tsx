@@ -48,12 +48,12 @@ export function EquipButton({
 }
 
 /** The corner "E" the game puts on an equipped item. */
-export function EquippedBadge() {
+export function EquippedBadge({ position = "top-1 left-1" }: { position?: string }) {
   return (
     <span
       role="img"
       aria-label="Equipped"
-      className="absolute top-1 left-1 z-10 grid size-4 place-items-center rounded-sm bg-ink font-mono text-[9px] font-bold text-ground"
+      className={`absolute ${position} z-10 grid size-4 place-items-center rounded-sm bg-ink font-mono text-[9px] font-bold text-ground`}
     >
       E
     </span>

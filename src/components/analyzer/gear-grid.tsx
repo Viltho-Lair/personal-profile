@@ -16,7 +16,7 @@ import {
   type Gear,
 } from "./data";
 import { InlineLevel } from "./level-input";
-import { EquipButton, EquippedBadge, OwnedToggle } from "./profile-controls";
+import { EquipButton, EquippedBadge } from "./profile-controls";
 import { Sprite } from "./sprite";
 import { TIER_BORDER, TIER_TEXT } from "./tiers";
 
@@ -139,6 +139,7 @@ function GearTile({
   selected,
   stars,
   onSelect,
+  onOwnedChange,
 }: {
   gear: Gear;
   owned: boolean;
@@ -147,49 +148,61 @@ function GearTile({
   selected: boolean;
   stars: number | null;
   onSelect: () => void;
+  onOwnedChange: (owned: boolean) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      aria-label={`${gear.grade}${owned ? `, level ${level}` : ", not owned"}${equipped ? ", equipped" : ""}`}
-      className={`relative aspect-square w-full rounded-md border bg-ink/[0.04] transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-        selected
-          ? "border-ink ring-1 ring-ink"
-          : `${TIER_BORDER[gear.tier] ?? "border-ink/20"} hover:brightness-125`
-      }`}
-    >
-      {gear.icon && gear.iconSize ? (
-        <Sprite
-          src={gear.icon}
-          native={gear.iconSize}
-          size={64}
-          className={`absolute inset-0 m-auto ${owned ? "" : "opacity-35 grayscale"}`}
-        />
-      ) : null}
-      {equipped ? <EquippedBadge /> : null}
-      {owned ? (
-        <span className="absolute top-1 right-1.5 font-mono text-[9px] text-ink tabular-nums">
-          Lv {level}
-        </span>
-      ) : null}
-      {gear.gradeNumber ? (
-        <span className={`absolute bottom-1 left-1.5 font-mono text-[9px] ${TIER_TEXT[gear.tier] ?? "text-dim"}`}>
-          G{gear.gradeNumber}
-        </span>
-      ) : null}
-      {stars !== null ? (
-        <span className="absolute inset-x-0 bottom-1 flex justify-center">
-          <Stars count={stars} />
-        </span>
-      ) : null}
-    </button>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={selected}
+        aria-label={`${gear.grade}${owned ? `, level ${level}` : ", not owned"}${equipped ? ", equipped" : ""}`}
+        className={`relative block aspect-square w-full rounded-md border bg-ink/[0.04] transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          selected
+            ? "border-ink ring-1 ring-ink"
+            : `${TIER_BORDER[gear.tier] ?? "border-ink/20"} hover:brightness-125`
+        }`}
+      >
+        {gear.icon && gear.iconSize ? (
+          <Sprite
+            src={gear.icon}
+            native={gear.iconSize}
+            size={64}
+            className={`absolute inset-0 m-auto ${owned ? "" : "opacity-35 grayscale"}`}
+          />
+        ) : null}
+        {equipped ? <EquippedBadge position="top-1 left-6" /> : null}
+        {owned ? (
+          <span className="absolute top-1 right-1.5 font-mono text-[9px] text-ink tabular-nums">
+            Lv {level}
+          </span>
+        ) : null}
+        {gear.gradeNumber ? (
+          <span className={`absolute bottom-1 left-1.5 font-mono text-[9px] ${TIER_TEXT[gear.tier] ?? "text-dim"}`}>
+            G{gear.gradeNumber}
+          </span>
+        ) : null}
+        {stars !== null ? (
+          <span className="absolute inset-x-0 bottom-1 flex justify-center">
+            <Stars count={stars} />
+          </span>
+        ) : null}
+      </button>
+      {/* Beside the tile's button rather than inside it, so ticking it doesn't also select the tile. */}
+      <input
+        type="checkbox"
+        checked={owned}
+        onChange={(event) => onOwnedChange(event.target.checked)}
+        aria-label={`${gear.grade} owned`}
+        title={owned ? "Owned" : "Not owned"}
+        className="absolute top-1 left-1 z-20 size-3.5 cursor-pointer accent-ink"
+      />
+    </div>
   );
 }
 
 function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; row: AwakeningRow }) {
-  const { profile, setGearLevel, setOwned, equip } = useProfile();
+  const { profile, setGearLevel, equip } = useProfile();
 
   if (!gear) {
     return (
@@ -225,11 +238,6 @@ function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; ro
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <OwnedToggle
-          owned={state.owned}
-          name={gear.grade}
-          onChange={(owned) => setOwned(kind, gear.grade, owned)}
-        />
         <InlineLevel
           value={state.level}
           min={0}
@@ -261,7 +269,7 @@ function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; ro
 }
 
 export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Gear[] }) {
-  const { profile } = useProfile();
+  const { profile, setOwned } = useProfile();
   const [selected, setSelected] = useState<string | null>(null);
   const equipped = equippedKey(profile, kind);
   const count = awakening(profile, kind, MAX_AWAKENING);
@@ -290,6 +298,7 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
                     selected={selected === gear.grade}
                     stars={gear.tier === "Immortal" ? awakeningStage(count).stars : null}
                     onSelect={() => setSelected(selected === gear.grade ? null : gear.grade)}
+                    onOwnedChange={(owned) => setOwned(kind, gear.grade, owned)}
                   />
                 );
               })}
