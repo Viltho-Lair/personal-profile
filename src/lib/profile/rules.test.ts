@@ -139,8 +139,36 @@ describe("rule 6: unknown entries", () => {
       skills: ["Fire Slash"], weapons: [], accessories: [],
       relics: [], spirits: [], soulWeapons: [],
     };
-    expect(unknownEntries(p, known)).toEqual(["skills: Old Skill", "soulWeapons: Retired Blade"]);
+    expect(unknownEntries(p, known)).toEqual([
+      "skills: Old Skill",
+      "soulWeapons: Retired Blade",
+      "equippedSoulWeapon: Retired Blade",
+    ]);
     expect(p.skills["Old Skill"]).toEqual({ level: 9 });
+  });
+
+  it("reports an equipped item even when its stored gear/soul-weapon entry is known", () => {
+    let p = equip(emptyProfile(), "weapons", "Retired Grade");
+    p = equip(p, "accessories", "Rare 2");
+    const known = {
+      skills: [], weapons: ["Retired Grade"], accessories: ["Rare 2"],
+      relics: [], spirits: [], soulWeapons: [],
+    };
+    expect(unknownEntries(p, known)).toEqual([]);
+
+    const renamed = { ...known, weapons: [] };
+    expect(unknownEntries(p, renamed)).toEqual([
+      "weapons: Retired Grade",
+      "equippedWeapon: Retired Grade",
+    ]);
+  });
+
+  it("does not report a null equipped slot", () => {
+    const known = {
+      skills: [], weapons: [], accessories: [],
+      relics: [], spirits: [], soulWeapons: [],
+    };
+    expect(unknownEntries(emptyProfile(), known)).toEqual([]);
   });
 });
 

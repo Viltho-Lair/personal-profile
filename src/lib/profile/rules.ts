@@ -178,13 +178,30 @@ export function soulWeaponOwned(profile: ProfileV1, name: string): boolean {
   return profile.soulWeapons[name]?.owned ?? false;
 }
 
+const EQUIPPED_FIELDS = [
+  { field: "equippedWeapon", known: "weapons" },
+  { field: "equippedAccessory", known: "accessories" },
+  { field: "equippedSoulWeapon", known: "soulWeapons" },
+] as const satisfies readonly { field: keyof ProfileV1; known: keyof KnownNames }[];
+
 /** Rule 6: entries whose names the current data no longer has. */
 export function unknownEntries(profile: ProfileV1, known: KnownNames): string[] {
   const kinds = ["skills", "weapons", "accessories", "relics", "spirits", "soulWeapons"] as const;
-  return kinds.flatMap((kind) => {
+  const stored = kinds.flatMap((kind) => {
     const names = new Set(known[kind]);
     return Object.keys(profile[kind])
       .filter((name) => !names.has(name))
       .map((name) => `${kind}: ${name}`);
   });
+
+  // An equipped item can itself be unknown even when the gear/soul-weapon
+  // entry that owns it is still recognized (or absent) - e.g. after only the
+  // equipped grade was renamed. No auto-fixing on load: this only reports it.
+  const equipped = EQUIPPED_FIELDS.flatMap(({ field, known: knownKind }) => {
+    const equippedName = profile[field];
+    if (typeof equippedName !== "string") return [];
+    return known[knownKind].includes(equippedName) ? [] : [`${field}: ${equippedName}`];
+  });
+
+  return [...stored, ...equipped];
 }
