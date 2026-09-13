@@ -287,7 +287,7 @@ function GearDetail({
         />
       </div>
 
-      <dl className="grid gap-x-8 gap-y-1.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase xl:grid-cols-2">
+      <dl className="grid max-w-sm gap-y-1.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
         <Row label={`Equip effect at Lv ${state.level}`} value={formatPercent(effects.equip)} />
         <Row label={`Owned effect at Lv ${state.level}`} value={formatPercent(effects.owned)} />
         <Row label="Multiplier" value={formatValue(gear.multiplier)} />
@@ -362,7 +362,7 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
         ))}
       </div>
 
-      <aside className="relative mx-4 min-w-0 rounded-lg border border-ink/15 py-4 lg:sticky lg:top-0 lg:mx-5 lg:flex-1">
+      <aside className="relative mx-4 max-w-xl min-w-0 rounded-lg border border-ink/15 py-4 lg:sticky lg:top-0 lg:mx-5 lg:w-xl lg:shrink-0">
         <GearDetail
           kind={kind}
           row={awakeningRow}
