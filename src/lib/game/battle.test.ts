@@ -184,6 +184,17 @@ describe("simulateFight", () => {
     expect(result.casts.map((c) => Math.round(c.t))).toEqual([30, 60, 90]);
   });
 
+  it("lets Meditation charge Wrath of Gods only after its first cooldown", () => {
+    const wrath = skill({ name: "Wrath of Gods", kind: "passive", every: 30, duration: 5, startsOnCooldown: true, effect: { type: "atk", power: 0 } });
+    const meditation = skill({ name: "Meditation", element: "Water", kind: "buff", every: 10, effect: { type: "chargeCooldowns", power: 0.5 } });
+    const times = simulateFight({ ...base, duration: 60, skills: [wrath, meditation] })
+      .casts.filter((c) => c.name === "Wrath of Gods")
+      .map((c) => c.t);
+    expect(times[0]).toBeCloseTo(30, 0);
+    // After the first go, Meditation's charges bring the next one in well before another 30 seconds.
+    expect(times[1] - times[0]).toBeLessThan(25);
+  });
+
   it("holds a skill with auto off until it's cast by hand", () => {
     const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
     const fight = createFight({ ...base, skills: [slash], manual: ["Slash"] });

@@ -61,7 +61,7 @@ export type FightSkill = {
   delay: number;
   /** Seconds into the fight before it first goes (delayed passives). */
   startAt: number;
-  /** Starts on its cooldown instead of ready, then goes each time it comes round (Wrath of Gods). */
+  /** Starts on its cooldown instead of ready, then goes each time it comes round; Meditation only charges it after the first (Wrath of Gods). */
   startsOnCooldown?: boolean;
   /** Attack played out in stopped time (Demon Hunt). */
   freezes: boolean;
@@ -347,6 +347,8 @@ export function createFight(input: FightInput): Fight {
       // Meditation charges cooldowns and required strikes alike.
       for (const other of live) {
         const t = other.skill.trigger;
+        // A skill that starts on its cooldown (Wrath of Gods) isn't charged until it has gone once.
+        if (other.skill.startsOnCooldown && other.uses === 0) continue;
         if (other !== l && (t === "seconds" || t === "hits") && !isStack(other.skill)) other.progress += e.power * other.skill.every;
       }
     } else if (isStack(s)) {
