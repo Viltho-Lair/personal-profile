@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { everyGem, GEM_RARITIES, GEM_SHAPES, GEM_SLOTS, gemTotals, shapeOf, type SoulGem } from "@/lib/game/engraving";
+import { everyGem, GEM_RARITIES, GEM_SHAPES, GEM_SLOTS, gemSoulWeaponAtk, gemTotals, shapeOf, type SoulGem } from "@/lib/game/engraving";
 import { equippedKey, soulWeaponOwned } from "@/lib/profile/rules";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SOUL_WEAPONS, type SoulWeapon } from "./data";
@@ -79,7 +79,7 @@ function GemEditor({ index }: { index: number }) {
     return (
       <li className="flex items-center justify-between gap-2 rounded-md border border-dashed border-ink/20 p-2">
         <span className={LABEL}>Gem {index + 1} · empty</span>
-        <button type="button" className={BUTTON} onClick={() => setSoulGem(index, { shape: 1, rarity: 0, level: 1, value: 0 })}>
+        <button type="button" className={BUTTON} onClick={() => setSoulGem(index, { shape: 1, rarity: 0, level: 1, value: 0, soulWeaponAtk: 0 })}>
           Add gem
         </button>
       </li>
@@ -138,6 +138,19 @@ function GemEditor({ index }: { index: number }) {
           />
           {shape?.percent ? "%" : ""}
         </label>
+        <label className={`flex items-center gap-1 ${LABEL}`}>
+          Soul Weapon ATK
+          <input
+            type="number"
+            min={0}
+            step={0.01}
+            value={gem.soulWeaponAtk}
+            aria-label={`Gem ${index + 1} Soul Weapon ATK engraving effect`}
+            onChange={(e) => set({ soulWeaponAtk: Math.max(0, e.target.valueAsNumber || 0) })}
+            className={INPUT}
+          />
+          %
+        </label>
       </div>
       <button type="button" className={BUTTON} onClick={() => setSoulGem(index, null)} aria-label={`Remove gem ${index + 1}`}>
         ✕
@@ -151,6 +164,7 @@ function EngravingSettings() {
   const engraving = profile.soulEngraving;
   const equipped = SOUL_WEAPONS.find((w) => w.name === equippedKey(profile, "soulWeapons"));
   const totals = gemTotals(everyGem(engraving.gems), engraving.gems);
+  const soulWeaponAtk = gemSoulWeaponAtk(engraving.gems);
 
   return (
     <div className="flex flex-col gap-4">
@@ -196,14 +210,16 @@ function EngravingSettings() {
           ))}
         </ul>
         <p className="text-[11px] leading-snug text-dim">
-          A gem&apos;s stat follows its shape. Enter each gem&apos;s value as the game shows it; gem stat tables aren&apos;t
-          published.
+          A gem&apos;s Additional Option follows its shape. Enter it and the gem&apos;s Engraving Effect (Soul Weapon ATK) as the
+          game shows them; gem stat tables aren&apos;t published.
         </p>
       </section>
 
       <section className="flex flex-col gap-1 rounded-lg bg-ink/[0.04] p-3">
         <h3 className={LABEL}>{equipped ? `Equipped: ${equipped.name}` : "No soul weapon equipped"}</h3>
         <dl className="grid grid-cols-[1fr_auto] gap-x-3 font-mono text-[11px]">
+          <dt className="text-dim">Soul Weapon ATK (engraving effect)</dt>
+          <dd className="text-right tabular-nums">+{formatValue(soulWeaponAtk * 100)}%</dd>
           {GEM_SHAPES.map((s) => (
             <div key={s.id} className="contents">
               <dt className="text-dim">{s.label}</dt>

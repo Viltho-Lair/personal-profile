@@ -14,7 +14,7 @@ import {
 import { companionEffect, companionLevel, companionStatus, promotionBuff, type CompanionFormula } from "@/lib/game/companions";
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { proficiencyBonuses } from "@/lib/game/familiars";
-import { everyGem, gemTotals } from "@/lib/game/engraving";
+import { everyGem, gemSoulWeaponAtk, gemTotals } from "@/lib/game/engraving";
 import { ownedEffect, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects, type ShrineData, type ShrineLevels } from "@/lib/game/shrine";
 import shrineData from "@/data/optimizer/sealed-shrine.json";
@@ -308,6 +308,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     const completion = complete ? (1 + amp) * (1 + engraving.chaosBonus) : 0;
     s.soulWeapon = {
       atk: soulWeapon.attack ?? 0,
+      engravingAtk: gemSoulWeaponAtk(engraving.gems),
       completionAtk: ((soulWeapon.engraving.atk ?? 0) / 100) * completion,
       completionHp: ((soulWeapon.engraving.hp ?? 0) / 100) * completion,
     };

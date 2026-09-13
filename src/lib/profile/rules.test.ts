@@ -351,13 +351,13 @@ describe("skill refinement", () => {
 
 describe("soul engraving", () => {
   it("drops a gem from every plate when it changes shape or is cleared", () => {
-    let p = setSoulGem(emptyProfile(), 0, { shape: 4, rarity: 2, level: 10, value: 6 });
+    let p = setSoulGem(emptyProfile(), 0, { shape: 4, rarity: 2, level: 10, value: 6, soulWeaponAtk: 0 });
     p = placeSoulGem(p, "Pride", { gem: 0, row: 0, col: 0, rotation: 0 });
     p = placeSoulGem(p, "Pride", { gem: 0, row: 1, col: 1, rotation: 1 });
     expect(p.soulEngraving.plates.Pride).toEqual([{ gem: 0, row: 1, col: 1, rotation: 1 }]);
-    p = setSoulGem(p, 0, { shape: 4, rarity: 3, level: 20, value: 9 });
+    p = setSoulGem(p, 0, { shape: 4, rarity: 3, level: 20, value: 9, soulWeaponAtk: 0 });
     expect(p.soulEngraving.plates.Pride).toHaveLength(1);
-    p = setSoulGem(p, 0, { shape: 5, rarity: 3, level: 20, value: 9 });
+    p = setSoulGem(p, 0, { shape: 5, rarity: 3, level: 20, value: 9, soulWeaponAtk: 0 });
     expect(p.soulEngraving.plates.Pride).toEqual([]);
   });
 });

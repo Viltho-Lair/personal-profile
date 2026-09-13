@@ -290,7 +290,13 @@ function soulEngraving(value: unknown): SoulEngraving {
     const shape = wholeLevel(gem.shape);
     const rarity = wholeLevel(gem.rarity);
     if (shape === null || shape < 1 || shape > GEM_SHAPE_COUNT || rarity === null || rarity >= GEM_RARITY_COUNT) return null;
-    return { shape, rarity, level: wholeLevel(gem.level) ?? 1, value: Math.max(0, finiteOr(gem.value, 0)) };
+    return {
+      shape,
+      rarity,
+      level: wholeLevel(gem.level) ?? 1,
+      value: Math.max(0, finiteOr(gem.value, 0)),
+      soulWeaponAtk: Math.max(0, finiteOr(gem.soulWeaponAtk, 0)),
+    };
   });
   const plates: SoulEngraving["plates"] = {};
   if (isRecord(value.plates)) {

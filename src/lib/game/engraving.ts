@@ -23,8 +23,11 @@ export const GEM_SHAPES: readonly { id: number; name: string; stat: EngravingSta
 export const GEM_RARITIES = ["White", "Green", "Orange", "Purple", "Red", "Aqua"] as const;
 export const GEM_SLOTS = 8;
 
-/** One of the eight soul gems; `value` is the stat as the game shows it (5 = +5%, or +5 for Accuracy/Dodge). */
-export type SoulGem = { shape: number; rarity: number; level: number; value: number };
+/**
+ * One of the eight soul gems; `value` is its Additional Option as the game shows it (5 = +5%, or +5 for
+ * Accuracy/Dodge) and `soulWeaponAtk` its Engraving Effect, Soul Weapon ATK in percent (10.72 = +10.72%).
+ */
+export type SoulGem = { shape: number; rarity: number; level: number; value: number; soulWeaponAtk: number };
 
 /** A gem on a plate: which of the eight gems, its top-left anchor and quarter turns clockwise. */
 export type GemPlacement = { gem: number; row: number; col: number; rotation: number };
@@ -90,6 +93,11 @@ export function plateComplete(rows: readonly string[], placements: readonly GemP
 /** Every set gem as a placement, for totals that don't depend on a plate. */
 export function everyGem(gems: readonly (SoulGem | null)[]): GemPlacement[] {
   return gems.flatMap((gem, index) => (gem ? [{ gem: index, row: 0, col: 0, rotation: 0 }] : []));
+}
+
+/** The gems' Engraving Effect total, Soul Weapon ATK as a fraction (EQUIPMENT S11). */
+export function gemSoulWeaponAtk(gems: readonly (SoulGem | null)[]): number {
+  return gems.reduce((total, gem) => total + (gem ? gem.soulWeaponAtk / 100 : 0), 0);
 }
 
 export function gemTotals(placements: readonly GemPlacement[], gems: readonly (SoulGem | null)[]): Record<EngravingStat, number> {

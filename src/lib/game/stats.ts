@@ -30,7 +30,8 @@ export type StatSources = {
   growth: { atk: number; hp: number; hpRecovery: number; crit: number; gold: number; accuracy: number; dodge: number };
   /** Growing Knowledge combined value. */
   knowledge: number;
-  soulWeapon: { atk: number; completionAtk: number; completionHp: number };
+  /** Equipped soul weapon ATK, its gems' Engraving Effect (Soul Weapon ATK fraction) and completion effects. */
+  soulWeapon: { atk: number; engravingAtk: number; completionAtk: number; completionHp: number };
   /** Weapon and accessory secondary stats (Equipment Data B427:E430), as fractions. */
   gearSecondary: { critDamage: number; gold: number; exp: number; mana: number; manaRecovery: number };
   /** Skill Refinement owned effects (Skills Data I77:M77): ATK and HP as fractions, CRIT DMG fraction, Accuracy and Dodge flat. */
@@ -118,7 +119,7 @@ export function computeStats(s: StatSources): Stats {
     (1 + (s.classes.equip + s.classes.owned) / 100) *
     promotion *
     (1 + s.spirits.atk) *
-    ((s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk) + s.soulWeapon.atk * (1 + s.shrine.soulWeaponAtk)) *
+    ((s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk) + s.soulWeapon.atk * (1 + s.soulWeapon.engravingAtk + s.shrine.soulWeaponAtk)) *
     (1 + s.soulWeapon.completionAtk) *
     (1 + s.relics.atk + s.companionPromotion.atk + s.slayerPromotion.atk + s.mastery.atk + s.companions.blessingOfForest + s.memoryTree.atk + s.constellation.atk) *
     (1 + s.memoryTree.atkMultiplier + s.constellation.promotion) *
@@ -235,7 +236,7 @@ export function emptySources(): StatSources {
     enhance: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, critChance: 0, deathStrikeDamage: 0, deathStrikeChance: 0 },
     growth: { atk: 0, hp: 0, hpRecovery: 0, crit: 0, gold: 0, accuracy: 0, dodge: 0 },
     knowledge: 0,
-    soulWeapon: { atk: 0, completionAtk: 0, completionHp: 0 },
+    soulWeapon: { atk: 0, engravingAtk: 0, completionAtk: 0, completionHp: 0 },
     engraving: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, gold: 0, accuracy: 0, dodge: 0 },
     gearSecondary: { critDamage: 0, gold: 0, exp: 0, mana: 0, manaRecovery: 0 },
     refinement: { atk: 0, hp: 0, critDamage: 0, accuracy: 0, dodge: 0 },

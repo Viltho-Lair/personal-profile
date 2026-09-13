@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { canPlace, gemTotals, plateComplete, rotatedCells, type GemPlacement, type SoulGem } from "./engraving";
+import { canPlace, gemSoulWeaponAtk, gemTotals, plateComplete, rotatedCells, type GemPlacement, type SoulGem } from "./engraving";
 
 const gems: (SoulGem | null)[] = [
-  { shape: 4, rarity: 3, level: 45, value: 12 }, // O, CRIT Dmg
-  { shape: 5, rarity: 4, level: 50, value: 8 }, // I, Gold
-  { shape: 6, rarity: 1, level: 10, value: 5 }, // S, Accuracy
+  { shape: 4, rarity: 3, level: 45, value: 12, soulWeaponAtk: 10.72 }, // O, CRIT Dmg
+  { shape: 5, rarity: 4, level: 50, value: 8, soulWeaponAtk: 10.72 }, // I, Gold
+  { shape: 6, rarity: 1, level: 10, value: 5, soulWeaponAtk: 10.08 }, // S, Accuracy
   null,
 ];
 
@@ -43,5 +43,9 @@ describe("placing gems", () => {
     expect(totals.critDamage).toBeCloseTo(0.12);
     expect(totals.gold).toBeCloseTo(0.08);
     expect(totals.accuracy).toBe(5);
+  });
+
+  it("sums every gem's Engraving Effect into Soul Weapon ATK", () => {
+    expect(gemSoulWeaponAtk(gems)).toBeCloseTo(0.3152);
   });
 });
