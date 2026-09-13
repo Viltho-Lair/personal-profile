@@ -5,7 +5,7 @@
  *   base attack speed), raised by the Bracelet of Speed and ATK SPD buffs.
  * - Attack skills and activated buffs each wait in their own queue once ready
  *   (a cooldown in seconds, or a number of basic-attack hits) and cast when
- *   there's mana for them. Casts in a queue are 0.3s apart, and every cast
+ *   there's mana for them. Casts don't wait for each other, and every cast
  *   pauses basic attacks for its animation. Skills with auto off wait for a
  *   manual cast once ready.
  * - Life and mana pools refill every second by HP Recovery and Mana Recovery.
@@ -218,7 +218,6 @@ export function createFight(input: FightInput): Fight {
     charged: false,
   }));
   const queues: Record<"attack" | "buff", Live[]> = { attack: [], buff: [] };
-  const queueFreeAt = { attack: 0, buff: 0 }; // real time
   let queueOrder = 0;
   const enqueue = (l: Live) => {
     l.queued = true;
@@ -359,7 +358,6 @@ export function createFight(input: FightInput): Fight {
     }
 
     if (queue) {
-      queueFreeAt[queue] = real + animation;
       // The cast's animation holds back the next basic attack by its length.
       nextBasic = Math.max(nextBasic, real) + animation;
     }
@@ -399,16 +397,20 @@ export function createFight(input: FightInput): Fight {
 
     // Skills and basic attacks wait out stopped time.
     const blocked = frozen;
+    // Every ready skill goes at once, with no wait between casts.
     for (const queue of ["buff", "attack"] as const) {
-      if (!queues[queue].length || real < queueFreeAt[queue] || blocked) continue;
-      // Skills cast in the order they became ready: one short of mana holds every skill
-      // queued after it (in either queue), so cheaper skills can't keep taking its mana.
-      const short = (l: Live) => !l.charged && (l.skill.mpCost ?? 0) > mana;
-      const holder = pools
-        ? [...queues.buff, ...queues.attack].filter(short).reduce<Live | null>((first, l) => (!first || l.queuedAt < first.queuedAt ? l : first), null)
-        : null;
-      const index = queues[queue].findIndex((l) => l.charged || (!short(l) && (!holder || l.queuedAt < holder.queuedAt)));
-      if (index >= 0) go(queues[queue].splice(index, 1)[0]!, queue);
+      // A stopped-time attack (Demon Hunt) holds the rest until the clock runs again.
+      while (queues[queue].length && real >= frozenUntil) {
+        // Skills cast in the order they became ready: one short of mana holds every skill
+        // queued after it (in either queue), so cheaper skills can't keep taking its mana.
+        const short = (l: Live) => !l.charged && (l.skill.mpCost ?? 0) > mana;
+        const holder = pools
+          ? [...queues.buff, ...queues.attack].filter(short).reduce<Live | null>((first, l) => (!first || l.queuedAt < first.queuedAt ? l : first), null)
+          : null;
+        const index = queues[queue].findIndex((l) => l.charged || (!short(l) && (!holder || l.queuedAt < holder.queuedAt)));
+        if (index < 0) break;
+        go(queues[queue].splice(index, 1)[0]!, queue);
+      }
     }
 
     const attacksPerSecond = baseSpeed * (1 + now.speed);

@@ -455,7 +455,7 @@ function Results({
       {profile.includeSkills && setup.skipped.length ? <p className="text-dim">Skills not modelled: {setup.skipped.join(", ")}.</p> : null}
       <p className="text-[10px] text-dim">
         Approximate, hit by hit: one basic attack a second before ATK SPD (the workbook has no base attack speed), skills
-        cast from their own queues 0.3s apart when there&apos;s mana, casts pause basic attacks, Demon Hunt stops the clock,
+        cast as soon as they&apos;re ready when there&apos;s mana, casts pause basic attacks, Demon Hunt stops the clock,
         and Rave stores its duration&apos;s damage, unleashed on its reuse, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
         recommended stage.
       </p>

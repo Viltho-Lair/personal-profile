@@ -195,6 +195,14 @@ describe("simulateFight", () => {
     expect(times[1] - times[0]).toBeLessThan(25);
   });
 
+  it("casts every ready skill at once, with no wait between them", () => {
+    const a = skill({ name: "A", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
+    const b = skill({ name: "B", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
+    const buff = skill({ name: "Buff", kind: "buff", every: 100, duration: 5, effect: { type: "atk", power: 0 } });
+    const casts = simulateFight({ ...base, skills: [a, b, buff] }).casts;
+    expect(casts.map((c) => c.t)).toEqual([0, 0, 0]);
+  });
+
   it("holds a skill with auto off until it's cast by hand", () => {
     const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
     const fight = createFight({ ...base, skills: [slash], manual: ["Slash"] });
