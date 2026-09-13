@@ -31,6 +31,7 @@ import { totalSubNodeLevels, treeBonuses, treeBuffs, treeLevel, type MemoryTree 
 import { ELEMENTS, emptySources, noElements, type Element, type StatSources } from "@/lib/game/stats";
 import {
   activeAbilityPreset,
+  equippedKey,
   mountedBeast,
   activeSpiritPreset,
   awakening,
@@ -159,6 +160,7 @@ export function gearSecondary(profile: ProfileV1) {
 /** Best equip effect and 30% of every owned item's effect, in whole percents. */
 function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
   const row = AWAKENING[awakening(profile, kind, MAX_AWAKENING)];
+  const equipped = equippedKey(profile, kind);
   let equip = 0;
   let owned = 0;
   for (const gear of list) {
@@ -166,7 +168,8 @@ function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
     if (!state.owned) continue;
     const awakened = gear.tier === "Immortal" && row ? (kind === "weapons" ? row.weaponMultiplier : row.accessoryMultiplier) : 1;
     const effects = gearEffects(gear.multiplier, GEAR_LEVEL_FACTORS, state.level, awakened);
-    equip = Math.max(equip, effects.equip);
+    // Only the equipped grade gives its equip effect; every owned grade gives its owned effect.
+    if (gear.grade === equipped) equip = effects.equip;
     owned += effects.owned;
   }
   return { equip, owned };
@@ -233,7 +236,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   }
   s.accessory = gearTotals(profile, "accessories", ACCESSORIES);
 
-  // Classes: best equip effect + 30% of all owned; the last class awakens with Blast.
+  // Classes: the equipped class's equip effect + 30% of every owned class; the last class awakens with Blast.
   const stars = constellationTotals(CONSTELLATION, c.constellation);
   const classMax = classMaxLevel(c.classAwakening) + stars.current.classLevelCap;
   CLASSES.forEach((cls, index) => {
@@ -242,7 +245,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     const isLast = index === CLASSES.length - 1;
     const multiplier = isLast ? (AWAKENING[c.classAwakening]?.blastMultiplier ?? 1) : 1;
     const effects = gearEffects(cls.multiplier, GEAR_LEVEL_FACTORS, clampLevel(state.level, classMax), multiplier);
-    s.classes.equip = Math.max(s.classes.equip, effects.equip);
+    if (cls.name === c.equippedClass) s.classes.equip = effects.equip;
     s.classes.owned += effects.owned;
   });
 
