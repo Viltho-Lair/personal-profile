@@ -5,11 +5,12 @@ import {
   loadProfile,
   parseProfile,
   PROFILE_KEY,
+  readProfile,
   saveProfile,
   type StorageLike,
   UNREADABLE_KEY,
 } from "./storage";
-import { emptyProfile } from "./types";
+import { emptyProfile, type ProfileV1 } from "./types";
 
 function memoryStorage(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -41,8 +42,8 @@ describe("loadProfile", () => {
     expect(data.get(UNREADABLE_KEY)).toBe("{broken");
   });
 
-  it("treats an unknown version as unreadable", () => {
-    const raw = JSON.stringify({ version: 2, skills: {} });
+  it("treats a non-integer or fractional version as unreadable", () => {
+    const raw = JSON.stringify({ version: 1.5, skills: {} });
     const { data, storage } = memoryStorage({ [PROFILE_KEY]: raw });
     expect(loadProfile(storage)).toEqual(emptyProfile());
     expect(data.get(UNREADABLE_KEY)).toBe(raw);
@@ -104,5 +105,52 @@ describe("parseProfile", () => {
     expect(profile?.skills).toEqual({ "Fire Slash": { level: 5 } });
     expect(profile?.weapons).toEqual({ "Common 4": { owned: true, level: 3 } });
     expect(profile?.equippedWeapon).toBeNull();
+  });
+
+  it("skips a __proto__ key instead of polluting the prototype", () => {
+    // A JS object literal treats `__proto__` specially, so the raw JSON is
+    // written out by hand: this is exactly how the real attack arrives, as
+    // a string a browser's JSON.parse turns into an ordinary own property.
+    const raw = '{"version":1,"skills":{"__proto__":{"level":5},"Ice Stone":{"level":3}}}';
+    const profile = parseProfile(raw);
+    expect(profile?.skills).toEqual({ "Ice Stone": { level: 3 } });
+    expect(Object.getPrototypeOf(profile?.skills)).toBe(Object.prototype);
+  });
+
+  it("keeps an unknown top-level key (e.g. a later build's field) after load and save", () => {
+    const { storage } = memoryStorage();
+    const raw = JSON.stringify({ ...emptyProfile(), companions: { x: 1 } });
+    const profile = parseProfile(raw);
+    expect(profile).not.toBeNull();
+    const withCompanions = profile as unknown as { companions: unknown };
+    expect(withCompanions.companions).toEqual({ x: 1 });
+
+    expect(saveProfile(storage, profile as ProfileV1)).toBe(true);
+    const roundTripped = JSON.parse(storage.getItem(PROFILE_KEY) ?? "null");
+    expect(roundTripped.companions).toEqual({ x: 1 });
+  });
+});
+
+describe("readProfile", () => {
+  it("loads the known entries of a profile from a newer build as read-only", () => {
+    const raw = JSON.stringify({
+      version: 2,
+      skills: { "Fire Slash": { level: 5 } },
+      companions: { x: 1 },
+    });
+    const { data, storage } = memoryStorage({ [PROFILE_KEY]: raw });
+
+    const { profile, readOnly } = readProfile(storage);
+
+    expect(readOnly).toBe(true);
+    expect(profile.skills).toEqual({ "Fire Slash": { level: 5 } });
+    expect(data.get(UNREADABLE_KEY)).toBeUndefined();
+    expect(data.get(PROFILE_KEY)).toBe(raw);
+  });
+
+  it("a version 1 profile is not read-only", () => {
+    const { storage } = memoryStorage();
+    saveProfile(storage, emptyProfile());
+    expect(readProfile(storage).readOnly).toBe(false);
   });
 });

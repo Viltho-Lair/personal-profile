@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import * as rules from "./rules";
 import { createProfileStore } from "./store";
-import type { StorageLike } from "./storage";
+import { PROFILE_KEY, type StorageLike } from "./storage";
 import {
   emptyProfile,
   type EquippableKind,
@@ -22,12 +22,31 @@ function browserStorage(): StorageLike | null {
 const store = createProfileStore(browserStorage);
 const SERVER_PROFILE = emptyProfile();
 
+// Registered lazily, the first time anything subscribes, and only once: a
+// `storage` event fires in every other tab on the same origin when one tab
+// changes localStorage, so this is how a stale tab hears about a fresher
+// profile saved elsewhere.
+let storageListenerRegistered = false;
+
+function ensureStorageListener() {
+  if (storageListenerRegistered || typeof window === "undefined") return;
+  storageListenerRegistered = true;
+  window.addEventListener("storage", (event) => {
+    if (event.key === PROFILE_KEY || event.key === null) store.refresh();
+  });
+}
+
+function subscribe(listener: () => void) {
+  ensureStorageListener();
+  return store.subscribe(listener);
+}
+
 type Levelled = { name: string; maxLevel: number };
 
 /** The player's profile and every action that changes it. */
 export function useProfile() {
   const profile = useSyncExternalStore(
-    store.subscribe,
+    subscribe,
     store.getSnapshot,
     () => SERVER_PROFILE,
   );

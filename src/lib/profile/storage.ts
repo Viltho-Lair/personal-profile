@@ -22,6 +22,9 @@ function entries<T>(value: unknown, read: (entry: Json) => T | null): Record<str
   const result: Record<string, T> = {};
   if (!isRecord(value)) return result;
   for (const [name, entry] of Object.entries(value)) {
+    // "__proto__" as an own key would otherwise reach into Object.prototype
+    // through the assignment below instead of landing in `result`.
+    if (name === "__proto__") continue;
     const parsed = isRecord(entry) ? read(entry) : null;
     if (parsed !== null) result[name] = parsed;
   }
@@ -45,16 +48,11 @@ const ownedEntry = (entry: Json) =>
 
 const name = (value: unknown) => (typeof value === "string" ? value : null);
 
-/** A stored profile, or null if it is not a readable version 1 profile. */
-export function parseProfile(raw: string): ProfileV1 | null {
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    return null;
-  }
-  if (!isRecord(data) || data.version !== 1) return null;
+const isNewerVersion = (version: unknown): boolean =>
+  typeof version === "number" && Number.isInteger(version) && version > 1;
 
+/** The fields this build knows how to read, regardless of stored version. */
+function parseKnownFields(data: Json): ProfileV1 {
   return {
     version: 1,
     skills: entries(data.skills, levelEntry),
@@ -67,6 +65,40 @@ export function parseProfile(raw: string): ProfileV1 | null {
     soulWeapons: entries(data.soulWeapons, ownedEntry),
     equippedSoulWeapon: name(data.equippedSoulWeapon),
   };
+}
+
+/** A stored profile, or null if it is not a readable version 1 profile. */
+export function parseProfile(raw: string): ProfileV1 | null {
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!isRecord(data) || data.version !== 1) return null;
+
+  const validated = parseKnownFields(data);
+  // Top-level keys this build doesn't understand (e.g. a later build's
+  // "companions") ride along unvalidated so saving the profile back doesn't
+  // drop them. This is the one boundary where that untyped data enters
+  // ProfileV1, hence the cast.
+  return { ...data, ...validated } as ProfileV1;
+}
+
+/**
+ * A stored profile from a build newer than this one (an integer version
+ * greater than 1): parsed using only the fields this build knows, for
+ * display. `null` if the stored version isn't a readable newer version.
+ */
+function parseNewerProfile(raw: string): ProfileV1 | null {
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!isRecord(data) || !isNewerVersion(data.version)) return null;
+  return parseKnownFields(data);
 }
 
 // Storage can be unavailable (private windows, blocked site data), so every
@@ -102,23 +134,42 @@ export function saveProfile(storage: StorageLike, profile: ProfileV1): boolean {
   return write(storage, PROFILE_KEY, JSON.stringify(profile));
 }
 
-export function loadProfile(storage: StorageLike): ProfileV1 {
+/** The raw `PROFILE_KEY` value, guarded the same way as every other read. */
+export function readProfileRaw(storage: StorageLike): string | null {
+  return read(storage, PROFILE_KEY);
+}
+
+/**
+ * Reads the stored profile. `readOnly` is true when the stored profile was
+ * written by a newer build (an integer version greater than 1): its known
+ * fields are parsed for display, but it must never be saved over, since that
+ * would discard whatever that newer version added.
+ */
+export function readProfile(storage: StorageLike): { profile: ProfileV1; readOnly: boolean } {
   const raw = read(storage, PROFILE_KEY);
 
   if (raw !== null) {
     // A profile exists, so old keys are removed without being imported.
     removeLegacyKeys(storage);
     const parsed = parseProfile(raw);
-    if (parsed !== null) return parsed;
+    if (parsed !== null) return { profile: parsed, readOnly: false };
+
+    const newer = parseNewerProfile(raw);
+    if (newer !== null) return { profile: newer, readOnly: true };
+
     write(storage, UNREADABLE_KEY, raw);
-    return emptyProfile();
+    return { profile: emptyProfile(), readOnly: false };
   }
 
   const skillRaw = read(storage, LEGACY_SKILL_KEY);
   const relicRaw = read(storage, LEGACY_RELIC_KEY);
-  if (skillRaw === null && relicRaw === null) return emptyProfile();
+  if (skillRaw === null && relicRaw === null) return { profile: emptyProfile(), readOnly: false };
 
   const migrated = importLegacyLevels(skillRaw, relicRaw);
   if (saveProfile(storage, migrated)) removeLegacyKeys(storage);
-  return migrated;
+  return { profile: migrated, readOnly: false };
+}
+
+export function loadProfile(storage: StorageLike): ProfileV1 {
+  return readProfile(storage).profile;
 }
