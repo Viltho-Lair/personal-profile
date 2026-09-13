@@ -21,6 +21,7 @@ import openpyxl  # noqa: E402
 from PIL import Image  # noqa: E402
 
 from optimizer.art import find_existing_art  # noqa: E402
+from optimizer.companions import extract_companions  # noqa: E402
 from optimizer.familiars import extract_familiars  # noqa: E402
 from optimizer.gear import (  # noqa: E402
     extract_awakening,
@@ -199,6 +200,9 @@ def main():
         soul_weapons, soul_icons = extract_soul_weapons(values["Equipment Data"])
         mastery_pages, mastery_icons = extract_mastery(formulas["SKILL MASTERY"])
         familiars, mana_altar, familiar_art = extract_familiars(formulas["Familiar Data"])
+        companions, promotion, companion_art = extract_companions(
+            formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
+        )
     except (MissingHeader, ValueError, KeyError) as error:
         print(f"Extraction stopped, nothing was written: {error}", file=sys.stderr)
         return 1
@@ -299,6 +303,17 @@ def main():
         "manaAltar": mana_altar,
     })
     print(f"familiars: {len(familiars)} familiars, mana altar levels 1-{len(mana_altar)}")
+
+    published = publish_files("companion-skins", companion_art)
+    for companion in companions:
+        for skin in companion["skins"]:
+            skin["icon"], skin["iconSize"] = attach(published, skin["icon"])
+    write_json(DATA / "companions.json", {
+        "source": {"file": source.name, "sheet": "COMPANIONS, Companions Data, Sprites", "extractedOn": today},
+        "companions": companions,
+        "promotion": promotion,
+    }, compact=True)  # per-level cost tables for 36 skills
+    print(f"companions: {', '.join(c['name'] for c in companions)}; {len(promotion['slotsByAdvancement'])} advancements")
     return 0
 
 
