@@ -109,12 +109,20 @@ def split_grade(value):
 
 
 def images_by_cell(sheet):
-    """{(row, column): image bytes} for every image anchored to a cell."""
+    """{(row, column): image bytes} for every image anchored to a cell.
+
+    openpyxl closes an image's data stream after one read, so the bytes are
+    read once per sheet and cached on it; later calls return the same dict.
+    """
+    cached = getattr(sheet, "_optimizer_images", None)
+    if cached is not None:
+        return cached
     found = {}
     for image in getattr(sheet, "_images", []):
         anchor = getattr(image.anchor, "_from", None)
         if anchor is not None:
             found[(anchor.row + 1, anchor.col + 1)] = image._data()
+    sheet._optimizer_images = found
     return found
 
 

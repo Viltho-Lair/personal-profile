@@ -2,11 +2,13 @@ import unittest
 
 from openpyxl import Workbook
 
+from optimizer.tests.support import build_sheet
 from optimizer.workbook import (
     MissingHeader,
     find_cell,
     find_header_row,
     header_columns,
+    images_by_cell,
     number,
     rows_until_blank,
     slug,
@@ -93,6 +95,13 @@ class Values(unittest.TestCase):
 
     def test_slug(self):
         self.assertEqual(slug("Hunter's Eye"), "hunter-s-eye")
+
+    def test_images_can_be_read_more_than_once_from_the_same_sheet(self):
+        sheet = build_sheet({"A1": "x"}, images=[("B2", 64)])
+        first = images_by_cell(sheet)
+        second = images_by_cell(sheet)
+        self.assertEqual(list(first), [(2, 2)])
+        self.assertEqual(first[(2, 2)], second[(2, 2)])
 
 
 if __name__ == "__main__":
