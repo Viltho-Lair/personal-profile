@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import openpyxl  # noqa: E402
 from PIL import Image  # noqa: E402
 
+from optimizer.art import find_existing_art  # noqa: E402
 from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
@@ -37,8 +38,12 @@ DEFAULT_SOURCE = Path.home() / "Downloads" / "Copy of Slayer Legend - Master Opt
 # Art the workbook doesn't carry, from the previous pipelines. Once copied into
 # public/art it is found there on later runs, so these folders can be deleted.
 LEGACY_ART = {
+    "skills": ROOT / "public" / "skills",
     "weapons": ROOT / "public" / "weapons",
     "accessories": ROOT / "public" / "accessories",
+    "relics": ROOT / "public" / "relics",
+    "spirits": ROOT / "public" / "spirits",
+    "soul-weapons": ROOT / "public" / "soul-weapons",
 }
 
 # Previous data to compare against on the first run, before optimizer JSON exists.
@@ -56,11 +61,7 @@ def suffix_for(data):
 
 
 def existing_art(area, file_slug):
-    for folder in (ART / area, LEGACY_ART.get(area)):
-        if folder is not None and folder.exists():
-            for candidate in sorted(folder.glob(f"{file_slug}.*")):
-                return candidate.read_bytes()
-    return None
+    return find_existing_art([ART / area, LEGACY_ART.get(area)], file_slug)
 
 
 def publish_art(area, items, icons, name_of):
