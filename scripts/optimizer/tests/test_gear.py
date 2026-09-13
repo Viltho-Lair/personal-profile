@@ -1,8 +1,8 @@
 import unittest
 
-from optimizer.gear import extract_gear, extract_level_factors
+from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors
 from optimizer.tests.support import build_sheet
-from optimizer.workbook import MissingHeader
+from optimizer.workbook import MissingHeader, image_size
 
 CELLS = {
     "A1": "WEAPONS",
@@ -53,6 +53,27 @@ class ExtractGear(unittest.TestCase):
     def test_missing_header_is_named(self):
         with self.assertRaisesRegex(MissingHeader, "MULTIPLIER"):
             extract_gear(equipment_sheet(C2=None), "WEAPONS")
+
+
+class ExtractGearIcons(unittest.TestCase):
+    def equipment_ui(self):
+        cells = {
+            "H6": "WEAPON", "J6": "ENHANCE LVL", "I7": "Common 4", "I8": "Immortal",
+            "H41": "ACCESSORY", "J41": "ENHANCE LVL", "I42": "Common 4",
+        }
+        return build_sheet(cells, title="EQUIPMENT", images=[("H7", 128), ("H42", 64)])
+
+    def test_art_is_keyed_by_grade_for_each_table(self):
+        sheet = self.equipment_ui()
+        weapons = extract_gear_icons(sheet, "WEAPON")
+        accessories = extract_gear_icons(sheet, "ACCESSORY")
+        self.assertEqual(image_size(weapons["Common 4"]), (128, 128))
+        self.assertNotIn("Immortal", weapons)
+        self.assertEqual(image_size(accessories["Common 4"]), (64, 64))
+
+    def test_missing_header_is_named(self):
+        with self.assertRaisesRegex(MissingHeader, "ACCESSORY"):
+            extract_gear_icons(build_sheet({"H6": "WEAPON"}, title="EQUIPMENT"), "ACCESSORY")
 
 
 class ExtractLevelFactors(unittest.TestCase):

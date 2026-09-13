@@ -3,7 +3,9 @@
 from optimizer.workbook import (
     MissingHeader,
     find_cell,
+    find_header_row,
     header_columns,
+    images_by_cell,
     number,
     rows_until_blank,
     split_grade,
@@ -51,6 +53,25 @@ def extract_gear(sheet, title):
             },
         })
     return grades
+
+
+def extract_gear_icons(equipment_sheet, header):
+    """Grade art from the EQUIPMENT sheet's WEAPON or ACCESSORY table.
+
+    The header is merged over two columns: art is anchored in the first and
+    the grade name sits in the second.
+    """
+    header_row, col = find_header_row(equipment_sheet, [header, "ENHANCE LVL"])
+    art_col = col[header]
+    name_col = art_col + 1
+    images = images_by_cell(equipment_sheet)
+
+    icons = {}
+    for row in rows_until_blank(equipment_sheet, header_row + 1, name_col):
+        data = images.get((row, art_col))
+        if data is not None:
+            icons[text(equipment_sheet.cell(row, name_col).value)] = data
+    return icons
 
 
 def extract_level_factors(sheet):
