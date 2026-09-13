@@ -65,7 +65,12 @@ def existing_art(area, file_slug):
 
 
 def publish_art(area, items, icons, name_of):
-    """Write art for each item, set icon and iconSize, return names with none."""
+    """Write art for each item, set icon and iconSize, return names with none.
+
+    Every item's output (filename, bytes, native width) is computed first, so
+    a decode failure raises before the old art folder is deleted or anything
+    new is written - never leaving a half-written folder on disk.
+    """
     art = {}
     for item in items:
         name = name_of(item)
@@ -73,23 +78,32 @@ def publish_art(area, items, icons, name_of):
         if data is not None:
             art[name] = data
 
-    folder = ART / area
-    if folder.exists():
-        shutil.rmtree(folder)
-    folder.mkdir(parents=True)
-
+    prepared = {}
     gaps = []
     for item in items:
         name = name_of(item)
         data = art.get(name)
         if data is None:
-            item["icon"], item["iconSize"] = None, None
             gaps.append(name)
             continue
         filename = f"{slug(name)}{suffix_for(data)}"
+        prepared[name] = (filename, data, image_size(data)[0])
+
+    folder = ART / area
+    if folder.exists():
+        shutil.rmtree(folder)
+    folder.mkdir(parents=True)
+
+    for item in items:
+        name = name_of(item)
+        output = prepared.get(name)
+        if output is None:
+            item["icon"], item["iconSize"] = None, None
+            continue
+        filename, data, width = output
         (folder / filename).write_bytes(data)
         item["icon"] = f"/art/{area}/{filename}"
-        item["iconSize"] = image_size(data)[0]
+        item["iconSize"] = width
     return gaps
 
 
