@@ -1,5 +1,6 @@
 import type { SkillStone } from "@/lib/game/battle";
 import { emptyShrineLevels, SHRINE_KEYS } from "@/lib/game/shrine";
+import { emptyBlackOrb } from "@/lib/game/black-orb";
 import { importLegacyLevels } from "./migration";
 import {
   ABILITY_SLOTS,
@@ -317,6 +318,32 @@ function soulEngraving(value: unknown): SoulEngraving {
   };
 }
 
+const ORB_LINE_ELEMENTS = ["Fire", "Water", "Wind", "Earth", "All"] as const;
+
+function blackOrb(value: unknown): ProfileV1["blackOrb"] {
+  const orb = emptyBlackOrb();
+  if (!isRecord(value)) return orb;
+  orb.level = wholeLevel(value.level) ?? 0;
+  const accessories = isRecord(value.accessories) ? value.accessories : {};
+  for (const element of STONE_ELEMENTS) {
+    const stored = isRecord(accessories[element]) ? accessories[element] : {};
+    const lines = Array.isArray(stored.lines) ? stored.lines : [];
+    orb.accessories[element] = {
+      level: wholeLevel(stored.level) ?? 0,
+      top: Math.max(0, finiteOr(stored.top, 0)),
+      lines: orb.accessories[element].lines.map((empty, i) => {
+        const line = isRecord(lines[i]) ? lines[i] : {};
+        return {
+          element: ORB_LINE_ELEMENTS.find((e) => e === line.element) ?? null,
+          value: Math.max(0, finiteOr(line.value, 0)),
+          bonus: Math.min(6, wholeLevel(line.bonus) ?? empty.bonus),
+        };
+      }),
+    };
+  }
+  return orb;
+}
+
 const MAX_BEAST_AWAKEN = 6;
 const MAX_BEAST_AFFECTION = 70;
 
@@ -409,6 +436,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     sealedShrine: sealedShrine(data.sealedShrine),
     appearance: appearance(data.appearance),
     beasts: beasts(data.beasts),
+    blackOrb: blackOrb(data.blackOrb),
     promotionTarget: promotionTarget(data.promotionTarget),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,

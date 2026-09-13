@@ -1,3 +1,5 @@
+import type { OrbAccessory, OrbLine } from "@/lib/game/black-orb";
+import type { Element } from "@/lib/game/stats";
 import type { BeastState } from "@/lib/game/beasts";
 import type { ShrineKey } from "@/lib/game/shrine";
 import type { SkillStoneSet } from "@/lib/game/battle";
@@ -517,6 +519,25 @@ export function setRefinementLine(
   while (lines.length <= index) lines.push({ option: null, value: null });
   lines[index] = { ...lines[index], ...change };
   return { ...profile, skillRefinement: { ...profile.skillRefinement, [skill]: lines } };
+}
+
+export function setOrbLevel(profile: ProfileV1, level: number): ProfileV1 {
+  return { ...profile, blackOrb: { ...profile.blackOrb, level: clampLevel(level, 999) } };
+}
+
+/** Changes a Black Orb accessory's level or top stat, or one of its lines. */
+export function updateOrbAccessory(
+  profile: ProfileV1,
+  element: Element,
+  change: Partial<Pick<OrbAccessory, "level" | "top">> & { line?: { index: number; change: Partial<OrbLine> } },
+): ProfileV1 {
+  const current = profile.blackOrb.accessories[element];
+  const { line, ...fields } = change;
+  const next: OrbAccessory = { ...current, ...fields };
+  if (line && line.index >= 0 && line.index < current.lines.length) {
+    next.lines = current.lines.map((l, i) => (i === line.index ? { ...l, ...line.change } : l));
+  }
+  return { ...profile, blackOrb: { ...profile.blackOrb, accessories: { ...profile.blackOrb.accessories, [element]: next } } };
 }
 
 /** Changes a beast's awaken level (null: not owned) or affection; affection stays within 1..70. */

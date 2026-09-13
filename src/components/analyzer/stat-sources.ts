@@ -22,6 +22,8 @@ import { appearanceTotals, sweatsuitMultiplier, type AppearanceData } from "@/li
 import appearanceData from "@/data/optimizer/appearance.json";
 import { beastTotals, type BeastData } from "@/lib/game/beasts";
 import beastsData from "@/data/optimizer/beasts.json";
+import { blackOrbEffects, type BlackOrbData } from "@/lib/game/black-orb";
+import blackOrbData from "@/data/optimizer/black-orb.json";
 import refinementData from "@/data/optimizer/skill-refinement.json";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
 import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
@@ -101,6 +103,7 @@ const rawBase = (key: string, perLevel: number) => (key === "LUK" ? perLevel * 1
 export const SHRINE = shrineData as unknown as ShrineData;
 export const APPEARANCE = appearanceData as unknown as AppearanceData;
 export const BEASTS = beastsData as unknown as BeastData;
+export const BLACK_ORB = blackOrbData as unknown as BlackOrbData;
 
 /** Latent power per growth level and in total; the Statue of Dragon amplifies the latent part. */
 export function latentTotals(character: CharacterState, shrine?: ShrineLevels) {
@@ -273,6 +276,8 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   s.appearance = appearanceTotals(APPEARANCE, profile.appearance);
   const beasts = beastTotals(BEASTS, profile.beasts, mountedBeast(profile) !== null);
   s.beasts = { combat: beasts.combat, mountedAtk: beasts.mountedAtk };
+  const orb = blackOrbEffects(BLACK_ORB, profile.blackOrb);
+  s.blackOrb = { amp: orb.amp, element: orb.element, atk: orb.atk, hp: orb.hp, boss: orb.boss, monster: orb.monster };
   s.shrine = { soulWeaponAtk: shrine.soulWeaponAtk, atk: shrine.atk, hp: shrine.hp, element: shrine.element };
   const growthLevel = (key: string) => (c.growth[key] ?? 0) * (GROWTH.find((g) => g.key === key)?.perLevel ?? 0);
   s.growth = {
@@ -444,6 +449,4 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
 }
 
 /** Sources the workbook counts that the analyzer doesn't track yet. */
-export const UNTRACKED_SOURCES = [
-  "Black Orb",
-] as const;
+export const UNTRACKED_SOURCES: readonly string[] = [];

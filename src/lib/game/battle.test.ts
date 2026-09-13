@@ -79,6 +79,14 @@ describe("simulateFight", () => {
     expect(result.basic).toBeGreaterThan(simulateFight({ ...base, skills: [slash] }).basic);
   });
 
+  it("multiplies element skills by their amp and every hit by boss damage", () => {
+    const slash = skill({ name: "Slash", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
+    const plain = simulateFight({ ...base, skills: [slash] });
+    const amped = simulateFight({ ...base, skills: [slash], elementAmp: { Fire: 1, Water: 0, Wind: 0, Earth: 0 }, bossDamage: 0.5 });
+    expect(amped.bySkill.Slash).toBeCloseTo(plain.bySkill.Slash * 3);
+    expect(amped.basic).toBeCloseTo(plain.basic * 1.5);
+  });
+
   it("applies skill stones only to their element", () => {
     const s = skill({ name: "Buff", element: "Water", kind: "buff", every: 20, duration: 10, effect: { type: "atk", power: 1 } });
     const stones = { cooldown: { grade: "B" as const, element: "Water" as const }, time: { grade: "A" as const, element: "Water" as const }, heat: null };

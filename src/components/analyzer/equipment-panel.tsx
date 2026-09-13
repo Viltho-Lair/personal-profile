@@ -9,6 +9,7 @@ import {
   SPIRITS,
   WEAPONS,
 } from "./data";
+import { BlackOrbPanel } from "./black-orb-panel";
 import { GearGrid } from "./gear-grid";
 import { RelicList } from "./relic-list";
 import { SealedShrine } from "./sealed-shrine";
@@ -24,6 +25,7 @@ const EQUIPMENT_TABS = [
   { id: "relics", label: "Relics", count: RELICS.length },
   { id: "spirits", label: "Spirits", count: SPIRITS.length },
   { id: "soul-weapons", label: "Soul Weapons", count: SOUL_WEAPONS.length },
+  { id: "black-orb", label: "Black Orb", count: 4 },
 ];
 
 export function EquipmentPanel() {
@@ -90,6 +92,10 @@ export function EquipmentPanel() {
 
       <TabsContent value="soul-weapons" className="relative min-h-0 flex-1">
         <SoulWeaponPanel />
+      </TabsContent>
+
+      <TabsContent value="black-orb" className="relative min-h-0 flex-1">
+        <BlackOrbPanel />
       </TabsContent>
     </Tabs>
   );

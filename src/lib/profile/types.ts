@@ -4,6 +4,7 @@ import type { RefinementLine } from "@/lib/game/refinement";
 import { emptyShrineLevels, type ShrineLevels } from "@/lib/game/shrine";
 import type { OwnedAppearance } from "@/lib/game/appearance";
 import type { BeastState } from "@/lib/game/beasts";
+import { emptyBlackOrb, type BlackOrbState } from "@/lib/game/black-orb";
 
 /** Weapons and accessories are graded, and keyed by grade name ("Common 4"). */
 export type GearKind = "weapons" | "accessories";
@@ -210,6 +211,8 @@ export type ProfileV1 = {
   appearance: OwnedAppearance;
   /** Beasts by name: awaken level (null: not owned) and affection. */
   beasts: Record<string, BeastState>;
+  /** Black Orb level and its four element accessories. */
+  blackOrb: BlackOrbState;
   /** The promotion the progress chart aims at, and the fight's length in seconds. */
   promotionTarget: { promotion: number | null; duration: number };
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
@@ -261,6 +264,7 @@ export function emptyProfile(): ProfileV1 {
     sealedShrine: emptyShrineLevels(),
     appearance: { clothing: [], guild: [] },
     beasts: {},
+    blackOrb: emptyBlackOrb(),
     promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS },
     weaponAwakening: 0,
     accessoryAwakening: 0,

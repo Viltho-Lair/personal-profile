@@ -91,7 +91,7 @@ export function StatsSummary() {
             ? `Skill buffs from preset ${profile.activeSkillPreset + 1}: ${counted.join(", ")}.`
             : `No flat ATK or mana recovery buffs in skill preset ${profile.activeSkillPreset + 1}.`
           : "Without skill buffs."}{" "}
-        Not counted yet: {UNTRACKED_SOURCES.join(", ")}.
+        {UNTRACKED_SOURCES.length ? `Not counted yet: ${UNTRACKED_SOURCES.join(", ")}.` : null}
       </p>
       <span className={`${LABEL} sr-only`}>Stats use the workbook&apos;s formulas.</span>
     </section>

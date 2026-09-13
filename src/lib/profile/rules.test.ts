@@ -4,6 +4,7 @@ import {
   setShrineLevel,
   setOutfitOwned,
   setBeast,
+  updateOrbAccessory,
   setMountedBeast,
   mountedBeast,
   awakening,
@@ -293,6 +294,16 @@ describe("skill mastery", () => {
     expect(openMasteryPages(p, pages)).toBe(3);
     p = setMasteryPage(p, page1, false);
     expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("black orb", () => {
+  it("changes an accessory and one of its lines", () => {
+    let p = updateOrbAccessory(emptyProfile(), "Fire", { level: 49, top: 34243 });
+    p = updateOrbAccessory(p, "Fire", { line: { index: 2, change: { element: "Fire", value: 9 } } });
+    expect(p.blackOrb.accessories.Fire).toMatchObject({ level: 49, top: 34243 });
+    expect(p.blackOrb.accessories.Fire.lines[2]).toEqual({ element: "Fire", value: 9, bonus: 0 });
+    expect(p.blackOrb.accessories.Water.level).toBe(0);
   });
 });
 

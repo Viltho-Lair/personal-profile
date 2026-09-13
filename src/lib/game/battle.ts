@@ -59,7 +59,11 @@ export type FightInput = {
   critDamage: number;
   deathStrikeChance: number;
   deathStrikeDamage: number;
+  /** Element damage and its amps: an element skill deals x (1 + damage + bonuses) x (1 + amp). */
   extraDamage: ByElement;
+  elementAmp?: ByElement;
+  /** Extra damage against the boss on every hit (Black Orb). */
+  bossDamage?: number;
   skills: FightSkill[];
   duration: number;
   step?: number;
@@ -154,7 +158,9 @@ export function simulateFight(input: FightInput): FightResult {
     return { atk, speed, cooldownRate, element };
   };
 
-  const deal = (amount: number, source: string | null) => {
+  const boss = 1 + (input.bossDamage ?? 0);
+  const deal = (hit: number, source: string | null) => {
+    const amount = hit * boss;
     total += amount;
     if (source) bySkill[source] = (bySkill[source] ?? 0) + amount;
     else basic += amount;
@@ -186,7 +192,8 @@ export function simulateFight(input: FightInput): FightResult {
       }
       const hits = e.growsTo ? Math.min(e.growsTo, Math.round(e.hits) + l.uses - 1) : e.hits;
       const whole = Math.max(1, Math.round(hits));
-      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * hits) / whole;
+      const amp = s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1;
+      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * hits) / whole;
       for (let i = 0; i < whole; i += 1) deal(perHit, s.name);
       if (s.freezes) {
         animation = ANIMATION_SECONDS * whole;

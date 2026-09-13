@@ -74,7 +74,7 @@ export function SealedShrine() {
         <StatueCard key={statue.key} statue={statue} />
       ))}
       <p className="font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
-        Level 0 means not unlocked. Dragon amplifies latent power growth, Order adds element damage, Chaos adds soul weapon
+        Level 0 means not unlocked. Dragon amplifies latent power growth, Order amplifies element damage, Chaos adds soul weapon
         and character ATK, Demon adds character HP and skill damage.
       </p>
     </section>

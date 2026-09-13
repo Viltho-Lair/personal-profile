@@ -20,7 +20,7 @@ export function statueValues(statue: ShrineStatue | undefined, level: number): n
 export type ShrineEffects = {
   /** Latent power growth amps for STR, HP, VIT, CRI and LUK (DMG Efficiency Data H150:H154). */
   latent: Record<"STR" | "HP" | "VIT" | "CRI" | "LUK", number>;
-  /** Statue of Order: extra damage by element. */
+  /** Statue of Order: element damage amps by element. */
   element: ByElement;
   /** Statue of Chaos: soul weapon ATK amp (B11) and Character ATK% (D44). */
   soulWeaponAtk: number;
