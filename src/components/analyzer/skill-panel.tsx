@@ -12,6 +12,8 @@ import {
 } from "./data";
 import { LevelInput } from "./level-input";
 import { SkillDialog } from "./skill-dialog";
+import { SkillFamiliars } from "./skill-familiars";
+import { SkillMastery } from "./skill-mastery";
 import { SkillSettings } from "./skill-settings";
 import { SkillTiles } from "./skill-tiles";
 
@@ -123,16 +125,6 @@ function ProficiencySection() {
   );
 }
 
-function ComingNext({ label }: { label: string }) {
-  return (
-    <div className="flex h-full items-center justify-center p-6">
-      <p className="max-w-[40ch] text-center font-mono text-xs tracking-[0.08em] text-dim uppercase">
-        {label} are coming next.
-      </p>
-    </div>
-  );
-}
-
 export function SkillPanel() {
   const [section, setSection] = useState<Section>("core");
   const skills =
@@ -167,8 +159,10 @@ export function SkillPanel() {
           <SkillWorkspace skills={skills} />
         ) : section === "proficiency" ? (
           <ProficiencySection />
+        ) : section === "mastery" ? (
+          <SkillMastery />
         ) : (
-          <ComingNext label={section === "mastery" ? "Skill Mastery pages" : "Familiars"} />
+          <SkillFamiliars />
         )}
       </div>
     </div>
