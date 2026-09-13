@@ -1,4 +1,5 @@
 import type { SkillStone } from "@/lib/game/battle";
+import { emptyShrineLevels, SHRINE_KEYS } from "@/lib/game/shrine";
 import { importLegacyLevels } from "./migration";
 import {
   ABILITY_SLOTS,
@@ -315,6 +316,15 @@ function soulEngraving(value: unknown): SoulEngraving {
   };
 }
 
+const MAX_SHRINE_LEVEL = 999;
+
+function sealedShrine(value: unknown): ProfileV1["sealedShrine"] {
+  const levels = emptyShrineLevels();
+  if (!isRecord(value)) return levels;
+  for (const key of SHRINE_KEYS) levels[key] = Math.min(MAX_SHRINE_LEVEL, wholeLevel(value[key]) ?? 0);
+  return levels;
+}
+
 const REFINEMENT_LINES = 5;
 
 function skillRefinement(value: unknown): ProfileV1["skillRefinement"] {
@@ -372,6 +382,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     includeSkills: data.includeSkills === true,
     soulEngraving: soulEngraving(data.soulEngraving),
     skillRefinement: skillRefinement(data.skillRefinement),
+    sealedShrine: sealedShrine(data.sealedShrine),
     promotionTarget: promotionTarget(data.promotionTarget),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,

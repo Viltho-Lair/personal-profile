@@ -11,6 +11,7 @@ import {
 } from "./data";
 import { GearGrid } from "./gear-grid";
 import { RelicList } from "./relic-list";
+import { SealedShrine } from "./sealed-shrine";
 import { SoulWeaponPanel } from "./soul-weapon-panel";
 import { SpiritGrid } from "./spirit-grid";
 
@@ -72,8 +73,15 @@ export function EquipmentPanel() {
         <GearGrid kind="accessories" items={ACCESSORIES} />
       </TabsContent>
 
-      <TabsContent value="relics" className={PANEL}>
-        <RelicList />
+      <TabsContent value="relics" className="relative min-h-0 flex-1">
+        <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
+          <div className="min-h-0 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0 md:pb-20">
+            <RelicList />
+          </div>
+          <div className="min-h-0 overflow-auto p-3 pb-20 sm:p-4">
+            <SealedShrine />
+          </div>
+        </div>
       </TabsContent>
 
       <TabsContent value="spirits" className={PANEL}>

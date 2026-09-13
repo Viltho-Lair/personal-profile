@@ -16,6 +16,8 @@ import { constellationTotals, type Constellation } from "@/lib/game/constellatio
 import { proficiencyBonuses } from "@/lib/game/familiars";
 import { gemTotals, plateComplete } from "@/lib/game/engraving";
 import { ownedEffect, type RefinementData } from "@/lib/game/refinement";
+import { shrineEffects, type ShrineData, type ShrineLevels } from "@/lib/game/shrine";
+import shrineData from "@/data/optimizer/sealed-shrine.json";
 import refinementData from "@/data/optimizer/skill-refinement.json";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
 import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
@@ -91,12 +93,17 @@ const COMPANION_PROMOTION = companionsData.promotion as unknown as PromotionData
 const rawBase = (key: string, perLevel: number) => (key === "LUK" ? perLevel * 100 : perLevel);
 
 /** Growth totals after Latent Power: STR/HP/VIT flat, CRI and LUK as fractions (CHARACTER AR25:AR29). */
-export function latentTotals(character: CharacterState) {
+export const SHRINE = shrineData as unknown as ShrineData;
+
+/** Latent power per growth level and in total; the Statue of Dragon amplifies the latent part. */
+export function latentTotals(character: CharacterState, shrine?: ShrineLevels) {
+  const amps = shrine ? shrineEffects(SHRINE, shrine).latent : null;
   const { grade, level } = character.latentAwakening;
   return Object.fromEntries(
     GROWTH.filter((stat) => (LATENT_STATS as readonly string[]).includes(stat.key)).map((stat) => {
       const sum = (character.latent[stat.key] ?? []).reduce((a, b) => a + b, 0);
-      const perLevel = latentPerLevel(stat.key, rawBase(stat.key, stat.perLevel), character.slayerLevel, sum);
+      const amp = amps?.[stat.key as keyof typeof amps] ?? 0;
+      const perLevel = latentPerLevel(stat.key, rawBase(stat.key, stat.perLevel), character.slayerLevel, sum * (1 + amp));
       const multiplier = latentMultiplier(stat.key === "CRI" ? LATENT.crit : LATENT.stats, grade, level);
       const growthLevel = character.growth[stat.key] ?? 0;
       const divisor = stat.key === "CRI" || stat.key === "LUK" ? 100 : 1;
@@ -254,7 +261,9 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     deathStrikeChance: enhance("DEATH STRIKE %"),
   };
 
-  const latent = latentTotals(c);
+  const latent = latentTotals(c, profile.sealedShrine);
+  const shrine = shrineEffects(SHRINE, profile.sealedShrine);
+  s.shrine = { soulWeaponAtk: shrine.soulWeaponAtk, atk: shrine.atk, hp: shrine.hp, element: shrine.element };
   const growthLevel = (key: string) => (c.growth[key] ?? 0) * (GROWTH.find((g) => g.key === key)?.perLevel ?? 0);
   s.growth = {
     atk: latent.STR?.total ?? 0,
@@ -427,5 +436,4 @@ export const UNTRACKED_SOURCES = [
   "Appearance",
   "Black Orb",
   "Beasts",
-  "Sealed Shrine statues",
 ] as const;

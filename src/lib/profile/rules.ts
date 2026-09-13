@@ -1,3 +1,4 @@
+import type { ShrineKey } from "@/lib/game/shrine";
 import type { SkillStoneSet } from "@/lib/game/battle";
 import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
 import {
@@ -515,6 +516,13 @@ export function setRefinementLine(
   while (lines.length <= index) lines.push({ option: null, value: null });
   lines[index] = { ...lines[index], ...change };
   return { ...profile, skillRefinement: { ...profile.skillRefinement, [skill]: lines } };
+}
+
+/** Sets a Sealed Shrine statue's level, clamped to 0..max. */
+export function setShrineLevel(profile: ProfileV1, statue: ShrineKey, level: number, max: number): ProfileV1 {
+  const next = clampLevel(level, max);
+  if (profile.sealedShrine[statue] === next) return profile;
+  return { ...profile, sealedShrine: { ...profile.sealedShrine, [statue]: next } };
 }
 
 export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): ProfileV1 {

@@ -4,12 +4,13 @@ import { simulateFight, withStones, type FightResult, type FightSkill, type Skil
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
 import { refinementEffects } from "@/lib/game/refinement";
+import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
 import { activeSkillStones, effectiveSkillLevel, masteryLevel } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
 import { MASTERY_PAGES, SKILL_BY_NAME, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
-import { collectSources } from "./stat-sources";
+import { collectSources, SHRINE } from "./stat-sources";
 
 type PromotionStage = { name: string; stage: number; range: number };
 export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[];
@@ -113,7 +114,9 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     // Refinement: extra damage, and a shorter cooldown or fewer required hits.
     const refined = refinementEffects(profile.skillRefinement[skill.name] ?? []);
     const every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
-    return make({ type: "damage", power: power * amp, hits }, { bonus: bonus + refined.damage, every });
+    // Statue of Demon amplifies skill damage.
+    const shrine = shrineEffects(SHRINE, profile.sealedShrine).skillDamage;
+    return make({ type: "damage", power: power * amp, hits }, { bonus: bonus + refined.damage + shrine, every });
   }
 
   const speed = /ATK SPD/i.test(text);

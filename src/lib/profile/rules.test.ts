@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addToSkillPreset,
+  setShrineLevel,
   awakening,
   companionState,
   clampLevel,
@@ -288,6 +289,14 @@ describe("skill mastery", () => {
     expect(openMasteryPages(p, pages)).toBe(3);
     p = setMasteryPage(p, page1, false);
     expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("sealed shrine", () => {
+  it("clamps statue levels to the table", () => {
+    const p = setShrineLevel(emptyProfile(), "order", 90, 73);
+    expect(p.sealedShrine).toMatchObject({ order: 73, dragon: 0 });
+    expect(setShrineLevel(p, "order", 73, 73)).toBe(p);
   });
 });
 

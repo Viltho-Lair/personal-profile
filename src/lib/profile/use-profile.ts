@@ -128,6 +128,8 @@ export function useProfile() {
       update((p) => rules.setPromotionTarget(p, change)),
     setRefinementLine: (skill: string, index: number, change: Parameters<typeof rules.setRefinementLine>[3]) =>
       update((p) => rules.setRefinementLine(p, skill, index, change)),
+    setShrineLevel: (statue: Parameters<typeof rules.setShrineLevel>[1], level: number, max: number) =>
+      update((p) => rules.setShrineLevel(p, statue, level, max)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     resetProfile: () => update(() => emptyProfile()),
   };

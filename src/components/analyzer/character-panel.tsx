@@ -121,7 +121,7 @@ function Art({ item, className = "size-8" }: { item: Icon | undefined; className
 
 function useCharacter() {
   const { profile, updateCharacter } = useProfile();
-  return { character: profile.character, set: updateCharacter };
+  return { character: profile.character, set: updateCharacter, shrineLevels: profile.sealedShrine };
 }
 
 /* ---------------------------------------------------------------- Enhance */
@@ -219,8 +219,8 @@ function EnhanceSection() {
 /* ---------------------------------------------------------------- Growth */
 
 function LatentPower() {
-  const { character, set } = useCharacter();
-  const totals = latentTotals(character);
+  const { character, set, shrineLevels } = useCharacter();
+  const totals = latentTotals(character, shrineLevels);
 
   return (
     <div className="flex flex-col gap-3">
@@ -309,16 +309,16 @@ function LatentPower() {
         </label>
       </div>
       <p className="text-[11px] leading-snug text-dim">
-        The Sealed Shrine statue growth bonus isn&apos;t included yet.
+        Includes the Statue of Dragon growth bonus (Equipment · Relics).
       </p>
     </div>
   );
 }
 
 function GrowthSection() {
-  const { character, set } = useCharacter();
+  const { character, set, shrineLevels } = useCharacter();
   const [tab, setTab] = useState<"diary" | "latent">("latent");
-  const totals = latentTotals(character);
+  const totals = latentTotals(character, shrineLevels);
 
   const left = (
     <ul className="flex flex-col gap-1.5">
