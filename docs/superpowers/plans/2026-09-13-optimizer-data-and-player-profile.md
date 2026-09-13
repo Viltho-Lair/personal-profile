@@ -59,9 +59,11 @@ Excluded: `CURRENT LEVEL` (D). Icons: 128 px images anchored in column C of each
 | `GOLD BONUS` | G | secondary.goldBonus |
 | `CRIT HIT INCREASE AT 0` | H | secondary.critHitIncreaseAt0 |
 
-Excluded: `OWNED` (B), `CURRENT LEVEL` (D), `CURRENT EQUIP EFFECT` (I). No art in the workbook.
+Excluded: `OWNED` (B), `CURRENT LEVEL` (D), `CURRENT EQUIP EFFECT` (I). Art is on the EQUIPMENT sheet, below.
 
 **Equipment Data — ACCESSORIES** — title `ACCESSORIES` at A29, header row 30, grades in rows 31–55 (25). Same as weapons except the secondary headers: `MAX MANA AT 0` (F) → maxManaAt0, `EXP Bonus` (G) → expBonus, `MANA RECOVERY AT 0` (H) → manaRecoveryAt0.
+
+**EQUIPMENT — gear art** — weapons: header row 6 (`WEAPON` at H6, merged over H:I; `ENHANCE LVL` at J6), grade names in column I rows 7–31, 128 px art anchored in column H rows 7–30. Accessories: header row 41 (`ACCESSORY` at H41, `ENHANCE LVL` at J41), grades in I42–I66, 64 px art in H42–H65. Immortal has no art in either table.
 
 **Equipment Data — Equip ATK factor** — title `Equip ATK factor` at L1, header row 2 (`Stage` in L is the level, `Factor` in M), rows 3–1703: levels 0–1700.
 
@@ -109,7 +111,7 @@ That gives bands 0–9, 10–19, … 90–99 and 100+. Buff % at level L = `L ×
 4. Spirit `maxLevel` is 1000.
 5. The skill grid lays 64 skills out as element columns sorted by grade rank then Id; element-less skills (Rave, Mantra) get their own final row.
 6. Relic bands come from the workbook formulas, which fixes the current app's values below level 100.
-7. The workbook has no gear art, so existing wiki art in `public/weapons/` and `public/accessories/` is copied into `public/art/`; grades without art are listed as gaps.
+7. Gear art comes from the EQUIPMENT sheet (24 weapon and 24 accessory grades). Immortal has none there; the extractor falls back to existing wiki art in `public/weapons/` and `public/accessories/` if a matching file exists, and otherwise lists it as a gap.
 
 ## File structure
 
@@ -120,7 +122,7 @@ That gives bands 0–9, 10–19, … 90–99 and 100+. Buff % at level L = `L ×
 | `scripts/optimizer/__init__.py` | Package marker |
 | `scripts/optimizer/workbook.py` | Finding tables, reading values, reading anchored images |
 | `scripts/optimizer/skills.py` | Skills Data → skill records and icons |
-| `scripts/optimizer/gear.py` | Weapons, accessories and the level factor table |
+| `scripts/optimizer/gear.py` | Weapons, accessories, their art and the level factor table |
 | `scripts/optimizer/relics.py` | Relic names, buffs and parsed level bands |
 | `scripts/optimizer/spirits.py` | Spirit names, max level and art |
 | `scripts/optimizer/soul_weapons.py` | Soul weapon records and art |
@@ -659,16 +661,19 @@ git commit -m "Extract skills from the optimizer's Skills Data sheet"
 
 ### Task 3: Weapon, accessory and level factor extraction
 
+> Do Task 4 Steps 1 and 4 (`find_header_row` and its tests) before this task: the gear art reader uses it.
+
 **Files:**
 - Create: `scripts/optimizer/gear.py`
 - Test: `scripts/optimizer/tests/test_gear.py`
 
 **Interfaces:**
-- Consumes: `find_cell`, `header_columns`, `number`, `rows_until_blank`, `split_grade`, `text`, `MissingHeader` (Task 1); `build_sheet` (Task 2).
+- Consumes: `find_cell`, `header_columns`, `images_by_cell`, `number`, `rows_until_blank`, `split_grade`, `text`, `MissingHeader` (Task 1); `find_header_row` (Task 4 Step 4); `build_sheet` (Task 2).
 - Produces:
   - `optimizer.gear.TIER_ORDER: list[str]` = `["Common", "Great", "Rare", "Epic", "Legendary", "Mythic", "Immortal"]`
   - `optimizer.gear.extract_gear(sheet, title: str) -> list[dict]` — `title` is `"WEAPONS"` or `"ACCESSORIES"`. Record keys: `grade, tier, gradeNumber, tierRank, multiplier, baseMaxLevel, secondary{...}`.
   - `optimizer.gear.extract_level_factors(sheet) -> list[float]` — index is the enhance level.
+  - `optimizer.gear.extract_gear_icons(equipment_sheet, header: str) -> dict[str, bytes]` — `header` is `"WEAPON"` or `"ACCESSORY"`; art keyed by grade name, read from the EQUIPMENT sheet.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -677,9 +682,9 @@ Create `scripts/optimizer/tests/test_gear.py`:
 ```python
 import unittest
 
-from optimizer.gear import extract_gear, extract_level_factors
+from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors
 from optimizer.tests.support import build_sheet
-from optimizer.workbook import MissingHeader
+from optimizer.workbook import MissingHeader, image_size
 
 CELLS = {
     "A1": "WEAPONS",
@@ -732,6 +737,27 @@ class ExtractGear(unittest.TestCase):
             extract_gear(equipment_sheet(C2=None), "WEAPONS")
 
 
+class ExtractGearIcons(unittest.TestCase):
+    def equipment_ui(self):
+        cells = {
+            "H6": "WEAPON", "J6": "ENHANCE LVL", "I7": "Common 4", "I8": "Immortal",
+            "H41": "ACCESSORY", "J41": "ENHANCE LVL", "I42": "Common 4",
+        }
+        return build_sheet(cells, title="EQUIPMENT", images=[("H7", 128), ("H42", 64)])
+
+    def test_art_is_keyed_by_grade_for_each_table(self):
+        sheet = self.equipment_ui()
+        weapons = extract_gear_icons(sheet, "WEAPON")
+        accessories = extract_gear_icons(sheet, "ACCESSORY")
+        self.assertEqual(image_size(weapons["Common 4"]), (128, 128))
+        self.assertNotIn("Immortal", weapons)
+        self.assertEqual(image_size(accessories["Common 4"]), (64, 64))
+
+    def test_missing_header_is_named(self):
+        with self.assertRaisesRegex(MissingHeader, "ACCESSORY"):
+            extract_gear_icons(build_sheet({"H6": "WEAPON"}, title="EQUIPMENT"), "ACCESSORY")
+
+
 class ExtractLevelFactors(unittest.TestCase):
     def test_factor_index_is_the_level(self):
         self.assertEqual(extract_level_factors(equipment_sheet()), [1, 1.375, 1.5])
@@ -761,7 +787,9 @@ Create `scripts/optimizer/gear.py`:
 from optimizer.workbook import (
     MissingHeader,
     find_cell,
+    find_header_row,
     header_columns,
+    images_by_cell,
     number,
     rows_until_blank,
     split_grade,
@@ -811,6 +839,25 @@ def extract_gear(sheet, title):
     return grades
 
 
+def extract_gear_icons(equipment_sheet, header):
+    """Grade art from the EQUIPMENT sheet's WEAPON or ACCESSORY table.
+
+    The header is merged over two columns: art is anchored in the first and
+    the grade name sits in the second.
+    """
+    header_row, col = find_header_row(equipment_sheet, [header, "ENHANCE LVL"])
+    art_col = col[header]
+    name_col = art_col + 1
+    images = images_by_cell(equipment_sheet)
+
+    icons = {}
+    for row in rows_until_blank(equipment_sheet, header_row + 1, name_col):
+        data = images.get((row, art_col))
+        if data is not None:
+            icons[text(equipment_sheet.cell(row, name_col).value)] = data
+    return icons
+
+
 def extract_level_factors(sheet):
     """Equip effect factor per enhance level; list index is the level.
 
@@ -839,7 +886,7 @@ def extract_level_factors(sheet):
 
 Run: `python -m unittest discover -s scripts/optimizer/tests -t scripts -v`
 
-Expected: all tests PASS (7 new).
+Expected: all tests PASS (9 new).
 
 - [ ] **Step 5: Commit**
 
@@ -1601,7 +1648,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import openpyxl  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from optimizer.gear import extract_gear, extract_level_factors  # noqa: E402
+from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
@@ -1719,6 +1766,8 @@ def main():
         weapons = extract_gear(values["Equipment Data"], "WEAPONS")
         accessories = extract_gear(values["Equipment Data"], "ACCESSORIES")
         level_factors = extract_level_factors(values["Equipment Data"])
+        weapon_icons = extract_gear_icons(values["EQUIPMENT"], "WEAPON")
+        accessory_icons = extract_gear_icons(values["EQUIPMENT"], "ACCESSORY")
         relics, relic_icons = extract_relics(values["EQUIPMENT"], formulas["Equipment Data"])
         spirits, spirit_icons = extract_spirits(values["Equipment Data"])
         soul_weapons, soul_icons = extract_soul_weapons(values["Equipment Data"])
@@ -1736,8 +1785,8 @@ def main():
         # area, JSON key, source sheet, items, icons by name, name field
         ("skills", "skills", "Skills Data", skills,
          {s["name"]: skill_icons[s["id"]] for s in skills if s["id"] in skill_icons}, "name"),
-        ("weapons", "weapons", "Equipment Data", weapons, {}, "grade"),
-        ("accessories", "accessories", "Equipment Data", accessories, {}, "grade"),
+        ("weapons", "weapons", "Equipment Data, EQUIPMENT", weapons, weapon_icons, "grade"),
+        ("accessories", "accessories", "Equipment Data, EQUIPMENT", accessories, accessory_icons, "grade"),
         ("relics", "relics", "EQUIPMENT, Equipment Data", relics, relic_icons, "name"),
         ("spirits", "spirits", "Equipment Data", spirits, spirit_icons, "name"),
         ("soul-weapons", "soulWeapons", "Equipment Data", soul_weapons, soul_icons, "name"),
@@ -1866,6 +1915,11 @@ class ExtractedOutput(unittest.TestCase):
             self.assertIsNotNone(spirit["element"], spirit["name"])
             self.assertIsNotNone(spirit["skill"], spirit["name"])
 
+    def test_gear_art_covers_every_grade_but_immortal(self):
+        for filename in ("weapons.json", "accessories.json"):
+            missing = [g["grade"] for g in items(filename) if not g["icon"]]
+            self.assertTrue(set(missing) <= {"Immortal"}, f"{filename}: {missing}")
+
     def test_soul_weapon_disassembly_is_half_the_cost(self):
         innocence = next(w for w in items("soul-weapons.json") if w["name"] == "Innocence")
         self.assertEqual((innocence["cost"], innocence["disassemblyReward"]), (2000, 1000))
@@ -1906,7 +1960,7 @@ Expected:
 - `skills: 18 added, 0 removed, ...`, including `~ Fire Slash maxLevel: 130 -> 250`. Changed-field lines for `row`, `types`, `elementIcon` and `atkDistance` are expected: the old file had those fields and the new one does not;
 - `relics:` shows `+ Lucky Pendant` and `- Lucky Pendent` (the wiki's spelling), plus band changes for every relic;
 - `soul-weapons:` shows additions bringing the total to 89. Any `-` lines mean a name differs between the wiki and the workbook — list them for the user in Step 5;
-- `no art` listed only for weapon and accessory grades the wiki had no art for;
+- `no art` listed only for `Immortal` under weapons and accessories (unless old wiki art exists for it);
 - `gear-levels: enhance levels 0-1700`.
 
 If an `Extraction stopped` or `warning:` line appears, stop and report the output before continuing.
