@@ -14,7 +14,9 @@ import { CompanionPanel } from "./companion-panel";
 import { KNOWN_NAMES } from "./data";
 import { EquipmentPanel } from "./equipment-panel";
 import { ResetProfileButton } from "./profile-controls";
+import { ProgressChart } from "./progress-chart";
 import { SkillPanel } from "./skill-panel";
+import { StatsSummary } from "./stats-summary";
 import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
 
 const TAB_ICONS: Record<string, { icon: string; iconSize: number } | undefined> = navigationData.icons;
@@ -48,16 +50,17 @@ export function AnalyzerShell() {
       }
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
-      {/* Top half is a 3 x 2 grid: the scatter chart fills the left two
-          columns, the ad sits top right, and the cell below it is spare. */}
+      {/* Top half is a 3 x 2 grid: the progress chart and the Stats Summary
+          fill the left two columns, the ad sits top right, reset below it. */}
       <section
         aria-label="Overview"
         className="grid h-1/2 shrink-0 grid-cols-3 grid-rows-2 border-b border-ink/15"
       >
-        <div className="col-span-2 row-span-2 flex items-center justify-center border-r border-ink/15">
-          <p className="font-mono text-xs tracking-[0.08em] text-dim uppercase">
-            Scatter chart
-          </p>
+        <div className="col-span-2 row-span-2 grid min-h-0 grid-cols-2 border-r border-ink/15">
+          <div className="flex min-h-0 flex-col border-r border-ink/15">
+            <ProgressChart />
+          </div>
+          <StatsSummary />
         </div>
         <aside
           aria-label="Advertisement"

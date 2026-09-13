@@ -7,7 +7,12 @@ import {
   clearSkillPresetSlot,
   effectiveSkillLevel,
   equip,
+  activeFamiliars,
+  effectiveSpiritLevel,
   equipFamiliar,
+  selectPreset,
+  setSpiritPresetSlot,
+  toggleMainSpirit,
   familiarStars,
   isMasteryPageComplete,
   masteryLevel,
@@ -283,6 +288,27 @@ describe("skill mastery", () => {
   });
 });
 
+describe("spirit presets and main spirits", () => {
+  it("moves a spirit between slots of the active preset", () => {
+    let p = setSpiritPresetSlot(emptyProfile(), 0, "Ark");
+    p = setSpiritPresetSlot(p, 2, "Ark");
+    expect(p.presets.spirits[0]).toEqual([null, null, "Ark"]);
+  });
+
+  it("gives other spirits the lowest main level once six are main", () => {
+    const names = ["A", "B", "C", "D", "E", "F"];
+    let p = emptyProfile();
+    names.forEach((name, i) => {
+      p = setSpiritLevel(toggleMainSpirit(p, name), name, 100 + i * 10, 1000);
+    });
+    p = setSpiritLevel(p, "G", 5, 1000);
+    expect(effectiveSpiritLevel(p, "G", 1000)).toBe(100);
+    expect(effectiveSpiritLevel(p, "F", 1000)).toBe(150);
+    expect(toggleMainSpirit(p, "G").mainSpirits).toHaveLength(6);
+    expect(effectiveSpiritLevel(toggleMainSpirit(p, "A"), "G", 1000)).toBe(5);
+  });
+});
+
 describe("familiars", () => {
   it("are not owned until given stars, and stars cap at 11", () => {
     expect(familiarStars(emptyProfile(), "Hi")).toBeNull();
@@ -294,7 +320,7 @@ describe("familiars", () => {
     let p = equipFamiliar(emptyProfile(), "battle", "Ku");
     expect(familiarStars(p, "Ku")).toBe(0);
     p = equipFamiliar(setFamiliarStars(p, "Sha", "battle", 9), "battle", "Sha");
-    expect(p.equippedFamiliars).toEqual({ weapon: null, attribute: null, battle: "Sha" });
+    expect(activeFamiliars(p)).toEqual({ weapon: null, attribute: null, battle: "Sha" });
     expect(familiarStars(p, "Sha")).toBe(9);
   });
 
@@ -302,7 +328,16 @@ describe("familiars", () => {
     let p = equipFamiliar(emptyProfile(), "weapon", "Na");
     p = setFamiliarStars(p, "Na", "weapon", null);
     expect(familiarStars(p, "Na")).toBeNull();
-    expect(p.equippedFamiliars.weapon).toBeNull();
+    expect(activeFamiliars(p).weapon).toBeNull();
+  });
+
+  it("equips into the active familiar preset only", () => {
+    let p = equipFamiliar(emptyProfile(), "weapon", "Na");
+    p = selectPreset(p, "familiars", 2);
+    expect(activeFamiliars(p).weapon).toBeNull();
+    p = equipFamiliar(p, "weapon", "Pe");
+    expect(p.presets.familiars[0].weapon).toBe("Na");
+    expect(activeFamiliars(p).weapon).toBe("Pe");
   });
 
   it("reports familiars and mastery nodes the data no longer has", () => {

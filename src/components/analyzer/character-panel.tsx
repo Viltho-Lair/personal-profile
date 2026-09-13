@@ -10,16 +10,16 @@ import {
   classMaxLevel,
   enhanceMax,
   enhanceStat,
-  latentMultiplier,
-  latentPerLevel,
   type EnhanceStat,
   type KnowledgeGrade,
   type LatentMultiplier,
 } from "@/lib/game/character";
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { awakeningStage, gearEffects } from "@/lib/game/formulas";
-import { clampLevel } from "@/lib/profile/rules";
-import { ABILITY_SLOTS, LATENT_SLOTS, LATENT_STATS, type CharacterState } from "@/lib/profile/types";
+import { activeAbilityPreset, clampLevel } from "@/lib/profile/rules";
+import { ABILITY_SLOTS, LATENT_SLOTS, LATENT_STATS, PROMOTION_EFFECTS } from "@/lib/profile/types";
+import { PresetPicker } from "./preset-picker";
+import { latentTotals } from "./stat-sources";
 import { useProfile } from "@/lib/profile/use-profile";
 import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./data";
 import { ConstellationTab } from "./constellation-tab";
@@ -209,22 +209,6 @@ function EnhanceSection() {
 }
 
 /* ---------------------------------------------------------------- Growth */
-
-const rawBase = (key: string, perLevel: number) => (key === "LUK" ? perLevel * 100 : perLevel);
-
-function latentTotals(character: CharacterState) {
-  const { grade, level } = character.latentAwakening;
-  return Object.fromEntries(
-    GROWTH.filter((stat) => (LATENT_STATS as readonly string[]).includes(stat.key)).map((stat) => {
-      const sum = (character.latent[stat.key] ?? []).reduce((a, b) => a + b, 0);
-      const perLevel = latentPerLevel(stat.key, rawBase(stat.key, stat.perLevel), character.slayerLevel, sum);
-      const multiplier = latentMultiplier(stat.key === "CRI" ? LATENT.crit : LATENT.stats, grade, level);
-      const growthLevel = character.growth[stat.key] ?? 0;
-      const divisor = stat.key === "CRI" || stat.key === "LUK" ? 100 : 1;
-      return [stat.key, { perLevel: perLevel * multiplier, total: (perLevel * multiplier * growthLevel) / divisor, sum }];
-    }),
-  ) as Record<string, { perLevel: number; total: number; sum: number }>;
-}
 
 function LatentPower() {
   const { character, set } = useCharacter();
@@ -469,22 +453,49 @@ function ClassesTab() {
 }
 
 function AbilityTab() {
-  const { character, set } = useCharacter();
+  const { character } = useCharacter();
+  const { profile, selectPreset, updateAbilityPreset } = useProfile();
+  const preset = activeAbilityPreset(profile);
+  const promotion = PROMOTIONS.find((p) => p.number === character.promotion);
+  const effectValue = (effect: string) =>
+    ({ "Extra ATK": promotion?.extraAtk, "Extra HP": promotion?.extraHp, "Extra EXP": promotion?.extraExp, "Monster Gold": promotion?.monsterGold })[
+      effect
+    ] ?? null;
   const totals = new Map<string, number>();
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className={LABEL}>Preset</span>
+        <PresetPicker label="Slayer Promotion Ability preset" active={profile.activePresets.abilities} onSelect={(index) => selectPreset("abilities", index)} />
+        <label className="flex items-center gap-1.5">
+          <span className={LABEL}>Page effect</span>
+          <select
+            aria-label="Slayer Promotion page effect"
+            value={preset.effect ?? ""}
+            onChange={(event) => updateAbilityPreset((p) => ({ ...p, effect: event.target.value || null }))}
+            className={SELECT}
+          >
+            <option value="">—</option>
+            {PROMOTION_EFFECTS.map((effect) => (
+              <option key={effect} value={effect}>
+                {effect} {effectValue(effect) === null ? "" : `+${pct(effectValue(effect))}`}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <p className="text-[11px] leading-snug text-dim">
         Rows open as your promotion passes them. Pick each row&apos;s option, rolled value and its multiplier (×1 to ×4).
       </p>
       <ul className="flex flex-col gap-1.5">
-        {character.abilities.slice(0, ABILITY_SLOTS).map((roll, row) => {
+        {preset.rows.slice(0, ABILITY_SLOTS).map((roll, row) => {
           const open = abilityRowOpen(character.promotion, row);
           const option = ABILITY_OPTIONS.find((o) => o.name === roll.option);
           const effective = open && roll.value !== null ? roll.value * roll.multiplier : null;
           if (effective !== null && roll.option) totals.set(roll.option, (totals.get(roll.option) ?? 0) + effective);
           const setRoll = (next: Partial<typeof roll>) =>
-            set((c) => ({ ...c, abilities: c.abilities.map((r, i) => (i === row ? { ...r, ...next } : r)) }));
+            updateAbilityPreset((p) => ({ ...p, rows: p.rows.map((r, i) => (i === row ? { ...r, ...next } : r)) }));
           return (
             <li key={row} className={`flex flex-wrap items-center gap-1.5 rounded-md border border-ink/10 p-1.5 ${open ? "" : "opacity-50"}`}>
               <span className="w-12 font-mono text-[10px] text-dim uppercase">{open ? `Row ${row + 1}` : "Locked"}</span>

@@ -9,8 +9,17 @@ import {
   FIRST_SPIRIT_TIER,
   MAX_SPIRIT_ENHANCE,
   MIN_SPIRIT_ENHANCE,
+  emptyActivePresets,
+  emptyPresets,
+  MAIN_SPIRIT_COUNT,
+  PRESET_COUNT,
+  PRESET_KINDS,
+  PROMOTION_EFFECTS,
   PROMOTION_SLOTS,
   SKILL_PRESET_COUNT,
+  SPIRIT_PRESET_SLOTS,
+  type AbilityRoll,
+  type Presets,
   SKILL_PRESET_SLOTS,
   type CharacterState,
   type CompanionState,
@@ -120,7 +129,6 @@ function character(value: unknown): CharacterState {
   if (!isRecord(value)) return base;
   const latent = isRecord(value.latent) ? value.latent : {};
   const awakening = isRecord(value.latentAwakening) ? value.latentAwakening : {};
-  const rolls = Array.isArray(value.abilities) ? value.abilities : [];
   return {
     enhance: wholeRecord(value.enhance),
     growingKnowledge: wholeLevel(value.growingKnowledge) ?? 0,
@@ -135,15 +143,6 @@ function character(value: unknown): CharacterState {
     ),
     latentAwakening: { grade: wholeLevel(awakening.grade) ?? 0, level: wholeLevel(awakening.level) ?? 0 },
     promotion: wholeLevel(value.promotion) ?? 0,
-    abilities: Array.from({ length: ABILITY_SLOTS }, (_, i) => {
-      const roll = isRecord(rolls[i]) ? rolls[i] : {};
-      const multiplier = wholeLevel(roll.multiplier);
-      return {
-        option: name(roll.option),
-        value: typeof roll.value === "number" && Number.isFinite(roll.value) ? roll.value : null,
-        multiplier: multiplier !== null && multiplier >= 1 && multiplier <= 4 ? multiplier : 1,
-      };
-    }),
     classes: entries(value.classes, ownedLevelEntry),
     equippedClass: name(value.equippedClass),
     classAwakening: wholeLevel(value.classAwakening) ?? 0,
@@ -183,9 +182,70 @@ const starsEntry = (entry: Json) => {
   return stars === null ? null : { stars };
 };
 
-function equippedFamiliars(value: unknown): ProfileV1["equippedFamiliars"] {
+function familiarPreset(value: unknown): Presets["familiars"][number] {
   const stored = isRecord(value) ? value : {};
   return { weapon: name(stored.weapon), attribute: name(stored.attribute), battle: name(stored.battle) };
+}
+
+function abilityRows(value: unknown): AbilityRoll[] {
+  const rolls = Array.isArray(value) ? value : [];
+  return Array.from({ length: ABILITY_SLOTS }, (_, i) => {
+    const roll = isRecord(rolls[i]) ? rolls[i] : {};
+    const multiplier = wholeLevel(roll.multiplier);
+    return {
+      option: name(roll.option),
+      value: typeof roll.value === "number" && Number.isFinite(roll.value) ? roll.value : null,
+      multiplier: multiplier !== null && multiplier >= 1 && multiplier <= 4 ? multiplier : 1,
+    };
+  });
+}
+
+/**
+ * Five presets of each kind. Profiles saved before presets existed move
+ * their equipped familiars and ability rows into preset 1.
+ */
+function presets(data: Json): Presets {
+  const stored = isRecord(data.presets) ? data.presets : {};
+  const list = (value: unknown) => (Array.isArray(value) ? value : []);
+  const base = emptyPresets();
+  const legacyCharacter = isRecord(data.character) ? data.character : {};
+  return {
+    spirits: base.spirits.map((_, i) => {
+      const slots = list(list(stored.spirits)[i]);
+      return Array.from({ length: SPIRIT_PRESET_SLOTS }, (_, slot) => name(slots[slot]));
+    }),
+    familiars: base.familiars.map((_, i) => {
+      const preset = list(stored.familiars)[i];
+      return familiarPreset(preset === undefined && i === 0 ? data.equippedFamiliars : preset);
+    }),
+    abilities: base.abilities.map((_, i) => {
+      const preset = list(stored.abilities)[i];
+      if (preset === undefined && i === 0 && Array.isArray(legacyCharacter.abilities)) {
+        return { effect: null, rows: abilityRows(legacyCharacter.abilities) };
+      }
+      const entry = isRecord(preset) ? preset : {};
+      const effect = name(entry.effect);
+      return {
+        effect: effect && (PROMOTION_EFFECTS as readonly string[]).includes(effect) ? effect : null,
+        rows: abilityRows(entry.rows),
+      };
+    }),
+  };
+}
+
+function activePresets(value: unknown): ProfileV1["activePresets"] {
+  const stored = isRecord(value) ? value : {};
+  const active = emptyActivePresets();
+  for (const kind of PRESET_KINDS) {
+    const index = stored[kind];
+    if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < PRESET_COUNT) active[kind] = index;
+  }
+  return active;
+}
+
+function mainSpirits(value: unknown): string[] {
+  const names = (Array.isArray(value) ? value : []).filter((n): n is string => typeof n === "string");
+  return [...new Set(names)].slice(0, MAIN_SPIRIT_COUNT);
 }
 
 const presetIndex = (value: unknown): number =>
@@ -216,7 +276,10 @@ function parseKnownFields(data: Json): ProfileV1 {
     activeSkillPreset: presetIndex(data.activeSkillPreset),
     masteryNodes: entries(data.masteryNodes, levelEntry),
     familiars: entries(data.familiars, starsEntry),
-    equippedFamiliars: equippedFamiliars(data.equippedFamiliars),
+    presets: presets(data),
+    activePresets: activePresets(data.activePresets),
+    mainSpirits: mainSpirits(data.mainSpirits),
+    includeSkills: data.includeSkills === true,
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,
     companions: entries(data.companions, companionEntry),

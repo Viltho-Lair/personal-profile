@@ -10,7 +10,9 @@ import {
   type FamiliarGroup,
   type GearKind,
   type PromotionRoll,
+  type AbilityPreset,
   type OwnableKind,
+  type PresetKind,
   type ProfileV1,
 } from "./types";
 
@@ -107,6 +109,13 @@ export function useProfile() {
       update((p) => rules.setFountainEffect(p, slot, effect)),
     updateCharacter: (change: (character: ProfileV1["character"]) => ProfileV1["character"]) =>
       update((p) => rules.updateCharacter(p, change)),
+    selectPreset: (kind: PresetKind, index: number) => update((p) => rules.selectPreset(p, kind, index)),
+    updateAbilityPreset: (change: (preset: AbilityPreset) => AbilityPreset) =>
+      update((p) => rules.updateAbilityPreset(p, change)),
+    setSpiritPresetSlot: (slot: number, name: string | null) =>
+      update((p) => rules.setSpiritPresetSlot(p, slot, name)),
+    toggleMainSpirit: (name: string) => update((p) => rules.toggleMainSpirit(p, name)),
+    setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }

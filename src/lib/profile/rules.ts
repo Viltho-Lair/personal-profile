@@ -1,7 +1,13 @@
 import {
   emptyCompanion,
   FIRST_SPIRIT_TIER,
+  MAIN_SPIRIT_COUNT,
   MAX_FAMILIAR_STARS,
+  PRESET_COUNT,
+  SPIRIT_PRESET_SLOTS,
+  type AbilityPreset,
+  type FamiliarPreset,
+  type PresetKind,
   MAX_SPIRIT_ENHANCE,
   MIN_SPIRIT_ENHANCE,
   SKILL_PRESET_COUNT,
@@ -345,11 +351,10 @@ export function setFamiliarStars(
   const familiars = { ...profile.familiars };
   if (stars === null) {
     delete familiars[name];
-    const equippedFamiliars =
-      profile.equippedFamiliars[group] === name
-        ? { ...profile.equippedFamiliars, [group]: null }
-        : profile.equippedFamiliars;
-    return { ...profile, familiars, equippedFamiliars };
+    const presetFamiliars = profile.presets.familiars.map((preset) =>
+      preset[group] === name ? { ...preset, [group]: null } : preset,
+    );
+    return { ...profile, familiars, presets: { ...profile.presets, familiars: presetFamiliars } };
   }
   familiars[name] = { stars: clampLevel(stars, MAX_FAMILIAR_STARS) };
   return { ...profile, familiars };
@@ -359,7 +364,67 @@ export function setFamiliarStars(
 export function equipFamiliar(profile: ProfileV1, group: FamiliarGroup, name: string | null): ProfileV1 {
   const owned =
     name === null || profile.familiars[name] ? profile : setFamiliarStars(profile, name, group, 0);
-  return { ...owned, equippedFamiliars: { ...owned.equippedFamiliars, [group]: name } };
+  const index = owned.activePresets.familiars;
+  const familiars = owned.presets.familiars.map((preset, i) => (i === index ? { ...preset, [group]: name } : preset));
+  return { ...owned, presets: { ...owned.presets, familiars } };
+}
+
+/** The familiars equipped by the active familiar preset. */
+export function activeFamiliars(profile: ProfileV1): FamiliarPreset {
+  return profile.presets.familiars[profile.activePresets.familiars] ?? { weapon: null, attribute: null, battle: null };
+}
+
+export function selectPreset(profile: ProfileV1, kind: PresetKind, index: number): ProfileV1 {
+  const valid = Number.isInteger(index) && index >= 0 && index < PRESET_COUNT;
+  return { ...profile, activePresets: { ...profile.activePresets, [kind]: valid ? index : 0 } };
+}
+
+export function activeAbilityPreset(profile: ProfileV1): AbilityPreset {
+  return profile.presets.abilities[profile.activePresets.abilities] ?? profile.presets.abilities[0];
+}
+
+export function updateAbilityPreset(profile: ProfileV1, change: (preset: AbilityPreset) => AbilityPreset): ProfileV1 {
+  const index = profile.activePresets.abilities;
+  const abilities = profile.presets.abilities.map((preset, i) => (i === index ? change(preset) : preset));
+  return { ...profile, presets: { ...profile.presets, abilities } };
+}
+
+export function activeSpiritPreset(profile: ProfileV1): (string | null)[] {
+  return profile.presets.spirits[profile.activePresets.spirits] ?? Array<string | null>(SPIRIT_PRESET_SLOTS).fill(null);
+}
+
+/** Puts a spirit in a slot of the active spirit preset; a spirit already in another slot moves. */
+export function setSpiritPresetSlot(profile: ProfileV1, slot: number, name: string | null): ProfileV1 {
+  if (!Number.isInteger(slot) || slot < 0 || slot >= SPIRIT_PRESET_SLOTS) return profile;
+  const index = profile.activePresets.spirits;
+  const spirits = profile.presets.spirits.map((preset, i) =>
+    i === index ? preset.map((current, s) => (s === slot ? name : current === name ? null : current)) : preset,
+  );
+  return { ...profile, presets: { ...profile.presets, spirits } };
+}
+
+/** Marks or unmarks a main spirit; a seventh can't be added. */
+export function toggleMainSpirit(profile: ProfileV1, name: string): ProfileV1 {
+  if (profile.mainSpirits.includes(name)) {
+    return { ...profile, mainSpirits: profile.mainSpirits.filter((n) => n !== name) };
+  }
+  if (profile.mainSpirits.length >= MAIN_SPIRIT_COUNT) return profile;
+  return { ...profile, mainSpirits: [...profile.mainSpirits, name] };
+}
+
+/**
+ * The level a spirit counts at. Once six main spirits are set, every other
+ * spirit carries the lowest main spirit level.
+ */
+export function effectiveSpiritLevel(profile: ProfileV1, name: string, maxLevel: number | null): number {
+  const own = spiritState(profile, name, maxLevel).level;
+  if (profile.mainSpirits.length < MAIN_SPIRIT_COUNT || profile.mainSpirits.includes(name)) return own;
+  const lowest = Math.min(...profile.mainSpirits.map((main) => spiritState(profile, main, maxLevel).level));
+  return clampLevel(lowest, maxLevel);
+}
+
+export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): ProfileV1 {
+  return { ...profile, includeSkills };
 }
 
 export function gearState(
@@ -420,8 +485,12 @@ export function unknownEntries(profile: ProfileV1, known: KnownNames): string[] 
   const mastery = missing(known.masteryNodes, "masteryNodes", Object.keys(profile.masteryNodes));
   const familiars = missing(known.familiars, "familiars", [
     ...Object.keys(profile.familiars),
-    ...Object.values(profile.equippedFamiliars).filter((n): n is string => n !== null),
+    ...profile.presets.familiars.flatMap((preset) => Object.values(preset)).filter((n): n is string => n !== null),
+  ]);
+  const spirits = missing(known.spirits, "spiritPresets", [
+    ...profile.presets.spirits.flat().filter((n): n is string => n !== null),
+    ...profile.mainSpirits,
   ]);
 
-  return [...stored, ...equipped, ...presets, ...mastery, ...familiars];
+  return [...stored, ...equipped, ...presets, ...mastery, ...familiars, ...spirits];
 }

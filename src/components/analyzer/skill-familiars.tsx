@@ -1,5 +1,7 @@
 "use client";
 
+import { activeFamiliars } from "@/lib/profile/rules";
+import { PresetPicker } from "./preset-picker";
 import { useState } from "react";
 import { altarStars, manaAltar, proficiencyBonuses } from "@/lib/game/familiars";
 import { familiarStars } from "@/lib/profile/rules";
@@ -123,7 +125,8 @@ function ProficiencySettings() {
 }
 
 export function SkillFamiliars() {
-  const { profile, setFamiliarStars, equipFamiliar } = useProfile();
+  const { profile, setFamiliarStars, equipFamiliar, selectPreset } = useProfile();
+  const equipped = activeFamiliars(profile);
   const [openName, setOpenName] = useState<string | null>(null);
   const open = FAMILIARS.find((familiar) => familiar.name === openName) ?? null;
 
@@ -145,7 +148,7 @@ export function SkillFamiliars() {
                   key={familiar.id}
                   familiar={familiar}
                   stars={familiarStars(profile, familiar.name)}
-                  equipped={profile.equippedFamiliars[group] === familiar.name}
+                  equipped={equipped[group] === familiar.name}
                   onClick={() => setOpenName(familiar.name)}
                 />
               ))}
@@ -156,10 +159,17 @@ export function SkillFamiliars() {
 
       <div className="flex min-h-0 flex-col gap-5 overflow-auto p-3 sm:p-4">
         <section className="flex flex-col gap-2">
-          <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">Equipped</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">Equipped · preset</h3>
+            <PresetPicker
+              label="Familiar preset"
+              active={profile.activePresets.familiars}
+              onSelect={(index) => selectPreset("familiars", index)}
+            />
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {FAMILIAR_GROUPS.map((group) => {
-              const name = profile.equippedFamiliars[group];
+              const name = equipped[group];
               const familiar = FAMILIARS.find((f) => f.name === name);
               return (
                 <button
@@ -209,7 +219,7 @@ export function SkillFamiliars() {
         <FamiliarDialog
           familiar={open}
           stars={familiarStars(profile, open.name)}
-          equipped={profile.equippedFamiliars[open.group] === open.name}
+          equipped={equipped[open.group] === open.name}
           onStars={(value) => setFamiliarStars(open.name, open.group, value)}
           onEquip={(on) => equipFamiliar(open.group, on ? open.name : null)}
           onClose={() => setOpenName(null)}

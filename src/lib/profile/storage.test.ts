@@ -130,11 +130,13 @@ describe("parseProfile", () => {
       masteryNodes: { "1-D12": { level: 4 }, bad: { level: -1 } },
       familiars: { Hi: { stars: 11 }, Ku: { stars: "x" } },
       equippedFamiliars: { weapon: "Na", attribute: 3 },
+      presets: undefined, // saved before presets existed
     });
     const profile = parseProfile(raw);
     expect(profile?.masteryNodes).toEqual({ "1-D12": { level: 4 } });
     expect(profile?.familiars).toEqual({ Hi: { stars: 11 } });
-    expect(profile?.equippedFamiliars).toEqual({ weapon: "Na", attribute: null, battle: null });
+    expect(profile?.presets.familiars[0]).toEqual({ weapon: "Na", attribute: null, battle: null });
+    expect(profile?.presets.familiars[1]).toEqual({ weapon: null, attribute: null, battle: null });
   });
 
   it("spirits saved before awakening existed read as Common at enhance 1", () => {
@@ -177,6 +179,7 @@ describe("parseProfile", () => {
   it("reads character settings and repairs malformed ones", () => {
     const raw = JSON.stringify({
       ...emptyProfile(),
+      presets: undefined, // saved before presets existed
       character: {
         enhance: { ATK: 5000, Bad: "x" },
         growingKnowledge: 12,
@@ -195,8 +198,9 @@ describe("parseProfile", () => {
     expect(c?.latent.STR).toEqual([1, 2, 0, 0, 0]);
     expect(c?.latent.LUK).toEqual([0, 0, 0, 0, 0]);
     expect(c?.latentAwakening).toEqual({ grade: 3, level: 9 });
-    expect(c?.abilities[0]).toEqual({ option: "Extra ATK(%)", value: 40, multiplier: 4 });
-    expect(c?.abilities[1]).toEqual({ option: null, value: null, multiplier: 1 });
+    const abilities = parseProfile(raw)?.presets.abilities[0].rows;
+    expect(abilities?.[0]).toEqual({ option: "Extra ATK(%)", value: 40, multiplier: 4 });
+    expect(abilities?.[1]).toEqual({ option: null, value: null, multiplier: 1 });
     expect(c?.classes).toEqual({ Trainee: { owned: true, level: 20 } });
     expect(c?.slayerLevel).toBe(1);
     expect(c?.memoryTree).toEqual({ "1": 1 });

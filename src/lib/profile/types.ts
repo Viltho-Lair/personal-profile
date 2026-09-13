@@ -12,7 +12,9 @@ export const MAX_SPIRIT_ENHANCE = 5;
 /** The tier a spirit is at when first owned. */
 export const FIRST_SPIRIT_TIER = "Common";
 
-export const SKILL_PRESET_COUNT = 5;
+/** Every preset kind (skills, spirits, familiars ...) has five presets. */
+export const PRESET_COUNT = 5;
+export const SKILL_PRESET_COUNT = PRESET_COUNT;
 export const SKILL_PRESET_SLOTS = 10;
 
 /** Skill names per slot, filled top row left to right, then the bottom row. */
@@ -59,7 +61,6 @@ export type CharacterState = {
   latentAwakening: { grade: number; level: number };
   /** Current promotion number (0 = none, 1 = Stone). */
   promotion: number;
-  abilities: AbilityRoll[];
   classes: Record<string, { owned: boolean; level: number }>;
   equippedClass: string | null;
   /** Awakened Blast, 0-18. */
@@ -80,7 +81,6 @@ export function emptyCharacter(): CharacterState {
     latent: Object.fromEntries(LATENT_STATS.map((stat) => [stat, Array<number>(LATENT_SLOTS).fill(0)])),
     latentAwakening: { grade: 0, level: 0 },
     promotion: 0,
-    abilities: Array.from({ length: ABILITY_SLOTS }, () => ({ option: null, value: null, multiplier: 1 })),
     classes: {},
     equippedClass: null,
     classAwakening: 0,
@@ -92,6 +92,53 @@ export function emptyCharacter(): CharacterState {
 export type FamiliarGroup = "weapon" | "attribute" | "battle";
 export const FAMILIAR_GROUPS: readonly FamiliarGroup[] = ["weapon", "attribute", "battle"];
 export const MAX_FAMILIAR_STARS = 11;
+
+export const SPIRIT_PRESET_SLOTS = 3;
+/** Spirits marked main; once all six are set, every other spirit carries the lowest of their levels. */
+export const MAIN_SPIRIT_COUNT = 6;
+/** A Slayer Promotion page's effect, taken from the current promotion's row. */
+export const PROMOTION_EFFECTS = ["Extra ATK", "Extra HP", "Extra EXP", "Monster Gold"] as const;
+
+/** A Slayer Promotion Ability preset: the page effect and its 7 additional ability rows. */
+export type AbilityPreset = { effect: string | null; rows: AbilityRoll[] };
+
+export type FamiliarPreset = Record<FamiliarGroup, string | null>;
+
+/**
+ * Presets other than skills. Skill Stone and Beast presets are only chosen
+ * for now; what they hold arrives with those screens.
+ */
+export type Presets = {
+  spirits: (string | null)[][];
+  familiars: FamiliarPreset[];
+  abilities: AbilityPreset[];
+};
+
+export type PresetKind = "spirits" | "skillStones" | "beasts" | "familiars" | "abilities";
+export const PRESET_KINDS: readonly PresetKind[] = ["spirits", "skillStones", "beasts", "familiars", "abilities"];
+
+export function emptyAbilityPreset(): AbilityPreset {
+  return {
+    effect: null,
+    rows: Array.from({ length: ABILITY_SLOTS }, () => ({ option: null, value: null, multiplier: 1 })),
+  };
+}
+
+export function emptyPresets(): Presets {
+  return {
+    spirits: Array.from({ length: PRESET_COUNT }, () => Array<string | null>(SPIRIT_PRESET_SLOTS).fill(null)),
+    familiars: Array.from({ length: PRESET_COUNT }, () => ({ weapon: null, attribute: null, battle: null })),
+    abilities: Array.from({ length: PRESET_COUNT }, emptyAbilityPreset),
+  };
+}
+
+export const emptyActivePresets = (): Record<PresetKind, number> => ({
+  spirits: 0,
+  skillStones: 0,
+  beasts: 0,
+  familiars: 0,
+  abilities: 0,
+});
 
 /**
  * A player's account as entered in the analyzer. Stored sparsely: only items
@@ -117,8 +164,13 @@ export type ProfileV1 = {
   masteryNodes: Record<string, { level: number }>;
   /** Owned familiars and their stars (0-11); absent means not owned. */
   familiars: Record<string, { stars: number }>;
-  /** One equipped familiar per group. */
-  equippedFamiliars: Record<FamiliarGroup, string | null>;
+  /** Spirit, familiar and Slayer Promotion Ability presets; the active familiar preset is what's equipped. */
+  presets: Presets;
+  activePresets: Record<PresetKind, number>;
+  /** Spirits marked as the main six. */
+  mainSpirits: string[];
+  /** The Stats Summary adds the active skill preset's buffs. */
+  includeSkills: boolean;
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
   weaponAwakening: number;
   accessoryAwakening: number;
@@ -159,7 +211,10 @@ export function emptyProfile(): ProfileV1 {
     activeSkillPreset: 0,
     masteryNodes: {},
     familiars: {},
-    equippedFamiliars: { weapon: null, attribute: null, battle: null },
+    presets: emptyPresets(),
+    activePresets: emptyActivePresets(),
+    mainSpirits: [],
+    includeSkills: false,
     weaponAwakening: 0,
     accessoryAwakening: 0,
     companions: {},
