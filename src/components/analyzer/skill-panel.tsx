@@ -15,9 +15,10 @@ import { SkillDialog } from "./skill-dialog";
 import { SkillSettings } from "./skill-settings";
 import { SkillTiles } from "./skill-tiles";
 
-type Section = "familiars" | "proficiency" | "mastery" | "immortals" | "seasonal";
+type Section = "core" | "familiars" | "proficiency" | "mastery" | "immortals" | "seasonal";
 
 const SECTIONS: { id: Section; label: string }[] = [
+  { id: "core", label: "Skills" },
   { id: "familiars", label: "Familiars" },
   { id: "proficiency", label: "Skill Proficiency" },
   { id: "mastery", label: "Skill Mastery" },
@@ -50,7 +51,7 @@ function SkillWorkspace({ skills }: { skills: Skill[] }) {
 
   return (
     <div className="relative grid h-full min-h-0 grid-cols-2">
-      <div className="min-h-0 overflow-auto border-r border-ink/15 p-3 sm:p-4">
+      <div className="flex min-h-0 flex-col border-r border-ink/15">
         <SkillTiles
           skills={skills}
           profile={profile}
@@ -133,14 +134,11 @@ function ComingNext({ label }: { label: string }) {
 }
 
 export function SkillPanel() {
-  // No section selected shows the core skills.
-  const [section, setSection] = useState<Section | null>(null);
+  const [section, setSection] = useState<Section>("core");
   const skills =
-    section === null
-      ? SKILL_SECTIONS.core
-      : section === "immortals" || section === "seasonal"
-        ? SKILL_SECTIONS[section]
-        : null;
+    section === "core" || section === "immortals" || section === "seasonal"
+      ? SKILL_SECTIONS[section]
+      : null;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -151,7 +149,7 @@ export function SkillPanel() {
               key={id}
               type="button"
               aria-pressed={section === id}
-              onClick={() => setSection(section === id ? null : id)}
+              onClick={() => setSection(id)}
               className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
                 section === id
                   ? "border-ink bg-ink text-ground"

@@ -69,9 +69,12 @@ function SkillTile({
   );
 }
 
+const SCROLL = "min-h-0 flex-1 overflow-auto p-3 [scrollbar-gutter:stable] sm:p-4";
+
 /**
- * Skill tiles, four to a row. Elemental skills get a column per element;
- * skills without an element (the immortals) simply flow in order.
+ * Skill tiles, four to a row, scrolling under a fixed element header.
+ * Elemental skills get a column per element; skills without an element
+ * (the immortals) simply flow in order.
  */
 export function SkillTiles({
   skills,
@@ -99,7 +102,11 @@ export function SkillTiles({
 
   const elemental = skills.some((skill) => skill.element !== null);
   if (!elemental) {
-    return <div className={GRID}>{[...skills].sort(byGrade).map(tile)}</div>;
+    return (
+      <div className={SCROLL}>
+        <div className={GRID}>{[...skills].sort(byGrade).map(tile)}</div>
+      </div>
+    );
   }
 
   const columns = ELEMENTS.map((element) =>
@@ -108,21 +115,27 @@ export function SkillTiles({
   const rows = Math.max(...columns.map((column) => column.length));
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className={`${GRID} sticky top-0 z-10 -mt-3 bg-ground pt-3 pb-1 font-mono text-[10px] tracking-[0.12em] uppercase sm:text-xs`}>
+    <>
+      <div
+        className={`${GRID} shrink-0 border-b border-ink/10 px-3 py-2 font-mono text-[10px] tracking-[0.12em] uppercase [overflow-y:hidden] [scrollbar-gutter:stable] sm:px-4 sm:text-xs`}
+      >
         {ELEMENTS.map((element) => (
           <span key={element} className={`text-center ${ELEMENT_TEXT[element]}`}>
             {element}
           </span>
         ))}
       </div>
-      {Array.from({ length: rows }, (_, row) => (
-        <div key={row} className={GRID}>
-          {columns.map((column, index) =>
-            column[row] ? tile(column[row]) : <div key={`${index}-${row}`} />,
-          )}
+      <div className={SCROLL}>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: rows }, (_, row) => (
+            <div key={row} className={GRID}>
+              {columns.map((column, index) =>
+                column[row] ? tile(column[row]) : <div key={`${index}-${row}`} />,
+              )}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      </div>
+    </>
   );
 }
