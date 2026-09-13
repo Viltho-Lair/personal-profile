@@ -1,4 +1,6 @@
-"""Weapons, accessories and the enhance level factor table (Equipment Data)."""
+"""Weapons, accessories, the enhance level factor table and awakening (Equipment Data)."""
+
+import re
 
 from optimizer.workbook import (
     MissingHeader,
@@ -96,3 +98,59 @@ def extract_level_factors(sheet):
     if not factors:
         raise MissingHeader(f"{sheet.title}: 'Equip ATK factor' table has no levels")
     return factors
+
+
+AWAKEN_HEADERS = {
+    "Awakened Level": "awakening",
+    "Max": "maxLevel",
+    "Orr Multiplier": "weaponMultiplier",
+    "Orr Crit Multiplier": "weaponCritHit",
+    "Orr Gold Multiplier": "weaponGold",
+    "Orb Mana": "accessoryMaxMana",
+    "Orb EXP": "accessoryExp",
+    "Orb Multiplier": "accessoryMultiplier",
+}
+
+
+def extract_awakening(sheet):
+    """One row per awakening (0-30): the max enhance level every weapon or
+    accessory reaches, and the Immortal grade's awakened multipliers.
+
+    Weapons are awakened with Orr, accessories with Orb.
+    """
+    header_row, col = find_header_row(sheet, list(AWAKEN_HEADERS))
+    rows = []
+    for row in rows_until_blank(sheet, header_row + 1, col["Awakened Level"]):
+        entry = {key: number(sheet.cell(row, col[header]).value) for header, key in AWAKEN_HEADERS.items()}
+        if entry["awakening"] != len(rows):
+            raise ValueError(f"{sheet.title} row {row}: expected awakening {len(rows)}, found {entry['awakening']}")
+        if any(value is None for value in entry.values()):
+            raise ValueError(f"{sheet.title} row {row}: awakening {entry['awakening']} has a blank value")
+        rows.append(entry)
+    if not rows:
+        raise MissingHeader(f"{sheet.title}: the awakening table has no rows")
+    return rows
+
+
+IMMORTAL_ART = re.compile(r"^(Orr|Orb)(?:\s+(\d+)\*)?$")
+
+
+def extract_immortal_art(sprites_sheet):
+    """{"weapons": {from awakening: bytes}, "accessories": {...}} from the Sprites
+    sheet's "Orr", "Orr 6*" ... "Orb 30*" labels, each with its art to the right."""
+    images = images_by_cell(sprites_sheet)
+    art = {"weapons": {}, "accessories": {}}
+    for row in sprites_sheet.iter_rows():
+        for cell in row:
+            match = IMMORTAL_ART.match(text(cell.value) or "")
+            if not match:
+                continue
+            data = images.get((cell.row, cell.column + 1))
+            if data is None:
+                continue
+            kind = "weapons" if match.group(1) == "Orr" else "accessories"
+            art[kind][int(match.group(2) or 0)] = data
+    for kind, found in art.items():
+        if 0 not in found:
+            raise MissingHeader(f"{sprites_sheet.title}: no Immortal art for {kind} ('Orr' / 'Orb')")
+    return art

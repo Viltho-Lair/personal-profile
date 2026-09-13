@@ -402,8 +402,8 @@
         "critHitIncreaseAt0": 0.15
       },
       "maxLevel": 1700,
-      "icon": null,
-      "iconSize": null
+      "icon": "/art/weapons/immortal.png",
+      "iconSize": 128
     }
   ]
 }

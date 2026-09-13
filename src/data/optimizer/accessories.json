@@ -402,8 +402,8 @@
         "manaRecoveryAt0": 0
       },
       "maxLevel": 1700,
-      "icon": null,
-      "iconSize": null
+      "icon": "/art/accessories/immortal.png",
+      "iconSize": 64
     }
   ]
 }

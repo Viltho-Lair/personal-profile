@@ -22,13 +22,19 @@ from PIL import Image  # noqa: E402
 
 from optimizer.art import find_existing_art  # noqa: E402
 from optimizer.familiars import extract_familiars  # noqa: E402
-from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors  # noqa: E402
+from optimizer.gear import (  # noqa: E402
+    extract_awakening,
+    extract_gear,
+    extract_gear_icons,
+    extract_immortal_art,
+    extract_level_factors,
+)
 from optimizer.mastery import extract_mastery  # noqa: E402
 from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
-from optimizer.spirits import extract_spirits  # noqa: E402
+from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
 from optimizer.summary import diff_items, format_diff  # noqa: E402
 from optimizer.workbook import MissingHeader, image_size, slug  # noqa: E402
 
@@ -159,8 +165,12 @@ def previous_items(area, path, key):
     return []
 
 
-def write_json(path, payload):
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+def write_json(path, payload, compact=False):
+    if compact:
+        text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    else:
+        text = json.dumps(payload, indent=2, ensure_ascii=False)
+    path.write_text(text + "\n", encoding="utf-8")
 
 
 def main():
@@ -182,7 +192,10 @@ def main():
         weapon_icons = extract_gear_icons(values["EQUIPMENT"], "WEAPON")
         accessory_icons = extract_gear_icons(values["EQUIPMENT"], "ACCESSORY")
         relics, relic_icons = extract_relics(values["EQUIPMENT"], formulas["Equipment Data"])
-        spirits, spirit_icons = extract_spirits(values["Equipment Data"])
+        spirits, spirit_art = extract_spirits(values["Equipment Data"])
+        spirit_factors = extract_spirit_factors(values["Equipment Data"], spirits[0]["maxLevel"] if spirits else 0)
+        awakening = extract_awakening(values["Equipment Data"])
+        immortal_art = extract_immortal_art(values["Sprites"])
         soul_weapons, soul_icons = extract_soul_weapons(values["Equipment Data"])
         mastery_pages, mastery_icons = extract_mastery(formulas["SKILL MASTERY"])
         familiars, mana_altar, familiar_art = extract_familiars(formulas["Familiar Data"])
@@ -191,6 +204,10 @@ def main():
         return 1
 
     merge_spirit_skills(spirits)
+    spirit_icons = {s["name"]: spirit_art[f"{s['name']}|Common"] for s in spirits if f"{s['name']}|Common" in spirit_art}
+    for kind, icons in (("weapons", weapon_icons), ("accessories", accessory_icons)):
+        if "Immortal" not in icons and 0 in immortal_art[kind]:
+            icons["Immortal"] = immortal_art[kind][0]
     gear_max_level = len(level_factors) - 1
     for grade in weapons + accessories:
         grade["maxLevel"] = gear_max_level
@@ -217,9 +234,21 @@ def main():
         if gaps:
             print(f"  no art ({len(gaps)}): {', '.join(str(g) for g in gaps)}")
 
+    published = publish_files("immortal-gear", {
+        f"{kind}-{start}": data for kind, art in immortal_art.items() for start, data in art.items()
+    })
+    immortal = {
+        kind: [
+            {"from": start, "icon": published[f"{kind}-{start}"][0], "iconSize": published[f"{kind}-{start}"][1]}
+            for start in sorted(art)
+        ]
+        for kind, art in immortal_art.items()
+    }
     write_json(DATA / "gear-levels.json", {
-        "source": {"file": source.name, "sheet": "Equipment Data", "extractedOn": today},
+        "source": {"file": source.name, "sheet": "Equipment Data, Sprites", "extractedOn": today},
         "factors": level_factors,
+        "awakening": awakening,
+        "immortalArt": immortal,
     })
     print(f"gear-levels: enhance levels 0-{gear_max_level}")
 
@@ -228,6 +257,24 @@ def main():
         "bonuses": proficiency,
     })
     print(f"skill-proficiency: levels 0-{len(proficiency) - 1}")
+    print(f"awakening: 0-{len(awakening) - 1}, immortal art {', '.join(f'{k} {sorted(v)}' for k, v in immortal_art.items())}")
+
+    published = publish_files("spirit-awakening", {key.replace("|", "-").lower(): data for key, data in spirit_art.items()})
+    for spirit in spirits:
+        spirit["art"] = {}
+        for group in ("Common", "Great", "Rare", "Epic", "Legendary", "Mythic", "Immortal", "Ancient"):
+            url, width = attach(published, f"{spirit['name']}-{group}".lower())
+            if url:
+                spirit["art"][group] = {"icon": url, "iconSize": width}
+    write_json(DATA / "spirits.json", {
+        "source": {"file": source.name, "sheet": "Equipment Data", "extractedOn": today},
+        "spirits": spirits,
+    })
+    write_json(DATA / "spirit-factors.json", {
+        "source": {"file": source.name, "sheet": "Equipment Data", "extractedOn": today},
+        **spirit_factors,
+    }, compact=True)  # 23 tiers x 1001 levels x 2 matrices; indentation would triple it
+    print(f"spirit-factors: {len(spirit_factors['tiers'])} tiers x levels 0-{len(spirit_factors['atkHp']['Common']) - 1}")
 
     published = publish_files("skill-mastery", mastery_icons)
     for page in mastery_pages:

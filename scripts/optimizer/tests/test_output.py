@@ -65,6 +65,26 @@ class ExtractedOutput(unittest.TestCase):
         bonuses = load("skill-proficiency.json")["bonuses"]
         self.assertEqual((len(bonuses), bonuses[0], bonuses[1], bonuses[328]), (329, 0, 0.05, 1332.87))
 
+    def test_awakening_raises_every_grade_max_level_by_50(self):
+        awakening = load("gear-levels.json")["awakening"]
+        self.assertEqual([row["maxLevel"] for row in awakening], [200 + 50 * n for n in range(31)])
+        self.assertEqual(len(load("gear-levels.json")["factors"]) - 1, awakening[-1]["maxLevel"])
+
+    def test_immortal_art_every_six_awakenings(self):
+        art = load("gear-levels.json")["immortalArt"]
+        for kind in ("weapons", "accessories"):
+            self.assertEqual([a["from"] for a in art[kind]], [0, 6, 12, 18, 24, 30])
+
+    def test_spirit_factors_and_ratios(self):
+        factors = load("spirit-factors.json")
+        self.assertEqual(factors["tiers"][0], "Common")
+        self.assertEqual(factors["tiers"][-1], "Ancient A0")
+        self.assertEqual(len(factors["tiers"]), 23)
+        self.assertEqual((factors["atkHp"]["Common"][0], factors["goldExp"]["Common"][0]), (3.33, 1))
+        ark = next(s for s in items("spirits.json") if s["name"] == "Ark")
+        self.assertEqual(ark["ratios"]["atk"], 1.05)
+        self.assertEqual(sorted(ark["art"]), sorted(["Common", "Great", "Rare", "Epic", "Legendary", "Mythic", "Immortal", "Ancient"]))
+
     def test_gear_effect_matches_the_game(self):
         factors = load("gear-levels.json")["factors"]
         accessory = next(g for g in items("accessories.json") if g["grade"] == "Common 4")

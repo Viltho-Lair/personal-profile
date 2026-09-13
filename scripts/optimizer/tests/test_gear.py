@@ -1,6 +1,12 @@
 import unittest
 
-from optimizer.gear import extract_gear, extract_gear_icons, extract_level_factors
+from optimizer.gear import (
+    extract_awakening,
+    extract_gear,
+    extract_gear_icons,
+    extract_immortal_art,
+    extract_level_factors,
+)
 from optimizer.tests.support import build_sheet
 from optimizer.workbook import MissingHeader, image_size
 
@@ -83,6 +89,42 @@ class ExtractLevelFactors(unittest.TestCase):
     def test_a_gap_in_levels_is_an_error(self):
         with self.assertRaisesRegex(MissingHeader, "expected level 2"):
             extract_level_factors(equipment_sheet(L5=3))
+
+
+AWAKEN = {
+    "W103": "Awakened Level", "X103": "Max", "Y103": "Orr Multiplier", "Z103": "Orr Crit Multiplier",
+    "AA103": "Orr Gold Multiplier", "AB103": "Orb Mana", "AC103": "Orb EXP", "AD103": "Orb Multiplier",
+    "W104": 0.0, "X104": 200.0, "Y104": 1.0, "Z104": 0.15, "AA104": 0.25, "AB104": 4.0, "AC104": 1.0, "AD104": 1.0,
+    "W105": 1.0, "X105": 250.0, "Y105": 1.18, "Z105": 0.17, "AA105": 0.46, "AB105": 4.1, "AC105": 1.4, "AD105": 1.18,
+}
+
+
+class ExtractAwakening(unittest.TestCase):
+    def test_reads_each_awakening(self):
+        rows = extract_awakening(build_sheet(AWAKEN, title="Equipment Data"))
+        self.assertEqual(rows[1], {
+            "awakening": 1, "maxLevel": 250, "weaponMultiplier": 1.18, "weaponCritHit": 0.17,
+            "weaponGold": 0.46, "accessoryMaxMana": 4.1, "accessoryExp": 1.4, "accessoryMultiplier": 1.18,
+        })
+
+    def test_awakenings_must_count_up(self):
+        with self.assertRaisesRegex(ValueError, "expected awakening 1"):
+            extract_awakening(build_sheet({**AWAKEN, "W105": 3.0}, title="Equipment Data"))
+
+
+class ExtractImmortalArt(unittest.TestCase):
+    def test_art_by_awakening_for_orr_and_orb(self):
+        cells = {"K21": "Orr", "K22": "Orr 6*", "K27": "Orb", "K28": "Orb 6*", "K29": "Wind Mythic"}
+        sheet = build_sheet(cells, title="Sprites",
+                            images=[("L21", 128), ("L22", 128), ("L27", 64), ("L28", 64), ("L29", 64)])
+        art = extract_immortal_art(sheet)
+        self.assertEqual(sorted(art["weapons"]), [0, 6])
+        self.assertEqual(image_size(art["accessories"][6]), (64, 64))
+
+    def test_missing_art_is_named(self):
+        sheet = build_sheet({"K21": "Orr"}, title="Sprites", images=[("L21", 128)])
+        with self.assertRaisesRegex(MissingHeader, "accessories"):
+            extract_immortal_art(sheet)
 
 
 if __name__ == "__main__":

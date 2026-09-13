@@ -1,7 +1,7 @@
 {
   "source": {
     "file": "Copy of Slayer Legend - Master Optimizer.xlsx",
-    "sheet": "Equipment Data",
+    "sheet": "Equipment Data, Sprites",
     "extractedOn": "2026-09-13"
   },
   "factors": [
@@ -1706,5 +1706,383 @@
     82.89202,
     82.92645,
     82.96082
-  ]
+  ],
+  "awakening": [
+    {
+      "awakening": 0,
+      "maxLevel": 200,
+      "weaponMultiplier": 1,
+      "weaponCritHit": 0.15,
+      "weaponGold": 0.25,
+      "accessoryMaxMana": 4,
+      "accessoryExp": 1,
+      "accessoryMultiplier": 1
+    },
+    {
+      "awakening": 1,
+      "maxLevel": 250,
+      "weaponMultiplier": 1.18,
+      "weaponCritHit": 0.17,
+      "weaponGold": 0.46,
+      "accessoryMaxMana": 4.1,
+      "accessoryExp": 1.4,
+      "accessoryMultiplier": 1.18
+    },
+    {
+      "awakening": 2,
+      "maxLevel": 300,
+      "weaponMultiplier": 1.38,
+      "weaponCritHit": 0.19,
+      "weaponGold": 0.67,
+      "accessoryMaxMana": 4.2,
+      "accessoryExp": 1.8,
+      "accessoryMultiplier": 1.379999667
+    },
+    {
+      "awakening": 3,
+      "maxLevel": 350,
+      "weaponMultiplier": 1.61,
+      "weaponCritHit": 0.21,
+      "weaponGold": 0.88,
+      "accessoryMaxMana": 4.3,
+      "accessoryExp": 2.2,
+      "accessoryMultiplier": 1.61
+    },
+    {
+      "awakening": 4,
+      "maxLevel": 400,
+      "weaponMultiplier": 1.88,
+      "weaponCritHit": 0.23,
+      "weaponGold": 1.09,
+      "accessoryMaxMana": 4.4,
+      "accessoryExp": 2.6,
+      "accessoryMultiplier": 1.88
+    },
+    {
+      "awakening": 5,
+      "maxLevel": 450,
+      "weaponMultiplier": 2.2,
+      "weaponCritHit": 0.25,
+      "weaponGold": 1.3,
+      "accessoryMaxMana": 4.5,
+      "accessoryExp": 3,
+      "accessoryMultiplier": 2.2
+    },
+    {
+      "awakening": 6,
+      "maxLevel": 500,
+      "weaponMultiplier": 3.652,
+      "weaponCritHit": 0.31,
+      "weaponGold": 2.14,
+      "accessoryMaxMana": 5,
+      "accessoryExp": 4.6,
+      "accessoryMultiplier": 3.626666667
+    },
+    {
+      "awakening": 7,
+      "maxLevel": 550,
+      "weaponMultiplier": 4.09,
+      "weaponCritHit": 0.33,
+      "weaponGold": 2.35,
+      "accessoryMaxMana": 5.1,
+      "accessoryExp": 5,
+      "accessoryMultiplier": 4.063333333
+    },
+    {
+      "awakening": 8,
+      "maxLevel": 600,
+      "weaponMultiplier": 4.581,
+      "weaponCritHit": 0.35,
+      "weaponGold": 2.56,
+      "accessoryMaxMana": 5.2,
+      "accessoryExp": 5.4,
+      "accessoryMultiplier": 4.55
+    },
+    {
+      "awakening": 9,
+      "maxLevel": 650,
+      "weaponMultiplier": 5.131,
+      "weaponCritHit": 0.37,
+      "weaponGold": 2.77,
+      "accessoryMaxMana": 5.3,
+      "accessoryExp": 5.8,
+      "accessoryMultiplier": 5.096666667
+    },
+    {
+      "awakening": 10,
+      "maxLevel": 700,
+      "weaponMultiplier": 5.747,
+      "weaponCritHit": 0.39,
+      "weaponGold": 2.98,
+      "accessoryMaxMana": 5.4,
+      "accessoryExp": 6.2,
+      "accessoryMultiplier": 5.706666667
+    },
+    {
+      "awakening": 11,
+      "maxLevel": 750,
+      "weaponMultiplier": 6.437,
+      "weaponCritHit": 0.41,
+      "weaponGold": 3.19,
+      "accessoryMaxMana": 5.5,
+      "accessoryExp": 6.6,
+      "accessoryMultiplier": 6.39
+    },
+    {
+      "awakening": 12,
+      "maxLevel": 800,
+      "weaponMultiplier": 9.012,
+      "weaponCritHit": 0.47,
+      "weaponGold": 5.03,
+      "accessoryMaxMana": 6,
+      "accessoryExp": 8.2,
+      "accessoryMultiplier": 8.946666667
+    },
+    {
+      "awakening": 13,
+      "maxLevel": 850,
+      "weaponMultiplier": 10.0640017,
+      "weaponCritHit": 0.49,
+      "weaponGold": 5.52,
+      "accessoryMaxMana": 6.1,
+      "accessoryExp": 8.6,
+      "accessoryMultiplier": 10.02388467
+    },
+    {
+      "awakening": 14,
+      "maxLevel": 900,
+      "weaponMultiplier": 11.2433004,
+      "weaponCritHit": 0.51,
+      "weaponGold": 6.01,
+      "accessoryMaxMana": 6.2,
+      "accessoryExp": 9,
+      "accessoryMultiplier": 11.22444833
+    },
+    {
+      "awakening": 15,
+      "maxLevel": 950,
+      "weaponMultiplier": 12.5643071,
+      "weaponCritHit": 0.53,
+      "weaponGold": 6.5,
+      "accessoryMaxMana": 6.3,
+      "accessoryExp": 9.4,
+      "accessoryMultiplier": 12.57302667
+    },
+    {
+      "awakening": 16,
+      "maxLevel": 1000,
+      "weaponMultiplier": 14.0438346,
+      "weaponCritHit": 0.55,
+      "weaponGold": 6.99,
+      "accessoryMaxMana": 6.4,
+      "accessoryExp": 9.8,
+      "accessoryMultiplier": 14.07784267
+    },
+    {
+      "awakening": 17,
+      "maxLevel": 1050,
+      "weaponMultiplier": 15.7010976,
+      "weaponCritHit": 0.57,
+      "weaponGold": 7.48,
+      "accessoryMaxMana": 6.5,
+      "accessoryExp": 10.2,
+      "accessoryMultiplier": 15.76356567
+    },
+    {
+      "awakening": 18,
+      "maxLevel": 1100,
+      "weaponMultiplier": 21.8858108,
+      "weaponCritHit": 0.63,
+      "weaponGold": 11.79,
+      "accessoryMaxMana": 7,
+      "accessoryExp": 11.8,
+      "accessoryMultiplier": 22.07063667
+    },
+    {
+      "awakening": 19,
+      "maxLevel": 1150,
+      "weaponMultiplier": 24.4098575,
+      "weaponCritHit": 0.65,
+      "weaponGold": 12.28,
+      "accessoryMaxMana": 7.1,
+      "accessoryExp": 12.2,
+      "accessoryMultiplier": 24.623688
+    },
+    {
+      "awakening": 20,
+      "maxLevel": 1200,
+      "weaponMultiplier": 27.2338828,
+      "weaponCritHit": 0.67,
+      "weaponGold": 12.77,
+      "accessoryMaxMana": 7.2,
+      "accessoryExp": 12.6,
+      "accessoryMultiplier": 27.476809
+    },
+    {
+      "awakening": 21,
+      "maxLevel": 1250,
+      "weaponMultiplier": 30.3877625,
+      "weaponCritHit": 0.69,
+      "weaponGold": 13.26,
+      "accessoryMaxMana": 7.3,
+      "accessoryExp": 13,
+      "accessoryMultiplier": 30.672496
+    },
+    {
+      "awakening": 22,
+      "maxLevel": 1300,
+      "weaponMultiplier": 33.9160036,
+      "weaponCritHit": 0.71,
+      "weaponGold": 13.75,
+      "accessoryMaxMana": 7.4,
+      "accessoryExp": 13.4,
+      "accessoryMultiplier": 34.24871967
+    },
+    {
+      "awakening": 23,
+      "maxLevel": 1350,
+      "weaponMultiplier": 37.8647421,
+      "weaponCritHit": 0.73,
+      "weaponGold": 14.24,
+      "accessoryMaxMana": 7.5,
+      "accessoryExp": 13.8,
+      "accessoryMultiplier": 38.23464
+    },
+    {
+      "awakening": 24,
+      "maxLevel": 1400,
+      "weaponMultiplier": 59.903423,
+      "weaponCritHit": 0.79,
+      "weaponGold": 23.55,
+      "accessoryMaxMana": 8,
+      "accessoryExp": 15.4,
+      "accessoryMultiplier": 60.81008533
+    },
+    {
+      "awakening": 25,
+      "maxLevel": 1450,
+      "weaponMultiplier": 67.21997919942876,
+      "weaponCritHit": 0.85,
+      "weaponGold": 25.26,
+      "accessoryMaxMana": 8.1,
+      "accessoryExp": 15.799999999999999,
+      "accessoryMultiplier": 68.23738032055404
+    },
+    {
+      "awakening": 26,
+      "maxLevel": 1500,
+      "weaponMultiplier": 75.55020169919399,
+      "weaponCritHit": 0.87,
+      "weaponGold": 27.7,
+      "accessoryMaxMana": 8.2,
+      "accessoryExp": 16.199999999999996,
+      "accessoryMultiplier": 76.6936839864871
+    },
+    {
+      "awakening": 27,
+      "maxLevel": 1550,
+      "weaponMultiplier": 84.93987539973368,
+      "weaponCritHit": 0.89,
+      "weaponGold": 29.13,
+      "accessoryMaxMana": 8.3,
+      "accessoryExp": 16.599999999999998,
+      "accessoryMultiplier": 86.22547432518513
+    },
+    {
+      "awakening": 28,
+      "maxLevel": 1600,
+      "weaponMultiplier": 95.65744449901538,
+      "weaponCritHit": 0.91,
+      "weaponGold": 31.57,
+      "accessoryMaxMana": 8.4,
+      "accessoryExp": 16.999999999999996,
+      "accessoryMultiplier": 97.10525798592558
+    },
+    {
+      "awakening": 29,
+      "maxLevel": 1650,
+      "weaponMultiplier": 107.81915029929324,
+      "weaponCritHit": 0.93,
+      "weaponGold": 33,
+      "accessoryMaxMana": 8.5,
+      "accessoryExp": 17.4,
+      "accessoryMultiplier": 109.45103598911963
+    },
+    {
+      "awakening": 30,
+      "maxLevel": 1700,
+      "weaponMultiplier": 153.41963179962804,
+      "weaponCritHit": 0.95,
+      "weaponGold": 37.45,
+      "accessoryMaxMana": 9,
+      "accessoryExp": 18.999999999999996,
+      "accessoryMultiplier": 155.741698984721
+    }
+  ],
+  "immortalArt": {
+    "weapons": [
+      {
+        "from": 0,
+        "icon": "/art/immortal-gear/weapons-0.png",
+        "iconSize": 128
+      },
+      {
+        "from": 6,
+        "icon": "/art/immortal-gear/weapons-6.png",
+        "iconSize": 128
+      },
+      {
+        "from": 12,
+        "icon": "/art/immortal-gear/weapons-12.png",
+        "iconSize": 128
+      },
+      {
+        "from": 18,
+        "icon": "/art/immortal-gear/weapons-18.png",
+        "iconSize": 128
+      },
+      {
+        "from": 24,
+        "icon": "/art/immortal-gear/weapons-24.png",
+        "iconSize": 128
+      },
+      {
+        "from": 30,
+        "icon": "/art/immortal-gear/weapons-30.png",
+        "iconSize": 128
+      }
+    ],
+    "accessories": [
+      {
+        "from": 0,
+        "icon": "/art/immortal-gear/accessories-0.png",
+        "iconSize": 64
+      },
+      {
+        "from": 6,
+        "icon": "/art/immortal-gear/accessories-6.png",
+        "iconSize": 64
+      },
+      {
+        "from": 12,
+        "icon": "/art/immortal-gear/accessories-12.png",
+        "iconSize": 64
+      },
+      {
+        "from": 18,
+        "icon": "/art/immortal-gear/accessories-18.png",
+        "iconSize": 64
+      },
+      {
+        "from": 24,
+        "icon": "/art/immortal-gear/accessories-24.png",
+        "iconSize": 64
+      },
+      {
+        "from": 30,
+        "icon": "/art/immortal-gear/accessories-30.png",
+        "iconSize": 64
+      }
+    ]
+  }
 }

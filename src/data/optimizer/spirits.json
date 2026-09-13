@@ -9,6 +9,12 @@
       "id": 0,
       "name": "Ark",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.05,
+        "hp": 1.05,
+        "gold": 1,
+        "exp": 1
+      },
       "element": "Water",
       "skill": {
         "name": "Time Freeze",
@@ -39,12 +45,52 @@
         ]
       },
       "icon": "/art/spirits/ark.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/ark-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/ark-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/ark-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/ark-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/ark-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/ark-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/ark-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/ark-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 1,
       "name": "Bo",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1,
+        "hp": 1,
+        "gold": 1.05,
+        "exp": 1.15
+      },
       "element": "Fire",
       "skill": {
         "name": "Wild Heart",
@@ -77,12 +123,52 @@
         ]
       },
       "icon": "/art/spirits/bo.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/bo-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/bo-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/bo-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/bo-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/bo-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/bo-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/bo-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/bo-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 2,
       "name": "Herh",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.05,
+        "hp": 1,
+        "gold": 1,
+        "exp": 1.05
+      },
       "element": "Wind",
       "skill": {
         "name": "Wind Force",
@@ -113,12 +199,52 @@
         ]
       },
       "icon": "/art/spirits/herh.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/herh-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/herh-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/herh-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/herh-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/herh-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/herh-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/herh-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/herh-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 3,
       "name": "Kart",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.05,
+        "hp": 1,
+        "gold": 1,
+        "exp": 1.05
+      },
       "element": "Wind",
       "skill": {
         "name": "Thief Wind",
@@ -149,12 +275,52 @@
         ]
       },
       "icon": "/art/spirits/kart.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/kart-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/kart-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/kart-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/kart-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/kart-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/kart-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/kart-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/kart-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 4,
       "name": "Loar",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.1,
+        "hp": 1,
+        "gold": 1,
+        "exp": 1
+      },
       "element": "Earth",
       "skill": {
         "name": "Wilderness Roar",
@@ -185,12 +351,52 @@
         ]
       },
       "icon": "/art/spirits/loar.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/loar-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/loar-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/loar-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/loar-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/loar-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/loar-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/loar-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/loar-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 5,
       "name": "Luga",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1,
+        "hp": 1,
+        "gold": 1,
+        "exp": 1.1
+      },
       "element": "Water",
       "skill": {
         "name": "Understanding of the Abyss",
@@ -221,12 +427,52 @@
         ]
       },
       "icon": "/art/spirits/luga.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/luga-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/luga-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/luga-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/luga-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/luga-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/luga-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/luga-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/luga-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 6,
       "name": "Mum",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.05,
+        "hp": 1,
+        "gold": 1.1,
+        "exp": 1.05
+      },
       "element": "Fire",
       "skill": {
         "name": "Reign",
@@ -257,12 +503,52 @@
         ]
       },
       "icon": "/art/spirits/mum.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/mum-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/mum-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/mum-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/mum-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/mum-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/mum-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/mum-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/mum-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 7,
       "name": "Noah",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.1,
+        "hp": 1,
+        "gold": 1,
+        "exp": 1
+      },
       "element": "Earth",
       "skill": {
         "name": "Last Fight",
@@ -293,12 +579,52 @@
         ]
       },
       "icon": "/art/spirits/noah.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/noah-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/noah-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/noah-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/noah-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/noah-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/noah-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/noah-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/noah-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 8,
       "name": "Radon",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.05,
+        "hp": 1,
+        "gold": 1.05,
+        "exp": 1
+      },
       "element": "Earth",
       "skill": {
         "name": "Leveling",
@@ -329,12 +655,52 @@
         ]
       },
       "icon": "/art/spirits/radon.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/radon-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/radon-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/radon-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/radon-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/radon-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/radon-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/radon-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/radon-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 9,
       "name": "Sala",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.1,
+        "hp": 1,
+        "gold": 1.1,
+        "exp": 1
+      },
       "element": "Fire",
       "skill": {
         "name": "Breath of Fire",
@@ -365,12 +731,52 @@
         ]
       },
       "icon": "/art/spirits/sala.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/sala-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/sala-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/sala-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/sala-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/sala-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/sala-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/sala-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/sala-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 10,
       "name": "Todd",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1,
+        "hp": 1,
+        "gold": 1.1,
+        "exp": 1
+      },
       "element": "Water",
       "skill": {
         "name": "Gold Rumble",
@@ -401,12 +807,52 @@
         ]
       },
       "icon": "/art/spirits/todd.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/todd-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/todd-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/todd-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/todd-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/todd-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/todd-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/todd-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/todd-ancient.png",
+          "iconSize": 128
+        }
+      }
     },
     {
       "id": 11,
       "name": "Zappy",
       "maxLevel": 1000,
+      "ratios": {
+        "atk": 1.05,
+        "hp": 1,
+        "gold": 1.05,
+        "exp": 1
+      },
       "element": "Wind",
       "skill": {
         "name": "Judge's Torpedo",
@@ -437,7 +883,41 @@
         ]
       },
       "icon": "/art/spirits/zappy.png",
-      "iconSize": 128
+      "iconSize": 128,
+      "art": {
+        "Common": {
+          "icon": "/art/spirit-awakening/zappy-common.png",
+          "iconSize": 128
+        },
+        "Great": {
+          "icon": "/art/spirit-awakening/zappy-great.png",
+          "iconSize": 128
+        },
+        "Rare": {
+          "icon": "/art/spirit-awakening/zappy-rare.png",
+          "iconSize": 128
+        },
+        "Epic": {
+          "icon": "/art/spirit-awakening/zappy-epic.png",
+          "iconSize": 128
+        },
+        "Legendary": {
+          "icon": "/art/spirit-awakening/zappy-legendary.png",
+          "iconSize": 128
+        },
+        "Mythic": {
+          "icon": "/art/spirit-awakening/zappy-mythic.png",
+          "iconSize": 128
+        },
+        "Immortal": {
+          "icon": "/art/spirit-awakening/zappy-immortal.png",
+          "iconSize": 128
+        },
+        "Ancient": {
+          "icon": "/art/spirit-awakening/zappy-ancient.png",
+          "iconSize": 128
+        }
+      }
     }
   ]
 }
