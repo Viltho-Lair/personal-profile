@@ -1,6 +1,7 @@
 import Image from "next/image";
 
-export type NativeSize = 64 | 128;
+/** The art's real pixel width, recorded per item by the extractor. */
+export type NativeSize = number;
 
 /**
  * Game art is pixel art at 64 or 128 px. Two things blur it: the image
