@@ -13,8 +13,9 @@
  *   percent of life missing and stops HP recovery while it lasts.
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
- * - Rave stops the fight clock for its duration: the damage dealt meanwhile is
- *   stored and Rave adds its share of it. Demon Hunt plays its hits in stopped
+ * - Rave stops the fight clock for its duration and stores the damage dealt
+ *   meanwhile. Pressing Rave again releases its share of that damage, and only
+ *   then does its cooldown start. Demon Hunt plays its hits in stopped
  *   time. While the clock is stopped, cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
  *   refreshes it rather than stacking.
@@ -114,6 +115,10 @@ export type SkillStatus = {
   /** Real time of the latest cast, -1 before the first. */
   lastCast: number;
   uses: number;
+  /** Rave's stored damage is waiting to be released by pressing it again. */
+  charged: boolean;
+  /** Damage waiting in that release. */
+  stored: number;
 };
 
 export type FightState = FightResult & {
@@ -155,6 +160,10 @@ type Live = {
   started: boolean;
   manual: boolean;
   lastCast: number;
+  /** Rave has gone and waits for its release: no cooldown runs meanwhile. */
+  holding: boolean;
+  /** The stopped time is over and the stored damage can be released. */
+  charged: boolean;
 };
 
 const isStack = (skill: FightSkill) =>
@@ -186,6 +195,8 @@ export function createFight(input: FightInput): Fight {
     started: skill.startAt <= 0,
     manual: castable(skill) && manual.has(skill.name),
     lastCast: -1,
+    holding: false,
+    charged: false,
   }));
   const queues: Record<"attack" | "buff", Live[]> = { attack: [], buff: [] };
   const queueFreeAt = { attack: 0, buff: 0 }; // real time
@@ -202,7 +213,6 @@ export function createFight(input: FightInput): Fight {
   let frozenUntil = 0; // real time the clock runs again
   let raveUntil = -1;
   let raveStored = 0;
-  let ravePower = 0;
   let nextBasic = 0;
   const nextSkillBonus: Partial<Record<Element, number>> = {};
   let total = 0;
@@ -261,7 +271,8 @@ export function createFight(input: FightInput): Fight {
     l.queued = false;
     l.uses += 1;
     l.lastCast = real;
-    if (pools) mana = Math.max(0, mana - (s.mpCost ?? 0));
+    const release = e.type === "rave" && l.charged;
+    if (pools && !release) mana = Math.max(0, mana - (s.mpCost ?? 0));
     if (s.hpCost) hp -= hp * s.hpCost;
     const now = bonuses();
     let animation = queue ? ANIMATION_SECONDS : 0;
@@ -285,10 +296,18 @@ export function createFight(input: FightInput): Fight {
       // Every attack skill cast counts toward "after X strike skills used", passives included.
       for (const other of live) if (other !== l && other.skill.trigger === "attackCasts" && other.started) other.progress += 1;
     } else if (e.type === "rave") {
-      raveUntil = real + Math.max(s.duration, ANIMATION_SECONDS);
-      raveStored = 0;
-      ravePower = e.power;
-      frozenUntil = Math.max(frozenUntil, raveUntil);
+      if (release) {
+        // The second press deals Rave's share of the stored damage; the cooldown starts now.
+        deal(raveStored * e.power, s.name);
+        raveStored = 0;
+        l.charged = false;
+        l.holding = false;
+      } else {
+        raveUntil = real + Math.max(s.duration, ANIMATION_SECONDS);
+        raveStored = 0;
+        frozenUntil = Math.max(frozenUntil, raveUntil);
+        l.holding = true;
+      }
     } else if (e.type === "nextSkill") {
       if (s.element) nextSkillBonus[s.element] = e.power;
     } else if (e.type === "chargeCooldowns") {
@@ -319,8 +338,16 @@ export function createFight(input: FightInput): Fight {
     const now = bonuses();
 
     if (raveUntil >= 0 && !inRave) {
-      deal(raveStored * ravePower, "Rave");
       raveUntil = -1;
+      // Rave is ready to release: on auto it queues straight away, by hand it waits for a press.
+      for (const l of live) {
+        if (l.skill.effect.type !== "rave" || !l.holding || l.charged) continue;
+        l.charged = true;
+        if (!l.manual) {
+          l.queued = true;
+          queues.attack.push(l);
+        }
+      }
     }
 
     for (const l of live) {
@@ -329,7 +356,7 @@ export function createFight(input: FightInput): Fight {
         l.started = true;
         if (readyAtStart(s)) l.progress = s.every;
       }
-      if (!l.started || s.trigger === "always" || l.queued || complete(l)) continue;
+      if (!l.started || s.trigger === "always" || l.queued || l.holding || complete(l)) continue;
       if (s.trigger === "seconds" && !frozen) l.progress += step * (1 + now.cooldownRate);
       if (l.progress < s.every) continue;
       l.progress = Math.min(l.progress, s.every);
@@ -345,7 +372,7 @@ export function createFight(input: FightInput): Fight {
     for (const queue of ["buff", "attack"] as const) {
       if (!queues[queue].length || real < queueFreeAt[queue] || blocked) continue;
       // The first queued skill there's mana for goes; the rest keep waiting.
-      const index = pools ? queues[queue].findIndex((l) => (l.skill.mpCost ?? 0) <= mana) : 0;
+      const index = pools ? queues[queue].findIndex((l) => l.charged || (l.skill.mpCost ?? 0) <= mana) : 0;
       if (index >= 0) go(queues[queue].splice(index, 1)[0]!, queue);
     }
 
@@ -376,7 +403,8 @@ export function createFight(input: FightInput): Fight {
     },
     cast: (name) => {
       const l = live.find((x) => x.skill.name === name);
-      if (!l || !l.manual || l.queued || !l.started || l.progress < l.skill.every || done()) return false;
+      if (!l || !l.manual || l.queued || !l.started || done()) return false;
+      if (l.holding ? !l.charged : l.progress < l.skill.every) return false;
       l.queued = true;
       queues[l.skill.kind === "attack" ? "attack" : "buff"].push(l);
       return true;
@@ -399,7 +427,7 @@ export function createFight(input: FightInput): Fight {
         done: done(),
         skills: live.map((l) => ({
           name: l.skill.name,
-          ready: l.skill.trigger === "always" ? 1 : Math.min(1, l.progress / Math.max(1e-9, l.skill.every)),
+          ready: l.skill.trigger === "always" || l.charged ? 1 : l.holding ? 0 : Math.min(1, l.progress / Math.max(1e-9, l.skill.every)),
           queued: l.queued,
           active: isOn(l) && !isStack(l.skill) && l.skill.duration > 0,
           stacks: l.stacks,
@@ -407,6 +435,8 @@ export function createFight(input: FightInput): Fight {
           manual: l.manual,
           lastCast: l.lastCast,
           uses: l.uses,
+          charged: l.charged,
+          stored: l.skill.effect.type === "rave" && l.holding ? raveStored * l.skill.effect.power : 0,
         })),
       };
     },

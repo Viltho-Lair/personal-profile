@@ -60,6 +60,27 @@ describe("simulateFight", () => {
     expect(stacked.basic).toBeCloseTo(100 * 5 + 150 * 5, -1);
   });
 
+  it("holds Rave's stored damage until it's pressed again, and only then starts its cooldown", () => {
+    const rave = skill({ name: "Rave", element: null, every: 20, duration: 5, effect: { type: "rave", power: 1 } });
+    const fight = createFight({ ...base, duration: 60, skills: [rave], manual: ["Rave"] });
+    expect(fight.cast("Rave")).toBe(true);
+    fight.advance(8);
+    let state = fight.state();
+    expect(state.skills[0]).toMatchObject({ charged: true, ready: 1 });
+    expect(state.skills[0].stored).toBeGreaterThan(400);
+    expect(state.bySkill.Rave).toBeUndefined();
+    // Waiting doesn't run the cooldown.
+    fight.advance(30);
+    expect(fight.state().skills[0].charged).toBe(true);
+    expect(fight.cast("Rave")).toBe(true);
+    fight.advance(0.1);
+    state = fight.state();
+    expect(state.bySkill.Rave).toBeGreaterThan(400);
+    expect(state.skills[0]).toMatchObject({ charged: false });
+    expect(state.skills[0].ready).toBeLessThan(0.05);
+    expect(fight.cast("Rave")).toBe(false);
+  });
+
   it("stops the clock for Rave and adds its share of the damage done meanwhile", () => {
     const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1 } });
     const result = simulateFight({ ...base, skills: [rave] });

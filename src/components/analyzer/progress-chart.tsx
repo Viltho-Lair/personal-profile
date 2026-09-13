@@ -284,7 +284,7 @@ function SkillGrid({
           const running = phase === "running";
           const blinking = Boolean(status && snap && status.lastCast >= 0 && snap.real - status.lastCast < BLINK_SECONDS);
           const ready = status ? status.ready : 1;
-          const canPress = castable && (running ? !auto && ready >= 1 && !status?.queued : true);
+          const canPress = castable && (running ? !auto && (ready >= 1 || Boolean(status?.charged)) && !status?.queued : true);
           const stages = fightSkill?.maxStacks ?? null;
           const title = !includeSkills
             ? `${name}: Include Skills is off`
@@ -320,7 +320,11 @@ function SkillGrid({
               {castable && !auto && running && ready >= 1 ? (
                 <span className="absolute inset-0 animate-pulse bg-white/15" />
               ) : null}
-              {stages ? (
+              {status?.charged || (status && status.stored > 0) ? (
+                <span className="absolute right-0 bottom-0 left-0 bg-fuchsia-500/85 text-center font-mono text-[8px] text-white">
+                  {status.charged ? (auto ? "RELEASE" : "TAP") : "STORING"}
+                </span>
+              ) : stages ? (
                 <span className="absolute right-0 bottom-0 left-0 bg-black/70 text-center font-mono text-[8px] text-white tabular-nums">
                   {status?.complete ? "MAX" : `${status?.stacks ?? 0}/${stages}`}
                 </span>
@@ -336,7 +340,7 @@ function SkillGrid({
           ? "Include Skills is off: basic attacks only."
           : phase === "running"
             ? "Skills with auto off light up when ready: tap to cast."
-            : "Skills are on auto (turning gear). Tap one to switch it to manual before rendering."}
+            : "Skills are on auto (turning gear). Tap one to switch it to manual before rendering. Rave stores damage, then a second press releases it."}
       </p>
     </div>
   );
@@ -413,7 +417,7 @@ function Results({
       <p className="text-[10px] text-dim">
         Approximate, hit by hit: one basic attack a second before ATK SPD (the workbook has no base attack speed), skills
         cast from their own queues 0.3s apart when there&apos;s mana, casts pause basic attacks, Rave and Demon Hunt stop the
-        clock. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
+        clock, and Rave's stored damage lands on its second press, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
         recommended stage.
       </p>
     </div>
