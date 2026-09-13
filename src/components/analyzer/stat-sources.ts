@@ -14,7 +14,9 @@ import {
 import { companionEffect, promotionBuff, type CompanionFormula } from "@/lib/game/companions";
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { proficiencyBonuses } from "@/lib/game/familiars";
+import { gemTotals, plateComplete } from "@/lib/game/engraving";
 import { gearEffects, relicBuff, skillPower } from "@/lib/game/formulas";
+import soulGridsData from "@/data/optimizer/soul-weapon-grids.json";
 import { totalSubNodeLevels, treeBonuses, treeBuffs, treeLevel, type MemoryTree } from "@/lib/game/memory-tree";
 import { ELEMENTS, emptySources, type Element, type StatSources } from "@/lib/game/stats";
 import {
@@ -56,7 +58,9 @@ const PROMOTIONS = characterData.promotions as Promotion[];
 const CLASSES = characterData.classes as { name: string; multiplier: number }[];
 const TREE = memoryTreeData as unknown as MemoryTree;
 const CONSTELLATION = constellationData as unknown as Constellation;
-const SOUL_WEAPONS = soulWeaponsData.soulWeapons as { name: string; soulColor: string | null; attack: number | null; engraving: { atk: number | null; hp: number | null } }[];
+/** Engraving plate layouts by soul weapon id ("#" open, "." closed). */
+export const SOUL_GRIDS = soulGridsData.grids as Record<string, { name: string; rows: string[] }>;
+const SOUL_WEAPONS = soulWeaponsData.soulWeapons as { id: number; name: string; soulColor: string | null; attack: number | null; engraving: { atk: number | null; hp: number | null } }[];
 
 type CompanionSkill = { name: string; effect: string | null; formula: CompanionFormula; maxLevel: number };
 type Companion = { name: string; element: string | null; skills: CompanionSkill[] };
@@ -218,11 +222,17 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
       { GREEN: companionSkill(profile, "Ellie", "Spirit's Touch"), RED: companionSkill(profile, "Miho", "Casting"), BLUE: companionSkill(profile, "Luna", "Rune Magic") }[
         soulWeapon.soulColor ?? ""
       ] ?? 0;
+    const engraving = profile.soulEngraving;
+    const plate = engraving.plates[soulWeapon.name] ?? [];
+    const grid = SOUL_GRIDS[soulWeapon.id];
+    const complete = grid ? plateComplete(grid.rows, plate, engraving.gems) : engraving.completed[soulWeapon.name] === true;
+    const completion = complete ? (1 + amp) * (1 + engraving.chaosBonus) : 0;
     s.soulWeapon = {
       atk: soulWeapon.attack ?? 0,
-      completionAtk: ((soulWeapon.engraving.atk ?? 0) / 100) * (1 + amp),
-      completionHp: ((soulWeapon.engraving.hp ?? 0) / 100) * (1 + amp),
+      completionAtk: ((soulWeapon.engraving.atk ?? 0) / 100) * completion,
+      completionHp: ((soulWeapon.engraving.hp ?? 0) / 100) * completion,
     };
+    s.engraving = gemTotals(plate, engraving.gems);
   }
 
   const relic = (name: string) => {

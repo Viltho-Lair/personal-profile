@@ -1,3 +1,5 @@
+import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
+
 /** Weapons and accessories are graded, and keyed by grade name ("Common 4"). */
 export type GearKind = "weapons" | "accessories";
 export type OwnableKind = GearKind | "spirits" | "soulWeapons";
@@ -132,6 +134,22 @@ export function emptyPresets(): Presets {
   };
 }
 
+/** Soul weapon engraving: the chaos level, the eight soul gems and each weapon's plate. */
+export type SoulEngraving = {
+  chaosLevel: number;
+  /** What the chaos level adds to completion effects, as a fraction (0.19 = +19%). */
+  chaosBonus: number;
+  gems: (SoulGem | null)[];
+  /** Gems placed on each soul weapon's plate, by weapon name. */
+  plates: Record<string, GemPlacement[]>;
+  /** Completion ticked by hand, for weapons whose plate layout isn't known. */
+  completed: Record<string, boolean>;
+};
+
+export function emptySoulEngraving(): SoulEngraving {
+  return { chaosLevel: 0, chaosBonus: 0, gems: Array<SoulGem | null>(8).fill(null), plates: {}, completed: {} };
+}
+
 export const emptyActivePresets = (): Record<PresetKind, number> => ({
   spirits: 0,
   skillStones: 0,
@@ -171,6 +189,7 @@ export type ProfileV1 = {
   mainSpirits: string[];
   /** The Stats Summary adds the active skill preset's buffs. */
   includeSkills: boolean;
+  soulEngraving: SoulEngraving;
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
   weaponAwakening: number;
   accessoryAwakening: number;
@@ -215,6 +234,7 @@ export function emptyProfile(): ProfileV1 {
     activePresets: emptyActivePresets(),
     mainSpirits: [],
     includeSkills: false,
+    soulEngraving: emptySoulEngraving(),
     weaponAwakening: 0,
     accessoryAwakening: 0,
     companions: {},

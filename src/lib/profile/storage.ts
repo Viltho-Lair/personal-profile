@@ -10,6 +10,7 @@ import {
   MAX_SPIRIT_ENHANCE,
   MIN_SPIRIT_ENHANCE,
   emptyActivePresets,
+  emptySoulEngraving,
   emptyPresets,
   MAIN_SPIRIT_COUNT,
   PRESET_COUNT,
@@ -20,6 +21,7 @@ import {
   SPIRIT_PRESET_SLOTS,
   type AbilityRoll,
   type Presets,
+  type SoulEngraving,
   SKILL_PRESET_SLOTS,
   type CharacterState,
   type CompanionState,
@@ -243,6 +245,50 @@ function activePresets(value: unknown): ProfileV1["activePresets"] {
   return active;
 }
 
+const GEM_SHAPE_COUNT = 7;
+const GEM_RARITY_COUNT = 6;
+
+function soulEngraving(value: unknown): SoulEngraving {
+  const base = emptySoulEngraving();
+  if (!isRecord(value)) return base;
+  const storedGems = Array.isArray(value.gems) ? value.gems : [];
+  const gems = base.gems.map((_, i) => {
+    const gem = isRecord(storedGems[i]) ? storedGems[i] : null;
+    if (!gem) return null;
+    const shape = wholeLevel(gem.shape);
+    const rarity = wholeLevel(gem.rarity);
+    if (shape === null || shape < 1 || shape > GEM_SHAPE_COUNT || rarity === null || rarity >= GEM_RARITY_COUNT) return null;
+    return { shape, rarity, level: wholeLevel(gem.level) ?? 1, value: Math.max(0, finiteOr(gem.value, 0)) };
+  });
+  const plates: SoulEngraving["plates"] = {};
+  if (isRecord(value.plates)) {
+    for (const [weapon, placements] of Object.entries(value.plates)) {
+      if (weapon === "__proto__" || !Array.isArray(placements)) continue;
+      const seen = new Set<number>();
+      plates[weapon] = placements.flatMap((p) => {
+        if (!isRecord(p)) return [];
+        const gem = wholeLevel(p.gem);
+        const row = wholeLevel(p.row);
+        const col = wholeLevel(p.col);
+        if (gem === null || gem >= base.gems.length || !gems[gem] || seen.has(gem) || row === null || col === null) return [];
+        seen.add(gem);
+        return [{ gem, row, col, rotation: (wholeLevel(p.rotation) ?? 0) % 4 }];
+      });
+    }
+  }
+  const completed: SoulEngraving["completed"] = {};
+  if (isRecord(value.completed)) {
+    for (const [weapon, on] of Object.entries(value.completed)) if (weapon !== "__proto__" && on === true) completed[weapon] = true;
+  }
+  return {
+    chaosLevel: wholeLevel(value.chaosLevel) ?? 0,
+    chaosBonus: Math.max(0, finiteOr(value.chaosBonus, 0)),
+    gems,
+    plates,
+    completed,
+  };
+}
+
 function mainSpirits(value: unknown): string[] {
   const names = (Array.isArray(value) ? value : []).filter((n): n is string => typeof n === "string");
   return [...new Set(names)].slice(0, MAIN_SPIRIT_COUNT);
@@ -280,6 +326,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     activePresets: activePresets(data.activePresets),
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
+    soulEngraving: soulEngraving(data.soulEngraving),
     weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
     accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,
     companions: entries(data.companions, companionEntry),

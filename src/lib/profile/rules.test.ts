@@ -8,6 +8,8 @@ import {
   effectiveSkillLevel,
   equip,
   activeFamiliars,
+  placeSoulGem,
+  setSoulGem,
   effectiveSpiritLevel,
   equipFamiliar,
   selectPreset,
@@ -285,6 +287,19 @@ describe("skill mastery", () => {
     expect(openMasteryPages(p, pages)).toBe(3);
     p = setMasteryPage(p, page1, false);
     expect(openMasteryPages(p, pages)).toBe(1);
+  });
+});
+
+describe("soul engraving", () => {
+  it("drops a gem from every plate when it changes shape or is cleared", () => {
+    let p = setSoulGem(emptyProfile(), 0, { shape: 4, rarity: 2, level: 10, value: 6 });
+    p = placeSoulGem(p, "Pride", { gem: 0, row: 0, col: 0, rotation: 0 });
+    p = placeSoulGem(p, "Pride", { gem: 0, row: 1, col: 1, rotation: 1 });
+    expect(p.soulEngraving.plates.Pride).toEqual([{ gem: 0, row: 1, col: 1, rotation: 1 }]);
+    p = setSoulGem(p, 0, { shape: 4, rarity: 3, level: 20, value: 9 });
+    expect(p.soulEngraving.plates.Pride).toHaveLength(1);
+    p = setSoulGem(p, 0, { shape: 5, rarity: 3, level: 20, value: 9 });
+    expect(p.soulEngraving.plates.Pride).toEqual([]);
   });
 });
 

@@ -27,6 +27,8 @@ export type StatSources = {
   /** Growing Knowledge combined value. */
   knowledge: number;
   soulWeapon: { atk: number; completionAtk: number; completionHp: number };
+  /** Soul gems on the equipped soul weapon's plate (the workbook's Additional Options). */
+  engraving: { atk: number; hp: number; hpRecovery: number; critDamage: number; gold: number; accuracy: number; dodge: number };
   relics: { atk: number; critDamage: number; hp: number; hpRecovery: number; gold: number; accuracy: number; dodge: number; element: ByElement };
   companionPromotion: {
     atk: number; critDamage: number; hp: number; hpRecovery: number; mana: number; manaRecovery: number;
@@ -86,7 +88,7 @@ export function computeStats(s: StatSources): Stats {
     (1 + (s.classes.equip + s.classes.owned) / 100) *
     promotion *
     (1 + s.spirits.atk) *
-    (s.enhance.atk + s.growth.atk + s.soulWeapon.atk + s.knowledge) *
+    ((s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk) + s.soulWeapon.atk) *
     (1 + s.soulWeapon.completionAtk) *
     (1 + s.relics.atk + s.companionPromotion.atk + s.slayerPromotion.atk + s.mastery.atk + s.companions.blessingOfForest + s.memoryTree.atk + s.constellation.atk) *
     (1 + s.memoryTree.atkMultiplier + s.constellation.promotion) *
@@ -100,7 +102,7 @@ export function computeStats(s: StatSources): Stats {
     down(1 + (s.classes.equip + s.classes.owned) / 100, 2) *
     promotion *
     down(1 + s.spirits.hp, 2) *
-    (s.enhance.hp + s.growth.hp + s.knowledge * 10) *
+    (s.enhance.hp + s.growth.hp + s.knowledge * 10) * (1 + s.engraving.hp) *
     (1 + s.soulWeapon.completionHp) *
     (1 + s.relics.hp + s.companionPromotion.hp + s.slayerPromotion.hp + s.mastery.hp + s.companions.fortitude + s.memoryTree.hp + s.constellation.hp) *
     (1 + s.mastery.hpAmp) *
@@ -113,7 +115,7 @@ export function computeStats(s: StatSources): Stats {
     (1 + (s.classes.equip + s.classes.owned) / 100) *
     promotion *
     (1 + s.spirits.hp) *
-    (s.enhance.hpRecovery + s.growth.hpRecovery + s.knowledge) *
+    (s.enhance.hpRecovery + s.growth.hpRecovery + s.knowledge) * (1 + s.engraving.hpRecovery) *
     (1 + s.soulWeapon.completionHp) *
     (1 + s.relics.hpRecovery + s.companionPromotion.hpRecovery + s.slayerPromotion.hpRecovery + s.mastery.hpRegen + s.memoryTree.vit + s.constellation.hpRecovery) *
     (1 + s.mastery.hpRegenAmp) *
@@ -121,13 +123,13 @@ export function computeStats(s: StatSources): Stats {
     familiarHp;
 
   const critDamage = round(
-    (1 + s.enhance.critDamage + down(s.growth.crit, 2) + s.companions.lunatic + s.companionPromotion.critDamage + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
+    (1 + s.enhance.critDamage + down(s.growth.crit, 2) + s.companions.lunatic + s.engraving.critDamage + s.companionPromotion.critDamage + s.slayerPromotion.critDamage) * (1 + s.relics.critDamage),
     3,
   );
 
   const gold =
     down(
-      (down(s.relics.gold + s.growth.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
+      (down(s.relics.gold + s.growth.gold + s.engraving.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
         (1 + s.companions.goldRush + s.companions.goldRush2 + s.memoryTree.goldAll + s.constellation.goldAll) *
         (1 + s.memoryTree.goldStage + s.constellation.goldStage) *
         (1 + down(s.spirits.gold, 3)),
@@ -161,8 +163,8 @@ export function computeStats(s: StatSources): Stats {
     critDamage,
     mana: 100 * (1 + s.companions.manaAmplification + s.companionPromotion.mana + s.slayerPromotion.mana),
     manaRecovery: 10 * (1 + s.companions.manaDope + s.companionPromotion.manaRecovery + s.slayerPromotion.manaRecovery) * (1 + s.skills.manaRecovery),
-    accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
-    dodge: 10 + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.companionPromotion.dodge + s.slayerPromotion.dodge,
+    accuracy: 30 + s.growth.accuracy + s.relics.accuracy + s.companions.intensiveFire + s.engraving.accuracy + s.companionPromotion.accuracy + s.slayerPromotion.accuracy,
+    dodge: 10 + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.engraving.dodge + s.companionPromotion.dodge + s.slayerPromotion.dodge,
     ccResist: s.companionPromotion.ccResist + s.slayerPromotion.ccResist,
     extraGold: gold,
     extraExp: exp,
@@ -183,6 +185,7 @@ export function emptySources(): StatSources {
     growth: { atk: 0, hp: 0, hpRecovery: 0, crit: 0, gold: 0, accuracy: 0, dodge: 0 },
     knowledge: 0,
     soulWeapon: { atk: 0, completionAtk: 0, completionHp: 0 },
+    engraving: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, gold: 0, accuracy: 0, dodge: 0 },
     relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, element: noElements() },
     companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },
     slayerPromotion: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, mana: 0, manaRecovery: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0, ccResist: 0 },

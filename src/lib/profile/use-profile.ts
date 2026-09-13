@@ -115,6 +115,13 @@ export function useProfile() {
     setSpiritPresetSlot: (slot: number, name: string | null) =>
       update((p) => rules.setSpiritPresetSlot(p, slot, name)),
     toggleMainSpirit: (name: string) => update((p) => rules.toggleMainSpirit(p, name)),
+    setSoulGem: (index: number, gem: Parameters<typeof rules.setSoulGem>[2]) =>
+      update((p) => rules.setSoulGem(p, index, gem)),
+    setChaos: (change: Parameters<typeof rules.setChaos>[1]) => update((p) => rules.setChaos(p, change)),
+    placeSoulGem: (weapon: string, placement: Parameters<typeof rules.placeSoulGem>[2]) =>
+      update((p) => rules.placeSoulGem(p, weapon, placement)),
+    removeSoulGem: (weapon: string, gem: number | null) => update((p) => rules.removeSoulGem(p, weapon, gem)),
+    setPlateCompleted: (weapon: string, on: boolean) => update((p) => rules.setPlateCompleted(p, weapon, on)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     resetProfile: () => update(() => emptyProfile()),
   };

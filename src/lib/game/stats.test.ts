@@ -36,6 +36,17 @@ describe("computeStats", () => {
     expect(computeStats(s).extraGold).toBeCloseTo(1.5 * 1.2 * 1.1 - 1, 2);
   });
 
+  it("scales base ATK and HP by soul gem stats, but not the soul weapon's own ATK", () => {
+    const s = sample();
+    s.soulWeapon.atk = 1;
+    const before = computeStats(s);
+    s.engraving.atk = 1;
+    s.engraving.hp = 0.5;
+    const after = computeStats(s);
+    expect(after.attack / before.attack).toBeCloseTo(3 / 2);
+    expect(after.hp / before.hp).toBeCloseTo(1.5);
+  });
+
   it("adds skill buffs only through the skills source", () => {
     const s = sample();
     const base = computeStats(s).attack;

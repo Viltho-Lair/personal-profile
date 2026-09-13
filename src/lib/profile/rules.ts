@@ -1,3 +1,4 @@
+import type { GemPlacement, SoulGem } from "@/lib/game/engraving";
 import {
   emptyCompanion,
   FIRST_SPIRIT_TIER,
@@ -6,6 +7,7 @@ import {
   PRESET_COUNT,
   SPIRIT_PRESET_SLOTS,
   type AbilityPreset,
+  type SoulEngraving,
   type FamiliarPreset,
   type PresetKind,
   MAX_SPIRIT_ENHANCE,
@@ -421,6 +423,55 @@ export function effectiveSpiritLevel(profile: ProfileV1, name: string, maxLevel:
   if (profile.mainSpirits.length < MAIN_SPIRIT_COUNT || profile.mainSpirits.includes(name)) return own;
   const lowest = Math.min(...profile.mainSpirits.map((main) => spiritState(profile, main, maxLevel).level));
   return clampLevel(lowest, maxLevel);
+}
+
+function withEngraving(profile: ProfileV1, change: (engraving: SoulEngraving) => SoulEngraving): ProfileV1 {
+  return { ...profile, soulEngraving: change(profile.soulEngraving) };
+}
+
+/** Sets or clears one of the eight soul gems; a gem that changes shape or goes away leaves every plate. */
+export function setSoulGem(profile: ProfileV1, index: number, gem: SoulGem | null): ProfileV1 {
+  if (!Number.isInteger(index) || index < 0 || index >= profile.soulEngraving.gems.length) return profile;
+  return withEngraving(profile, (e) => {
+    const before = e.gems[index];
+    const reshaped = !gem || !before || before.shape !== gem.shape;
+    return {
+      ...e,
+      gems: e.gems.map((g, i) => (i === index ? gem : g)),
+      plates: reshaped
+        ? Object.fromEntries(Object.entries(e.plates).map(([w, ps]) => [w, ps.filter((p) => p.gem !== index)]))
+        : e.plates,
+    };
+  });
+}
+
+export function setChaos(profile: ProfileV1, change: Partial<Pick<SoulEngraving, "chaosLevel" | "chaosBonus">>): ProfileV1 {
+  return withEngraving(profile, (e) => ({ ...e, ...change }));
+}
+
+/** Puts a gem on a weapon's plate, moving it if it was already there. The caller checks it fits. */
+export function placeSoulGem(profile: ProfileV1, weapon: string, placement: GemPlacement): ProfileV1 {
+  return withEngraving(profile, (e) => ({
+    ...e,
+    plates: { ...e.plates, [weapon]: [...(e.plates[weapon] ?? []).filter((p) => p.gem !== placement.gem), placement] },
+  }));
+}
+
+/** Takes one gem off a weapon's plate, or every gem when `gem` is null. */
+export function removeSoulGem(profile: ProfileV1, weapon: string, gem: number | null): ProfileV1 {
+  return withEngraving(profile, (e) => ({
+    ...e,
+    plates: { ...e.plates, [weapon]: gem === null ? [] : (e.plates[weapon] ?? []).filter((p) => p.gem !== gem) },
+  }));
+}
+
+export function setPlateCompleted(profile: ProfileV1, weapon: string, on: boolean): ProfileV1 {
+  return withEngraving(profile, (e) => {
+    const completed = { ...e.completed };
+    if (on) completed[weapon] = true;
+    else delete completed[weapon];
+    return { ...e, completed };
+  });
 }
 
 export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): ProfileV1 {
