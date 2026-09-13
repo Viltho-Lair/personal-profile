@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GearGrid } from "./gear-grid";
 import { RelicList } from "./relic-list";
 import { SpiritGrid } from "./spirit-grid";
+import { Sprite } from "./sprite";
 import {
   ACCESSORIES,
   EQUIPMENT_SOURCE,
@@ -45,12 +45,11 @@ function ItemCard({
     <article className="flex h-full flex-col gap-2 rounded-lg border border-ink/15 p-3 transition-colors hover:border-ink/40">
       <header className="flex items-start gap-2.5">
         {icon ? (
-          <Image
+          <Sprite
             src={icon}
-            alt=""
-            width={128}
-            height={128}
-            className="size-11 shrink-0 rounded-md border border-ink/15 object-contain"
+            native={128}
+            size={64}
+            className="rounded-md border border-ink/15"
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -133,11 +132,11 @@ export function EquipmentPanel() {
       </div>
 
       <TabsContent value="weapons" className={PANEL}>
-        <GearGrid items={WEAPONS} />
+        <GearGrid items={WEAPONS} native={128} />
       </TabsContent>
 
       <TabsContent value="accessories" className={PANEL}>
-        <GearGrid items={ACCESSORIES} />
+        <GearGrid items={ACCESSORIES} native={64} />
       </TabsContent>
 
       <TabsContent value="relics" className={PANEL}>

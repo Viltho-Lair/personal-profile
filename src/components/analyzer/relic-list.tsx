@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { RELICS, type Relic } from "./equipment";
 import { InlineLevel, LevelInput } from "./level-input";
+import { Sprite } from "./sprite";
 import { useLevels } from "./use-levels";
 
 const MAX_LEVEL = 100;
@@ -51,12 +51,11 @@ function RelicRow({
   return (
     <article className="flex items-start gap-3 rounded-lg border border-ink/15 p-3 transition-colors hover:border-ink/40">
       {relic.icon ? (
-        <Image
+        <Sprite
           src={relic.icon}
-          alt=""
-          width={128}
-          height={128}
-          className="size-12 shrink-0 rounded-md border border-ink/15 object-contain"
+          native={64}
+          size={64}
+          className="rounded-md border border-ink/15"
         />
       ) : null}
 

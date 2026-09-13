@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { SPIRITS, type Spirit } from "./equipment";
+import { Sprite } from "./sprite";
 import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
 
 function SpiritTile({
@@ -26,12 +26,11 @@ function SpiritTile({
       }`}
     >
       {spirit.icon ? (
-        <Image
+        <Sprite
           src={spirit.icon}
-          alt=""
-          width={128}
-          height={128}
-          className="min-h-0 flex-1 object-contain"
+          native={128}
+          size={64}
+          className="size-8 sm:size-16"
         />
       ) : null}
       <span className="w-full truncate text-center text-[11px] leading-none">
@@ -59,14 +58,13 @@ function SpiritDetail({ spirit }: { spirit: Spirit | null }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-start gap-2">
         {spirit.icon ? (
-          <Image
+          <Sprite
             src={spirit.icon}
-            alt=""
-            width={128}
-            height={128}
-            className={`size-14 rounded-md border object-contain ${spirit.element ? (ELEMENT_BORDER[spirit.element] ?? "border-ink/20") : "border-ink/20"}`}
+            native={128}
+            size={128}
+            className={`rounded-md border ${spirit.element ? (ELEMENT_BORDER[spirit.element] ?? "border-ink/20") : "border-ink/20"}`}
           />
         ) : null}
         <div>

@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { formatValue, type Gear } from "./equipment";
+import { Sprite, type NativeSize } from "./sprite";
 import { TIER_BORDER, TIER_TEXT } from "./tiers";
 
 /** The game lays a tier out as one row of four tiles, grade 4 through grade 1. */
@@ -21,10 +21,12 @@ function byTier(items: Gear[]) {
 
 function GearTile({
   gear,
+  native,
   selected,
   onSelect,
 }: {
   gear: Gear;
+  native: NativeSize;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -40,12 +42,11 @@ function GearTile({
       }`}
     >
       {gear.icon ? (
-        <Image
+        <Sprite
           src={gear.icon}
-          alt=""
-          width={128}
-          height={128}
-          className="absolute inset-0 m-auto size-3/5 object-contain"
+          native={native}
+          size={64}
+          className="absolute inset-0 m-auto"
         />
       ) : null}
       <span className="absolute top-1 right-1.5 font-mono text-[9px] text-dim">
@@ -62,7 +63,13 @@ function GearTile({
   );
 }
 
-function GearDetail({ gear }: { gear: Gear | null }) {
+function GearDetail({
+  gear,
+  native,
+}: {
+  gear: Gear | null;
+  native: NativeSize;
+}) {
   if (!gear) {
     return (
       <p className="font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
@@ -73,14 +80,13 @@ function GearDetail({ gear }: { gear: Gear | null }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-start gap-2">
         {gear.icon ? (
-          <Image
+          <Sprite
             src={gear.icon}
-            alt=""
-            width={128}
-            height={128}
-            className={`size-14 rounded-md border object-contain ${TIER_BORDER[gear.tier] ?? "border-ink/20"}`}
+            native={native}
+            size={128}
+            className={`rounded-md border ${TIER_BORDER[gear.tier] ?? "border-ink/20"}`}
           />
         ) : null}
         <div>
@@ -111,7 +117,13 @@ function GearDetail({ gear }: { gear: Gear | null }) {
   );
 }
 
-export function GearGrid({ items }: { items: Gear[] }) {
+export function GearGrid({
+  items,
+  native,
+}: {
+  items: Gear[];
+  native: NativeSize;
+}) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const selected = items.find((item) => item.id === selectedId) ?? null;
 
@@ -130,6 +142,7 @@ export function GearGrid({ items }: { items: Gear[] }) {
                 <GearTile
                   key={gear.id}
                   gear={gear}
+                  native={native}
                   selected={gear.id === selectedId}
                   onSelect={() =>
                     setSelectedId(gear.id === selectedId ? null : gear.id)
@@ -142,7 +155,7 @@ export function GearGrid({ items }: { items: Gear[] }) {
       </div>
 
       <aside className="shrink-0 rounded-lg border border-ink/15 p-3 lg:sticky lg:top-0 lg:w-64">
-        <GearDetail gear={selected} />
+        <GearDetail gear={selected} native={native} />
       </aside>
     </div>
   );

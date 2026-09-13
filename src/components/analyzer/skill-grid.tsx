@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { InlineLevel, LevelInput } from "./level-input";
+import { Sprite } from "./sprite";
 import { useLevels } from "./use-levels";
 import {
   buildSkillRows,
@@ -44,12 +44,11 @@ function SkillCard({
     <article className="flex h-full flex-col gap-2 rounded-lg border border-ink/15 p-3 transition-colors hover:border-ink/40">
       <header className="flex items-start gap-2.5">
         {skill.icon ? (
-          <Image
+          <Sprite
             src={skill.icon}
-            alt=""
-            width={128}
-            height={128}
-            className="size-11 shrink-0 rounded-md border border-ink/15"
+            native={128}
+            size={64}
+            className="rounded-md border border-ink/15"
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -121,12 +120,10 @@ export function SkillGrid() {
             key={element}
             className={`flex items-center gap-2 ${ELEMENT_COLOR[element] ?? "text-ink"}`}
           >
-            <Image
+            <Sprite
               src={`/elements/${element.toLowerCase()}.png`}
-              alt=""
-              width={64}
-              height={64}
-              className="size-4"
+              native={64}
+              size={16}
             />
             {element}
           </span>
