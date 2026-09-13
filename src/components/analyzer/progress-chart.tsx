@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useProfile } from "@/lib/profile/use-profile";
-import { formatValue } from "./data";
-import { promotionFight, PROMOTION_STAGES } from "./promotion-fight";
+import { formatValue, SKILL_BY_NAME } from "./data";
+import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES } from "./promotion-fight";
 import { useSpiritFactors } from "./spirit-stats";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -26,7 +27,7 @@ export function ProgressChart() {
 
   const current = profile.character.promotion;
   const index = profile.promotionTarget.promotion ?? Math.min(current, PROMOTION_STAGES.length - 1);
-  const duration = profile.promotionTarget.duration;
+  const duration = FIGHT_SECONDS;
   const fight = useMemo(() => promotionFight(profile, factors, index, duration), [profile, factors, index, duration]);
   const { boss, result } = fight;
 
@@ -68,18 +69,7 @@ export function ProgressChart() {
             </option>
           ))}
         </select>
-        <label className={`flex items-center gap-1.5 ${LABEL}`}>
-          Fight
-          <input
-            type="number"
-            min={1}
-            value={duration}
-            aria-label="Fight duration in seconds"
-            onChange={(event) => setPromotionTarget({ duration: Math.max(1, Math.floor(event.target.valueAsNumber || 1)) })}
-            className="w-14 rounded-md border border-ink/20 bg-transparent px-1.5 py-1 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
-          />
-          s
-        </label>
+        <span className={LABEL}>{duration}s fight</span>
         <label className={`flex items-center gap-1 ${LABEL}`}>
           <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
           Log scale
@@ -109,6 +99,10 @@ export function ProgressChart() {
         ))}
       </svg>
 
+      {profile.includeSkills && fight.skills.length ? (
+        <SkillFlow casts={result.casts} skills={fight.skills.map((s) => ({ name: s.name, always: s.trigger === "always" }))} duration={duration} />
+      ) : null}
+
       {boss ? (
         <div className="flex flex-col gap-1 text-[11px] leading-snug">
           <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px]">
@@ -130,10 +124,10 @@ export function ProgressChart() {
               </ul>
             </div>
           ) : null}
-          {verdict && result.total > 0 && result.total < boss.hp ? (
+          {fight.spread !== null ? (
             <p className="text-dim">
               Or spread it: every damage source scales with ATK, so raising Weapons, Classes, Spirits, Extra ATK and
-              Breakthrough each by about ×{formatValue(Math.pow(boss.hp / result.total, 1 / 5))} gets there too.
+              Breakthrough each by about ×{formatValue(fight.spread)} gets there too.
             </p>
           ) : null}
           {fight.withSkills !== null ? (
@@ -145,11 +139,43 @@ export function ProgressChart() {
             <p className="text-dim">Skills not modelled: {fight.skipped.join(", ")}.</p>
           ) : null}
           <p className="text-[10px] text-dim">
-            Approximate: one basic attack a second (ATK SPD buffs raise it), skills cast on cooldown, no mana or timing. Boss HP is
-            the recommended stage&apos;s boss from Stage Data; the fight length is yours to set.
+            Approximate, hit by hit: one basic attack a second (ATK SPD raises it), attack skills and buffs cast from their own
+            queues 0.3s apart, casts pause basic attacks, Rave and Demon Hunt stop the clock, no mana. Boss HP is estimated
+            from the promotion&apos;s recommended stage.
           </p>
         </div>
       ) : null}
     </section>
+  );
+}
+
+/** One lane per skill under the chart, with a square at each time it went. */
+function SkillFlow({ casts, skills, duration }: { casts: { name: string; t: number }[]; skills: { name: string; always: boolean }[]; duration: number }) {
+  return (
+    <div aria-label="Skill flow" className="flex flex-col gap-0.5 border-t border-ink/10 pt-1">
+      {skills.map(({ name, always }) => {
+        const skill = SKILL_BY_NAME.get(name);
+        const times = casts.filter((c) => c.name === name).map((c) => c.t);
+        return (
+          <div key={name} className="flex items-center gap-1.5" title={`${name}: ${times.length} times`}>
+            <span className="w-20 truncate font-mono text-[9px] text-dim">{name}</span>
+            <div className={`relative h-3.5 flex-1 rounded-sm ${always ? "bg-amber-400/25" : "bg-ink/[0.04]"}`}>
+              {times.map((t, i) => (
+                <span
+                  key={i}
+                  className="absolute top-0 size-3.5 -translate-x-1/2 overflow-hidden rounded-[3px] border border-ink/30 bg-zinc-900"
+                  style={{ left: `${(t / duration) * 100}%` }}
+                >
+                  {skill?.icon && skill.iconSize ? (
+                    <Image src={skill.icon} alt="" width={skill.iconSize} height={skill.iconSize} className="size-full object-cover" draggable={false} />
+                  ) : null}
+                </span>
+              ))}
+            </div>
+            <span className="w-6 text-right font-mono text-[9px] text-dim tabular-nums">{always ? "on" : times.length}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 }

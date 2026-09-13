@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { expectedHit, simulateBattle, withStones, type BattleInput, type BattleSkill } from "./battle";
+import { expectedHit, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
 
-const base: BattleInput = {
+const base: FightInput = {
   attack: 100,
   critChance: 0,
   critDamage: 1,
@@ -12,6 +12,19 @@ const base: BattleInput = {
   duration: 10,
 };
 
+const skill = (s: Partial<FightSkill> & Pick<FightSkill, "name" | "effect">): FightSkill => ({
+  element: "Fire",
+  kind: "attack",
+  trigger: "seconds",
+  every: 10,
+  duration: 0,
+  delay: 0,
+  startAt: 0,
+  freezes: false,
+  bonus: 0,
+  ...s,
+});
+
 describe("expectedHit", () => {
   it("weights crit and death strike by their chances", () => {
     expect(expectedHit(100, { critChance: 0.5, critDamage: 3, deathStrikeChance: 0, deathStrikeDamage: 1 })).toBeCloseTo(200);
@@ -19,35 +32,49 @@ describe("expectedHit", () => {
   });
 });
 
-describe("simulateBattle", () => {
-  it("deals one expected hit per second without skills", () => {
-    const result = simulateBattle(base);
-    expect(result.total).toBeCloseTo(1000);
+describe("simulateFight", () => {
+  it("lands a basic attack every second, hit by hit", () => {
+    const result = simulateFight(base);
+    expect(result.basic).toBeCloseTo(1000);
     expect(result.points).toHaveLength(11);
-    expect(result.points[5].damage).toBeCloseTo(500);
   });
 
-  it("casts damage skills on cooldown with their element bonus", () => {
-    const slash: BattleSkill = { name: "Slash", element: "Fire", cooldown: 4, effect: { kind: "damage", power: 2, hits: 1 } };
-    const result = simulateBattle({ ...base, skills: [slash], extraDamage: { ...base.extraDamage, Fire: 0.5 } });
-    // casts at 0, 4 and 8 seconds: 3 x 100 x 200% x 1.5
-    expect(result.bySkill.Slash).toBeCloseTo(900);
-    expect(result.total).toBeCloseTo(1900);
+  it("fires hit-based skills after that many basic attacks and pauses basics for the cast", () => {
+    const slash = skill({ name: "Slash", trigger: "hits", every: 3, effect: { type: "damage", power: 2, hits: 1 } });
+    const result = simulateFight({ ...base, skills: [slash] });
+    const castTimes = result.casts.map((c) => c.t);
+    expect(castTimes.length).toBe(3);
+    expect(castTimes[0]).toBeGreaterThan(2);
+    expect(result.basic).toBeLessThan(1000);
   });
 
-  it("raises damage while a timed ATK buff is up and stacks over time", () => {
-    const buff: BattleSkill = { name: "Buff", element: "Fire", cooldown: 10, effect: { kind: "atkBuff", power: 1, duration: 5, startAt: 0 } };
-    expect(simulateBattle({ ...base, skills: [buff] }).total).toBeCloseTo(1500);
-    const stack: BattleSkill = { name: "Stack", element: "Earth", cooldown: 0, effect: { kind: "atkStack", power: 0.1, every: 5, per: "seconds" } };
-    expect(simulateBattle({ ...base, skills: [stack] }).total).toBeCloseTo(1050);
+  it("keeps a buff for its duration and grows stacks over time", () => {
+    const buff = skill({ name: "Buff", kind: "buff", every: 100, duration: 4, effect: { type: "atk", power: 1 } });
+    const buffed = simulateFight({ ...base, skills: [buff] });
+    // basics at ~0.3, 1.3, 2.3, 3.3 are doubled; the rest aren't
+    expect(buffed.basic).toBeGreaterThan(1300);
+    expect(buffed.basic).toBeLessThan(1500);
+
+    const stack = skill({ name: "Stack", kind: "passive", every: 5, effect: { type: "atkStack", power: 0.5 } });
+    const stacked = simulateFight({ ...base, skills: [stack] });
+    expect(stacked.basic).toBeCloseTo(100 * 5 + 150 * 5, -1);
+  });
+
+  it("stops the clock for Rave and adds its share of the damage done meanwhile", () => {
+    const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1 } });
+    const result = simulateFight({ ...base, skills: [rave] });
+    // five free seconds of basics, doubled by Rave, on top of the normal ten
+    expect(result.bySkill.Rave).toBeGreaterThan(400);
+    expect(result.basic).toBeGreaterThan(1300);
+    expect(result.points[result.points.length - 1].t).toBeCloseTo(10, 0);
   });
 
   it("applies skill stones only to their element", () => {
-    const skill: BattleSkill = { name: "Buff", element: "Water", cooldown: 20, effect: { kind: "atkBuff", power: 1, duration: 10, startAt: 0 } };
+    const s = skill({ name: "Buff", element: "Water", kind: "buff", every: 20, duration: 10, effect: { type: "atk", power: 1 } });
     const stones = { cooldown: { grade: "B" as const, element: "Water" as const }, time: { grade: "A" as const, element: "Water" as const }, heat: null };
-    const stoned = withStones(skill, stones);
-    expect(stoned.cooldown).toBeCloseTo(18.6);
-    expect(stoned.effect.kind === "atkBuff" && stoned.effect.duration).toBeCloseTo(10.4);
-    expect(withStones({ ...skill, element: "Fire" }, stones).cooldown).toBe(20);
+    const stoned = withStones(s, stones);
+    expect(stoned.every).toBeCloseTo(18.6);
+    expect(stoned.duration).toBeCloseTo(10.4);
+    expect(withStones({ ...s, element: "Fire" }, stones).every).toBe(20);
   });
 });

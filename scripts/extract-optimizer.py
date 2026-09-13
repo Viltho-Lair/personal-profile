@@ -38,6 +38,7 @@ from optimizer.constellation import extract_constellation  # noqa: E402
 from optimizer.proficiency import extract_proficiency  # noqa: E402
 from optimizer.relics import extract_relics  # noqa: E402
 from optimizer.skills import extract_skills  # noqa: E402
+from optimizer.skill_mechanics import extract_skill_mechanics  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
 from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
 from optimizer.stages import extract_promotion_stages, extract_stage_bosses  # noqa: E402
@@ -144,6 +145,41 @@ def attach(published, stem):
     return published.get(stem, (None, None)) if stem else (None, None)
 
 
+def attach_skill_mechanics(skills, mechanics, mastery_pages):
+    """Each skill's fight mechanics, with Skill Mastery checkbox cells turned into node ids.
+
+    A node's checkbox sits two rows under its anchor, and node ids are
+    "<page>-<anchor cell>".
+    """
+    nodes = {}
+    for page in mastery_pages:
+        for node in page["nodes"]:
+            anchor = node["id"].split("-", 1)[1]
+            column = anchor.rstrip("0123456789")
+            nodes[f"{column}{int(anchor[len(column):]) + 2}"] = node["id"]
+
+    def node_for(cell, skill):
+        if cell not in nodes:
+            raise ValueError(f"Skills Data: {skill} reads SKILL MASTERY {cell}, which isn't a mastery node checkbox")
+        return nodes[cell]
+
+    for skill in skills:
+        found = mechanics.get(skill["name"])
+        if found is None:
+            skill["mechanics"] = None
+            continue
+        hits = found["hits"]
+        if hits and hits["mastery"]:
+            hits = {"base": hits["base"], "mastery": {"node": node_for(hits["mastery"]["cell"], skill["name"]), "hits": hits["mastery"]["hits"]}}
+        skill["mechanics"] = {
+            **found,
+            "hits": hits,
+            "masteryDamage": [
+                {"node": node_for(amp["cell"], skill["name"]), "multiplier": amp["multiplier"]} for amp in found["masteryDamage"]
+            ],
+        }
+
+
 def merge_spirit_skills(spirits):
     if not WIKI_SPIRITS.exists():
         print("warning: src/data/wiki/spirit-skills.json is missing; run scripts/fetch-wiki-spirit-skills.py")
@@ -192,6 +228,7 @@ def main():
     try:
         skills, skill_icons = extract_skills(values["Skills Data"])
         proficiency = extract_proficiency(values["Skills Data"])
+        skill_mechanics = extract_skill_mechanics(values["Skills Data"], formulas["Skills Data"])
         weapons = extract_gear(values["Equipment Data"], "WEAPONS")
         accessories = extract_gear(values["Equipment Data"], "ACCESSORIES")
         level_factors = extract_level_factors(values["Equipment Data"])
@@ -228,6 +265,8 @@ def main():
     gear_max_level = len(level_factors) - 1
     for grade in weapons + accessories:
         grade["maxLevel"] = gear_max_level
+
+    attach_skill_mechanics(skills, skill_mechanics, mastery_pages)
 
     today = date.today().isoformat()
     areas = [

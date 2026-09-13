@@ -22,6 +22,34 @@
         "basic": "Wrap fire around the sword and set enemies on fire",
         "specific": "Attack all enemies within range 3 once with X% of their ATK"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 12,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1.0,
+          "mastery": {
+            "node": "1-J17",
+            "hits": 2.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "1-J17",
+            "multiplier": 1.5
+          },
+          {
+            "node": "7-DZ17",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/fire-slash.png",
       "iconSize": 128
     },
@@ -41,6 +69,34 @@
       "description": {
         "basic": "Wrap fire around the sword and set enemies on fire",
         "specific": "Attack all enemies within range 4 once with X% of their ATK"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 13,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1.0,
+          "mastery": {
+            "node": "1-J17",
+            "hits": 2.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "1-J17",
+            "multiplier": 1.5
+          },
+          {
+            "node": "7-DZ17",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/flame-slash.png",
       "iconSize": 128
@@ -62,6 +118,34 @@
         "basic": "Wrap fire around the sword and set enemies on fire",
         "specific": "Attack all enemies within range 6 once with X% of their ATK"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 15,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1.0,
+          "mastery": {
+            "node": "1-J17",
+            "hits": 2.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "1-J17",
+            "multiplier": 1.5
+          },
+          {
+            "node": "7-DZ17",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/hellfire-slash.png",
       "iconSize": 128
     },
@@ -81,6 +165,34 @@
       "description": {
         "basic": "Creates a hot wind to attack the enemy",
         "specific": "Attack all enemies within range 3 once with X% of their ATK"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 12,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1.0,
+          "mastery": {
+            "node": "1-D22",
+            "hits": 2.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "1-D22",
+            "multiplier": 3.0
+          },
+          {
+            "node": "6-DF22",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/hot-blast.png",
       "iconSize": 128
@@ -102,6 +214,34 @@
         "basic": "Creates a burning wind to attack the enemy",
         "specific": "Attack all enemies within range 3 once with X% of their ATK"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 12,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1.0,
+          "mastery": {
+            "node": "1-D22",
+            "hits": 2.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "1-D22",
+            "multiplier": 3.0
+          },
+          {
+            "node": "6-DF22",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/fire-blast.png",
       "iconSize": 128
     },
@@ -121,6 +261,31 @@
       "description": {
         "basic": "Sword of fire attacks far away enemies",
         "specific": "Send a sword storm at the found enemy. X% splash damage of ATK"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 4,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "1-J7",
+            "multiplier": 3.0
+          },
+          {
+            "node": "9-FN37",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/flame-wave.png",
       "iconSize": 128
@@ -142,6 +307,31 @@
         "basic": "Summons fire pillars in quick succession to burn enemies",
         "specific": "Summon a pillar of fire that grows stronger and stronger. X% DMG of ATK"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 10,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 16.515,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "3-AX7",
+            "multiplier": 3.0
+          },
+          {
+            "node": "8-EN12",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/pillar-of-fire.png",
       "iconSize": 128
     },
@@ -161,6 +351,19 @@
       "description": {
         "basic": "Instantly Raise ATK with the power of fire",
         "specific": "Total ATK +X% for 10sec"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 17,
+        "duration": 10,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/fire-sword.png",
       "iconSize": 128
@@ -182,6 +385,19 @@
         "basic": "The blazing sword grows stronger without limits",
         "specific": "After entering the battle, total ATK +X% every 5 seconds"
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "seconds",
+        "passive": "stack",
+        "every": 5,
+        "duration": 5,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/burning-sword.png",
       "iconSize": 128
     },
@@ -201,6 +417,19 @@
       "description": {
         "basic": "ATK increases as HP decreases",
         "specific": "Increase total ATK for 10 seconds as HP decreases +X% ATK per -1% HP, HP recovery stops while is lasts"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 15,
+        "duration": 10,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/rage.png",
       "iconSize": 128
@@ -222,6 +451,19 @@
         "basic": "Creates explosive power with fire. Inflicts heavy damage with strong recoil",
         "specific": "Consume 50% HP of current HP total ATK +X% for 5 seconds"
       },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 18,
+        "duration": 5,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/warrior-burn.png",
       "iconSize": 128
     },
@@ -241,6 +483,34 @@
       "description": {
         "basic": "Summons ice rocks and strike the enemy",
         "specific": "Summon ice meteors with X% damage to any enemy within range 5"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 5,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 10.0,
+          "mastery": {
+            "node": "2-AJ27",
+            "hits": 20.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AJ27",
+            "multiplier": 1.5
+          },
+          {
+            "node": "8-EZ42",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/ice-stone.png",
       "iconSize": 128
@@ -262,6 +532,34 @@
         "basic": "Summons ice rocks and strike the enemy",
         "specific": "Summon ice meteors with X% damage to any enemy within range 8"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 7,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 12.0,
+          "mastery": {
+            "node": "2-AJ27",
+            "hits": 24.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AJ27",
+            "multiplier": 1.5
+          },
+          {
+            "node": "8-EZ42",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/ice-shower.png",
       "iconSize": 128
     },
@@ -281,6 +579,34 @@
       "description": {
         "basic": "Summon ice rocks and strike the enemy",
         "specific": "Summon ice meteors with X% damage to any enemy within range 10"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 9,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 14.0,
+          "mastery": {
+            "node": "2-AJ27",
+            "hits": 28.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AJ27",
+            "multiplier": 1.5
+          },
+          {
+            "node": "8-EZ42",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/ice-time.png",
       "iconSize": 128
@@ -302,6 +628,31 @@
         "basic": "Slashes the enemy with a fast and accurate sword",
         "specific": "7 consecutive attacks on enemies within 3 range. DMG X%"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 12,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 7,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AD32",
+            "multiplier": 3.0
+          },
+          {
+            "node": "6-DF7",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/water-slash.png",
       "iconSize": 128
     },
@@ -321,6 +672,19 @@
       "description": {
         "basic": "Recovers mana with the energy of water",
         "specific": "Mana recovery +X%"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 8,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/mana-s-blessing.png",
       "iconSize": 128
@@ -342,6 +706,19 @@
         "basic": "Focuses your mind and shortens skill activation time",
         "specific": "Concentrate and charge X% cooldown for all skills"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "special",
+        "passive": null,
+        "every": 15,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/meditation.png",
       "iconSize": 128
     },
@@ -361,6 +738,27 @@
       "description": {
         "basic": "Freezes multiple enemies with a blizzard ice attack",
         "specific": "X% damage of ATK per second. Freeze all enemies in front 100%"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 10,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 5,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "5-CL42",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/blizzard.png",
       "iconSize": 128
@@ -382,6 +780,19 @@
         "basic": "ATK SPD is greatly increased with the power of water to drive enemies away",
         "specific": "Increases ATK SPD by X% for 6 seconds after 2 seconds into battle"
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "seconds",
+        "passive": "delayed",
+        "every": 50,
+        "duration": 6,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/strong-current.png",
       "iconSize": 128
     },
@@ -401,6 +812,19 @@
       "description": {
         "basic": "Increases ATK SPD by flowing the energy of water",
         "specific": "ATK SPD +X% for 10 sec"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 18,
+        "duration": 10,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/flowing-blade.png",
       "iconSize": 128
@@ -422,6 +846,19 @@
         "basic": "As time passes, the ATK SPD gradually increases",
         "specific": "After entering the battle, ATK SPD +X% every 4 seconds"
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "seconds",
+        "passive": "stack",
+        "every": 4,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/curved-blade.png",
       "iconSize": 128
     },
@@ -441,6 +878,19 @@
       "description": {
         "basic": "Defends against various types of attacks",
         "specific": "Dodge enemy attacks for X seconds (except for some special attacks)"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 15,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/dancing-waves.png",
       "iconSize": 128
@@ -462,6 +912,31 @@
         "basic": "Wields a lightning sword to inflict damage on enemies",
         "specific": "Inflicts X% damage to 5 enemies within range 5"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 6,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AD7",
+            "multiplier": 3.0
+          },
+          {
+            "node": "7-DT12",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/lightning-slash.png",
       "iconSize": 128
     },
@@ -481,6 +956,31 @@
       "description": {
         "basic": "Wields a lightning sword to inflict damage on enemies",
         "specific": "Inflicts X% damage to 7 enemies within range 7"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 7,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AD7",
+            "multiplier": 3.0
+          },
+          {
+            "node": "7-DT12",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/thunder-slash.png",
       "iconSize": 128
@@ -502,6 +1002,31 @@
         "basic": "Wields lightning sword to inflict strong damage on enemies",
         "specific": "Inflicts X% damage to 10 enemies within range 10"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 8,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "2-AD7",
+            "multiplier": 3.0
+          },
+          {
+            "node": "7-DT12",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/thunderbolt-slash.png",
       "iconSize": 128
     },
@@ -521,6 +1046,34 @@
       "description": {
         "basic": "Summons lightning to strike enemies",
         "specific": "Summon 30 lightning strikes of X% damage to locations within 15 range"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 10,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 30.0,
+          "mastery": {
+            "node": "3-AX35",
+            "hits": 60.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "3-AX35",
+            "multiplier": 1.5
+          },
+          {
+            "node": "8-ET22",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/lightning-stroke.png",
       "iconSize": 128
@@ -542,6 +1095,34 @@
         "basic": "Summons red lightning to strike enemies",
         "specific": "Summon 60 lightning strikes of X% damage to locations within 20 range"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 12,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 60.0,
+          "mastery": {
+            "node": "3-AX35",
+            "hits": 120.0
+          }
+        },
+        "masteryDamage": [
+          {
+            "node": "3-AX35",
+            "multiplier": 1.5
+          },
+          {
+            "node": "8-ET22",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/red-lightning.png",
       "iconSize": 128
     },
@@ -561,6 +1142,27 @@
       "description": {
         "basic": "Charges as fast as lightning and attacks the enemy",
         "specific": "Quickly charges to all enemies within 3 range, attacking with X% of ATK once"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 0.5,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "3-AR23",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/fulgurous.png",
       "iconSize": 128
@@ -582,6 +1184,31 @@
         "basic": "A wind-type ultimate that rushes at supersonic speed and penetrates enemy lines",
         "specific": "Charge and damage enemies within range 7 by X% of ATK. 6 consecutive charge attacks"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 5,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 6,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "4-BL12",
+            "multiplier": 3.0
+          },
+          {
+            "node": "9-FN7",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/supersonic.png",
       "iconSize": 128
     },
@@ -601,6 +1228,19 @@
       "description": {
         "basic": "ATK SPD increases with every swing of your sword",
         "specific": "After entering battle, ATK SPD +X% for every 5 attacks"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "hits",
+        "passive": "stack",
+        "every": 5,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/speed-sword.png",
       "iconSize": 128
@@ -622,6 +1262,19 @@
         "basic": "Increases basic ATK SPD with the power of wind",
         "specific": "ATK SPD +X%"
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "always",
+        "passive": null,
+        "every": 1,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/wind-sword.png",
       "iconSize": 128
     },
@@ -641,6 +1294,19 @@
       "description": {
         "basic": "MSPD increases rapidly",
         "specific": "MSPD +X% for 10sec"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 20,
+        "duration": 10,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/agile.png",
       "iconSize": 128
@@ -662,6 +1328,19 @@
         "basic": "Lightning increases the attack speed for a while. Inflicts heavy damage with strong recoil from overcurrent",
         "specific": "Cosume 50% of current HP. ATK SPD +X% for 5 seconds"
       },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 20,
+        "duration": 5,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/lightning-body.png",
       "iconSize": 128
     },
@@ -681,6 +1360,31 @@
       "description": {
         "basic": "Slams the ground to explode the sword's energy",
         "specific": "Attacks enemies within range 1 at X% of earth DMG 1 time"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 9,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "4-BX22",
+            "multiplier": 3.0
+          },
+          {
+            "node": "9-FT22",
+            "multiplier": 3.5999999999999996
+          }
+        ]
       },
       "icon": "/art/skills/stone-strike.png",
       "iconSize": 128
@@ -702,6 +1406,31 @@
         "basic": "Slams the ground to explode the sword's energy",
         "specific": "Attacks enemies within range 1 at X% of earth DMG 2 time"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 12,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 2,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "4-BX22",
+            "multiplier": 3.0
+          },
+          {
+            "node": "9-FT22",
+            "multiplier": 3.5999999999999996
+          }
+        ]
+      },
       "icon": "/art/skills/power-strike.png",
       "iconSize": 128
     },
@@ -721,6 +1450,31 @@
       "description": {
         "basic": "Slams the ground to explode the sword's energy",
         "specific": "Attacks enemies within range 1 at X% of earth dmg 3 times"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 15,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 3,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "4-BX22",
+            "multiplier": 3.0
+          },
+          {
+            "node": "9-FT22",
+            "multiplier": 3.5999999999999996
+          }
+        ]
       },
       "icon": "/art/skills/giga-strike.png",
       "iconSize": 120
@@ -742,6 +1496,31 @@
         "basic": "Shock wave that can stun enemies in mid-range",
         "specific": "Attacks with X% earth DMG that penetrates enemies within a 5 range. 50% extra stun"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 10,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "4-BR39",
+            "multiplier": 3.0
+          },
+          {
+            "node": "7-DT37",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/power-impact.png",
       "iconSize": 128
     },
@@ -761,6 +1540,31 @@
       "description": {
         "basic": "Strong shock wave that can stun enemies in mid-range",
         "specific": "Attacks with X% earth DMG that penetrates enemies within a 5 range. 100% extra stun"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 10,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 1,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "4-BR39",
+            "multiplier": 3.0
+          },
+          {
+            "node": "7-DT37",
+            "multiplier": 3.0
+          }
+        ]
       },
       "icon": "/art/skills/giga-impact.png",
       "iconSize": 128
@@ -782,6 +1586,27 @@
         "basic": "The ultimate skill that cuts through the air and attack the enemy with superhuman power. Shockwaves generated during movement explode the air",
         "specific": "Attacks enemies within a 4 range 7 times. Damage X% per time, in the 7th time, it deals much stronger damage"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 33,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": {
+          "base": 12,
+          "mastery": null
+        },
+        "masteryDamage": [
+          {
+            "node": "5-CL22",
+            "multiplier": 3.0
+          }
+        ]
+      },
       "icon": "/art/skills/demon-hunt.png",
       "iconSize": 128
     },
@@ -801,6 +1626,19 @@
       "description": {
         "basic": "Gathers the power of the earth and explodes with a momentary transcental blast",
         "specific": "After 20 seconds into battle, total ATK +X% for 5 seconds"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "seconds",
+        "passive": "delayed",
+        "every": 30,
+        "duration": 5,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/wrath-of-gods.png",
       "iconSize": 128
@@ -822,6 +1660,19 @@
         "basic": "Increase ATK",
         "specific": "Total ATK +X%"
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "always",
+        "passive": null,
+        "every": 1,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/iron-will.png",
       "iconSize": 128
     },
@@ -841,6 +1692,19 @@
       "description": {
         "basic": "The power of the earth is gathered and the ATK gradually increases",
         "specific": "After entering battle, total ATK +X% for every 7 attacks"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "hits",
+        "passive": "stack",
+        "every": 7,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/earth-s-will.png",
       "iconSize": 128
@@ -862,6 +1726,19 @@
         "basic": "Instantly restore HP",
         "specific": "HP recovery X%"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 7,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/ground-s-blessing.png",
       "iconSize": 128
     },
@@ -881,6 +1758,19 @@
       "description": {
         "basic": "Instantly restores HP and mana",
         "specific": "X% recovery of total HP, 30% recovery of mana"
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "hits",
+        "passive": null,
+        "every": 20,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/life-mana.png",
       "iconSize": 128
@@ -902,6 +1792,19 @@
         "basic": "Inflicts an additional damage of X% of the damage done to one enemy for 5 seconds",
         "specific": "Deals an additional damage of X% of the damage done to one enemy for 5 seconds"
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "special",
+        "passive": null,
+        "every": 60,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/rave.png",
       "iconSize": 125
     },
@@ -921,6 +1824,19 @@
       "description": {
         "basic": "Absorbs the energy condensed in the orb and greatly aplifies basic abilities",
         "specific": "Total ATK, HP +X%. The effect is applied without equipped in the slot"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "always",
+        "passive": null,
+        "every": 0,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/mantra.png",
       "iconSize": 128
@@ -942,6 +1858,19 @@
         "basic": "Calm your breath to match the rhythm of the ferocious waves. and accelerate the flow of the skill with areat balance.",
         "specific": "Recover 50% of current HP. and increase Cooldown recharge speed by X% for 5 seconds."
       },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 19,
+        "duration": 5,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/breath-of-waves.png",
       "iconSize": 128
     },
@@ -961,6 +1890,19 @@
       "description": {
         "basic": "Enhance strength with the power of flaming mind.",
         "specific": "Fire attribute skill DMG increases by X% once 4 fire skills are equipped (After 5 skills, DMG increases by X% for each additional skill)"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "special",
+        "passive": null,
+        "every": 4,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/heart-of-fire.png",
       "iconSize": 128
@@ -982,6 +1924,19 @@
         "basic": "The more you try to tame free wind, the wilder it gets.",
         "specific": "After entering the battle. increase wind skill DMG by X% per every 5 wind attribute skills used"
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "special",
+        "passive": "stack",
+        "every": 5,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/blast-wind.png",
       "iconSize": 128
     },
@@ -1001,6 +1956,19 @@
       "description": {
         "basic": "Increase DMG inflicted to immobile enemies.",
         "specific": "Increase DMG by X% when attacking a Frozen or Stunned enemy. Additional DMG equal to Y% of ATK"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "special",
+        "passive": null,
+        "every": 0,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/demolition.png",
       "iconSize": 128
@@ -1022,6 +1990,19 @@
         "basic": "Summon lightning from the sky and wrap it around the sword.",
         "specific": "When normal attack continues for 6 seconds, consumes mana to cast 1 lightning with X% DMG"
       },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 30,
+        "duration": 6,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/heaven-s-punishment.png",
       "iconSize": 128
     },
@@ -1041,6 +2022,19 @@
       "description": {
         "basic": "Condense the scattered water energy into a spear shape and pierce the enemy.",
         "specific": "After using a water attribute skill 3 times, cast 1 Sea God's Spear that deals X% DMG. Add 1 each time you use it. (Maximum 7)"
+      },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "special",
+        "passive": null,
+        "every": 3,
+        "duration": 0,
+        "additional": [
+          3,
+          3
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/sea-judgment.png",
       "iconSize": 128
@@ -1062,6 +2056,19 @@
         "basic": "Compress the inner flame until just before the explosion.",
         "specific": "When used, increases the next Fire attribute skill DMG by X%"
       },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 15,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/ignition.png",
       "iconSize": 128
     },
@@ -1081,6 +2088,19 @@
       "description": {
         "basic": "Protect your body and increase ATK with the power of nature.",
         "specific": "Create a shield equal to Y% of total HP for 6 seconds. While the shield is activated. total ATK increases by X%"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 19,
+        "duration": 6,
+        "additional": [
+          30,
+          4
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/blooming.png",
       "iconSize": 128
@@ -1102,6 +2122,19 @@
         "basic": "My phantom reflects on the calm lake.",
         "specific": "Copy the last used active attack skill of Epic grade or lower, applying X% of its damage."
       },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "seconds",
+        "passive": null,
+        "every": 1,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/phantom.png",
       "iconSize": 128
     },
@@ -1121,6 +2154,19 @@
       "description": {
         "basic": "When the Full Moon rises, the power of its dark side awakens.",
         "specific": "When used. gathers the energy of the Moon for 3 seconds. When all Moon energy is gathered and it becomes a Full Moon, total ATK increases by X% for 5 seconds"
+      },
+      "mechanics": {
+        "type": "buff",
+        "trigger": "special",
+        "passive": null,
+        "every": 40,
+        "duration": 5,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/full-moon.png",
       "iconSize": 64
@@ -1142,6 +2188,19 @@
         "basic": "Sweeps enemies quickly as the battle escalates.",
         "specific": "Movement speed +X% based on the number of monsters killed during the battle."
       },
+      "mechanics": {
+        "type": "passive",
+        "trigger": "special",
+        "passive": "stack",
+        "every": 10,
+        "duration": 0,
+        "additional": [
+          0,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
+      },
       "icon": "/art/skills/storm-rush.png",
       "iconSize": 128
     },
@@ -1161,6 +2220,19 @@
       "description": {
         "basic": "Summons a flaming axe to subdue enemies.",
         "specific": "Attacks all enemies within 5 range once with X% of ATK. Can be charged up to 2 times."
+      },
+      "mechanics": {
+        "type": "attack",
+        "trigger": "special",
+        "passive": null,
+        "every": 7,
+        "duration": 0,
+        "additional": [
+          2,
+          0
+        ],
+        "hits": null,
+        "masteryDamage": []
       },
       "icon": "/art/skills/flame-strike.png",
       "iconSize": 128
@@ -1182,6 +2254,7 @@
         "basic": "Protects one with a rising water spout, then strikes back.",
         "specific": "Dodges enemy attacks once for 1 second(s> (excluding some special attacks). Upon dodging, deals X% damage to all enemies within 4 Range and increases Attack Speed by Y% for 7 seconds"
       },
+      "mechanics": null,
       "icon": "/art/skills/waterspout.png",
       "iconSize": 128
     },
@@ -1202,6 +2275,7 @@
         "basic": "Releases a Goblin Fire that flies toward enemies, absorbing their life force.",
         "specific": "Upon detecting an enemy, cast 3 Goblin Fire dealing X% damage. Total ATK Y% per monster killed with Goblin Fire during battle,"
       },
+      "mechanics": null,
       "icon": "/art/skills/goblin-fire.png",
       "iconSize": 128
     },
@@ -1222,6 +2296,7 @@
         "basic": "Overwhelm the enemy as if to imprint the power difference.",
         "specific": "+X% damage to enemies with Y% or less of their Max HP"
       },
+      "mechanics": null,
       "icon": "/art/skills/predator.png",
       "iconSize": 128
     },
@@ -1242,6 +2317,7 @@
         "basic": "Attacks by spinning quickly, like a whirlwind, to generate wind pressure.",
         "specific": "Charges forward while spinning to attack enemies within 5 range. Deals X% of ATK as damage Cooldown resets upon eliminating an enemy"
       },
+      "mechanics": null,
       "icon": "/art/skills/circular-sword-dance.png",
       "iconSize": 128
     },
@@ -1262,6 +2338,7 @@
         "basic": "Grants Acceleration to every attack, unleashing explosive power.",
         "specific": "Total ATK increases by X% for every 1% increase in MSPD."
       },
+      "mechanics": null,
       "icon": "/art/skills/fierce-attack.png",
       "iconSize": 128
     },
@@ -1282,6 +2359,7 @@
         "basic": "The flame of an indomitable Slayer burns twice.",
         "specific": "Damage taken in battle greatly increases. Revives with 100% HP upon death. Total ATK increases by X% for 60 seconds after reviving."
       },
+      "mechanics": null,
       "icon": "/art/skills/rekindle.png",
       "iconSize": 128
     }
