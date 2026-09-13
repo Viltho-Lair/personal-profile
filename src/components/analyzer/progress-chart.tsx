@@ -417,7 +417,7 @@ function Results({
       <p className="text-[10px] text-dim">
         Approximate, hit by hit: one basic attack a second before ATK SPD (the workbook has no base attack speed), skills
         cast from their own queues 0.3s apart when there&apos;s mana, casts pause basic attacks, Rave and Demon Hunt stop the
-        clock, and Rave's stored damage lands on its second press, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
+        clock, and Rave&apos;s stored damage lands on its second press, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
         recommended stage.
       </p>
     </div>
