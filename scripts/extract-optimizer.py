@@ -257,7 +257,7 @@ def main():
         stage_bosses = extract_stage_bosses(values["Stage Data"])
         shrine, shrine_art = extract_shrine(values["Equipment Data"], formulas["EQUIPMENT"])
         clothing, guild_outfits, appearance_art = extract_appearance(formulas["APPEARANCE"], formulas["CHARACTER"])
-        beasts = extract_beasts(values["Companions Data"])
+        beasts, beast_art = extract_beasts(values["Companions Data"])
         black_orb = extract_black_orb(values["Black Orb Data"])
         promotion_stages = extract_promotion_stages(values["STAT TRACKER"])
         companions, promotion, companion_art = extract_companions(
@@ -432,6 +432,10 @@ def main():
     })
     print(f"appearance: {len(clothing)} clothing, {len(guild_outfits)} guild shop outfits")
 
+    published = publish_files("beasts", beast_art)
+    for beast in beasts["beasts"]:
+        beast["art"] = {key: attach(published, stem)[0] for key, stem in beast["art"].items()}
+    beasts["awakenIcons"] = [attach(published, stem)[0] for stem in beasts["awakenIcons"]]
     write_json(DATA / "beasts.json", {
         "source": {"file": source.name, "sheet": "Companions Data (beasts and the affection table)", "extractedOn": today},
         **beasts,

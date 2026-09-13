@@ -11,6 +11,7 @@ class Beasts(unittest.TestCase):
         cells = {
             "A2": "Tier", "B2": "Full Name", "C2": "Skill Description", "D2": "Skill X", "E2": "None",
             "M2": "1st Effect Name", "N2": "2nd Effect Name",
+            "S2": "Type Icon", "T2": "Icon 1", "U2": "Icon 2", "V2": "Icon None",
             "A4": "Common", "B4": "Gray Wolf", "C4": "After X strike skills used, ATK +Y% for 10s", "D4": 9, "E4": 0,
             "M4": "Increased Attack :",
             "A5": "Unique", "B5": "Light Draco", "C5": "When maxing stacks of X, Boss DMG increases by Y% for 60 seconds",
@@ -31,7 +32,8 @@ class Beasts(unittest.TestCase):
                         cells[f"{col}{15 + level}"] = block * 100 + a * 10 + s + level / 100
         for level in range(1, 11):
             cells[f"P{15 + level}"] = level
-        beasts = extract_beasts(build_sheet(cells, title="Companions Data"))
+        sheet = build_sheet(cells, title="Companions Data", images=[("T4", 32), ("V4", 16), ("G3", 16)])
+        beasts, art = extract_beasts(sheet)
         wolf, draco = beasts["beasts"]
         self.assertEqual(wolf["family"], "Wolf")
         self.assertEqual(wolf["mounted"], ["atk"])
@@ -40,3 +42,7 @@ class Beasts(unittest.TestCase):
         self.assertEqual(draco["skill"]["x"], "all buffs")
         self.assertEqual(len(beasts["tables"]["Common"]["combat"][0]), 10)
         self.assertEqual(beasts["tables"]["Unique"]["mspd"][1][:2], [113.01, 113.02])
+        self.assertEqual(wolf["art"], {"sprite": "gray-wolf-sprite", "egg": "gray-wolf-egg"})
+        self.assertEqual(draco["art"], {})
+        self.assertEqual(beasts["awakenIcons"][:2], ["awaken-1", None])
+        self.assertEqual(sorted(art), ["awaken-1", "gray-wolf-egg", "gray-wolf-sprite"])

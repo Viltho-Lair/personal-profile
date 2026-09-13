@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { beastSkillText, beastTotals, beastValue, MAX_BEAST_AWAKEN, maxAffection, type Beast } from "@/lib/game/beasts";
 import { mountedBeast } from "@/lib/profile/rules";
 import { useProfile } from "@/lib/profile/use-profile";
@@ -16,6 +17,27 @@ const FAMILY_LABEL: Record<(typeof FAMILIES)[number], string> = { Wolf: "Wolves"
 const MOUNTED_LABEL = { atk: "Increased Attack", mspd: "Increased MSPD", affection: "Increased Affection" } as const;
 
 const pct = (value: number) => `${formatValue(Math.round(value * 100) / 100)}%`;
+const PIXEL = "[image-rendering:pixelated]";
+
+/** The beast's picture as COMPANIONS picks it: the egg until owned, Icon 2 at awaken 6, Icon 1 below. */
+function BeastArt({ beast, awaken, size }: { beast: Beast; awaken: number | null; size: number }) {
+  const owned = awaken !== null;
+  const src = !owned ? beast.art.egg : awaken >= MAX_BEAST_AWAKEN ? (beast.art.sprite2 ?? beast.art.sprite) : beast.art.sprite;
+  return (
+    <span className="flex shrink-0 items-center justify-center rounded-md bg-ink/[0.05]" style={{ width: size, height: size }}>
+      {src ? (
+        <Image
+          src={src}
+          alt=""
+          width={owned ? size : size / 2}
+          height={owned ? size : size / 2}
+          className={`object-contain ${PIXEL}`}
+          style={{ width: owned ? size : size / 2, height: owned ? size : size / 2 }}
+        />
+      ) : null}
+    </span>
+  );
+}
 
 function BeastCard({ beast }: { beast: Beast }) {
   const { profile, setBeast, setMountedBeast } = useProfile();
@@ -32,9 +54,38 @@ function BeastCard({ beast }: { beast: Beast }) {
       }`}
     >
       <header className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm leading-tight font-medium">
-          {beast.name} <span className={`${LABEL} ${beast.tier === "Unique" ? "text-amber-500" : ""}`}>{beast.tier}</span>
-        </h3>
+        <div className="flex min-w-0 items-center gap-2">
+          <BeastArt beast={beast} awaken={state.awaken} size={56} />
+          <div className="flex min-w-0 flex-col gap-1">
+            <h3 className="text-sm leading-tight font-medium">
+              {beast.name} <span className={`${LABEL} ${beast.tier === "Unique" ? "text-amber-500" : ""}`}>{beast.tier}</span>
+            </h3>
+            <span className="flex items-center gap-1.5">
+              {beast.art.type ? (
+                <Image
+                  src={beast.art.type}
+                  alt={beast.mounted.map((effect) => MOUNTED_LABEL[effect]).join(", ")}
+                  title={beast.mounted.map((effect) => MOUNTED_LABEL[effect]).join(", ")}
+                  width={40}
+                  height={20}
+                  className={`h-5 w-auto ${PIXEL}`}
+                />
+              ) : null}
+              {state.awaken ? (
+                BEASTS.awakenIcons[state.awaken - 1] ? (
+                  <Image
+                    src={BEASTS.awakenIcons[state.awaken - 1]!}
+                    alt={`Awaken ${state.awaken}`}
+                    title={`Awaken ${state.awaken}`}
+                    width={80}
+                    height={16}
+                    className={`h-4 w-auto ${PIXEL}`}
+                  />
+                ) : null
+              ) : null}
+            </span>
+          </div>
+        </div>
         <button
           type="button"
           disabled={!owned}
@@ -138,7 +189,9 @@ export function BeastPanel() {
           </select>
         </label>
         {mountedData ? (
-          <p className="rounded-md border border-ink/15 p-2 text-xs leading-snug">
+          <div className="flex items-center gap-3 rounded-md border border-ink/15 p-2 text-xs leading-snug">
+          <BeastArt beast={mountedData} awaken={profile.beasts[mountedData.name]?.awaken ?? null} size={96} />
+          <p>
             <span className={LABEL}>Mounted skill · </span>
             {beastSkillText(mountedData, profile.beasts[mountedData.name]?.awaken ?? null)}
             {mountedData.family === "Wolf" ? (
@@ -147,6 +200,7 @@ export function BeastPanel() {
               <span className="block text-[11px] text-dim">Not part of the promotion fight.</span>
             )}
           </p>
+          </div>
         ) : null}
         <section aria-label="Beast totals" className="flex flex-col gap-1.5">
           <h2 className={LABEL}>Totals</h2>

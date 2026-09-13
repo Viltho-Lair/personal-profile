@@ -5,10 +5,17 @@ export type Beast = {
   tier: string;
   mounted: ("atk" | "mspd" | "affection")[];
   skill: { text: string; x: number | string; values: number[] };
+  /** Workbook art: the mounted effect's badge, the beast below awaken 6 and at awaken 6, and the unowned egg. */
+  art: { type?: string | null; sprite?: string | null; sprite2?: string | null; egg?: string | null };
 };
 type BeastStat = "combat" | "dracoCombat" | "atkAffection" | "mspd";
 /** Percent values by tier, stat and awaken level, one per affection level from 1. */
-export type BeastData = { beasts: Beast[]; tables: Record<string, Record<BeastStat, number[][]>> };
+export type BeastData = {
+  beasts: Beast[];
+  tables: Record<string, Record<BeastStat, number[][]>>;
+  /** Awaken diamonds for awaken 1..6. */
+  awakenIcons: (string | null)[];
+};
 /** A beast's awaken level (null: not owned) and affection level. */
 export type BeastState = { awaken: number | null; affection: number };
 
