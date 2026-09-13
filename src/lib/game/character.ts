@@ -86,11 +86,20 @@ export function diaryMaxLevel(slayerLevel: number): number {
 /** Slayer level a Training Diary level unlocks at. */
 export const diaryUnlockLevel = (diaryLevel: number) => DIARY_FIRST_LEVEL + (diaryLevel - 1) * DIARY_LEVEL_STEP;
 
-/** Growth skill points: 3 per slayer level, plus 100 per Training Diary level the slayer's level has unlocked. */
+/** Skill points the slayer starts with. */
+export const STARTING_SKILL_POINTS = 100;
+
+/**
+ * Growth skill points: 100 to start, 3 per level-up (level 1 gives none), and
+ * 100 per Training Diary level the slayer's level has unlocked. At slayer level
+ * 2,800 with diary 24 that's 8,397 + 100 + 2,400 = 10,897, as in the game.
+ */
 export function skillPoints(slayerLevel: number, diaryLevel: number) {
   const level = Math.max(0, Math.floor(slayerLevel));
   const diary = Math.min(Math.max(0, Math.floor(diaryLevel)), diaryMaxLevel(level));
-  return { fromLevel: level * 3, fromDiary: diary * 100, diary, total: level * 3 + diary * 100 };
+  const fromLevel = Math.max(0, level - 1) * 3;
+  const fromDiary = diary * 100;
+  return { starting: STARTING_SKILL_POINTS, fromLevel, fromDiary, diary, total: STARTING_SKILL_POINTS + fromLevel + fromDiary };
 }
 
 /**

@@ -67,7 +67,10 @@ describe("classes and abilities", () => {
     expect(diaryMaxLevel(500)).toBe(1);
     expect(diaryMaxLevel(2799)).toBe(23);
     expect(diaryMaxLevel(2800)).toBe(24);
-    expect(skillPoints(2794, 23)).toEqual({ fromLevel: 8382, fromDiary: 2300, diary: 23, total: 10682 });
+    expect(skillPoints(2794, 23)).toEqual({ starting: 100, fromLevel: 8379, fromDiary: 2300, diary: 23, total: 10779 });
+    // The game's total at slayer level 2,800 with diary 24.
+    expect(skillPoints(2800, 24).total).toBe(10897);
+    expect(skillPoints(1, 0).total).toBe(100);
     // A diary level the slayer hasn't unlocked yet doesn't count.
     expect(skillPoints(2794, 24).diary).toBe(23);
   });

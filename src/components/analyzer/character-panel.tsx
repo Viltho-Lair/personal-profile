@@ -412,8 +412,8 @@ function GrowthSection() {
           </span>
         </div>
         <p className="font-mono text-[10px] text-dim tabular-nums">
-          3 × slayer level {formatValue(character.slayerLevel)} = {formatValue(points.fromLevel)} · Training Diary {points.diary} × 100 ={" "}
-          {formatValue(points.fromDiary)}
+          Start {formatValue(points.starting)} · 3 × {formatValue(Math.max(0, character.slayerLevel - 1))} level-ups = {formatValue(points.fromLevel)} ·
+          Training Diary {points.diary} × 100 = {formatValue(points.fromDiary)}
         </p>
         <p className={`font-mono text-[10px] tabular-nums ${remaining < 0 ? "text-red-500" : "text-dim"}`}>
           Spent {formatValue(spent)}
