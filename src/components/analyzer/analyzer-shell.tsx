@@ -11,7 +11,7 @@ import { CompanionPanel } from "./companion-panel";
 import { KNOWN_NAMES } from "./data";
 import { EquipmentPanel } from "./equipment-panel";
 import { ResetProfileButton } from "./profile-controls";
-import { SkillGrid } from "./skill-grid";
+import { SkillPanel } from "./skill-panel";
 import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
 
 export function AnalyzerShell() {
@@ -72,7 +72,7 @@ export function AnalyzerShell() {
           className="min-h-0 flex-1 overflow-auto pb-20"
         >
           {tab.id === "skill" ? (
-            <SkillGrid />
+            <SkillPanel />
           ) : tab.id === "equips" ? (
             <EquipmentPanel />
           ) : tab.id === "companion" ? (

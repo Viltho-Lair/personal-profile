@@ -1,6 +1,7 @@
 import accessoriesData from "@/data/optimizer/accessories.json";
 import gearLevelsData from "@/data/optimizer/gear-levels.json";
 import relicsData from "@/data/optimizer/relics.json";
+import skillProficiencyData from "@/data/optimizer/skill-proficiency.json";
 import skillsData from "@/data/optimizer/skills.json";
 import soulWeaponsData from "@/data/optimizer/soul-weapons.json";
 import spiritsData from "@/data/optimizer/spirits.json";
@@ -13,11 +14,14 @@ export const ELEMENTS = ["Fire", "Water", "Wind", "Earth"] as const;
 
 type Art = { icon: string | null; iconSize: number | null };
 
+export type SkillCategory = "core" | "seasonal" | "immortal";
+
 export type Skill = Art & {
   id: number;
   name: string;
   element: string | null;
   grade: string;
+  category: SkillCategory;
   maxLevel: number;
   mpCost: number | null;
   baseValue: number | null;
@@ -81,6 +85,14 @@ export const RELICS = relicsData.relics as unknown as Relic[];
 export const SPIRITS = spiritsData.spirits as unknown as Spirit[];
 export const SOUL_WEAPONS = soulWeaponsData.soulWeapons as unknown as SoulWeapon[];
 export const GEAR_LEVEL_FACTORS: readonly number[] = gearLevelsData.factors;
+
+export const SKILL_BY_NAME = new Map(SKILLS.map((skill) => [skill.name, skill]));
+export const skillsIn = (category: SkillCategory) =>
+  SKILLS.filter((skill) => skill.category === category);
+
+/** All Attribute DMG as a fraction (0.05 = 5%); the index is the proficiency level. */
+export const PROFICIENCY_BONUSES: readonly number[] = skillProficiencyData.bonuses;
+export const MAX_PROFICIENCY_LEVEL = PROFICIENCY_BONUSES.length - 1;
 
 export const KNOWN_NAMES: KnownNames = {
   skills: SKILLS.map((skill) => skill.name),

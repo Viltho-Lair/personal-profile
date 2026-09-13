@@ -12,12 +12,14 @@ export function LevelInput({
   max,
   onChange,
   label = "Level",
+  disabled = false,
 }: {
   value: number;
   min?: number;
   max: number;
   onChange: (level: number) => void;
   label?: string;
+  disabled?: boolean;
 }) {
   const clamp = clampTo(min, max);
 
@@ -30,8 +32,9 @@ export function LevelInput({
           value={value}
           min={min}
           max={max}
+          disabled={disabled}
           onChange={(event) => onChange(clamp(event.target.valueAsNumber))}
-          className="w-16 rounded-md border border-ink/20 bg-transparent px-2 py-1 text-right font-mono text-xs text-ink tabular-nums outline-none focus-visible:border-ink"
+          className="w-16 disabled:opacity-50 rounded-md border border-ink/20 bg-transparent px-2 py-1 text-right font-mono text-xs text-ink tabular-nums outline-none focus-visible:border-ink"
         />
       </label>
 
@@ -40,9 +43,10 @@ export function LevelInput({
         value={value}
         min={min}
         max={max}
+        disabled={disabled}
         onChange={(event) => onChange(clamp(event.target.valueAsNumber))}
         aria-label={`${label} slider`}
-        className="h-1 min-w-32 flex-1 accent-ink sm:max-w-64"
+        className="h-1 disabled:opacity-50 min-w-32 flex-1 accent-ink sm:max-w-64"
       />
 
       <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
