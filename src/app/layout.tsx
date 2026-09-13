@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Instrument_Sans, Unbounded } from "next/font/google";
+import { ADSENSE_CLIENT, ADSENSE_SCRIPT_URL } from "@/lib/adsense";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -30,6 +31,8 @@ export const metadata: Metadata = {
     title: "Abdullah Abu Hamad — Soon™",
     description: "A proper introduction is on its way.",
   },
+  // AdSense site verification looks for this tag in the page head.
+  other: { "google-adsense-account": ADSENSE_CLIENT },
 };
 
 export const viewport: Viewport = {
@@ -53,6 +56,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        {/* A plain async script, not next/script: React renders it into the
+            server HTML, where the AdSense crawler can find it on every page. */}
+        <script async src={ADSENSE_SCRIPT_URL} crossOrigin="anonymous" />
         <noscript>
           <style dangerouslySetInnerHTML={{ __html: noScriptStyles }} />
         </noscript>
