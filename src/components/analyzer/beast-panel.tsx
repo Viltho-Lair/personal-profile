@@ -86,6 +86,17 @@ function BeastCard({ beast }: { beast: Beast }) {
             </span>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        <label className={`flex items-center gap-1 ${LABEL}`}>
+          <input
+            type="checkbox"
+            checked={owned}
+            onChange={(event) => setBeast(beast.name, { awaken: event.target.checked ? (state.awaken ?? 0) : null })}
+            aria-label={`${beast.name} owned`}
+            className="size-3.5 accent-ink"
+          />
+          Owned
+        </label>
         <button
           type="button"
           disabled={!owned}
@@ -97,17 +108,18 @@ function BeastCard({ beast }: { beast: Beast }) {
         >
           {mounted ? "Mounted" : "Mount"}
         </button>
+        </div>
       </header>
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-1.5">
           <span className={LABEL}>Awaken</span>
           <select
             aria-label={`${beast.name} awaken`}
-            value={state.awaken ?? ""}
-            onChange={(event) => setBeast(beast.name, { awaken: event.target.value === "" ? null : Number(event.target.value) })}
-            className={SELECT}
+            value={state.awaken ?? 0}
+            disabled={!owned}
+            onChange={(event) => setBeast(beast.name, { awaken: Number(event.target.value) })}
+            className={`${SELECT} disabled:opacity-50`}
           >
-            <option value="">Not owned</option>
             {Array.from({ length: MAX_BEAST_AWAKEN + 1 }, (_, a) => (
               <option key={a} value={a}>
                 {a}
@@ -122,6 +134,7 @@ function BeastCard({ beast }: { beast: Beast }) {
             min={1}
             max={cap}
             name={`${beast.name} affection`}
+            disabled={!owned}
             onChange={(affection) => setBeast(beast.name, { affection })}
           />
         </span>
