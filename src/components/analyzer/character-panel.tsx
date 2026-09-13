@@ -54,7 +54,6 @@ const CLASS_ICON = new Map(CLASSES.map((cls) => [cls.name, cls]));
 
 const MAX_LATENT_GRADE = Math.max(...LATENT.stats.map((row) => row.grade)) - 1;
 const MAX_CLASS_AWAKENING = 18;
-const NO_CAP = 1_000_000_000;
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const SELECT =
@@ -352,24 +351,30 @@ function GrowthSection() {
 
   const points = skillPoints(character.slayerLevel, character.trainingDiary);
   const spent = GROWTH.reduce((sum, stat) => sum + (character.growth[stat.key] ?? 0), 0);
+  const remaining = points.total - spent;
   const left = (
     <ul className="flex flex-col gap-1.5">
       <li className="flex flex-col gap-1 rounded-md border border-ink/15 bg-ink/[0.03] p-2">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <span className={LABEL}>Skill points</span>
-          <span className="font-mono text-sm text-ink tabular-nums">{formatValue(points.total)}</span>
+          <span className={LABEL}>Skill points left</span>
+          <span className={`font-mono text-sm tabular-nums ${remaining < 0 ? "text-red-500" : "text-ink"}`}>
+            {formatValue(remaining)} <span className="text-[10px] text-dim">of {formatValue(points.total)}</span>
+          </span>
         </div>
         <p className="font-mono text-[10px] text-dim tabular-nums">
           3 × slayer level {formatValue(character.slayerLevel)} = {formatValue(points.fromLevel)} · Training Diary {points.diary} × 100 ={" "}
           {formatValue(points.fromDiary)}
         </p>
-        <p className={`font-mono text-[10px] tabular-nums ${spent > points.total ? "text-red-500" : "text-dim"}`}>
-          Spent {formatValue(spent)} · {spent > points.total ? `${formatValue(spent - points.total)} over` : `${formatValue(points.total - spent)} left`}
+        <p className={`font-mono text-[10px] tabular-nums ${remaining < 0 ? "text-red-500" : "text-dim"}`}>
+          Spent {formatValue(spent)}
+          {remaining < 0 ? ` · ${formatValue(-remaining)} over: lower a stat` : " · a stat can only take the points left"}
         </p>
       </li>
       {GROWTH.map((stat) => {
         const level = character.growth[stat.key] ?? 0;
         const latent = totals[stat.key];
+        // Points are spent as a stat's level goes up: it can rise by at most what's left.
+        const cap = level + Math.max(0, remaining);
         return (
           <li key={stat.key} className="flex items-center justify-between gap-3 rounded-md border border-ink/10 p-2">
             <Art item={stat} className="size-9" />
@@ -392,9 +397,10 @@ function GrowthSection() {
               wide
               value={level}
               min={0}
-              max={NO_CAP}
+              max={cap}
               name={`Growth ${stat.key}`}
-              onChange={(value) => set((c) => ({ ...c, growth: { ...c.growth, [stat.key]: clampLevel(value, null) } }))}
+              title={`Up to ${formatValue(cap)} with the skill points left`}
+              onChange={(value) => set((c) => ({ ...c, growth: { ...c.growth, [stat.key]: clampLevel(value, cap) } }))}
             />
           </li>
         );
