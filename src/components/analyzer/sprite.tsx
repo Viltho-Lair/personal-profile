@@ -3,6 +3,9 @@ import Image from "next/image";
 /** The art's real pixel width, recorded per item by the extractor. */
 export type NativeSize = number;
 
+// Every re-render would otherwise re-warn about the same sprite.
+const warnedRatios = new Set<string>();
+
 /**
  * Game art is pixel art at 64 or 128 px. Two things blur it: the image
  * optimizer resampling it to arbitrary widths (switched off in next.config),
@@ -26,7 +29,8 @@ export function Sprite({
   className?: string;
 }) {
   const ratio = size >= native ? size / native : native / size;
-  if (process.env.NODE_ENV !== "production" && !Number.isInteger(ratio)) {
+  if (process.env.NODE_ENV !== "production" && !Number.isInteger(ratio) && !warnedRatios.has(src)) {
+    warnedRatios.add(src);
     console.warn(
       `Sprite ${src}: ${size}px is not a clean ratio of its ${native}px source`,
     );

@@ -90,7 +90,7 @@ function SkillCard({
           name={skill.name}
         />
         <span className="font-mono text-xs text-element-earth tabular-nums">
-          {power === null ? "Not learned" : `${power.toLocaleString("en")}%`}
+          {level === 0 ? "Not learned" : power === null ? "—" : `${power.toLocaleString("en")}%`}
         </span>
       </div>
     </article>

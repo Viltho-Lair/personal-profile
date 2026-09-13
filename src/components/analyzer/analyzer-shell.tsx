@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
 import { unknownEntries } from "@/lib/profile/rules";
@@ -22,12 +22,16 @@ export function AnalyzerShell() {
   const { profile, resetProfile } = useProfile();
 
   // Rule 6: entries for items a data update renamed or removed are kept but
-  // not shown. Say so during development so they can be remapped.
+  // not shown. Say so during development so they can be remapped - but only
+  // once per distinct list, so editing an unrelated field doesn't re-warn.
+  const lastWarnedRef = useRef<string | null>(null);
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
     const unknown = unknownEntries(profile, KNOWN_NAMES);
-    if (unknown.length > 0) {
-      console.warn(`Saved profile entries not in the current data (kept, not shown): ${unknown.join(", ")}`);
+    const joined = unknown.join(", ");
+    if (unknown.length > 0 && joined !== lastWarnedRef.current) {
+      lastWarnedRef.current = joined;
+      console.warn(`Saved profile entries not in the current data (kept, not shown): ${joined}`);
     }
   }, [profile]);
 

@@ -37,7 +37,7 @@ export function EquipButton({
       type="button"
       onClick={onToggle}
       aria-pressed={equipped}
-      aria-label={`${equipped ? "Unequip" : "Equip"} ${name}`}
+      aria-label={`Equip ${name}`}
       className={`rounded-md border px-2.5 py-1 font-mono text-[10px] tracking-[0.08em] uppercase transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         equipped ? "border-ink bg-ink text-ground" : "border-ink/25 text-ink hover:border-ink"
       }`}
@@ -51,6 +51,7 @@ export function EquipButton({
 export function EquippedBadge() {
   return (
     <span
+      role="img"
       aria-label="Equipped"
       className="absolute top-1 left-1 z-10 grid size-4 place-items-center rounded-sm bg-ink font-mono text-[9px] font-bold text-ground"
     >
