@@ -131,8 +131,12 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     return make({ type: "atk", power }, { kind: "buff", hpCost: (num(/Consume (\d+)% HP of current HP/i, text) ?? 50) / 100 });
   if (skill.name === "Ignition") return make({ type: "nextSkill", power }, { kind: "buff" });
   if (skill.name === "Full Moon") return make({ type: "atk", power }, { kind: "buff", delay: num(/for (\d+) seconds/i, text) ?? 3 });
-  // Wrath of Gods starts on its cooldown, goes when it comes round and restarts it straight away.
-  if (skill.name === "Wrath of Gods") return make({ type: "atk", power }, { kind: "passive", trigger: "seconds", startAt: 0, startsOnCooldown: true });
+  // Wrath of Gods first goes 20 seconds in, then every cooldown (30s), restarting it straight away.
+  if (skill.name === "Wrath of Gods")
+    return make(
+      { type: "atk", power },
+      { kind: "passive", trigger: "seconds", startAt: 0, startsOnCooldown: true, firstEvery: num(/after (\d+) seconds into battle/i, text) ?? 20 },
+    );
   if (skill.name === "Heaven's Punishment") return make({ type: "damage", power, hits: 1 }, { kind: "attack", startAt: 6 });
   if (skill.name === "Sea Judgment")
     return make({ type: "damage", power, hits: 1, growsTo: 7 }, { kind: "passive", trigger: "elementCasts", every: m.additional[0] || 3 });

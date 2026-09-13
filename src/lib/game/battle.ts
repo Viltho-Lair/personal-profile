@@ -63,6 +63,8 @@ export type FightSkill = {
   startAt: number;
   /** Starts on its cooldown instead of ready, then goes each time it comes round; Meditation only charges it after the first (Wrath of Gods). */
   startsOnCooldown?: boolean;
+  /** Length of that first cooldown when it differs from the rest (Wrath of Gods: 20s, then 30s). */
+  firstEvery?: number;
   /** Attack played out in stopped time (Demon Hunt). */
   freezes: boolean;
   effect: SkillEffect;
@@ -191,6 +193,8 @@ const isStack = (skill: FightSkill) =>
   skill.effect.type === "atkStack" || skill.effect.type === "speedStack" || skill.effect.type === "elementStack";
 const complete = (l: Live) => isStack(l.skill) && l.skill.maxStacks != null && l.stacks >= l.skill.maxStacks;
 const castable = (skill: FightSkill) => skill.kind !== "passive";
+/** What readies a skill next: its first cooldown before it has gone, its usual one after. */
+const target = (l: Live) => (l.uses === 0 && l.skill.firstEvery != null ? l.skill.firstEvery : l.skill.every);
 
 export type Fight = {
   /** Plays the fight forward by this many real seconds (or until it ends). */
@@ -390,8 +394,8 @@ export function createFight(input: FightInput): Fight {
       }
       if (!l.started || s.trigger === "always" || l.queued || l.holding || complete(l)) continue;
       if (s.trigger === "seconds" && !frozen) l.progress += step * (1 + now.cooldownRate);
-      if (l.progress < s.every) continue;
-      l.progress = Math.min(l.progress, s.every);
+      if (l.progress < target(l)) continue;
+      l.progress = Math.min(l.progress, target(l));
       if (s.kind === "passive") go(l, null);
       else if (!l.manual) {
         enqueue(l);
@@ -471,7 +475,7 @@ export function createFight(input: FightInput): Fight {
         done: done(),
         skills: live.map((l) => ({
           name: l.skill.name,
-          ready: l.skill.trigger === "always" || l.charged ? 1 : l.holding ? 0 : Math.min(1, l.progress / Math.max(1e-9, l.skill.every)),
+          ready: l.skill.trigger === "always" || l.charged ? 1 : l.holding ? 0 : Math.min(1, l.progress / Math.max(1e-9, target(l))),
           queued: l.queued,
           active: isOn(l) && !isStack(l.skill) && l.skill.duration > 0,
           stacks: l.stacks,
