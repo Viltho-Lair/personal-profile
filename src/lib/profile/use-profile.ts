@@ -56,10 +56,6 @@ export function useProfile() {
     profile,
     setSkillLevel: (name: string, level: number, maxLevel: number) =>
       update((p) => rules.setSkillLevel(p, name, level, maxLevel)),
-    setAllSkillLevels: (items: Levelled[], level: number) =>
-      update((p) =>
-        items.reduce((acc, item) => rules.setSkillLevel(acc, item.name, level, item.maxLevel), p),
-      ),
     setGearLevel: (kind: GearKind, grade: string, level: number, maxLevel: number) =>
       update((p) => rules.setGearLevel(p, kind, grade, level, maxLevel)),
     setOwned: (kind: OwnableKind, key: string, owned: boolean) =>
@@ -74,6 +70,14 @@ export function useProfile() {
       ),
     setSpiritLevel: (name: string, level: number, maxLevel: number) =>
       update((p) => rules.setSpiritLevel(p, name, level, maxLevel)),
+    setSkillsAtMax: (on: boolean) => update((p) => rules.setSkillsAtMax(p, on)),
+    setProficiencyLevel: (level: number, maxLevel: number) =>
+      update((p) => rules.setProficiencyLevel(p, level, maxLevel)),
+    selectSkillPreset: (index: number) => update((p) => rules.selectSkillPreset(p, index)),
+    addToSkillPreset: (index: number, name: string) =>
+      update((p) => rules.addToSkillPreset(p, index, name)),
+    clearSkillPresetSlot: (index: number, slot: number) =>
+      update((p) => rules.clearSkillPresetSlot(p, index, slot)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }

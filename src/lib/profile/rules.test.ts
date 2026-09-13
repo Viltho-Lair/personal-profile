@@ -1,21 +1,28 @@
 import { describe, expect, it } from "vitest";
 import {
+  addToSkillPreset,
   clampLevel,
+  clearSkillPresetSlot,
+  effectiveSkillLevel,
   equip,
   equippedKey,
   gearState,
+  proficiencyLevel,
   relicLevel,
+  selectSkillPreset,
   setGearLevel,
   setOwned,
+  setProficiencyLevel,
   setRelicLevel,
   setSkillLevel,
+  setSkillsAtMax,
   setSpiritLevel,
   skillLevel,
   soulWeaponOwned,
   spiritState,
   unknownEntries,
 } from "./rules";
-import { emptyProfile } from "./types";
+import { emptyProfile, SKILL_PRESET_COUNT, SKILL_PRESET_SLOTS } from "./types";
 
 describe("clampLevel", () => {
   it("keeps whole levels within range", () => {
@@ -169,6 +176,64 @@ describe("rule 6: unknown entries", () => {
       relics: [], spirits: [], soulWeapons: [],
     };
     expect(unknownEntries(emptyProfile(), known)).toEqual([]);
+  });
+});
+
+describe("skill settings", () => {
+  it("proficiency level is whole, capped at the table's last level, and 0 by default", () => {
+    expect(proficiencyLevel(emptyProfile(), 328)).toBe(0);
+    expect(proficiencyLevel(setProficiencyLevel(emptyProfile(), 400.7, 328), 328)).toBe(328);
+    expect(proficiencyLevel(setProficiencyLevel(emptyProfile(), 12.9, 328), 328)).toBe(12);
+  });
+
+  it("max skills overrides every skill level without losing the typed levels", () => {
+    let p = setSkillLevel(emptyProfile(), "Fire Slash", 12, 250);
+    p = setSkillsAtMax(p, true);
+    expect(effectiveSkillLevel(p, "Fire Slash", 250)).toBe(250);
+    expect(effectiveSkillLevel(p, "Rave", 5)).toBe(5);
+    p = setSkillsAtMax(p, false);
+    expect(effectiveSkillLevel(p, "Fire Slash", 250)).toBe(12);
+    expect(effectiveSkillLevel(p, "Rave", 5)).toBe(0);
+  });
+
+  it("starts with 5 empty presets of 10 slots, preset 1 selected", () => {
+    const p = emptyProfile();
+    expect(p.skillPresets).toHaveLength(SKILL_PRESET_COUNT);
+    expect(p.skillPresets.every((slots) => slots.length === SKILL_PRESET_SLOTS && slots.every((s) => s === null))).toBe(true);
+    expect(p.activeSkillPreset).toBe(0);
+  });
+
+  it("fills the first empty slot, top row then bottom row", () => {
+    let p = addToSkillPreset(emptyProfile(), 1, "Fire Slash");
+    p = addToSkillPreset(p, 1, "Ice Stone");
+    expect(p.skillPresets[1].slice(0, 3)).toEqual(["Fire Slash", "Ice Stone", null]);
+    expect(p.skillPresets[0].every((s) => s === null)).toBe(true);
+  });
+
+  it("refills a cleared slot before later ones", () => {
+    let p = addToSkillPreset(emptyProfile(), 0, "Fire Slash");
+    p = addToSkillPreset(p, 0, "Ice Stone");
+    p = clearSkillPresetSlot(p, 0, 0);
+    p = addToSkillPreset(p, 0, "Rave");
+    expect(p.skillPresets[0].slice(0, 2)).toEqual(["Rave", "Ice Stone"]);
+  });
+
+  it("keeps a skill in a preset only once and ignores adds to a full preset", () => {
+    let p = addToSkillPreset(emptyProfile(), 0, "Fire Slash");
+    expect(addToSkillPreset(p, 0, "Fire Slash")).toBe(p);
+    for (let i = 1; i < SKILL_PRESET_SLOTS; i += 1) p = addToSkillPreset(p, 0, `Skill ${i}`);
+    expect(addToSkillPreset(p, 0, "One Too Many")).toBe(p);
+  });
+
+  it("selects presets 1-5 only", () => {
+    expect(selectSkillPreset(emptyProfile(), 4).activeSkillPreset).toBe(4);
+    expect(selectSkillPreset(emptyProfile(), 9).activeSkillPreset).toBe(0);
+  });
+
+  it("reports preset skills the data no longer has", () => {
+    const p = addToSkillPreset(emptyProfile(), 2, "Retired Skill");
+    const known = { skills: [], weapons: [], accessories: [], relics: [], spirits: [], soulWeapons: [] };
+    expect(unknownEntries(p, known)).toEqual(["skillPresets: Retired Skill"]);
   });
 });
 

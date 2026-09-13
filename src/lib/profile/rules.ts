@@ -1,10 +1,11 @@
-import type {
-  EquippableKind,
-  GearKind,
-  GearState,
-  KnownNames,
-  OwnableKind,
-  ProfileV1,
+import {
+  SKILL_PRESET_COUNT,
+  type EquippableKind,
+  type GearKind,
+  type GearState,
+  type KnownNames,
+  type OwnableKind,
+  type ProfileV1,
 } from "./types";
 
 const NO_GEAR: GearState = { owned: false, level: 0 };
@@ -151,6 +152,50 @@ export function skillLevel(profile: ProfileV1, name: string, maxLevel: number): 
   return clampLevel(profile.skills[name]?.level ?? 0, maxLevel);
 }
 
+/** The level a skill counts as: its max while "Max skills" is on. */
+export function effectiveSkillLevel(profile: ProfileV1, name: string, maxLevel: number): number {
+  return profile.skillsAtMax ? maxLevel : skillLevel(profile, name, maxLevel);
+}
+
+export function setSkillsAtMax(profile: ProfileV1, skillsAtMax: boolean): ProfileV1 {
+  return { ...profile, skillsAtMax };
+}
+
+export function proficiencyLevel(profile: ProfileV1, maxLevel: number): number {
+  return clampLevel(profile.proficiencyLevel, maxLevel);
+}
+
+export function setProficiencyLevel(profile: ProfileV1, level: number, maxLevel: number): ProfileV1 {
+  return { ...profile, proficiencyLevel: clampLevel(level, maxLevel) };
+}
+
+export function selectSkillPreset(profile: ProfileV1, index: number): ProfileV1 {
+  const valid = Number.isInteger(index) && index >= 0 && index < SKILL_PRESET_COUNT;
+  return { ...profile, activeSkillPreset: valid ? index : 0 };
+}
+
+function withPreset(profile: ProfileV1, index: number, slots: (string | null)[]): ProfileV1 {
+  return {
+    ...profile,
+    skillPresets: profile.skillPresets.map((preset, i) => (i === index ? slots : preset)),
+  };
+}
+
+/** Puts a skill in the preset's first empty slot. A skill appears once; a full preset is unchanged. */
+export function addToSkillPreset(profile: ProfileV1, index: number, name: string): ProfileV1 {
+  const slots = profile.skillPresets[index];
+  if (!slots || slots.includes(name)) return profile;
+  const empty = slots.indexOf(null);
+  if (empty === -1) return profile;
+  return withPreset(profile, index, slots.map((slot, i) => (i === empty ? name : slot)));
+}
+
+export function clearSkillPresetSlot(profile: ProfileV1, index: number, slot: number): ProfileV1 {
+  const slots = profile.skillPresets[index];
+  if (!slots || slots[slot] == null) return profile;
+  return withPreset(profile, index, slots.map((name, i) => (i === slot ? null : name)));
+}
+
 export function gearState(
   profile: ProfileV1,
   kind: GearKind,
@@ -203,5 +248,10 @@ export function unknownEntries(profile: ProfileV1, known: KnownNames): string[] 
     return known[knownKind].includes(equippedName) ? [] : [`${field}: ${equippedName}`];
   });
 
-  return [...stored, ...equipped];
+  const knownSkills = new Set(known.skills);
+  const presets = [...new Set(profile.skillPresets.flat())]
+    .filter((name): name is string => name !== null && !knownSkills.has(name))
+    .map((name) => `skillPresets: ${name}`);
+
+  return [...stored, ...equipped, ...presets];
 }

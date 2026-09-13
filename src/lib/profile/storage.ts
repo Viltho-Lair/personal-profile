@@ -1,5 +1,12 @@
 import { importLegacyLevels } from "./migration";
-import { emptyProfile, type GearState, type ProfileV1 } from "./types";
+import {
+  emptyProfile,
+  SKILL_PRESET_COUNT,
+  SKILL_PRESET_SLOTS,
+  type GearState,
+  type ProfileV1,
+  type SkillPreset,
+} from "./types";
 
 export const PROFILE_KEY = "slayer-analyzer.profile";
 export const UNREADABLE_KEY = "slayer-analyzer.profile.unreadable";
@@ -48,6 +55,20 @@ const ownedEntry = (entry: Json) =>
 
 const name = (value: unknown) => (typeof value === "string" ? value : null);
 
+/** Always 5 presets of 10 slots; anything that isn't a skill name reads as empty. */
+function skillPresets(value: unknown): SkillPreset[] {
+  const stored = Array.isArray(value) ? value : [];
+  return Array.from({ length: SKILL_PRESET_COUNT }, (_, preset) => {
+    const slots = Array.isArray(stored[preset]) ? stored[preset] : [];
+    return Array.from({ length: SKILL_PRESET_SLOTS }, (_, slot) => name(slots[slot]));
+  });
+}
+
+const presetIndex = (value: unknown): number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0 && value < SKILL_PRESET_COUNT
+    ? value
+    : 0;
+
 const isNewerVersion = (version: unknown): boolean =>
   typeof version === "number" && Number.isInteger(version) && version > 1;
 
@@ -64,6 +85,11 @@ function parseKnownFields(data: Json): ProfileV1 {
     spirits: entries(data.spirits, ownedLevelEntry),
     soulWeapons: entries(data.soulWeapons, ownedEntry),
     equippedSoulWeapon: name(data.equippedSoulWeapon),
+    // Added after the first release, so older profiles read the defaults.
+    proficiencyLevel: wholeLevel(data.proficiencyLevel) ?? 0,
+    skillsAtMax: data.skillsAtMax === true,
+    skillPresets: skillPresets(data.skillPresets),
+    activeSkillPreset: presetIndex(data.activeSkillPreset),
   };
 }
 

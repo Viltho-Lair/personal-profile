@@ -107,6 +107,32 @@ describe("parseProfile", () => {
     expect(profile?.equippedWeapon).toBeNull();
   });
 
+  it("reads skill settings and repairs malformed ones", () => {
+    const raw = JSON.stringify({
+      ...emptyProfile(),
+      proficiencyLevel: 40,
+      skillsAtMax: true,
+      activeSkillPreset: 3,
+      skillPresets: [["Fire Slash", null, 7], "oops"],
+    });
+    const profile = parseProfile(raw);
+    expect(profile?.proficiencyLevel).toBe(40);
+    expect(profile?.skillsAtMax).toBe(true);
+    expect(profile?.activeSkillPreset).toBe(3);
+    expect(profile?.skillPresets).toHaveLength(5);
+    expect(profile?.skillPresets[0]).toEqual(["Fire Slash", ...Array(9).fill(null)]);
+    expect(profile?.skillPresets[1]).toEqual(Array(10).fill(null));
+  });
+
+  it("a profile saved before skill settings existed gets their defaults", () => {
+    const raw = JSON.stringify({ version: 1, skills: { "Fire Slash": { level: 5 } } });
+    const profile = parseProfile(raw);
+    expect(profile?.proficiencyLevel).toBe(0);
+    expect(profile?.skillsAtMax).toBe(false);
+    expect(profile?.activeSkillPreset).toBe(0);
+    expect(profile?.skillPresets).toEqual(emptyProfile().skillPresets);
+  });
+
   it("skips a __proto__ key instead of polluting the prototype", () => {
     // A JS object literal treats `__proto__` specially, so the raw JSON is
     // written out by hand: this is exactly how the real attack arrives, as
