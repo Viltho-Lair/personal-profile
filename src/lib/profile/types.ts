@@ -5,6 +5,13 @@ export type EquippableKind = GearKind | "soulWeapons";
 
 export type GearState = { owned: boolean; level: number };
 
+/** A spirit's awakening tier ("Legendary A3"), level, and enhance (its skill level, 1-5). */
+export type SpiritState = { owned: boolean; level: number; awakening: string | null; enhance: number };
+export const MIN_SPIRIT_ENHANCE = 1;
+export const MAX_SPIRIT_ENHANCE = 5;
+/** The tier a spirit is at when first owned. */
+export const FIRST_SPIRIT_TIER = "Common";
+
 export const SKILL_PRESET_COUNT = 5;
 export const SKILL_PRESET_SLOTS = 10;
 
@@ -27,7 +34,7 @@ export type ProfileV1 = {
   equippedWeapon: string | null;
   equippedAccessory: string | null;
   relics: Record<string, { level: number }>;
-  spirits: Record<string, { owned: boolean; level: number }>;
+  spirits: Record<string, SpiritState>;
   soulWeapons: Record<string, { owned: boolean }>;
   equippedSoulWeapon: string | null;
   proficiencyLevel: number;
@@ -41,6 +48,9 @@ export type ProfileV1 = {
   familiars: Record<string, { stars: number }>;
   /** One equipped familiar per group. */
   equippedFamiliars: Record<FamiliarGroup, string | null>;
+  /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
+  weaponAwakening: number;
+  accessoryAwakening: number;
 };
 
 export type KnownNames = Record<
@@ -73,5 +83,7 @@ export function emptyProfile(): ProfileV1 {
     masteryNodes: {},
     familiars: {},
     equippedFamiliars: { weapon: null, attribute: null, battle: null },
+    weaponAwakening: 0,
+    accessoryAwakening: 0,
   };
 }

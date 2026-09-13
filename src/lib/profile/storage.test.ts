@@ -137,6 +137,24 @@ describe("parseProfile", () => {
     expect(profile?.equippedFamiliars).toEqual({ weapon: "Na", attribute: null, battle: null });
   });
 
+  it("spirits saved before awakening existed read as Common at enhance 1", () => {
+    const raw = JSON.stringify({
+      ...emptyProfile(),
+      spirits: {
+        Ark: { owned: true, level: 12 },
+        Bo: { owned: false, level: 3 },
+        Kart: { owned: true, level: 5, awakening: "Immortal A1", enhance: 9 },
+      },
+      weaponAwakening: 12,
+    });
+    const profile = parseProfile(raw);
+    expect(profile?.spirits.Ark).toEqual({ owned: true, level: 12, awakening: "Common", enhance: 1 });
+    expect(profile?.spirits.Bo).toEqual({ owned: false, level: 3, awakening: null, enhance: 1 });
+    expect(profile?.spirits.Kart).toEqual({ owned: true, level: 5, awakening: "Immortal A1", enhance: 5 });
+    expect(profile?.accessoryAwakening).toBe(0);
+    expect(profile?.weaponAwakening).toBe(12);
+  });
+
   it("a profile saved before skill settings existed gets their defaults", () => {
     const raw = JSON.stringify({ version: 1, skills: { "Fire Slash": { level: 5 } } });
     const profile = parseProfile(raw);

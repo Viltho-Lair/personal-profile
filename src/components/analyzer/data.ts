@@ -59,6 +59,10 @@ export type Spirit = Art & {
   id: number;
   name: string;
   maxLevel: number;
+  /** Stat ratios that scale the level x awakening factors. */
+  ratios: { atk: number; hp: number; gold: number; exp: number };
+  /** Art per rarity group ("Common" ... "Ancient"). */
+  art: Record<string, { icon: string; iconSize: number }>;
   element: string | null;
   skill: {
     name: string | null;
@@ -129,6 +133,27 @@ export const RELICS = relicsData.relics as unknown as Relic[];
 export const SPIRITS = spiritsData.spirits as unknown as Spirit[];
 export const SOUL_WEAPONS = soulWeaponsData.soulWeapons as unknown as SoulWeapon[];
 export const GEAR_LEVEL_FACTORS: readonly number[] = gearLevelsData.factors;
+
+export type AwakeningRow = {
+  awakening: number;
+  maxLevel: number;
+  weaponMultiplier: number;
+  weaponCritHit: number;
+  weaponGold: number;
+  accessoryMaxMana: number;
+  accessoryExp: number;
+  accessoryMultiplier: number;
+};
+
+/** Index is the number of awakenings (0-30). */
+export const AWAKENING: readonly AwakeningRow[] = gearLevelsData.awakening;
+export const MAX_AWAKENING = AWAKENING.length - 1;
+/** Immortal art by awakening: each entry applies from `from` awakenings. */
+export const IMMORTAL_ART: Record<"weapons" | "accessories", { from: number; icon: string; iconSize: number }[]> =
+  gearLevelsData.immortalArt;
+
+/** Awakening tiers in order: "Common" ... "Legendary A0" ... "Ancient A0". */
+export const SPIRIT_TIERS: readonly string[] = spiritsData.tiers;
 
 export const SKILL_BY_NAME = new Map(SKILLS.map((skill) => [skill.name, skill]));
 export const skillsIn = (category: SkillCategory) =>

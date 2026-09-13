@@ -2,7 +2,15 @@ import { describe, expect, it } from "vitest";
 import accessoriesData from "@/data/optimizer/accessories.json";
 import gearLevelsData from "@/data/optimizer/gear-levels.json";
 import relicsData from "@/data/optimizer/relics.json";
-import { bandAt, gearEffects, relicBuff, skillPower } from "./formulas";
+import {
+  awakeningStage,
+  bandAt,
+  gearEffects,
+  rarityGroup,
+  relicBuff,
+  skillPower,
+  spiritStat,
+} from "./formulas";
 
 function relic(name: string) {
   const found = relicsData.relics.find((r) => r.name === name);
@@ -63,5 +71,34 @@ describe("relics", () => {
     const bracelet = relic("Bracelet of Speed");
     expect(relicBuff(bracelet.bands, 1, bracelet.percent)).toBeCloseTo(0.7);
     expect(relicBuff(bracelet.bands, 100, bracelet.percent)).toBeCloseTo(70);
+  });
+});
+
+describe("awakening", () => {
+  it("changes art every 6 awakenings and shows 0-5 stars", () => {
+    expect(awakeningStage(0)).toEqual({ art: 0, stars: 0 });
+    expect(awakeningStage(5)).toEqual({ art: 0, stars: 5 });
+    expect(awakeningStage(6)).toEqual({ art: 1, stars: 0 });
+    expect(awakeningStage(29)).toEqual({ art: 4, stars: 5 });
+    expect(awakeningStage(30)).toEqual({ art: 5, stars: 0 });
+  });
+
+  it("the awakened multiplier scales the Immortal equip effect", () => {
+    const base = gearEffects(10_000_000, [1, 1.375], 1);
+    const awakened = gearEffects(10_000_000, [1, 1.375], 1, 1.18);
+    expect(awakened.equip).toBeCloseTo(base.equip * 1.18);
+  });
+});
+
+describe("spiritStat", () => {
+  it("is ratio x factor / 100, rounded up to 4 places", () => {
+    // Ark ATK at Common level 0: 1.05 x 3.33 / 100 = 0.034965 -> 0.035
+    expect(spiritStat(1.05, 3.33)).toBe(0.035);
+    expect(spiritStat(1, 13.33)).toBe(0.1333);
+  });
+
+  it("names the rarity group of a tier", () => {
+    expect(rarityGroup("Legendary A3")).toBe("Legendary");
+    expect(rarityGroup("Epic")).toBe("Epic");
   });
 });

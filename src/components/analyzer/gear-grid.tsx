@@ -1,11 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { gearEffects } from "@/lib/game/formulas";
-import { equippedKey, gearState } from "@/lib/profile/rules";
+import { awakeningStage, gearEffects } from "@/lib/game/formulas";
+import { awakening, equippedKey, gearState } from "@/lib/profile/rules";
 import type { GearKind } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
-import { formatPercent, formatValue, GEAR_LEVEL_FACTORS, type Gear } from "./data";
+import {
+  AWAKENING,
+  formatPercent,
+  formatValue,
+  GEAR_LEVEL_FACTORS,
+  IMMORTAL_ART,
+  MAX_AWAKENING,
+  type AwakeningRow,
+  type Gear,
+} from "./data";
 import { InlineLevel } from "./level-input";
 import { EquipButton, EquippedBadge, OwnedToggle } from "./profile-controls";
 import { Sprite } from "./sprite";
@@ -19,6 +28,87 @@ const SECONDARY_LABELS: Record<string, string> = {
   expBonus: "EXP bonus",
   manaRecoveryAt0: "Mana recovery at Lv 0",
 };
+
+const AWAKEN_ITEM: Record<GearKind, string> = { weapons: "Orr", accessories: "Orb" };
+
+function immortalArt(kind: GearKind, count: number) {
+  const art = IMMORTAL_ART[kind];
+  return [...art].reverse().find((entry) => count >= entry.from) ?? art[0];
+}
+
+/** Every grade's max level follows awakening; Immortal art does too. */
+function awakened(kind: GearKind, gear: Gear, count: number, row: AwakeningRow): Gear {
+  const withMax = { ...gear, maxLevel: row.maxLevel };
+  if (gear.tier !== "Immortal") return withMax;
+  const art = immortalArt(kind, count);
+  return { ...withMax, icon: art.icon, iconSize: art.iconSize };
+}
+
+/** The Immortal grade's awakened multipliers and secondary stats, as Equipment Data computes them. */
+function immortalStats(kind: GearKind, row: AwakeningRow, level: number) {
+  if (kind === "weapons") {
+    return {
+      multiplier: row.weaponMultiplier,
+      secondary: {
+        critHitIncreaseAt0: row.weaponCritHit,
+        goldBonus: level === 0 ? 0.25 : ((level + 10) * row.weaponGold) / 10,
+      },
+    };
+  }
+  return {
+    multiplier: row.accessoryMultiplier,
+    secondary: {
+      maxManaAt0: row.accessoryMaxMana,
+      expBonus: (level === 0 ? 0.05 : 0.05 + level * 0.005) * row.accessoryExp,
+    },
+  };
+}
+
+function Stars({ count }: { count: number }) {
+  return (
+    <span aria-hidden className="font-mono text-[9px] leading-none text-tier-legendary">
+      {"★".repeat(count)}
+      <span className="text-ink/20">{"★".repeat(5 - count)}</span>
+    </span>
+  );
+}
+
+function AwakeningControl({ kind }: { kind: GearKind }) {
+  const { profile, setAwakening } = useProfile();
+  const count = awakening(profile, kind, MAX_AWAKENING);
+  const stage = awakeningStage(count);
+  const art = immortalArt(kind, count);
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/15 p-2 sm:max-w-md">
+      <span className="relative flex size-12 shrink-0 items-center justify-center rounded-md border border-tier-immortal/50 bg-ink/[0.04]">
+        <Sprite src={art.icon} native={art.iconSize} size={32} className="size-10" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <label className="flex items-center gap-2 font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
+          Awakening ({AWAKEN_ITEM[kind]})
+          <select
+            value={count}
+            onChange={(event) => setAwakening(kind, Number(event.target.value), MAX_AWAKENING)}
+            className="rounded-md border border-ink/20 bg-ground px-1.5 py-0.5 font-mono text-xs text-ink tabular-nums outline-none focus-visible:border-ink"
+          >
+            {AWAKENING.map((row) => (
+              <option key={row.awakening} value={row.awakening}>
+                {row.awakening}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex items-center gap-2">
+          <Stars count={stage.stars} />
+          <span className="font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
+            Max level {AWAKENING[count].maxLevel}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** The game lays a tier out as one row, grade 4 through grade 1. */
 function byTier(items: Gear[]) {
@@ -47,6 +137,7 @@ function GearTile({
   level,
   equipped,
   selected,
+  stars,
   onSelect,
 }: {
   gear: Gear;
@@ -54,6 +145,7 @@ function GearTile({
   level: number;
   equipped: boolean;
   selected: boolean;
+  stars: number | null;
   onSelect: () => void;
 }) {
   return (
@@ -87,11 +179,16 @@ function GearTile({
           G{gear.gradeNumber}
         </span>
       ) : null}
+      {stars !== null ? (
+        <span className="absolute inset-x-0 bottom-1 flex justify-center">
+          <Stars count={stars} />
+        </span>
+      ) : null}
     </button>
   );
 }
 
-function GearDetail({ kind, gear }: { kind: GearKind; gear: Gear | null }) {
+function GearDetail({ kind, gear, row }: { kind: GearKind; gear: Gear | null; row: AwakeningRow }) {
   const { profile, setGearLevel, setOwned, equip } = useProfile();
 
   if (!gear) {
@@ -104,7 +201,9 @@ function GearDetail({ kind, gear }: { kind: GearKind; gear: Gear | null }) {
 
   const state = gearState(profile, kind, gear.grade, gear.maxLevel);
   const equipped = equippedKey(profile, kind) === gear.grade;
-  const effects = gearEffects(gear.multiplier, GEAR_LEVEL_FACTORS, state.level);
+  const immortal = gear.tier === "Immortal" ? immortalStats(kind, row, state.level) : null;
+  const effects = gearEffects(gear.multiplier, GEAR_LEVEL_FACTORS, state.level, immortal?.multiplier ?? 1);
+  const secondary = immortal ? { ...gear.secondary, ...immortal.secondary } : gear.secondary;
 
   return (
     <div className="flex flex-col gap-3">
@@ -149,30 +248,30 @@ function GearDetail({ kind, gear }: { kind: GearKind; gear: Gear | null }) {
         <Row label={`Equip effect at Lv ${state.level}`} value={formatPercent(effects.equip)} />
         <Row label={`Owned effect at Lv ${state.level}`} value={formatPercent(effects.owned)} />
         <Row label="Multiplier" value={formatValue(gear.multiplier)} />
-        <Row label="Max level before awakening" value={formatValue(gear.baseMaxLevel)} />
-        {Object.entries(gear.secondary).map(([key, value]) => (
+        {immortal ? (
+          <Row label={`Awakened ${AWAKEN_ITEM[kind]} multiplier`} value={`x${formatValue(immortal.multiplier)}`} />
+        ) : null}
+        <Row label={`Max level (awakening ${row.awakening})`} value={formatValue(gear.maxLevel)} />
+        {Object.entries(secondary).map(([key, value]) => (
           <Row key={key} label={SECONDARY_LABELS[key] ?? key} value={formatValue(value)} />
         ))}
       </dl>
-
-      {kind === "weapons" && gear.tier === "Immortal" ? (
-        <p className="border-t border-ink/15 pt-2 font-mono text-[10px] leading-relaxed tracking-[0.06em] text-dim uppercase">
-          Weapon awakening also multiplies this grade. Awakening isn&apos;t
-          modelled yet.
-        </p>
-      ) : null}
     </div>
   );
 }
 
-export function GearGrid({ kind, items }: { kind: GearKind; items: Gear[] }) {
+export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Gear[] }) {
   const { profile } = useProfile();
   const [selected, setSelected] = useState<string | null>(null);
   const equipped = equippedKey(profile, kind);
+  const count = awakening(profile, kind, MAX_AWAKENING);
+  const awakeningRow = AWAKENING[count];
+  const items = baseItems.map((gear) => awakened(kind, gear, count, awakeningRow));
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <AwakeningControl kind={kind} />
         {byTier(items).map(([tier, row]) => (
           <section key={tier} className="flex flex-col gap-2">
             <h3 className={`font-mono text-[10px] tracking-[0.12em] uppercase ${TIER_TEXT[tier] ?? "text-dim"}`}>
@@ -189,6 +288,7 @@ export function GearGrid({ kind, items }: { kind: GearKind; items: Gear[] }) {
                     level={state.level}
                     equipped={equipped === gear.grade}
                     selected={selected === gear.grade}
+                    stars={gear.tier === "Immortal" ? awakeningStage(count).stars : null}
                     onSelect={() => setSelected(selected === gear.grade ? null : gear.grade)}
                   />
                 );
@@ -199,7 +299,7 @@ export function GearGrid({ kind, items }: { kind: GearKind; items: Gear[] }) {
       </div>
 
       <aside className="shrink-0 rounded-lg border border-ink/15 p-3 lg:sticky lg:top-0 lg:w-72">
-        <GearDetail kind={kind} gear={items.find((gear) => gear.grade === selected) ?? null} />
+        <GearDetail kind={kind} row={awakeningRow} gear={items.find((gear) => gear.grade === selected) ?? null} />
       </aside>
     </div>
   );

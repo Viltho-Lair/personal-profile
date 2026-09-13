@@ -1,5 +1,8 @@
 import {
+  FIRST_SPIRIT_TIER,
   MAX_FAMILIAR_STARS,
+  MAX_SPIRIT_ENHANCE,
+  MIN_SPIRIT_ENHANCE,
   SKILL_PRESET_COUNT,
   type EquippableKind,
   type FamiliarGroup,
@@ -8,9 +11,15 @@ import {
   type KnownNames,
   type OwnableKind,
   type ProfileV1,
+  type SpiritState,
 } from "./types";
 
 const NO_GEAR: GearState = { owned: false, level: 0 };
+const NO_SPIRIT: SpiritState = { owned: false, level: 0, awakening: null, enhance: MIN_SPIRIT_ENHANCE };
+
+function withSpirit(profile: ProfileV1, name: string, state: SpiritState): ProfileV1 {
+  return { ...profile, spirits: { ...profile.spirits, [name]: state } };
+}
 
 /** Rule 5: whole levels between 0 and the item's current max. */
 export function clampLevel(level: number, maxLevel: number | null): number {
@@ -95,8 +104,9 @@ export function setOwned(
   owned: boolean,
 ): ProfileV1 {
   if (kind === "spirits") {
-    const current = profile.spirits[key] ?? NO_GEAR;
-    return { ...profile, spirits: { ...profile.spirits, [key]: { ...current, owned } } };
+    const current = profile.spirits[key] ?? NO_SPIRIT;
+    const awakening = owned ? (current.awakening ?? FIRST_SPIRIT_TIER) : null;
+    return withSpirit(profile, key, { ...current, owned, awakening });
   }
 
   const next =
@@ -132,7 +142,7 @@ export function setRelicLevel(
   };
 }
 
-/** Rule 3 also applies to spirits. */
+/** Rule 3 also applies to spirits: a level above 0 owns it, at the first tier if it had none. */
 export function setSpiritLevel(
   profile: ProfileV1,
   name: string,
@@ -140,14 +150,37 @@ export function setSpiritLevel(
   maxLevel: number | null,
 ): ProfileV1 {
   const clamped = clampLevel(level, maxLevel);
-  const current = profile.spirits[name] ?? NO_GEAR;
-  return {
-    ...profile,
-    spirits: {
-      ...profile.spirits,
-      [name]: { owned: current.owned || clamped > 0, level: clamped },
-    },
-  };
+  const current = profile.spirits[name] ?? NO_SPIRIT;
+  const awakening = current.awakening ?? (clamped > 0 ? FIRST_SPIRIT_TIER : null);
+  return withSpirit(profile, name, { ...current, owned: awakening !== null, level: clamped, awakening });
+}
+
+/** The awakening tier owns the spirit; `null` means not owned (its level and enhance are kept). */
+export function setSpiritAwakening(profile: ProfileV1, name: string, awakening: string | null): ProfileV1 {
+  const current = profile.spirits[name] ?? NO_SPIRIT;
+  return withSpirit(profile, name, { ...current, owned: awakening !== null, awakening });
+}
+
+/** Enhance is the spirit's skill level: 1 when owned, up to 5. */
+export function setSpiritEnhance(profile: ProfileV1, name: string, enhance: number): ProfileV1 {
+  const current = profile.spirits[name] ?? NO_SPIRIT;
+  const whole = Number.isFinite(enhance) ? Math.floor(enhance) : MIN_SPIRIT_ENHANCE;
+  return withSpirit(profile, name, {
+    ...current,
+    enhance: Math.min(MAX_SPIRIT_ENHANCE, Math.max(MIN_SPIRIT_ENHANCE, whole)),
+  });
+}
+
+export function awakening(profile: ProfileV1, kind: GearKind, maxAwakening: number): number {
+  return clampLevel(kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening, maxAwakening);
+}
+
+/** Awakening raises the max level of every grade of that gear. */
+export function setAwakening(profile: ProfileV1, kind: GearKind, value: number, maxAwakening: number): ProfileV1 {
+  const clamped = clampLevel(value, maxAwakening);
+  return kind === "weapons"
+    ? { ...profile, weaponAwakening: clamped }
+    : { ...profile, accessoryAwakening: clamped };
 }
 
 export function skillLevel(profile: ProfileV1, name: string, maxLevel: number): number {
@@ -280,13 +313,9 @@ export function relicLevel(profile: ProfileV1, name: string, maxLevel: number): 
   return clampLevel(profile.relics[name]?.level ?? 0, maxLevel);
 }
 
-export function spiritState(
-  profile: ProfileV1,
-  name: string,
-  maxLevel: number | null,
-): { owned: boolean; level: number } {
-  const state = profile.spirits[name] ?? NO_GEAR;
-  return { owned: state.owned, level: clampLevel(state.level, maxLevel) };
+export function spiritState(profile: ProfileV1, name: string, maxLevel: number | null): SpiritState {
+  const state = profile.spirits[name] ?? NO_SPIRIT;
+  return { ...state, level: clampLevel(state.level, maxLevel) };
 }
 
 export function soulWeaponOwned(profile: ProfileV1, name: string): boolean {

@@ -268,6 +268,7 @@ def main():
                 spirit["art"][group] = {"icon": url, "iconSize": width}
     write_json(DATA / "spirits.json", {
         "source": {"file": source.name, "sheet": "Equipment Data", "extractedOn": today},
+        "tiers": spirit_factors["tiers"],
         "spirits": spirits,
     })
     write_json(DATA / "spirit-factors.json", {

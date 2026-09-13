@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addToSkillPreset,
+  awakening,
   clampLevel,
   clearSkillPresetSlot,
   effectiveSkillLevel,
@@ -15,6 +16,7 @@ import {
   proficiencyLevel,
   relicLevel,
   selectSkillPreset,
+  setAwakening,
   setFamiliarStars,
   setGearLevel,
   setMasteryLevel,
@@ -24,6 +26,8 @@ import {
   setRelicLevel,
   setSkillLevel,
   setSkillsAtMax,
+  setSpiritAwakening,
+  setSpiritEnhance,
   setSpiritLevel,
   skillLevel,
   soulWeaponOwned,
@@ -57,7 +61,7 @@ describe("defaults", () => {
     expect(skillLevel(p, "Fire Slash", 250)).toBe(0);
     expect(gearState(p, "weapons", "Common 4", 1700)).toEqual({ owned: false, level: 0 });
     expect(relicLevel(p, "HP Ring", 100)).toBe(0);
-    expect(spiritState(p, "Sala", 1000)).toEqual({ owned: false, level: 0 });
+    expect(spiritState(p, "Sala", 1000)).toEqual({ owned: false, level: 0, awakening: null, enhance: 1 });
     expect(soulWeaponOwned(p, "Innocence")).toBe(false);
     expect(equippedKey(p, "weapons")).toBeNull();
   });
@@ -118,7 +122,7 @@ describe("rule 3: a level above 0 marks gear and spirits owned", () => {
   });
   it("applies to spirits", () => {
     const p = setSpiritLevel(emptyProfile(), "Sala", 395, 1000);
-    expect(spiritState(p, "Sala", 1000)).toEqual({ owned: true, level: 395 });
+    expect(spiritState(p, "Sala", 1000)).toEqual({ owned: true, level: 395, awakening: "Common", enhance: 1 });
   });
 });
 
@@ -303,6 +307,38 @@ describe("familiars", () => {
       masteryNodes: [], familiars: [],
     };
     expect(unknownEntries(p, known)).toEqual(["masteryNodes: 11-A1", "familiars: Gone"]);
+  });
+});
+
+describe("awakening", () => {
+  it("is 0 by default, separate for weapons and accessories, and capped", () => {
+    let p = setAwakening(emptyProfile(), "weapons", 7, 30);
+    p = setAwakening(p, "accessories", 99, 30);
+    expect(awakening(p, "weapons", 30)).toBe(7);
+    expect(awakening(p, "accessories", 30)).toBe(30);
+    expect(awakening(emptyProfile(), "weapons", 30)).toBe(0);
+  });
+});
+
+describe("spirit awakening and enhance", () => {
+  it("choosing a tier owns the spirit; clearing it un-owns but keeps level and enhance", () => {
+    let p = setSpiritAwakening(emptyProfile(), "Ark", "Mythic A2");
+    p = setSpiritEnhance(setSpiritLevel(p, "Ark", 300, 1000), "Ark", 4);
+    expect(spiritState(p, "Ark", 1000)).toEqual({ owned: true, level: 300, awakening: "Mythic A2", enhance: 4 });
+    p = setSpiritAwakening(p, "Ark", null);
+    expect(spiritState(p, "Ark", 1000)).toEqual({ owned: false, level: 300, awakening: null, enhance: 4 });
+  });
+
+  it("enhance stays between 1 and 5", () => {
+    expect(spiritState(setSpiritEnhance(emptyProfile(), "Bo", 9), "Bo", 1000).enhance).toBe(5);
+    expect(spiritState(setSpiritEnhance(emptyProfile(), "Bo", 0), "Bo", 1000).enhance).toBe(1);
+  });
+
+  it("the owned toggle sets or clears the tier", () => {
+    let p = setOwned(emptyProfile(), "spirits", "Bo", true);
+    expect(spiritState(p, "Bo", 1000).awakening).toBe("Common");
+    p = setOwned(p, "spirits", "Bo", false);
+    expect(spiritState(p, "Bo", 1000).awakening).toBeNull();
   });
 });
 

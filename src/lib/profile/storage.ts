@@ -1,11 +1,15 @@
 import { importLegacyLevels } from "./migration";
 import {
   emptyProfile,
+  FIRST_SPIRIT_TIER,
+  MAX_SPIRIT_ENHANCE,
+  MIN_SPIRIT_ENHANCE,
   SKILL_PRESET_COUNT,
   SKILL_PRESET_SLOTS,
   type GearState,
   type ProfileV1,
   type SkillPreset,
+  type SpiritState,
 } from "./types";
 
 export const PROFILE_KEY = "slayer-analyzer.profile";
@@ -50,6 +54,21 @@ const ownedLevelEntry = (entry: Json): GearState | null => {
     : { owned: entry.owned, level };
 };
 
+/** Spirits saved before awakening and enhance existed read as Common at enhance 1. */
+const spiritEntry = (entry: Json): SpiritState | null => {
+  const base = ownedLevelEntry(entry);
+  if (base === null) return null;
+  const tier = typeof entry.awakening === "string" ? entry.awakening : null;
+  const awakening = tier ?? (base.owned ? FIRST_SPIRIT_TIER : null);
+  const enhance = wholeLevel(entry.enhance);
+  return {
+    owned: awakening !== null,
+    level: base.level,
+    awakening,
+    enhance: Math.min(MAX_SPIRIT_ENHANCE, Math.max(MIN_SPIRIT_ENHANCE, enhance ?? MIN_SPIRIT_ENHANCE)),
+  };
+};
+
 const ownedEntry = (entry: Json) =>
   typeof entry.owned === "boolean" ? { owned: entry.owned } : null;
 
@@ -92,7 +111,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     equippedWeapon: name(data.equippedWeapon),
     equippedAccessory: name(data.equippedAccessory),
     relics: entries(data.relics, levelEntry),
-    spirits: entries(data.spirits, ownedLevelEntry),
+    spirits: entries(data.spirits, spiritEntry),
     soulWeapons: entries(data.soulWeapons, ownedEntry),
     equippedSoulWeapon: name(data.equippedSoulWeapon),
     // Added after the first release, so older profiles read the defaults.
@@ -103,6 +122,8 @@ function parseKnownFields(data: Json): ProfileV1 {
     masteryNodes: entries(data.masteryNodes, levelEntry),
     familiars: entries(data.familiars, starsEntry),
     equippedFamiliars: equippedFamiliars(data.equippedFamiliars),
+    weaponAwakening: wholeLevel(data.weaponAwakening) ?? 0,
+    accessoryAwakening: wholeLevel(data.accessoryAwakening) ?? 0,
   };
 }
 

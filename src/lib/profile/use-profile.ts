@@ -71,6 +71,12 @@ export function useProfile() {
       ),
     setSpiritLevel: (name: string, level: number, maxLevel: number) =>
       update((p) => rules.setSpiritLevel(p, name, level, maxLevel)),
+    setSpiritAwakening: (name: string, awakening: string | null) =>
+      update((p) => rules.setSpiritAwakening(p, name, awakening)),
+    setSpiritEnhance: (name: string, enhance: number) =>
+      update((p) => rules.setSpiritEnhance(p, name, enhance)),
+    setAwakening: (kind: GearKind, value: number, maxAwakening: number) =>
+      update((p) => rules.setAwakening(p, kind, value, maxAwakening)),
     setSkillsAtMax: (on: boolean) => update((p) => rules.setSkillsAtMax(p, on)),
     setProficiencyLevel: (level: number, maxLevel: number) =>
       update((p) => rules.setProficiencyLevel(p, level, maxLevel)),

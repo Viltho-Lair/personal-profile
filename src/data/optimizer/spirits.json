@@ -4,6 +4,31 @@
     "sheet": "Equipment Data",
     "extractedOn": "2026-09-13"
   },
+  "tiers": [
+    "Common",
+    "Great",
+    "Rare",
+    "Epic",
+    "Legendary A0",
+    "Legendary A1",
+    "Legendary A2",
+    "Legendary A3",
+    "Legendary A4",
+    "Legendary A5",
+    "Mythic A0",
+    "Mythic A1",
+    "Mythic A2",
+    "Mythic A3",
+    "Mythic A4",
+    "Mythic A5",
+    "Immortal A0",
+    "Immortal A1",
+    "Immortal A2",
+    "Immortal A3",
+    "Immortal A4",
+    "Immortal A5",
+    "Ancient A0"
+  ],
   "spirits": [
     {
       "id": 0,
