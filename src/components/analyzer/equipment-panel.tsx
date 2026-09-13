@@ -2,24 +2,26 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GearGrid } from "./gear-grid";
-import { RelicList } from "./relic-list";
-import { SpiritGrid } from "./spirit-grid";
-import { Sprite } from "./sprite";
+import { equippedKey, soulWeaponOwned } from "@/lib/profile/rules";
+import { useProfile } from "@/lib/profile/use-profile";
 import {
   ACCESSORIES,
-  EQUIPMENT_SOURCE,
   formatValue,
   RELICS,
   SOUL_WEAPONS,
   SPIRITS,
   WEAPONS,
   type SoulWeapon,
-} from "./equipment";
+} from "./data";
+import { GearGrid } from "./gear-grid";
+import { EquipButton, EquippedBadge, OwnedToggle } from "./profile-controls";
+import { RelicList } from "./relic-list";
+import { SpiritGrid } from "./spirit-grid";
+import { Sprite } from "./sprite";
 
-const CARD_GRID =
-  "grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(13rem,1fr))]";
+const CARD_GRID = "grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(13rem,1fr))]";
 const PANEL = "min-h-0 flex-1 overflow-auto p-4 pb-20 sm:p-6 sm:pb-20";
+const WIKI_URL = "https://slayerlegend.wiki/";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -30,60 +32,66 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ItemCard({
-  icon,
-  name,
-  subtitle,
-  children,
+function SoulWeaponCard({
+  weapon,
+  owned,
+  equipped,
+  onOwnedChange,
+  onEquipToggle,
 }: {
-  icon: string | null;
-  name: string;
-  subtitle: string | null;
-  children: React.ReactNode;
+  weapon: SoulWeapon;
+  owned: boolean;
+  equipped: boolean;
+  onOwnedChange: (owned: boolean) => void;
+  onEquipToggle: () => void;
 }) {
+  const stage = weapon.stage.name ?? (weapon.stage.number ? `Stage ${weapon.stage.number}` : null);
+
   return (
-    <article className="flex h-full flex-col gap-2 rounded-lg border border-ink/15 p-3 transition-colors hover:border-ink/40">
+    <article
+      className={`relative flex h-full flex-col gap-2 rounded-lg border border-ink/15 p-3 transition-opacity hover:border-ink/40 ${owned ? "" : "opacity-55"}`}
+    >
+      {equipped ? <EquippedBadge /> : null}
       <header className="flex items-start gap-2.5">
-        {icon ? (
+        {weapon.icon && weapon.iconSize ? (
           <Sprite
-            src={icon}
-            native={128}
+            src={weapon.icon}
+            native={weapon.iconSize}
             size={64}
             className="rounded-md border border-ink/15"
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 className="text-sm leading-tight font-medium">{name}</h3>
-          {subtitle ? (
-            <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
-              {subtitle}
-            </span>
-          ) : null}
+          <h3 className="text-sm leading-tight font-medium">{weapon.name}</h3>
+          <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
+            {[stage, weapon.soulColor].filter(Boolean).join(" · ")}
+          </span>
         </div>
       </header>
-      <dl className="mt-auto grid gap-x-3 gap-y-0.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
-        {children}
-      </dl>
-    </article>
-  );
-}
 
-function SoulWeaponCard({ weapon }: { weapon: SoulWeapon }) {
-  return (
-    <ItemCard
-      icon={weapon.icon}
-      name={weapon.name}
-      subtitle={
-        [weapon.stageRequirement, weapon.soulColor]
-          .filter(Boolean)
-          .join(" · ") || null
-      }
-    >
-      <Row label="ATK" value={formatValue(weapon.attack)} />
-      <Row label="Souls" value={formatValue(weapon.requirements)} />
-      <Row label="Salvage" value={formatValue(weapon.disassemblyReward)} />
-      <Row label="Chaos" value={formatValue(weapon.chaosSoulGain)} />
-    </ItemCard>
+      <dl className="grid gap-y-0.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
+        <Row label="ATK" value={formatValue(weapon.attack)} />
+        <Row label="Souls" value={formatValue(weapon.cost)} />
+        <Row
+          label="Needs"
+          value={
+            weapon.requirement.item
+              ? [weapon.requirement.item, weapon.requirement.grade].filter(Boolean).join(" ")
+              : "—"
+          }
+        />
+        <Row label="Salvage" value={formatValue(weapon.disassemblyReward)} />
+        <Row
+          label="Engraving ATK / HP"
+          value={`${formatValue(weapon.engraving.atk)} / ${formatValue(weapon.engraving.hp)}`}
+        />
+      </dl>
+
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-ink/10 pt-2">
+        <OwnedToggle owned={owned} name={weapon.name} onChange={onOwnedChange} />
+        <EquipButton equipped={equipped} name={weapon.name} onToggle={onEquipToggle} />
+      </div>
+    </article>
   );
 }
 
@@ -97,6 +105,8 @@ const EQUIPMENT_TABS = [
 
 export function EquipmentPanel() {
   const [active, setActive] = useState("weapons");
+  const { profile, setOwned, equip } = useProfile();
+  const equippedSoulWeapon = equippedKey(profile, "soulWeapons");
 
   return (
     <Tabs
@@ -121,22 +131,25 @@ export function EquipmentPanel() {
           ))}
         </TabsList>
 
-        <a
-          href={EQUIPMENT_SOURCE.url}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="hidden pb-2 font-mono text-[10px] tracking-[0.06em] text-dim uppercase underline-offset-4 hover:text-ink hover:underline lg:block"
-        >
-          Data: Slayer Legend Wiki
-        </a>
+        <p className="hidden pb-2 font-mono text-[10px] tracking-[0.06em] text-dim uppercase lg:block">
+          Data: Master Optimizer · spirit skills from{" "}
+          <a
+            href={WIKI_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="underline-offset-4 hover:text-ink hover:underline"
+          >
+            Slayer Legend Wiki
+          </a>
+        </p>
       </div>
 
       <TabsContent value="weapons" className={PANEL}>
-        <GearGrid items={WEAPONS} native={128} />
+        <GearGrid kind="weapons" items={WEAPONS} />
       </TabsContent>
 
       <TabsContent value="accessories" className={PANEL}>
-        <GearGrid items={ACCESSORIES} native={64} />
+        <GearGrid kind="accessories" items={ACCESSORIES} />
       </TabsContent>
 
       <TabsContent value="relics" className={PANEL}>
@@ -150,7 +163,16 @@ export function EquipmentPanel() {
       <TabsContent value="soul-weapons" className={PANEL}>
         <div className={CARD_GRID}>
           {SOUL_WEAPONS.map((weapon) => (
-            <SoulWeaponCard key={weapon.id} weapon={weapon} />
+            <SoulWeaponCard
+              key={weapon.id}
+              weapon={weapon}
+              owned={soulWeaponOwned(profile, weapon.name)}
+              equipped={equippedSoulWeapon === weapon.name}
+              onOwnedChange={(owned) => setOwned("soulWeapons", weapon.name, owned)}
+              onEquipToggle={() =>
+                equip("soulWeapons", equippedSoulWeapon === weapon.name ? null : weapon.name)
+              }
+            />
           ))}
         </div>
       </TabsContent>
