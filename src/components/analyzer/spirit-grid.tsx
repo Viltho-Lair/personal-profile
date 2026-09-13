@@ -1,7 +1,7 @@
 "use client";
 
 import { rarityGroup } from "@/lib/game/formulas";
-import { activeSpiritPreset, effectiveSpiritLevel, spiritState } from "@/lib/profile/rules";
+import { activeSpiritPreset, effectiveSpiritLevel, spiritLineup, spiritState } from "@/lib/profile/rules";
 import { MAIN_SPIRIT_COUNT, MAX_SPIRIT_ENHANCE, MIN_SPIRIT_ENHANCE } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
 import { SPIRIT_TIERS, SPIRITS, type Spirit } from "./data";
@@ -20,6 +20,7 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
   const { profile, setSpiritAwakening, setSpiritLevel, setSpiritEnhance, toggleMainSpirit } = useProfile();
   const isMain = profile.mainSpirits.includes(spirit.name);
   const lineupLevel = effectiveSpiritLevel(profile, spirit.name, spirit.maxLevel);
+  const lineup = spiritLineup(profile, spirit.maxLevel);
   const state = spiritState(profile, spirit.name, spirit.maxLevel);
   const group = state.awakening ? rarityGroup(state.awakening) : "Common";
   const art = spirit.art[group] ?? spirit.art.Common;
@@ -91,10 +92,12 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
           Main 6
         </label>
         <InlineLevel
-          value={state.level}
+          value={lineupLevel}
           min={0}
           max={spirit.maxLevel}
           name={spirit.name}
+          disabled={!isMain && lineup !== null}
+          title={!isMain && lineup ? `Carries Lv ${lineup.level}, the lowest of the main 6 (${lineup.lowest})` : undefined}
           onChange={(level) => setSpiritLevel(spirit.name, level, spirit.maxLevel)}
         />
         <label className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
@@ -127,9 +130,9 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
           </div>
         ))}
       </dl>
-      {lineupLevel !== state.level ? (
+      {!isMain && lineup ? (
         <p className="col-span-2 font-mono text-[9px] tracking-[0.04em] text-sky-600 uppercase sm:col-span-3">
-          Counts at Lv {lineupLevel}, the lowest of the main 6
+          Carries Lv {lineup.level}, the lowest of the main 6 ({lineup.lowest})
         </p>
       ) : null}
       {amp.source ? (
@@ -170,6 +173,12 @@ function FountainSettings() {
   );
 }
 
+function lineupText(profile: Parameters<typeof spiritLineup>[0]) {
+  const lineup = spiritLineup(profile, SPIRITS[0]?.maxLevel ?? null);
+  if (lineup) return ` · others carry Lv ${lineup.level} (${lineup.lowest})`;
+  return profile.mainSpirits.length === MAIN_SPIRIT_COUNT ? " · every main spirit must be owned" : "";
+}
+
 function SpiritPresetSettings() {
   const { profile, selectPreset, setSpiritPresetSlot } = useProfile();
   const slots = activeSpiritPreset(profile);
@@ -179,6 +188,7 @@ function SpiritPresetSettings() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">
           Spirit preset · main 6 {profile.mainSpirits.length}/{MAIN_SPIRIT_COUNT}
+          {lineupText(profile)}
         </h3>
         <PresetPicker label="Spirit preset" active={profile.activePresets.spirits} onSelect={(index) => selectPreset("spirits", index)} />
       </div>

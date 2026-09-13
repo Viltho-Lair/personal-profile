@@ -169,7 +169,9 @@ export function setSpiritLevel(
 /** The awakening tier owns the spirit; `null` means not owned (its level and enhance are kept). */
 export function setSpiritAwakening(profile: ProfileV1, name: string, awakening: string | null): ProfileV1 {
   const current = profile.spirits[name] ?? NO_SPIRIT;
-  return withSpirit(profile, name, { ...current, owned: awakening !== null, awakening });
+  const updated = withSpirit(profile, name, { ...current, owned: awakening !== null, awakening });
+  // A spirit that's no longer owned can't stay in the main six.
+  return awakening === null ? { ...updated, mainSpirits: updated.mainSpirits.filter((n) => n !== name) } : updated;
 }
 
 /** Enhance is the spirit's skill level: 1 when owned, up to 5. */
@@ -420,9 +422,20 @@ export function toggleMainSpirit(profile: ProfileV1, name: string): ProfileV1 {
  */
 export function effectiveSpiritLevel(profile: ProfileV1, name: string, maxLevel: number | null): number {
   const own = spiritState(profile, name, maxLevel).level;
-  if (profile.mainSpirits.length < MAIN_SPIRIT_COUNT || profile.mainSpirits.includes(name)) return own;
-  const lowest = Math.min(...profile.mainSpirits.map((main) => spiritState(profile, main, maxLevel).level));
-  return clampLevel(lowest, maxLevel);
+  const lineup = spiritLineup(profile, maxLevel);
+  if (!lineup || profile.mainSpirits.includes(name)) return own;
+  return lineup.level;
+}
+
+/**
+ * The main six's lineup level: the lowest level among the six main spirits,
+ * once all six are owned. `null` until then.
+ */
+export function spiritLineup(profile: ProfileV1, maxLevel: number | null): { level: number; lowest: string } | null {
+  const mains = profile.mainSpirits.map((name) => ({ name, state: spiritState(profile, name, maxLevel) }));
+  if (mains.length < MAIN_SPIRIT_COUNT || mains.some((main) => !main.state.owned)) return null;
+  const lowest = mains.reduce((low, main) => (main.state.level < low.state.level ? main : low));
+  return { level: lowest.state.level, lowest: lowest.name };
 }
 
 function withEngraving(profile: ProfileV1, change: (engraving: SoulEngraving) => SoulEngraving): ProfileV1 {

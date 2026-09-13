@@ -322,6 +322,19 @@ describe("spirit presets and main spirits", () => {
     expect(toggleMainSpirit(p, "G").mainSpirits).toHaveLength(6);
     expect(effectiveSpiritLevel(toggleMainSpirit(p, "A"), "G", 1000)).toBe(5);
   });
+
+  it("only counts the lineup once all six main spirits are owned, and unticks a spirit that's no longer owned", () => {
+    const names = ["A", "B", "C", "D", "E", "F"];
+    let p = emptyProfile();
+    names.forEach((name) => {
+      p = setSpiritAwakening(setSpiritLevel(toggleMainSpirit(p, name), name, 400, 1000), name, "Immortal A0");
+    });
+    p = setSpiritAwakening(p, "G", "Immortal A0");
+    expect(effectiveSpiritLevel(p, "G", 1000)).toBe(400);
+    p = setSpiritAwakening(p, "C", null);
+    expect(p.mainSpirits).not.toContain("C");
+    expect(effectiveSpiritLevel(p, "G", 1000)).toBe(0);
+  });
 });
 
 describe("familiars", () => {
