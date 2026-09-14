@@ -53,12 +53,14 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
       }}
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
-      {/* Every tab fills the page above the bottom bar. */}
+      {/* Every tab fills the page beside the ad and Settings, which stay on screen for all of them. */}
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col">
       {ANALYZER_TABS.map((tab) => (
         <TabsContent
           key={tab.id}
           value={tab.id}
-          className={tab.id === "analysis" ? "flex min-h-0 flex-1 flex-col pb-14" : "min-h-0 flex-1 overflow-auto pb-20"}
+          className={tab.id === "analysis" ? "flex min-h-0 flex-1 flex-col md:pb-14" : "min-h-0 flex-1 overflow-auto md:pb-20"}
         >
           {tab.id === "char" ? (
             <CharacterPanel />
@@ -73,6 +75,22 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
           )}
         </TabsContent>
       ))}
+      </div>
+      <aside
+        aria-label="Advertisement and settings"
+        className="flex shrink-0 flex-col border-t border-ink/15 pb-20 md:w-72 md:min-h-0 md:overflow-auto md:border-t-0 md:border-l md:pb-14 lg:w-80"
+      >
+        <div
+          aria-label="Advertisement"
+          className="flex min-h-24 items-center justify-center overflow-hidden border-b border-ink/15 p-2 md:min-h-0 md:flex-1"
+        >
+          <AdSlot slot={ANALYZER_AD_SLOT} />
+        </div>
+        <div className="flex flex-col p-3 md:flex-1">
+          <SettingsPanel />
+        </div>
+      </aside>
+      </div>
 
       {/* Fixed above the panels: the bar never scrolls and nothing scrolls under the tabs.
           The tabs sit astride the rule and hide it behind them. */}
@@ -114,32 +132,15 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
   );
 }
 
-/**
- * Analysis, the whole page: the fight chart, the Stats Summary with the presets, and the ad above
- * Settings, as three columns on wide screens and stacked on narrow ones.
- */
+/** Analysis, the whole page: the fight chart and the Stats Summary with the presets, side by side on wide screens. */
 function AnalysisPanel() {
   return (
-    <section
-      aria-label="Analysis"
-      className="flex flex-col md:grid md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,3fr)]"
-    >
+    <section aria-label="Analysis" className="flex flex-col md:grid md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="flex min-h-[32rem] flex-col border-b border-ink/15 md:min-h-0 md:border-r md:border-b-0">
         <ProgressChart />
       </div>
-      <div className="flex min-h-0 flex-col border-b border-ink/15 md:border-r md:border-b-0">
+      <div className="flex min-h-0 flex-col border-b border-ink/15 md:border-b-0">
         <StatsSummary />
-      </div>
-      <div className="flex min-h-0 flex-col">
-        <aside
-          aria-label="Advertisement"
-          className="flex min-h-24 items-center justify-center overflow-hidden border-b border-ink/15 p-2 md:min-h-0 md:flex-1"
-        >
-          <AdSlot slot={ANALYZER_AD_SLOT} />
-        </aside>
-        <div className="flex flex-col p-3 md:flex-1">
-          <SettingsPanel />
-        </div>
       </div>
     </section>
   );

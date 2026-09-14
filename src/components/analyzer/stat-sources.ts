@@ -160,7 +160,7 @@ export function gearSecondary(profile: ProfileV1) {
 }
 
 /** Best equip effect and 30% of every owned item's effect, in whole percents. */
-function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
+export function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
   const row = AWAKENING[awakening(profile, kind, MAX_AWAKENING)];
   const equipped = equippedKey(profile, kind);
   let equip = 0;
@@ -175,6 +175,27 @@ function gearTotals(profile: ProfileV1, kind: GearKind, list: readonly Gear[]) {
     owned += effects.owned;
   }
   return { equip, owned };
+}
+
+/** Class max level: 200 + 50 per Awakened Blast, plus the Constellation of Light's class level cap. */
+export function classLevelCap(c: CharacterState): number {
+  return classMaxLevel(c.classAwakening) + constellationTotals(CONSTELLATION, c.constellation).current.classLevelCap;
+}
+
+/** Classes: the equipped class's equip effect + 30% of every owned class; the last class awakens with Blast. */
+export function classTotals(c: CharacterState): { equip: number; owned: number } {
+  const classMax = classLevelCap(c);
+  const totals = { equip: 0, owned: 0 };
+  CLASSES.forEach((cls, index) => {
+    const state = c.classes[cls.name];
+    if (!state?.owned) return;
+    const isLast = index === CLASSES.length - 1;
+    const multiplier = isLast ? (AWAKENING[c.classAwakening]?.blastMultiplier ?? 1) : 1;
+    const effects = gearEffects(cls.multiplier, GEAR_LEVEL_FACTORS, clampLevel(state.level, classMax), multiplier);
+    if (cls.name === c.equippedClass) totals.equip = effects.equip;
+    totals.owned += effects.owned;
+  });
+  return totals;
 }
 
 export function companionSkill(profile: ProfileV1, companion: string, skill: string): number {
@@ -250,18 +271,8 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   }
   s.accessory = gearTotals(profile, "accessories", ACCESSORIES);
 
-  // Classes: the equipped class's equip effect + 30% of every owned class; the last class awakens with Blast.
   const stars = constellationTotals(CONSTELLATION, c.constellation);
-  const classMax = classMaxLevel(c.classAwakening) + stars.current.classLevelCap;
-  CLASSES.forEach((cls, index) => {
-    const state = c.classes[cls.name];
-    if (!state?.owned) return;
-    const isLast = index === CLASSES.length - 1;
-    const multiplier = isLast ? (AWAKENING[c.classAwakening]?.blastMultiplier ?? 1) : 1;
-    const effects = gearEffects(cls.multiplier, GEAR_LEVEL_FACTORS, clampLevel(state.level, classMax), multiplier);
-    if (cls.name === c.equippedClass) s.classes.equip = effects.equip;
-    s.classes.owned += effects.owned;
-  });
+  s.classes = classTotals(c);
 
   const promotion = PROMOTIONS.find((p) => p.number === c.promotion);
   s.promotionBonus = promotion?.atkHpBonus ?? 1;

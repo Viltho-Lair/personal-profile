@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
 };
 
-const UPDATED = "13 September 2026";
+const UPDATED = "14 September 2026";
 
 export default function PrivacyPage() {
   return (
@@ -31,6 +31,17 @@ export default function PrivacyPage() {
           browser&rsquo;s local storage so it&rsquo;s there when you come back. That data is never
           sent to this site&rsquo;s servers and I can&rsquo;t see it. You can delete it at any time
           with the analyzer&rsquo;s reset button or by clearing your browser&rsquo;s site data.
+          The analyzer&rsquo;s Export JSON button saves that profile as a file on your own device,
+          and Import JSON reads a file you choose in your browser; neither sends it anywhere.
+        </p>
+
+        <h2>Visitor counter</h2>
+        <p>
+          The analyzer shows how many visits it has had. Each browser is counted at most once a
+          day: the date it was last counted is kept in your browser&rsquo;s local storage, and the
+          site adds one to a single running total kept with Upstash, a database provider. Only
+          that number is stored; no IP address, cookie or other detail about you goes with it.
+          See <a href="https://upstash.com/trust/privacy.pdf">Upstash&rsquo;s privacy policy</a>.
         </p>
 
         <h2>Advertising and cookies</h2>
