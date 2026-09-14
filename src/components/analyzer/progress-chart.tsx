@@ -250,9 +250,9 @@ export function ProgressChart() {
 
       {phase === "done" && snap ? (
         stagesMode ? (
-          <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} />
+          <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
         ) : boss ? (
-          <Results setup={setup} total={snap.total} duration={duration} manual={manual} />
+          <Results setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
         ) : null
       ) : null}
     </section>
@@ -477,11 +477,13 @@ function Results({
   total,
   duration,
   manual,
+  breakdown,
 }: {
   setup: ReturnType<typeof promotionFight>;
   total: number;
   duration: number;
   manual: string[];
+  breakdown: Pick<FightState, "basic" | "bySkill">;
 }) {
   const { profile } = useProfile();
   const boss = setup.boss!;
@@ -514,6 +516,7 @@ function Results({
         <dd className="truncate text-right text-ink tabular-nums" title={formatValue(boss.hp)}>{formatValue(boss.hp)}</dd>
       </dl>
       <p className={`font-medium ${verdict.tone}`}>{verdict.text}</p>
+      <DamageBreakdown total={total} breakdown={breakdown} />
       {analysis === null && total < boss.hp && total > 0 ? <p className="text-dim">Working out what would close the gap…</p> : null}
       {analysis?.suggestions.length ? (
         <div>
@@ -555,11 +558,13 @@ function StageResults({
   total,
   duration,
   manual,
+  breakdown,
 }: {
   setup: ReturnType<typeof promotionFight>;
   total: number;
   duration: number;
   manual: string[];
+  breakdown: Pick<FightState, "basic" | "bySkill">;
 }) {
   const { profile } = useProfile();
   const cleared = stagesCleared(total);
@@ -594,6 +599,7 @@ function StageResults({
           </>
         ) : null}
       </dl>
+      <DamageBreakdown total={total} breakdown={breakdown} />
       <p className={`font-medium ${cleared >= highest ? "text-emerald-500" : "text-amber-500"}`}>
         {cleared === 0
           ? "Not even stage 1's boss falls in this fight yet."
@@ -619,5 +625,27 @@ function StageResults({
         (Breath of Fire, Judge&apos;s Torpedo, Thief Wind, Leveling) read stage {formatValue(Math.max(1, setup.stages?.reached ?? 1))}&apos;s boss.
       </p>
     </div>
+  );
+}
+
+/** Where the fight's damage came from: every skill (Rave's release included), spirit skills and basic attacks. */
+function DamageBreakdown({ total, breakdown }: { total: number; breakdown: Pick<FightState, "basic" | "bySkill"> }) {
+  const rows = [...Object.entries(breakdown.bySkill), ["Basic attacks", breakdown.basic] as const]
+    .filter(([, amount]) => amount > 0)
+    .sort((a, b) => b[1] - a[1]);
+  if (!rows.length) return null;
+  return (
+    <details className="text-[10px]">
+      <summary className="cursor-pointer font-mono text-dim uppercase">Damage by source</summary>
+      <dl className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-x-3 font-mono">
+        {rows.map(([name, amount]) => (
+          <div key={name} className="contents">
+            <dt className="text-dim">{name}</dt>
+            <dd className="truncate text-right text-ink tabular-nums" title={formatValue(amount)}>{formatValue(amount)}</dd>
+            <dd className="text-right text-dim tabular-nums">{formatValue(Math.round((amount / Math.max(total, 1e-300)) * 1000) / 10)}%</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
   );
 }

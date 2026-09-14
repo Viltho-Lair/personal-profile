@@ -7,6 +7,10 @@ import {
   updateOrbAccessory,
   setMountedBeast,
   mountedBeast,
+  presetBeast,
+  setPresetBeast,
+  setBeastMounted,
+  selectLoadout,
   awakening,
   companionState,
   clampLevel,
@@ -315,6 +319,34 @@ describe("beasts", () => {
     expect(mountedBeast(p)).toBe("Gray Wolf");
     p = setBeast(p, "Gray Wolf", { awaken: null });
     expect(mountedBeast(p)).toBeNull();
+  });
+
+  it("keeps a picked beast unmounted until its mount box is ticked", () => {
+    let p = setBeast(emptyProfile(), "Gray Wolf", { awaken: 1 });
+    p = setPresetBeast(p, "Gray Wolf");
+    expect(presetBeast(p)).toBe("Gray Wolf");
+    expect(mountedBeast(p)).toBeNull();
+    p = setBeastMounted(p, true);
+    expect(mountedBeast(p)).toBe("Gray Wolf");
+    p = setBeastMounted(p, false);
+    expect(mountedBeast(p)).toBeNull();
+    expect(presetBeast(p)).toBe("Gray Wolf");
+  });
+});
+
+describe("loadouts", () => {
+  it("saves each kind's preset into the active loadout and brings them back when switching", () => {
+    let p = selectPreset(emptyProfile(), "spirits", 2);
+    p = selectSkillPreset(p, 3);
+    expect(p.loadouts[0]).toMatchObject({ spirits: 2, skills: 3 });
+    p = selectLoadout(p, 1);
+    expect(p.activeSkillPreset).toBe(0);
+    expect(p.activePresets.spirits).toBe(0);
+    p = selectPreset(p, "beasts", 4);
+    expect(p.loadouts[1].beasts).toBe(4);
+    p = selectLoadout(p, 0);
+    expect(p.activePresets).toMatchObject({ spirits: 2, beasts: 0 });
+    expect(p.activeSkillPreset).toBe(3);
   });
 });
 

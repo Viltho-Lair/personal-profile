@@ -32,8 +32,7 @@ import {
   type GearState,
   type ProfileV1,
   type SkillPreset,
-  type SpiritState,
-} from "./types";
+  type SpiritState, LOADOUT_COUNT, type Loadout } from "./types";
 
 export const PROFILE_KEY = "slayer-analyzer.profile";
 export const UNREADABLE_KEY = "slayer-analyzer.profile.unreadable";
@@ -229,6 +228,10 @@ function presets(data: Json): Presets {
       return familiarPreset(preset === undefined && i === 0 ? data.equippedFamiliars : preset);
     }),
     beasts: base.beasts.map((_, i) => name(list(stored.beasts)[i])),
+    // Before the mount checkbox, a picked beast was a mounted one.
+    beastMounted: base.beastMounted.map((_, i) =>
+      Array.isArray(stored.beastMounted) ? list(stored.beastMounted)[i] === true : name(list(stored.beasts)[i]) !== null,
+    ),
     abilities: base.abilities.map((_, i) => {
       const preset = list(stored.abilities)[i];
       if (preset === undefined && i === 0 && Array.isArray(legacyCharacter.abilities)) {
@@ -265,6 +268,22 @@ function promotionTarget(value: unknown): ProfileV1["promotionTarget"] {
     promotion: wholeLevel(stored.promotion),
     duration: duration !== null && duration >= 1 ? duration : DEFAULT_FIGHT_SECONDS,
   };
+}
+
+/** Saved loadouts; profiles from before them start every loadout on the presets that were on. */
+function loadouts(data: Json): Pick<ProfileV1, "loadouts" | "activeLoadout"> {
+  const current = { skills: presetIndex(data.activeSkillPreset), ...activePresets(data.activePresets) };
+  const stored = Array.isArray(data.loadouts) ? data.loadouts : [];
+  const index = (value: unknown, fallback: number) =>
+    typeof value === "number" && Number.isInteger(value) && value >= 0 && value < PRESET_COUNT ? value : fallback;
+  const list = Array.from({ length: LOADOUT_COUNT }, (_, i) => {
+    const entry = isRecord(stored[i]) ? stored[i] : {};
+    return {
+      skills: index(entry.skills, current.skills),
+      ...Object.fromEntries(PRESET_KINDS.map((kind) => [kind, index(entry[kind], current[kind])])),
+    } as Loadout;
+  });
+  return { loadouts: list, activeLoadout: index(data.activeLoadout, 0) };
 }
 
 function activePresets(value: unknown): ProfileV1["activePresets"] {
@@ -438,6 +457,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     familiars: entries(data.familiars, starsEntry),
     presets: presets(data),
     activePresets: activePresets(data.activePresets),
+    ...loadouts(data),
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
     bossMonster: data.bossMonster !== false,

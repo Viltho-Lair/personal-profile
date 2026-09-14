@@ -130,9 +130,14 @@ export type Presets = {
   skillStones: SkillStoneSet[];
   familiars: FamiliarPreset[];
   abilities: AbilityPreset[];
-  /** The mounted beast per preset. */
+  /** The beast picked per preset, and whether it's mounted. */
   beasts: (string | null)[];
+  beastMounted: boolean[];
 };
+
+/** A saved set of which preset of each kind is on. */
+export type Loadout = { skills: number } & Record<PresetKind, number>;
+export const LOADOUT_COUNT = 5;
 
 export type PresetKind = "spirits" | "skillStones" | "beasts" | "familiars" | "abilities";
 export const PRESET_KINDS: readonly PresetKind[] = ["spirits", "skillStones", "beasts", "familiars", "abilities"];
@@ -151,6 +156,7 @@ export function emptyPresets(): Presets {
     familiars: Array.from({ length: PRESET_COUNT }, () => ({ weapon: null, attribute: null, battle: null })),
     abilities: Array.from({ length: PRESET_COUNT }, emptyAbilityPreset),
     beasts: Array<string | null>(PRESET_COUNT).fill(null),
+    beastMounted: Array<boolean>(PRESET_COUNT).fill(false),
   };
 }
 
@@ -207,6 +213,9 @@ export type ProfileV1 = {
   /** Spirit, familiar and Slayer Promotion Ability presets; the active familiar preset is what's equipped. */
   presets: Presets;
   activePresets: Record<PresetKind, number>;
+  /** Five loadouts, each a saved choice of preset per kind; the active one follows preset changes. */
+  loadouts: Loadout[];
+  activeLoadout: number;
   /** Spirits marked as the main six. */
   mainSpirits: string[];
   /** The Stats Summary adds the active skill preset's buffs. */
@@ -268,6 +277,8 @@ export function emptyProfile(): ProfileV1 {
     familiars: {},
     presets: emptyPresets(),
     activePresets: emptyActivePresets(),
+    loadouts: Array.from({ length: LOADOUT_COUNT }, () => ({ skills: 0, ...emptyActivePresets() })),
+    activeLoadout: 0,
     mainSpirits: [],
     includeSkills: false,
     bossMonster: true,

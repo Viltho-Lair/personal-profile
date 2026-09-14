@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { beastSkillText, beastTotals, beastValue, MAX_BEAST_AWAKEN, maxAffection, type Beast } from "@/lib/game/beasts";
-import { mountedBeast } from "@/lib/profile/rules";
+import { mountedBeast, presetBeast } from "@/lib/profile/rules";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue } from "./data";
 import { InlineLevel } from "./level-input";
@@ -20,7 +20,7 @@ const pct = (value: number) => `${formatValue(Math.round(value * 100) / 100)}%`;
 const PIXEL = "[image-rendering:pixelated]";
 
 /** The beast's picture as COMPANIONS picks it: the egg until owned, Icon 2 at awaken 6, Icon 1 below. */
-function BeastArt({ beast, awaken, size }: { beast: Beast; awaken: number | null; size: number }) {
+export function BeastArt({ beast, awaken, size }: { beast: Beast; awaken: number | null; size: number }) {
   const owned = awaken !== null;
   const src = !owned ? beast.art.egg : awaken >= MAX_BEAST_AWAKEN ? (beast.art.sprite2 ?? beast.art.sprite) : beast.art.sprite;
   return (
@@ -40,7 +40,7 @@ function BeastArt({ beast, awaken, size }: { beast: Beast; awaken: number | null
 }
 
 function BeastCard({ beast }: { beast: Beast }) {
-  const { profile, setBeast, setMountedBeast } = useProfile();
+  const { profile, setBeast, setMountedBeast, setBeastMounted } = useProfile();
   const state = profile.beasts[beast.name] ?? { awaken: null, affection: 1 };
   const owned = state.awaken !== null;
   const cap = maxAffection(state.awaken ?? 0);
@@ -101,7 +101,7 @@ function BeastCard({ beast }: { beast: Beast }) {
           type="button"
           disabled={!owned}
           aria-pressed={mounted}
-          onClick={() => setMountedBeast(mounted ? null : beast.name)}
+          onClick={() => (mounted ? setBeastMounted(false) : setMountedBeast(beast.name))}
           className={`rounded-md border px-2 py-0.5 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 ${
             mounted ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink"
           }`}
@@ -158,11 +158,12 @@ function BeastCard({ beast }: { beast: Beast }) {
 
 /** Companion → Beasts: every beast on the left, the mounted beast and totals on the right. */
 export function BeastPanel() {
-  const { profile, selectPreset, setMountedBeast } = useProfile();
+  const { profile, selectPreset, setPresetBeast, setBeastMounted } = useProfile();
   const mounted = mountedBeast(profile);
+  const picked = presetBeast(profile);
   const totals = beastTotals(BEASTS, profile.beasts, mounted !== null);
   const ownedBeasts = BEASTS.beasts.filter((b) => (profile.beasts[b.name]?.awaken ?? null) !== null);
-  const mountedData = BEASTS.beasts.find((b) => b.name === mounted);
+  const mountedData = BEASTS.beasts.find((b) => b.name === picked);
 
   return (
     <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
@@ -186,11 +187,11 @@ export function BeastPanel() {
           <PresetPicker label="Beast preset" active={profile.activePresets.beasts} onSelect={(index) => selectPreset("beasts", index)} />
         </div>
         <label className="flex items-center gap-2">
-          <span className={LABEL}>Mounted beast</span>
+          <span className={LABEL}>Beast</span>
           <select
-            aria-label="Mounted beast"
-            value={mounted ?? ""}
-            onChange={(event) => setMountedBeast(event.target.value || null)}
+            aria-label="Preset beast"
+            value={picked ?? ""}
+            onChange={(event) => setPresetBeast(event.target.value || null)}
             className={SELECT}
           >
             <option value="">None</option>
@@ -200,6 +201,16 @@ export function BeastPanel() {
               </option>
             ))}
           </select>
+        </label>
+        <label className={`flex items-center gap-2 ${LABEL}`}>
+          <input
+            type="checkbox"
+            checked={mounted !== null}
+            disabled={!picked}
+            onChange={(event) => setBeastMounted(event.target.checked)}
+            className="size-3.5 accent-ink"
+          />
+          Mounted
         </label>
         {mountedData ? (
           <div className="flex items-center gap-3 rounded-md border border-ink/15 p-2 text-xs leading-snug">

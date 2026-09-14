@@ -18,8 +18,9 @@
  *   seconds) while the fight carries on. It can then be used again to unleash
  *   its share of that damage (110% at level 5) as it is, with no multipliers on
  *   top, played out in stopped time, and only then does its cooldown start.
- * - Meditation charges every skill with a cooldown, attacks and buffs alike;
- *   skills that go on a condition (strikes, skill uses) aren't charged.
+ * - Meditation charges every attack and buff, their cooldowns and strike
+ *   counts alike, and passives with a cooldown; passives that go on a
+ *   condition (strikes, skill uses, stacks) aren't charged.
  * - Demon Hunt plays its hits in stopped time. While the clock is stopped,
  *   cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
@@ -407,11 +408,13 @@ export function createFight(input: FightInput): Fight {
     } else if (e.type === "nextSkill") {
       if (s.element) nextSkillBonus[s.element] = e.power;
     } else if (e.type === "chargeCooldowns") {
-      // Meditation charges every cooldown, attacks and buffs alike; conditional skills (strikes, skill uses) aren't charged.
+      // Meditation charges every attack and buff (cooldown or strike count) and cooldown passives;
+      // conditional passives (strikes, skill uses, stacks) aren't charged.
       for (const other of live) {
         // A skill that starts on its cooldown (Wrath of Gods) isn't charged until it has gone once.
-        if (other.skill.startsOnCooldown && other.uses === 0) continue;
-        if (other !== l && other.skill.trigger === "seconds" && !isStack(other.skill) && !other.holding) {
+        if (other === l || isStack(other.skill) || other.holding || (other.skill.startsOnCooldown && other.uses === 0)) continue;
+        const t = other.skill.trigger;
+        if (t === "seconds" || (t === "hits" && castable(other.skill))) {
           other.progress = Math.min(target(other), other.progress + e.power * other.skill.every);
         }
       }

@@ -2,10 +2,9 @@
 
 import { useMemo } from "react";
 import { computeStats, ELEMENTS } from "@/lib/game/stats";
-import type { PresetKind } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue } from "./data";
-import { PresetPicker } from "./preset-picker";
+import { PresetsPanel } from "./presets-panel";
 import { useSpiritFactors } from "./spirit-stats";
 import { useLiveFight } from "./live-fight";
 import { collectSources, UNTRACKED_SOURCES } from "./stat-sources";
@@ -13,17 +12,9 @@ import { collectSources, UNTRACKED_SOURCES } from "./stat-sources";
 const pct = (fraction: number) => `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 
-const PRESET_ROWS: { kind: PresetKind | "skills"; label: string; note?: string }[] = [
-  { kind: "skills", label: "Skills" },
-  { kind: "spirits", label: "Spirits" },
-  { kind: "skillStones", label: "Skill Stone" },
-  { kind: "beasts", label: "Beast" },
-  { kind: "familiars", label: "Familiar" },
-  { kind: "abilities", label: "Slayer Promotion Ability" },
-];
 
 export function StatsSummary() {
-  const { profile, selectPreset, selectSkillPreset, setIncludeSkills, setBossMonster } = useProfile();
+  const { profile } = useProfile();
   const factors = useSpiritFactors();
   // Skill buffs don't raise the summary on their own: they show on Attack only while the fight renders and they're on.
   const stats = useMemo(() => computeStats(collectSources(profile, factors, false)), [profile, factors]);
@@ -60,42 +51,9 @@ export function StatsSummary() {
         ))}
       </dl>
 
-      <div className="flex items-center justify-between gap-2 border-t border-ink/15 pt-2">
-        <h3 className="text-xs font-semibold">Presets</h3>
-        <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
-          <label className="flex items-center gap-1.5 text-[11px] text-dim">
-            <input
-              type="checkbox"
-              checked={profile.includeSkills}
-              onChange={(event) => setIncludeSkills(event.target.checked)}
-              className="accent-ink"
-            />
-            Include Skills
-          </label>
-          <label className="flex items-center gap-1.5 text-[11px] text-dim" title="Off: a normal monster">
-            <input
-              type="checkbox"
-              checked={profile.bossMonster}
-              onChange={(event) => setBossMonster(event.target.checked)}
-              className="accent-ink"
-            />
-            Boss monster
-          </label>
-        </span>
+      <div className="border-t border-ink/15 pt-2">
+        <PresetsPanel />
       </div>
-      <ul className="flex flex-col gap-1.5">
-        {PRESET_ROWS.map((row) => (
-          <li key={row.kind} className="flex items-center justify-between gap-2" title={row.note}>
-            <span className="text-[11px] text-dim">{row.label}</span>
-            <PresetPicker
-              size="sm"
-              label={`${row.label} preset`}
-              active={row.kind === "skills" ? profile.activeSkillPreset : profile.activePresets[row.kind]}
-              onSelect={(index) => (row.kind === "skills" ? selectSkillPreset(index) : selectPreset(row.kind, index))}
-            />
-          </li>
-        ))}
-      </ul>
       <p className="text-[10px] leading-snug text-dim">
         {profile.includeSkills
           ? live

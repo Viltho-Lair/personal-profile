@@ -27,8 +27,7 @@ import {
   type KnownNames,
   type OwnableKind,
   type ProfileV1,
-  type SpiritState,
-} from "./types";
+  type SpiritState, type Loadout } from "./types";
 
 const NO_GEAR: GearState = { owned: false, level: 0 };
 const NO_SPIRIT: SpiritState = { owned: false, level: 0, awakening: null, enhance: MIN_SPIRIT_ENHANCE };
@@ -284,7 +283,21 @@ export function setProficiencyLevel(profile: ProfileV1, level: number, maxLevel:
 
 export function selectSkillPreset(profile: ProfileV1, index: number): ProfileV1 {
   const valid = Number.isInteger(index) && index >= 0 && index < SKILL_PRESET_COUNT;
-  return { ...profile, activeSkillPreset: valid ? index : 0 };
+  const next = valid ? index : 0;
+  return { ...profile, activeSkillPreset: next, loadouts: withLoadout(profile, { skills: next }) };
+}
+
+/** The active loadout with a changed preset choice saved into it. */
+function withLoadout(profile: ProfileV1, change: Partial<Loadout>): Loadout[] {
+  return profile.loadouts.map((loadout, i) => (i === profile.activeLoadout ? { ...loadout, ...change } : loadout));
+}
+
+/** Switches to a loadout: every kind's preset becomes the one it saved. */
+export function selectLoadout(profile: ProfileV1, index: number): ProfileV1 {
+  const loadout = profile.loadouts[index];
+  if (!loadout || !Number.isInteger(index)) return profile;
+  const { skills, ...kinds } = loadout;
+  return { ...profile, activeLoadout: index, activeSkillPreset: skills, activePresets: { ...kinds } };
 }
 
 function withPreset(profile: ProfileV1, index: number, slots: (string | null)[]): ProfileV1 {
@@ -385,7 +398,8 @@ export function activeFamiliars(profile: ProfileV1): FamiliarPreset {
 
 export function selectPreset(profile: ProfileV1, kind: PresetKind, index: number): ProfileV1 {
   const valid = Number.isInteger(index) && index >= 0 && index < PRESET_COUNT;
-  return { ...profile, activePresets: { ...profile.activePresets, [kind]: valid ? index : 0 } };
+  const next = valid ? index : 0;
+  return { ...profile, activePresets: { ...profile.activePresets, [kind]: next }, loadouts: withLoadout(profile, { [kind]: next }) };
 }
 
 export function activeAbilityPreset(profile: ProfileV1): AbilityPreset {
@@ -547,20 +561,48 @@ export function setBeast(profile: ProfileV1, beast: string, change: Partial<Beas
   next.affection = Math.min(70, Math.max(1, Math.floor(next.affection) || 1));
   if (next.awaken !== null) next.awaken = Math.min(6, Math.max(0, Math.floor(next.awaken)));
   const beasts = { ...profile.beasts, [beast]: next };
-  // A beast no longer owned can't stay mounted.
-  const presetBeasts = next.awaken === null ? profile.presets.beasts.map((b) => (b === beast ? null : b)) : profile.presets.beasts;
-  return { ...profile, beasts, presets: { ...profile.presets, beasts: presetBeasts } };
+  // A beast no longer owned can't stay picked or mounted.
+  const gone = next.awaken === null;
+  const presetBeasts = gone ? profile.presets.beasts.map((b) => (b === beast ? null : b)) : profile.presets.beasts;
+  const beastMounted = gone ? profile.presets.beastMounted.map((m, i) => (profile.presets.beasts[i] === beast ? false : m)) : profile.presets.beastMounted;
+  return { ...profile, beasts, presets: { ...profile.presets, beasts: presetBeasts, beastMounted } };
 }
 
-/** The mounted beast of the active beast preset. */
-export function mountedBeast(profile: ProfileV1): string | null {
+/** The beast picked in the active beast preset, mounted or not. */
+export function presetBeast(profile: ProfileV1): string | null {
   return profile.presets.beasts[profile.activePresets.beasts] ?? null;
 }
 
-export function setMountedBeast(profile: ProfileV1, beast: string | null): ProfileV1 {
+/** The mounted beast of the active beast preset: its picked beast, when the mount box is ticked. */
+export function mountedBeast(profile: ProfileV1): string | null {
+  return profile.presets.beastMounted[profile.activePresets.beasts] ? presetBeast(profile) : null;
+}
+
+function withBeastPreset(profile: ProfileV1, beast: string | null, mounted: boolean): ProfileV1 {
   const index = profile.activePresets.beasts;
-  const beasts = profile.presets.beasts.map((b, i) => (i === index ? beast : b));
-  return { ...profile, presets: { ...profile.presets, beasts } };
+  return {
+    ...profile,
+    presets: {
+      ...profile.presets,
+      beasts: profile.presets.beasts.map((b, i) => (i === index ? beast : b)),
+      beastMounted: profile.presets.beastMounted.map((m, i) => (i === index ? beast !== null && mounted : m)),
+    },
+  };
+}
+
+/** Picks and mounts a beast in the active preset; null clears it. */
+export function setMountedBeast(profile: ProfileV1, beast: string | null): ProfileV1 {
+  return withBeastPreset(profile, beast, beast !== null);
+}
+
+/** Picks the active preset's beast, keeping its mount box as it is. */
+export function setPresetBeast(profile: ProfileV1, beast: string | null): ProfileV1 {
+  return withBeastPreset(profile, beast, profile.presets.beastMounted[profile.activePresets.beasts] ?? false);
+}
+
+/** Ticks or unticks mounting the active preset's beast. */
+export function setBeastMounted(profile: ProfileV1, mounted: boolean): ProfileV1 {
+  return withBeastPreset(profile, presetBeast(profile), mounted);
 }
 
 /** Marks an outfit owned or not. */

@@ -31,7 +31,7 @@ function artFor(familiar: Familiar, stars: number | null) {
 const rarityOf = (familiar: Familiar, stars: number | null) =>
   stars === null ? null : (familiar.stars.find((s) => s.star === stars)?.rarity ?? null);
 
-function FamiliarArt({ familiar, stars, size }: { familiar: Familiar; stars: number | null; size: number }) {
+export function FamiliarArt({ familiar, stars, size }: { familiar: Familiar; stars: number | null; size: number }) {
   const art = artFor(familiar, stars);
   return art?.icon && art.iconSize ? (
     <Sprite

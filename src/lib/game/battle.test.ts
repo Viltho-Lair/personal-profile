@@ -233,8 +233,9 @@ describe("simulateFight", () => {
     expect(fight.cast("Slash")).toBe(false);
   });
 
-  it("charges every cooldown with Meditation, attacks and buffs alike, but not skills that wait for strikes", () => {
+  it("charges attacks and buffs with Meditation, strike counts too, but not passives that wait for strikes", () => {
     const strike = skill({ name: "Strike", trigger: "hits", every: 20, effect: { type: "damage", power: 1, hits: 1 } });
+    const passive = skill({ name: "Passive", kind: "passive", trigger: "hits", every: 20, effect: { type: "damage", power: 1, hits: 1 } });
     const slash = skill({ name: "Slash", every: 20, startsOnCooldown: false, effect: { type: "damage", power: 1, hits: 1 } });
     const buff = skill({ name: "Buff", kind: "buff", every: 20, duration: 1, effect: { type: "atk", power: 0 } });
     const meditation = skill({ name: "Meditation", element: "Water", kind: "buff", every: 100, startAt: 2, effect: { type: "chargeCooldowns", power: 0.5 } });
@@ -243,8 +244,9 @@ describe("simulateFight", () => {
     // Slash and Buff go at 0; Meditation at 2s charges half of their next cooldown.
     expect(casts([slash, meditation], "Slash")[1]).toBeLessThan(casts([slash], "Slash")[1] - 5);
     expect(casts([buff, meditation], "Buff")[1]).toBeLessThan(casts([buff], "Buff")[1] - 5);
-    // Strike still waits for its 20 hits (only Meditation's cast animation holds a basic attack back).
-    expect(casts([strike, meditation], "Strike")[1]).toBeGreaterThanOrEqual(casts([strike], "Strike")[1]);
+    expect(casts([strike, meditation], "Strike")[1]).toBeLessThan(casts([strike], "Strike")[1] - 5);
+    // The passive still waits for its 20 hits (only Meditation's cast animation holds a basic attack back).
+    expect(casts([passive, meditation], "Passive")[0]).toBeGreaterThanOrEqual(casts([passive], "Passive")[0]);
   });
 
   it("releases Rave's stored damage as it is, without the boss damage again", () => {
