@@ -8,16 +8,43 @@ export default function Guide() {
     <GuideArticle slug="promotion-fights">
       <p>
         A promotion is the single largest power jump in Slayer Legends, and failing the fight costs
-        time. The <Link href="/slayer-legends-analyzer">analyzer</Link> can play a promotion fight
-        with your build before you try it. This guide explains what that simulation models, what
-        it doesn’t, and how to read its verdict.
+        time. The <Link href="/slayer-legends-analyzer">analyzer</Link> plays the fight with your
+        build before you try it, and when you fall short it plans the upgrades that close the gap.
+        This guide explains what the fight models, how to read its result, and how the plan is
+        built.
       </p>
+
+      <h2>Choosing the enemy</h2>
+      <p>On the Analysis tab, the checkboxes above the chart pick what you fight:</p>
+      <ul>
+        <li>
+          <strong>Boss monster</strong>: the chosen promotion’s boss, for 75 seconds, about as long
+          as the game gives you.
+        </li>
+        <li>
+          <strong>Normal monster</strong>: one monster from that promotion’s stage, for 60 seconds.
+          The fight ends as soon as it falls.
+        </li>
+        <li>
+          <strong>Neither ticked</strong>: the stages analysis, a 60-second fight against stage
+          bosses. It shows the highest stage your presets clear and compares it with the highest
+          stage you entered in Settings.
+        </li>
+        <li>
+          <strong>Stage farming</strong>: a stage’s ten waves and its box, walked through until the
+          box breaks, with clears an hour.
+        </li>
+        <li>
+          <strong>Element restricted</strong>: the enemy takes ×2 from the element that beats it and
+          ×0.7 from the one it beats.
+        </li>
+      </ul>
 
       <h2>Estimating the boss</h2>
       <p>
         The game doesn’t publish promotion boss stats, so the analyzer uses each promotion’s
-        recommended stage. The boss’s HP is taken as the stage boss HP at that stage, with a range
-        of stages around it, because the recommendation is a guide rather than an exact match:
+        recommended stage. The boss’s HP is the stage boss HP at that stage, with a range of stages
+        around it, because the recommendation is a guide rather than an exact match:
       </p>
       <div className="table-scroll">
         <table>
@@ -33,89 +60,106 @@ export default function Guide() {
             <tr><td>Iron</td><td>50</td><td>±5</td></tr>
             <tr><td>Gold</td><td>100</td><td>±5</td></tr>
             <tr><td>Mithril</td><td>145</td><td>±10</td></tr>
+            <tr><td>Eisenhart</td><td>1,400</td><td>±10</td></tr>
+            <tr><td>Diadust</td><td>1,490</td><td>±10</td></tr>
             <tr><td>Aurorite</td><td>1,790</td><td>±10</td></tr>
           </tbody>
         </table>
       </div>
       <p>
         Boss HP climbs astronomically: about 10,780 at stage 10, 444 million at stage 50 and 6.7
-        trillion at stage 100. Every fight lasts 60 seconds, and the question is simply whether your
-        total damage in that time reaches the boss’s HP.
+        trillion at stage 100. Near the later promotions it grows about 6% a stage, so Diadust has
+        roughly 52 times the HP of the stage 1,425 boss.
       </p>
 
       <h2>How a hit is calculated</h2>
       <p>
-        Instead of rolling random crits, the simulator uses the <strong>expected</strong> damage of
-        a hit, which gives the same result every run. With crit chance <em>c</em> and death strike
-        chance <em>d</em>, a hit averages four cases: no crit or death strike, crit only, death strike
-        only, and both. For example, 50% crit chance with ×3 crit damage makes an average hit worth
-        twice your ATK. With 100% crit at ×3 and 100% death strike at ×2, every hit is worth six
-        times your ATK.
+        Instead of rolling random crits, the fight uses the <strong>expected</strong> damage of a
+        hit, so it plays out the same way every time. With crit chance <em>c</em> and death strike
+        chance <em>d</em>, a hit averages four cases: neither, crit only, death strike only, and
+        both. For example, 50% crit chance with ×3 crit damage makes an average hit worth twice your
+        ATK. With 100% crit at ×3 and 100% death strike at ×2, every hit is worth six times your ATK.
       </p>
       <p>
-        A skill cast multiplies that expected hit by the skill’s power, by one plus its bonuses
-        (element damage, Refinement DMG Increase, Heart of Fire, Ignition, the Statue of Demon and
-        Luna’s Wisdom of War), by element amplification and by the number of hits. Black Orb boss
-        damage multiplies every hit, basic attacks included.
+        A skill hit multiplies that by the skill’s power (with its Skill Mastery multiplier), and
+        then by each of these on its own:
+      </p>
+      <ul>
+        <li>Refinement DMG Increase</li>
+        <li>the Mana Altar with the Statue of Demon</li>
+        <li>Luna’s Wisdom of War</li>
+        <li>element damage, with Heart of Fire’s bonus for Fire skills</li>
+        <li>element amplification</li>
+        <li>Loar’s Wilderness Roar against bosses (or Mum’s Reign against normal monsters)</li>
+        <li>Black Orb boss or monster damage, which also multiplies basic attacks</li>
+      </ul>
+      <p>
+        The <Link href="/guides/skills">skills guide</Link> explains skill power and Mastery.
       </p>
 
       <h2>The timeline</h2>
       <p>The fight advances in steps of 0.02 seconds, following these rules:</p>
       <ul>
         <li>
-          <strong>Basic attacks</strong> happen once per second, faster with Bracelet of Speed and
+          <strong>Basic attacks</strong> land once a second, faster with the Bracelet of Speed and
           attack-speed buffs.
         </li>
         <li>
-          <strong>Cooldown skills</strong> start the fight ready. <strong>Strike skills</strong>{" "}
-          count your basic attacks and fire when the count is reached.
+          <strong>Every skill you can cast starts ready.</strong> After that, cooldown skills wait
+          their cooldown and strike skills count your basic attacks.
         </li>
         <li>
-          <strong>Every ready skill casts at once.</strong> Each cast delays your next basic attack
-          by its 0.3-second animation.
+          <strong>Ready skills cast without waiting for each other.</strong> Each cast pauses your
+          basic attacks for its 0.3-second animation.
         </li>
         <li>
           <strong>Mana is spent in the order skills became ready.</strong> If a skill can’t afford
-          its cost, the skills queued behind it wait too, so cheap skills can’t keep an expensive
-          one from ever casting.
+          its cost, the skills queued behind it wait too, so cheap skills can’t keep an expensive one
+          from ever casting.
         </li>
         <li>
           <strong>HP and mana recover each second</strong> by your HP Recovery and Mana Recovery.
         </li>
         <li>
-          <strong>Buffs</strong> last their duration from when they take effect. Recasting refreshes
-          the timer rather than stacking.
+          <strong>Buffs</strong> last their duration from when they take effect. Casting one again
+          refreshes the timer rather than stacking.
         </li>
       </ul>
 
       <h2>Skills with special rules</h2>
-      <p>Several skills behave differently, and the simulator follows each one:</p>
       <ul>
         <li>
-          <strong>Wrath of Gods</strong> starts on cooldown: it first casts 20 seconds in, then every
-          30 seconds. Meditation and Cooldown Stones only shorten the later cooldowns, not the first.
+          <strong>Wrath of Gods</strong> first goes off 20 seconds in, then every 30 seconds.
+          Meditation and cooldown stones only shorten the later cooldowns, not the first 20
+          seconds.
         </li>
         <li>
-          <strong>Warrior Burn</strong> spends half your current HP for an ATK boost lasting 5
-          seconds. <strong>Lightning Body</strong> also costs half your current HP, for attack speed.
+          <strong>Rave</strong> stores all the damage dealt over 5 seconds while the fight carries
+          on: skills, basic attacks and spirit skills like Breath of Fire. Press it again and a pillar
+          deals its share of that damage (110% at level 5) over 2 seconds, during which everything
+          else stops: the battle timer, cooldowns, buffs and attacks. Its cooldown starts with the
+          release.
         </li>
         <li>
-          <strong>Breath of Waves</strong> heals half your current HP, capped at your maximum, and
-          speeds up cooldowns for 5 seconds. Starting from 1,000 HP, Warrior Burn takes you to 500
-          and Breath of Waves back up to 750.
+          <strong>Meditation</strong> charges every skill that goes on a cooldown or a strike count,
+          stacking buffs like Burning Sword, Curved Blade, Earth’s Will and Speed Sword included
+          until their stacks are complete. Skills that go on a condition aren’t charged. The spirit
+          skill <strong>Wind Force</strong> charges the same skills.
         </li>
         <li>
-          <strong>Rage</strong> adds ATK for every 1% of HP you’re missing, but stops HP recovery
-          while it lasts. That pairs naturally with skills that spend HP.
+          <strong>Demon Hunt</strong> plays its hits in stopped time, so cooldowns, buffs and
+          recovery pause while it runs.
         </li>
         <li>
-          <strong>Rave</strong> stores the damage you deal over 5 seconds and releases a share of it
-          when used again. <strong>Demon Hunt</strong> plays its hits in stopped time, so cooldowns
-          and buffs pause while it runs.
+          <strong>Rage</strong> adds ATK for every 1% of HP you’re missing, stops HP recovery and
+          drains 0.5% of your max HP a second while it lasts. It ends early rather than taking your
+          HP to zero.
         </li>
         <li>
-          <strong>Meditation</strong> instantly charges every other skill’s cooldown and strike
-          count.
+          <strong>Warrior Burn</strong> spends half your current HP for ATK.{" "}
+          <strong>Lightning Body</strong> also costs half your current HP, for attack speed.{" "}
+          <strong>Breath of Waves</strong> heals half your current HP and speeds up cooldowns.
+          Starting from 1,000 HP, Warrior Burn takes you to 500 and Breath of Waves back up to 750.
         </li>
         <li>
           <strong>Sea Judgment</strong> triggers after every three Water casts and gains a hit each
@@ -124,51 +168,93 @@ export default function Guide() {
         </li>
       </ul>
       <p>
-        Mantra isn’t cast in the fight because its bonus is already part of your ATK and HP. A
-        mounted wolf’s ATK buff is modelled. Skills whose effects can’t be expressed as damage or a
-        simple buff are skipped, and the analyzer lists which ones after each render.
+        Mantra isn’t cast because its bonus is already part of your ATK and HP. Skills whose
+        effects can’t be expressed as damage or a buff are listed under the result as not modelled.
       </p>
 
-      <h2>Manual skills</h2>
-      <p>
-        Before rendering, you can switch any skill tile between auto and manual. Auto skills cast
-        as soon as they’re ready; manual skills wait for you to tap them during the fight. That lets
-        you test the timing you actually play with, such as saving Breath of Waves until after
-        Warrior Burn.
-      </p>
-
-      <h2>Reading the verdict</h2>
-      <p>After 60 seconds, the simulator compares your total damage with the boss HP range:</p>
+      <h2>Familiars, beasts and spirits</h2>
       <ul>
-        <li><strong>High chance of success</strong>: you beat the HP of the highest stage in the range.</li>
-        <li><strong>Good chance</strong>: you beat the recommended stage’s boss.</li>
-        <li><strong>Some chance</strong>: you beat the lowest stage in the range.</li>
-        <li><strong>Not yet</strong>: you’d need about N times more damage.</li>
+        <li>
+          <strong>The familiar</strong> combines your attribute, battle and weapon familiars into one
+          skill, shown as a tile next to your skills. It goes once a battle (Ku allows two uses, 20
+          seconds apart), hits its number of times for its share of your ATK as the attribute
+          familiar’s element, and brings its familiars’ specials. Pe repeats the attack. You can
+          leave it on auto or press it yourself.
+        </li>
+        <li>
+          <strong>The equipped beast’s skill</strong> runs on its own, once a battle. Wolves go after
+          strike skills, boars after knockbacks (a 50% chance every 10 seconds), and dracos once a
+          stacking skill maxes out. Draco of Light waits for all of them, then raises boss damage
+          for 60 seconds.
+        </li>
+        <li>
+          <strong>Spirit skills</strong> of your spirit preset count in the fight. Breath of Fire
+          takes a share of the enemy’s remaining HP every 12 seconds (10% at enhance 5), and Last
+          Fight multiplies your damage in the last 5 seconds. Wilderness Roar raises skill damage to
+          bosses. Judge’s Torpedo and Thief Wind only work on normal monsters. The partner, in the
+          preset’s first slot, has its skill effect 10% stronger.
+        </li>
       </ul>
 
-      <h2>Suggestions when you fall short</h2>
+      <h2>Pressing skills yourself</h2>
       <p>
-        If you’re not ready, the analyzer works out how far each lever would need to move on its own
-        to close the gap. For levers that scale damage in proportion (Enhance ATK, weapons, classes,
-        Extra ATK, spirits and Breakthrough) that’s the damage ratio directly, and Enhance ATK is
-        converted to an approximate enhance level. For crit damage, crit chance and death strike,
-        which don’t scale in proportion, it re-runs the fight to find the value needed. It shows the
-        four smallest changes.
+        Before rendering, tap a skill to switch it between auto and manual. Auto skills cast as soon
+        as they’re ready; manual skills light up when ready and wait for your tap. That lets you
+        test the rotation you actually play. For example, you might press Rave as Wrath of Gods
+        starts and release it after 5 seconds, or keep the familiar for the end of the fight. Which
+        skills are manual is saved with the skill preset.
+      </p>
+
+      <h2>Reading the result</h2>
+      <p>After a boss fight, your total damage is compared with the boss HP range:</p>
+      <ul>
+        <li><strong>High chance of success</strong>: you’d clear even the highest stage in the range.</li>
+        <li><strong>Good chance of success</strong>: you beat the recommended stage’s boss.</li>
+        <li><strong>Some chance</strong>: enough for the lowest stage in the range, short of the recommended one.</li>
+        <li><strong>Not yet</strong>: you’d need about N times more damage.</li>
+      </ul>
+      <p>
+        A normal monster fight tells you how fast it went down and how many that is a minute. The
+        stages analysis tells you the stage you’d reach and how far that is from your highest.{" "}
+        <strong>Damage by source</strong> breaks the total down by skill, spirit skill and basic
+        attacks.
+      </p>
+
+      <h2>How the upgrade plan is built</h2>
+      <p>
+        When a fight falls short, the analyzer plans how to win it. First it finds the gap: how
+        many times <strong>your own damage</strong> has to grow. Your own damage leaves out spirit
+        skills and Rave’s copy of them, because Breath of Fire takes a share of the enemy’s HP
+        whatever your stats are. Planned fights press Rave at whichever timing deals the most, and
+        the plan shows those times.
       </p>
       <p>
-        It also shows a <strong>spread</strong> figure: the fifth root of the ratio. That’s how much
-        five separate ATK groups would each need to grow to close the gap together. A 2× gap needs
-        each of five groups to rise by only about 15%. That’s the practical lesson of{" "}
-        <Link href="/guides/how-stats-are-calculated">how stats are calculated</Link>: spreading
-        upgrades across groups beats piling them into one.
+        Then it builds the plan. Every piece of content that isn’t maxed is a curve from where it
+        starts to its max: a spirit’s levels, an awakening’s tiers, a familiar’s stars, a statue’s
+        levels, a skill’s levels, an enhance. Step by step, the plan moves the curve whose next
+        stretch (5% of it) lifts your damage the most, until the enemy falls. That’s the steepest
+        slope from where you are, not the biggest number at the end.
+      </p>
+      <p>
+        Upgrades that cost resources are held to their price. A stretch counts as big as its price
+        measured against what you own when that’s more, or against what you’ve already spent on
+        these upgrades if you haven’t entered what you own. The plan spends at most three times
+        that. A spirit whose next levels cost more crystals than you’ve ever earned loses to cheaper
+        upgrades that add less. Each card shows its levels and cost, and the plan ends with what the
+        fight deals after all of it.
+      </p>
+      <p>
+        That’s the practical lesson of{" "}
+        <Link href="/guides/how-stats-are-calculated">how stats are calculated</Link>: stats multiply
+        across groups, so several medium upgrades in different places beat one enormous one.
       </p>
 
       <h2>Limits worth knowing</h2>
       <p>
-        The boss HP is an estimate from stage data, not a published promotion table, so treat “Some
-        chance” as a real risk. Some systems, such as spirit skills and most familiar special
-        effects, are shown in the analyzer but not counted in the fight. If you can clear the fight
-        comfortably at “Good chance” or better, your odds in the game are strong.
+        Boss HP is an estimate from stage data, not a published promotion table, so treat “Some
+        chance” as a real risk. Upgrades the workbook doesn’t price, like familiar stars, statues
+        and skill levels, have no price in the plan. The model is checked against real players’
+        stats screens, but the game can change between updates.
       </p>
     </GuideArticle>
   );

@@ -10,45 +10,53 @@ export default function Guide() {
         Slayer Legends has dozens of systems that feed the same handful of stats, and the game
         rarely shows you how they combine. The{" "}
         <Link href="/slayer-legends-analyzer">Slayer Legends Analyzer</Link> lets you enter your
-        account once and see the result of every system added up, then test changes before you
-        spend resources on them. This guide walks through it in the order most players use it.
+        account once, see every system added up, play your promotion fights before you try them,
+        and get a plan for what to upgrade next. This guide walks through it in the order most
+        players use it.
       </p>
 
       <h2>Before you start: where your data lives</h2>
       <p>
         There’s no account and nothing to sign in to. Everything you enter is saved in your
         browser’s local storage the moment you change it, so closing the tab loses nothing. The
-        flip side is that your profile lives on that one browser: a different device or a private
-        window starts empty. The <strong>Reset profile</strong> button in the top-right panel wipes
-        it and starts over.
+        flip side is that your profile lives in that one browser: a different device or a private
+        window starts empty. To move it, use <strong>Export JSON</strong> in the Settings panel and{" "}
+        <strong>Import JSON</strong> on the other browser. <strong>Reset profile</strong> wipes it
+        and starts over.
       </p>
       <p>
         You don’t need to fill in everything. Every system starts at zero, so the numbers are
         correct for what you’ve entered and simply lower for what you haven’t. Start with the
-        systems that matter most for your stage of the game and add the rest over time.
+        systems that matter most at your stage of the game and add the rest over time.
       </p>
 
-      <h2>The overview: chart, summary and slayer level</h2>
-      <p>The top half of the screen stays visible whichever tab you open below it.</p>
+      <h2>The layout</h2>
+      <p>
+        Five tabs sit along the bottom of the screen: <strong>Char</strong>, <strong>Skill</strong>,{" "}
+        <strong>Equips</strong>, <strong>Companion</strong> and <strong>Analysis</strong> (the chart
+        icon). The <strong>Settings</strong> panel stays on the side whichever tab is open:
+      </p>
       <ul>
         <li>
-          <strong>Slayer level and highest stage reached</strong> sit in the top-right corner.
-          Slayer level matters more than it looks: it sets your Growth skill points, when Training
-          Diary levels unlock, and how strong Latent Power becomes.
+          <strong>Slayer level</strong> sets your Growth skill points, when Training Diary levels
+          unlock, and how strong Latent Power becomes.
         </li>
         <li>
-          <strong>Stats Summary</strong> lists Attack, HP, HP Recovery, crit and death strike
-          chances and damage, Mana and Mana Recovery, Accuracy, Dodge, CC Resist, Extra Gold, Extra
-          EXP and extra damage for each of the four elements. It also holds the preset pickers for
-          skills, spirits, skill stones, beasts, familiars and the Slayer Promotion Ability, so you
-          can switch loadouts and watch the totals change.
+          <strong>Highest stage reached</strong> is what the stages analysis compares your fight
+          with.
         </li>
         <li>
-          <strong>The promotion chart</strong> estimates whether you can beat the boss of a
-          promotion. Pick a target, press <strong>Render</strong>, and a 60-second fight plays out
-          with your skills casting in real time. The{" "}
-          <Link href="/guides/promotion-fights">promotion fights guide</Link> explains what it
-          models.
+          <strong>Forest of Circulation level</strong> shows your Fountain of Circulation grade:
+          one grade for every 30 levels, so level 240 is grade 9.
+        </li>
+        <li>
+          <strong>Abbreviate numbers</strong> writes every number the game’s way, a letter for each
+          thousand: 1,000 is 1.00A and 1,000,000 is 1.00B.
+        </li>
+        <li>
+          <strong>Owned resources</strong>: gold, cubes, Mana Crystals, stones, emeralds and souls.
+          Upgrade plans show in green what you can pay for and in red what you’re short of. You can
+          type amounts in full, like 4.71e17, or with the game’s letters, like 471F.
         </li>
       </ul>
 
@@ -56,21 +64,20 @@ export default function Guide() {
       <p>The Char tab covers the systems that belong to the slayer directly.</p>
       <ul>
         <li>
-          <strong>Enhance</strong>: enter your level for each enhance stat, plus your Growing
-          Knowledge and Superhuman grades, which set the Death Strike cap.
+          <strong>Enhance</strong>: your level for each enhance stat, plus your Growing Knowledge
+          and Superhuman grades, which set the Death Strike cap.
         </li>
         <li>
-          <strong>Growth</strong>: spend skill points across STR, HP, VIT, CRI, LUK, ACC and
-          DODGE. The Training Diary and Latent Power sub-tabs raise the caps and per-level values.
+          <strong>Growth</strong>: skill points across STR, HP, VIT, CRI, LUK, ACC and DODGE, with
+          Training Diary and Latent Power raising the caps and the value of each level.
         </li>
         <li>
-          <strong>Promotion</strong>: choose your current promotion, record which classes you own
-          and their levels, and fill in the seven Slayer Promotion Ability rows. Memory Tree and
-          Constellation of Light unlock here once your Blast class awakens far enough.
+          <strong>Promotion</strong>: your current promotion, the classes you own and their levels,
+          the seven Slayer Promotion Ability rows, the Memory Tree and the Constellation of Light.
         </li>
         <li>
-          <strong>Appearance</strong>: tick the clothing and guild outfits you own. Sweatsuits
-          matter more than the rest because they multiply promotion ability rows.
+          <strong>Appearance</strong>: the clothing and guild outfits you own. Sweatsuits matter
+          more than the rest because they multiply promotion ability rows.
         </li>
       </ul>
       <p>
@@ -80,49 +87,104 @@ export default function Guide() {
 
       <h2>Skill tab</h2>
       <p>
-        Click any skill tile to open its details: level, power at that level, mana cost, cooldown,
-        and its Refinement lines. The <strong>Max skills</strong> toggle treats every skill as
-        maxed, which is a quick way to see your ceiling. Below the grid you can build five skill
-        presets of ten slots each and set up skill stones. The Familiars, Skill Proficiency and
-        Skill Mastery sections live here as well. See the{" "}
-        <Link href="/guides/skills">skills guide</Link>.
+        Click any skill to open its details: level, power at that level, mana cost, cooldown and
+        its Refinement lines. <strong>Max skills</strong> treats every skill as maxed, which is a
+        quick way to see your ceiling. The tab also holds your five skill presets, Skill Stones,
+        Familiars, Skill Proficiency, Skill Mastery, the Immortal skills and the Seasonal skills.
+        See the <Link href="/guides/skills">skills guide</Link>.
       </p>
 
       <h2>Equips tab</h2>
       <p>
-        Weapons and accessories are laid out by tier and grade. For each you mark whether it’s
-        owned, its level, and which one is equipped, and set awakening for the whole category. The
-        detail card shows the equip and owned effect at that level. Relics, the Sealed Shrine,
-        spirits (with presets and the Fountain of Circulation), soul weapons with their gems, and
-        the Black Orb are also here. The{" "}
-        <Link href="/guides/equipment">equipment guide</Link> covers how each one scales.
+        Weapons and accessories are laid out by tier and grade: mark each one owned, its level and
+        which is equipped, and set awakening for the whole category. Relics and the Sealed Shrine,
+        spirits with their presets and the Fountain of Circulation effects, soul weapons with their
+        engraving gems, and the Black Orb each have their own section. In a spirit preset the first
+        slot is the <strong>partner</strong>, highlighted in amber, because its skill effect is 10%
+        stronger. The <Link href="/guides/equipment">equipment guide</Link> covers how each one
+        scales.
       </p>
 
       <h2>Companion tab</h2>
       <p>
-        Set each companion’s advancement, level their nine passives, and record promotion rolls.
-        Every passive shows its current effect and the cost of the next level and of maxing it,
-        which makes it easy to compare where stones and emeralds do the most. Beasts sit alongside:
-        mark owned beasts, their awaken level and affection, and which one is mounted. See{" "}
+        Set each companion’s advancement, level their passives and record their promotion rolls.
+        Every passive shows its current effect and what the next level and maxing it cost. Beasts
+        have their own section: owned beasts, their awaken level and affection. See{" "}
         <Link href="/guides/companions-and-beasts">companions and beasts</Link>.
       </p>
+
+      <h2>Analysis tab</h2>
+      <p>
+        Analysis puts the fight next to the <strong>Stats Summary</strong> (Attack, HP, crit,
+        death strike, mana, accuracy, dodge, gold, EXP and extra damage for each element) and your{" "}
+        <strong>Presets</strong>.
+      </p>
+      <ul>
+        <li>
+          <strong>Presets</strong> has five loadouts. Each saves which skill, spirit, skill stone,
+          beast, familiar and promotion ability preset is on, so one tap switches your whole setup.{" "}
+          <strong>Include Skills</strong> adds the skill preset’s buffs to the Stats Summary.
+        </li>
+        <li>
+          <strong>Pick the enemy</strong> with the checkboxes. <strong>Boss monster</strong> fights
+          the chosen promotion’s boss for 75 seconds. <strong>Normal monster</strong> fights one
+          monster of that promotion’s stage and ends when it falls. With neither ticked, the fight
+          runs through the <strong>stages</strong>, telling you how far your presets reach.{" "}
+          <strong>Stage farming</strong> walks through a stage’s waves until the box breaks.{" "}
+          <strong>Element restricted</strong> sets the enemy’s element.
+        </li>
+        <li>
+          <strong>Render</strong> plays the fight in real time. <strong>Analysis</strong> shows it as
+          damage over time against the enemy’s HP, with an optional log scale. The{" "}
+          <strong>Render</strong> view shows the battle itself. Both show the same fight, and it
+          resets only when you render again or reload.
+        </li>
+        <li>
+          <strong>Skills below the fight</strong> switch between auto and manual when you tap them
+          before rendering. Manual skills light up when ready and wait for you to tap them, so you
+          can play your real rotation, such as pressing Rave as Wrath of Gods starts. Which skills
+          are on auto is saved with the skill preset.
+        </li>
+      </ul>
+      <p>
+        The <Link href="/guides/promotion-fights">promotion fights guide</Link> explains what the
+        fight models and how to read its result.
+      </p>
+
+      <h2>Upgrade plans</h2>
+      <p>When a fight ends short, a plan appears under the result:</p>
+      <ul>
+        <li>
+          <strong>The gap</strong>: how many times your own damage has to grow to win. Your own
+          damage leaves out spirit skills like Breath of Fire, which take a share of the enemy’s HP
+          whatever your stats are.
+        </li>
+        <li>
+          <strong>Checks</strong> for data that looks missing, like fewer than six familiars, no
+          refinement lines on your attack skills, or no beast picked.
+        </li>
+        <li>
+          <strong>The plan</strong>: the upgrades that get you there, each with its picture, levels
+          and cost, then what the fight deals with all of them.
+        </li>
+      </ul>
 
       <h2>A practical workflow</h2>
       <ol>
         <li>Enter slayer level, promotion, equipped weapon and accessory, and enhance levels first. They move ATK and HP the most.</li>
-        <li>Add spirits, classes and companions. Your Stats Summary will now be close to the game’s.</li>
-        <li>Build the skill preset you actually use and render the next promotion fight.</li>
-        <li>If the verdict says you’re not ready, read the suggestions. They show how far each stat would need to rise on its own.</li>
-        <li>Compare those suggestions with what each upgrade costs in the Equips and Companion tabs, and spend where the gain per resource is largest.</li>
+        <li>Add spirits, classes, companions, familiars and your soul weapon. Your Stats Summary should now be close to the game’s.</li>
+        <li>Build the skill preset you actually use, set the skills you press by hand to manual, and render your next promotion.</li>
+        <li>Enter what you own under Settings, then follow the upgrade plan, starting with what shows in green.</li>
+        <li>Render again after upgrading in the game to see how close you are.</li>
       </ol>
 
       <h2>How accurate is it?</h2>
       <p>
-        Formulas come from community-maintained game data, and several are checked against values
-        seen in the game. Treat the results as close estimates, not guarantees: the game can change
-        between updates, a few systems are shown without being counted, and promotion boss HP is
-        estimated from the recommended stage. If something doesn’t match, the{" "}
-        <Link href="/contact">contact page</Link> explains how to report it.
+        Formulas come from the community’s Master Optimizer workbook, and several are checked against
+        values seen in the game. Treat the results as close estimates, not guarantees: the game can
+        change between updates, and promotion boss HP is estimated from the recommended stage. If
+        something doesn’t match, the <Link href="/contact">contact page</Link> explains how to report
+        it.
       </p>
     </GuideArticle>
   );
