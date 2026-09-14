@@ -1,40 +1,10 @@
+// Adventure and Shop are left out until they have panels: an empty
+// "coming soon" tab reads as an unfinished site.
 export const ANALYZER_TABS = [
-  {
-    id: "char",
-    label: "Char",
-    name: "Character",
-    empty: "Character stats will live here.",
-  },
-  {
-    id: "skill",
-    label: "Skill",
-    name: "Skills",
-    empty: "Skill planning will live here.",
-  },
-  {
-    id: "equips",
-    label: "Equips",
-    name: "Equipment",
-    empty: "Equipment comparison will live here.",
-  },
-  {
-    id: "companion",
-    label: "Companion",
-    name: "Companion",
-    empty: "Companion setup will live here.",
-  },
-  {
-    id: "adv",
-    label: "Adv.",
-    name: "Adventure",
-    empty: "Adventure progress will live here.",
-  },
-  {
-    id: "shop",
-    label: "Shop",
-    name: "Shop",
-    empty: "Shop planning will live here.",
-  },
+  { id: "char", label: "Char", name: "Character" },
+  { id: "skill", label: "Skill", name: "Skills" },
+  { id: "equips", label: "Equips", name: "Equipment" },
+  { id: "companion", label: "Companion", name: "Companion" },
 ] as const;
 
 export type TabId = (typeof ANALYZER_TABS)[number]["id"];
