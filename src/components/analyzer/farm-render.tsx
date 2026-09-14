@@ -41,8 +41,28 @@ const TIER_HEX: Record<string, string> = {
 
 const colourOf = (element: Element | null) => (element ? ELEMENT_HEX[element] : INK);
 
+/** Colours the game gives some skills instead of their element's: Fulgurous's gold, Supersonic's cyan, Red Lightning's red. */
+const SKILL_TINT: Record<string, string> = {
+  Fulgurous: "#ffc53d",
+  Supersonic: "#4ce8e0",
+  Blizzard: "#8fdcff",
+  "Lightning Body": "#4ce8e0",
+  "Red Lightning": "#ff3b3b",
+  Rave: RAVE,
+};
+const tintOf = (name: string, element: Element | null) => SKILL_TINT[name] ?? colourOf(element);
+
+/**
+ * Skills whose cast takes over the screen in the game: a white flash, the field darkening while the name types
+ * in, and a beam dropping onto the slayer. Nothing stops meanwhile.
+ */
+const CUT_INS = new Set(["Rave", "Red Lightning", "Supersonic", "Blizzard", "Lightning Body"]);
+const CUT_IN_SECONDS = 0.5;
+/** How dark the field is `age` seconds into a cut-in: in fast, held, then back. */
+const cutInDarkness = (age: number) => (age < 0.05 ? age / 0.05 : age < 0.33 ? 1 : Math.max(0, (CUT_IN_SECONDS - age) / (CUT_IN_SECONDS - 0.33)));
+
 /** How each skill looks when it lands, by what it does; anything unlisted draws by its element. */
-type Style = "slash" | "burst" | "wave" | "pillar" | "meteor" | "shards" | "vortex" | "bolt" | "quake" | "impact" | "cuts" | "beam";
+type Style = "slash" | "burst" | "wave" | "pillar" | "meteor" | "shards" | "vortex" | "bolt" | "quake" | "impact" | "cuts" | "beam" | "blizzard";
 const STYLES: Record<string, Style> = {
   "Fire Slash": "slash",
   "Flame Slash": "slash",
@@ -66,7 +86,7 @@ const STYLES: Record<string, Style> = {
   "Flame Strike": "meteor",
   "Ice Shower": "shards",
   "Ice Time": "shards",
-  Blizzard: "vortex",
+  Blizzard: "blizzard",
   "Circular Sword Dance": "vortex",
   "Blast Wind": "vortex",
   "Lightning Stroke": "bolt",
@@ -119,19 +139,27 @@ function ridge(camera: number, depth: number, base: number, height: number, seed
 const LIFE: Record<FightEvent["kind"], number> = {
   basic: 0.18,
   sweep: 0.45,
-  charge: 0.32,
+  charge: 0.45,
   buff: 0.6,
   breath: 0.6,
   rave: 0.55,
-  kill: 0.55,
+  kill: 1.1,
   familiar: 0.42,
   spirit: 1,
 };
 /** Styles that rain strikes one after another take longer on screen. */
 const STRIKE_STYLES = new Set<Style>(["meteor", "shards", "bolt"]);
+/** Red Lightning's bolts rain for about a second and a half, Lightning Stroke's a little less. */
+const STRIKE_SECONDS: Record<string, number> = { "Red Lightning": 1.5, "Lightning Stroke": 1.2 };
 const lifeOf = (event: FightEvent) =>
   event.seconds ??
-  (event.kind === "familiar" ? familiarSeconds(event.count, event.gap) : event.kind === "sweep" && STRIKE_STYLES.has(styleOf(event)) && event.count > 1 ? 0.9 : LIFE[event.kind]);
+  (event.kind === "familiar"
+    ? familiarSeconds(event.count, event.gap)
+    : event.kind === "sweep" && STRIKE_STYLES.has(styleOf(event)) && event.count > 1
+      ? (STRIKE_SECONDS[event.name] ?? 0.9)
+      : event.kind === "kill" && event.name === "Box"
+        ? 1.5
+        : LIFE[event.kind]);
 
 function Monster({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
   const s = UNIT * 0.42;
@@ -243,25 +271,25 @@ function RavePillar({ x, ground, age, life }: { x: number; ground: number; age: 
   );
 }
 
-function Slayer({ x, y, element, moving, time, auras }: { x: number; y: number; element: Element | null; moving: boolean; time: number; auras: (Element | null)[] }) {
+function Slayer({ x, y, element, moving, time, buffs }: { x: number; y: number; element: Element | null; moving: boolean; time: number; buffs: string[] }) {
   const r = UNIT * 0.4;
   const bob = moving ? Math.abs(Math.sin(time * 14)) * 2.2 : Math.sin(time * 3) * 0.6;
   const colour = colourOf(element);
+  const icon = UNIT * 0.62;
   return (
     <g transform={`translate(${x} ${y - bob})`}>
-      {auras.map((aura, i) => (
-        <circle
-          key={i}
-          r={r * (1.55 + i * 0.35)}
-          cy={-r}
-          fill="none"
-          stroke={colourOf(aura)}
-          strokeOpacity="0.7"
-          strokeWidth="1.2"
-          strokeDasharray="3 4"
-          transform={`rotate(${(time * 120 * (i % 2 ? -1 : 1)) % 360} 0 ${-r})`}
-        />
-      ))}
+      {/* The buffs that are on, as small icons over the head, the way the game marks them. */}
+      {buffs.map((name, i) => {
+        const art = SKILL_BY_NAME.get(name)?.icon;
+        const bx = (i - (buffs.length - 1) / 2) * (icon + 1.5) - icon / 2;
+        const by = -r * 2 - icon - 3 + Math.sin(time * 4 + i) * 0.6;
+        return art ? (
+          <g key={name}>
+            <rect x={bx - 0.5} y={by - 0.5} width={icon + 1} height={icon + 1} rx={1.5} fill="#0b0d12" stroke={tintOf(name, SKILL_BY_NAME.get(name)?.element as Element | null)} strokeWidth="0.6" />
+            <image href={art} x={bx} y={by} width={icon} height={icon} preserveAspectRatio="xMidYMid slice" />
+          </g>
+        ) : null;
+      })}
       <ellipse cx={0} cy={bob + 1} rx={r * 0.9} ry={2} fill="#000" fillOpacity="0.45" />
       {/* The blade, held forward. */}
       <path d={`M ${r * 0.4} ${-r * 1.15} L ${r * 2.1} ${-r * 1.55} L ${r * 0.5} ${-r * 0.8} Z`} fill="#dfe6f0" stroke={colour} strokeWidth="1" />
@@ -360,7 +388,9 @@ function Styled({ style, from, to, targets, t, colour, chest, ground, hits }: {
     case "meteor":
     case "shards":
     case "bolt":
-      return <Strikes style={style} targets={targets} t={t} colour={colour} ground={ground} hits={hits} />;
+      return <Strikes style={style} from={from} to={to} targets={targets} t={t} colour={colour} ground={ground} hits={hits} />;
+    case "blizzard":
+      return null;
     case "vortex": {
       // A whirlwind over the middle of the reach.
       const mid = (from + to) / 2;
@@ -442,9 +472,13 @@ function Styled({ style, from, to, targets, t, colour, chest, ground, hits }: {
  * Strikes falling one after another, each on its own tile: meteors, icicles or lightning. Farming, the tiles
  * are where they landed at random within reach; against one enemy, every strike lands on it.
  */
-function Strikes({ style, targets, t, colour, ground, hits }: { style: Style; targets: number[]; t: number; colour: string; ground: number; hits: number }) {
-  const count = Math.min(30, Math.max(1, hits, targets.length));
-  const fall = 0.3;
+function Strikes({ style, from, to, targets, t, colour, ground, hits }: {
+  style: Style; from: number; to: number; targets: number[]; t: number; colour: string; ground: number; hits: number;
+}) {
+  const count = Math.min(style === "bolt" ? 40 : 30, Math.max(1, hits, targets.length));
+  const fall = style === "bolt" ? 0.12 : 0.3;
+  // Against one enemy every strike hits it, but they still come down all over the reach, as in the game.
+  const spreadOut = targets.length <= 1 && to - from > UNIT;
   return (
     <g>
       {Array.from({ length: count }, (_, k) => {
@@ -453,17 +487,30 @@ function Strikes({ style, targets, t, colour, ground, hits }: { style: Style; ta
         if (local <= 0) return null;
         // Several strikes on one target spread a little around it.
         const spread = targets.length >= count ? 0 : (noise(k + 17) - 0.5) * UNIT * 0.9;
-        const tx = (targets[k % Math.max(1, targets.length)] ?? 0) + spread;
+        const tx = spreadOut ? from + (to - from) * noise(k * 3 + 29) : (targets[k % Math.max(1, targets.length)] ?? 0) + spread;
         if (local >= 1) {
+          if (style === "bolt") {
+            // Where a bolt lands it bursts into a ball of its colour with a bright shard at the heart.
+            const after = Math.min(1, (local - 1) / 3);
+            if (after >= 1) return null;
+            const r = UNIT * (0.45 + after * 0.45);
+            return (
+              <g key={k} opacity={1 - after}>
+                <circle cx={tx} cy={ground - r * 0.7} r={r} fill={colour} fillOpacity="0.55" />
+                <path d={`M ${tx} ${ground - r * 1.3} L ${tx + r * 0.3} ${ground - r * 0.7} L ${tx} ${ground - r * 0.1} L ${tx - r * 0.3} ${ground - r * 0.7} Z`} fill="#ffe27a" />
+              </g>
+            );
+          }
           const after = Math.min(1, (local - 1) * 2);
           if (after >= 1) return null;
           return <ellipse key={k} cx={tx} cy={ground} rx={UNIT * (0.3 + after * 0.6)} ry={UNIT * 0.18} fill="none" stroke={colour} strokeWidth={2 * (1 - after)} opacity={1 - after} />;
         }
         if (style === "bolt") {
+          // A thin zig-zag from the sky.
           return (
-            <g key={k} opacity={0.6 + 0.4 * noise(k + Math.floor(t * 30))}>
-              <path d={boltPath(tx, ground, k * 7)} fill="none" stroke={colour} strokeWidth="3.5" strokeOpacity="0.5" />
-              <path d={boltPath(tx, ground, k * 7)} fill="none" stroke={INK} strokeWidth="1.1" />
+            <g key={k}>
+              <path d={boltPath(tx, ground, k * 7)} fill="none" stroke={colour} strokeWidth="2.2" strokeOpacity="0.45" />
+              <path d={boltPath(tx, ground, k * 7)} fill="none" stroke={colour} strokeWidth="0.9" />
             </g>
           );
         }
@@ -527,6 +574,91 @@ function FamiliarShots({ origin, from, to, targets, age, colour, chest, ground, 
   );
 }
 
+/** Dust thrown up where a charge lands: puffs in the field's colour with bright shards flying out. */
+function Dust({ x, y, age, life, colour, seed }: { x: number; y: number; age: number; life: number; colour: string; seed: number }) {
+  const t = Math.min(1, age / life);
+  return (
+    <g opacity={1 - t}>
+      {Array.from({ length: 5 }, (_, i) => {
+        const a = -Math.PI * (0.15 + 0.7 * noise(seed + i));
+        const d = UNIT * (0.3 + t * (0.8 + noise(seed + i + 9)));
+        return <circle key={`p${i}`} cx={x + Math.cos(a) * d} cy={y + Math.sin(a) * d * 0.6} r={UNIT * (0.28 + t * 0.35) * (0.6 + noise(seed + i + 3))} fill={colour} fillOpacity="0.45" />;
+      })}
+      {Array.from({ length: 4 }, (_, i) => {
+        const a = -Math.PI * (0.1 + 0.8 * noise(seed + i + 20));
+        const d = UNIT * (0.4 + t * 1.8);
+        const sx = x + Math.cos(a) * d;
+        const sy = y - UNIT * 0.3 + Math.sin(a) * d * 0.5;
+        return <path key={`s${i}`} d={`M ${sx - 3} ${sy} L ${sx} ${sy - 1.3} L ${sx + 3} ${sy} L ${sx} ${sy + 1.3} Z`} fill="#ffd24a" />;
+      })}
+    </g>
+  );
+}
+
+/** Blizzard: a dome grows from the slayer, a beam drops into it, a white blast sweeps the field, then snow lingers. */
+function BlizzardStorm({ x, ground, age, life, colour }: { x: number; ground: number; age: number; life: number; colour: string }) {
+  const dome = Math.min(1, age / 0.35);
+  const blast = age < 0.45 ? 0 : age < 1.4 ? Math.min(1, (age - 0.45) / 0.15, (1.4 - age) / 0.4) : 0;
+  const snow = Math.max(0, Math.min(1, (age - 1) / 0.3, (life - age) / 0.4));
+  const radius = UNIT * (1 + dome * 5.5);
+  return (
+    <g pointerEvents="none">
+      {age < 0.6 ? (
+        <path
+          d={`M ${x - radius} ${ground} A ${radius} ${radius * 0.95} 0 0 1 ${x + radius} ${ground} Z`}
+          fill="#04232b"
+          fillOpacity={0.45 * Math.min(1, (0.6 - age) / 0.15)}
+          stroke={colour}
+          strokeWidth="1.6"
+          strokeOpacity={Math.min(1, (0.6 - age) / 0.15)}
+        />
+      ) : null}
+      {age > 0.28 && age < 0.55 ? <rect x={x - UNIT * 0.45} y={0} width={UNIT * 0.9} height={ground} fill={colour} fillOpacity={0.6 * Math.min(1, (0.55 - age) / 0.1)} /> : null}
+      {blast > 0 ? (
+        <g opacity={blast}>
+          <rect x={x} y={ground - UNIT * 3.2} width={W - x} height={UNIT * 3.6} fill="#e9f7ff" fillOpacity="0.75" />
+          {Array.from({ length: 7 }, (_, i) => {
+            const lx = x + ((age * 380 + noise(i) * W) % Math.max(1, W - x));
+            return <rect key={i} x={lx} y={ground - UNIT * (0.4 + noise(i + 4) * 2.8)} width={UNIT * (1.5 + noise(i + 8) * 3)} height={1.4} fill={colour} />;
+          })}
+          <rect x={x - UNIT * 0.4} y={ground - UNIT * 1.8} width={UNIT * 0.8} height={UNIT * 2} rx={UNIT * 0.4} fill="#ffffff" />
+        </g>
+      ) : null}
+      {snow > 0
+        ? Array.from({ length: 26 }, (_, i) => {
+            const sx = x + ((noise(i) * (W - x) + age * 30 * (0.5 + noise(i + 2))) % Math.max(1, W - x));
+            const sy = ((noise(i + 5) * ground + age * 22 * (0.6 + noise(i + 7))) % ground);
+            return <circle key={i} cx={sx} cy={sy} r={0.7 + noise(i + 9)} fill="#ffffff" opacity={snow * 0.8} />;
+          })
+        : null}
+    </g>
+  );
+}
+
+/** Loot a monster drops as it falls: a coin and a gem that pop out and settle on the floor; the box bursts into coins. */
+function Loot({ x, ground, age, life, box, seed }: { x: number; ground: number; age: number; life: number; box: boolean; seed: number }) {
+  const fade = Math.min(1, (life - age) / 0.3);
+  const pieces = box ? 18 : 2;
+  return (
+    <g opacity={Math.max(0, fade)}>
+      {Array.from({ length: pieces }, (_, i) => {
+        const flight = box ? 0.9 : 0.35;
+        const p = Math.min(1, age / flight);
+        const spread = box ? (noise(seed + i) - 0.5) * UNIT * 5 : (i === 0 ? -1 : 1) * UNIT * (0.3 + noise(seed + i) * 0.4);
+        const height = UNIT * (box ? 3 + noise(seed + i + 5) * 3 : 1.2);
+        const px = x + spread * p;
+        const py = ground - 2 - Math.sin(p * Math.PI) * height;
+        const coin = box ? i % 3 !== 0 : i === 0;
+        return coin ? (
+          <circle key={i} cx={px} cy={py} r={2.2} fill={GOLD} stroke="#fff3b0" strokeWidth="0.6" />
+        ) : (
+          <path key={i} d={`M ${px} ${py - 2.6} L ${px + 2} ${py} L ${px} ${py + 2.6} L ${px - 2} ${py} Z`} fill="#4fb6ff" stroke="#d8f0ff" strokeWidth="0.5" />
+        );
+      })}
+    </g>
+  );
+}
+
 /** The skill names over the slayer's head as they're used, framed and coloured by the skill's rarity. */
 function SkillNames({ x, y, casts, time }: { x: number; y: number; casts: { name: string; real: number; grade: string | null }[]; time: number }) {
   return (
@@ -537,14 +669,16 @@ function SkillNames({ x, y, casts, time }: { x: number; y: number; casts: { name
         const rise = Math.min(1, age / 0.15);
         const colour = TIER_HEX[cast.grade ?? ""] ?? INK;
         const width = cast.name.length * 5.2 + 16;
+        // The name types in, a letter at a time, over a fifth of a second.
+        const typed = cast.name.slice(0, Math.max(1, Math.ceil(cast.name.length * Math.min(1, age / 0.22))));
         const cy = y - UNIT * 2.1 - i * 15 - rise * 3;
         return (
           <g key={`${cast.name}-${cast.real}`} opacity={fade} transform={`translate(${x} ${cy})`}>
             <rect x={-width / 2} y={-8} width={width} height={13} rx={2} fill="#0b0d12" fillOpacity="0.85" stroke={colour} strokeWidth="1" />
             <path d={`M ${-width / 2 - 3} -1.5 L ${-width / 2} -4.5 L ${-width / 2 + 3} -1.5 L ${-width / 2} 1.5 Z`} fill={colour} />
             <path d={`M ${width / 2 - 3} -1.5 L ${width / 2} -4.5 L ${width / 2 + 3} -1.5 L ${width / 2} 1.5 Z`} fill={colour} />
-            <text x={0} y={1.5} textAnchor="middle" fontSize="8" fontWeight="700" fill={colour}>
-              {cast.name}
+            <text x={-width / 2 + 8} y={1.5} textAnchor="start" fontSize="8" fontWeight="700" fill={colour}>
+              {typed}
             </text>
           </g>
         );
@@ -571,13 +705,13 @@ function TimeStop({ x, y, time }: { x: number; y: number; time: number }) {
 /** Seconds a skill's name stays over the slayer's head. */
 const NAME_SECONDS = 0.9;
 
-function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot }: {
-  event: FightEvent; age: number; x: (position: number) => number; y: number; slayerX: number; time: number; spiritArt: Record<string, string>; spiritSlot: number;
+function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot, dust }: {
+  event: FightEvent; age: number; x: (position: number) => number; y: number; slayerX: number; time: number; spiritArt: Record<string, string>; spiritSlot: number; dust: string;
 }) {
   const life = lifeOf(event);
   const t = age / life;
   const fade = 1 - t;
-  const colour = colourOf(event.element);
+  const colour = tintOf(event.name, event.element);
   const from = x(event.from);
   const to = x(event.to);
   const chest = y - UNIT * 0.45;
@@ -597,6 +731,8 @@ function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot }: {
               <FamiliarBody x={slayerX - UNIT * 0.7} y={chest - UNIT * 1.1} colour={colour} time={time} />
               <FamiliarShots origin={{ x: slayerX - UNIT * 0.7, y: chest - UNIT * 1.1 }} from={from} to={to} targets={targets} age={age} colour={colour} chest={chest} ground={y} count={event.count} gap={event.gap} />
             </>
+          ) : styleOf(event) === "blizzard" ? (
+            <BlizzardStorm x={from} ground={y} age={age} life={life} colour={colour} />
           ) : (
             <Styled style={styleOf(event)} from={from} to={to} targets={targets} t={t} colour={colour} chest={chest} ground={y} hits={event.count} />
           )}
@@ -605,20 +741,46 @@ function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot }: {
       );
     }
     case "charge": {
-      // A streak from where the charge began to where it landed, with afterimages along it.
+      // An upright ring where the charge set off, a streak to where it landed, a crescent cut there and dust thrown up.
       const head = from + (to - from) * Math.min(1, age / CHARGE_SECONDS);
+      const landed = Math.max(0, age - CHARGE_SECONDS);
+      const cut = Math.min(1, landed / 0.18);
       return (
         <g>
-          <rect x={Math.min(from, head)} y={chest - 3} width={Math.max(2, Math.abs(head - from))} height={6} rx={3} fill={colour} opacity={0.75 * fade} />
-          {[0.25, 0.5, 0.75].map((k) => (
-            <circle key={k} cx={from + (head - from) * k} cy={chest} r={UNIT * 0.36} fill="none" stroke={colour} strokeWidth="1.2" opacity={fade * k} />
-          ))}
+          <ellipse cx={from} cy={chest - UNIT * 0.35} rx={UNIT * (0.32 + t * 0.1)} ry={UNIT * 1.25} fill="none" stroke={colour} strokeWidth={3.2 * fade + 0.6} opacity={fade} />
+          <ellipse cx={from} cy={chest - UNIT * 0.35} rx={UNIT * 0.16} ry={UNIT * 1.05} fill="none" stroke="#ffffff" strokeWidth={1.2 * fade} opacity={fade * 0.8} />
+          <rect x={Math.min(from, head)} y={chest - 2.5} width={Math.max(2, Math.abs(head - from))} height={5} rx={2.5} fill={colour} opacity={0.7 * fade} />
+          {landed > 0 && cut < 1 ? (
+            <path
+              d={`M ${to - UNIT * 0.4} ${chest - UNIT * 1.3} Q ${to + UNIT * 1.4} ${chest - UNIT * 0.2} ${to - UNIT * 0.2} ${chest + UNIT * 1.0}`}
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth={4 * (1 - cut) + 0.8}
+              strokeLinecap="round"
+              opacity={1 - cut}
+            />
+          ) : null}
+          {landed > 0 ? <Dust x={to + UNIT * 0.6} y={y} age={landed} life={Math.max(0.1, life - CHARGE_SECONDS)} colour={dust} seed={Math.round(event.real * 97) + event.count} /> : null}
           <Bracket x1={from} x2={Math.max(to, from + 2)} colour={colour} fade={fade} label={event.to > event.from ? `${event.name} · ${Math.round(event.to - event.from)}` : event.name} />
         </g>
       );
     }
-    case "buff":
-      return <circle cx={from} cy={chest} r={UNIT * (0.5 + t * 1.8)} fill="none" stroke={colour} strokeWidth={2.5 * fade} opacity={fade} />;
+    case "buff": {
+      // A bolt from the sky onto the slayer, a splash at its feet and a ring spreading out.
+      const strike = Math.min(1, age / 0.2);
+      return (
+        <g opacity={fade}>
+          {strike < 1 ? (
+            <g>
+              <path d={boltPath(from, chest, Math.round(event.real * 31))} fill="none" stroke={colour} strokeWidth="3" strokeOpacity="0.5" />
+              <path d={boltPath(from, chest, Math.round(event.real * 31))} fill="none" stroke="#ffffff" strokeWidth="1" />
+            </g>
+          ) : null}
+          <ellipse cx={from} cy={y} rx={UNIT * (0.4 + t * 1.4)} ry={UNIT * (0.15 + t * 0.3)} fill={colour} fillOpacity={0.35} />
+          <circle cx={from} cy={chest} r={UNIT * (0.5 + t * 1.6)} fill="none" stroke={colour} strokeWidth={2.2} />
+        </g>
+      );
+    }
     case "breath":
       return (
         <g opacity={fade}>
@@ -637,13 +799,19 @@ function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot }: {
       return <SpiritVisit x={slayerX} y={y} art={spiritArt[event.name]} name={event.name} age={age} slot={spiritSlot} />;
     case "kill": {
       const box = event.name === "Box";
+      const burst = Math.min(1, age / 0.4);
       return (
-        <g opacity={fade}>
-          {Array.from({ length: box ? 12 : 6 }, (_, i) => {
-            const a = (i / (box ? 12 : 6)) * Math.PI * 2 + event.count;
-            const d = UNIT * (0.2 + t * (box ? 1.6 : 0.9));
-            return <circle key={i} cx={from + Math.cos(a) * d} cy={chest + Math.sin(a) * d * 0.7} r={box ? 2.2 : 1.6} fill={box ? GOLD : BONE} />;
-          })}
+        <g>
+          {burst < 1 ? (
+            <g opacity={1 - burst}>
+              {Array.from({ length: box ? 12 : 6 }, (_, i) => {
+                const a = (i / (box ? 12 : 6)) * Math.PI * 2 + event.count;
+                const d = UNIT * (0.2 + burst * (box ? 1.6 : 0.9));
+                return <circle key={i} cx={from + Math.cos(a) * d} cy={chest + Math.sin(a) * d * 0.7} r={box ? 2.2 : 1.6} fill={box ? GOLD : BONE} />;
+              })}
+            </g>
+          ) : null}
+          <Loot x={from} ground={y} age={age} life={life} box={box} seed={event.count} />
         </g>
       );
     }
@@ -697,10 +865,15 @@ export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiri
       if (e.kind === "sweep" || e.kind === "familiar" || e.kind === "charge") return target.position >= e.from - 0.5 && target.position <= Math.max(e.to, e.from + 1) + 0.5;
       return false;
     });
-  const auras = (snap?.skills ?? [])
-    .filter((s) => s.active)
-    .slice(0, 3)
-    .map((s) => events.find((e) => e.kind === "buff" && e.name === s.name)?.element ?? null);
+  // Buffs that are on show as icons over the head.
+  const buffs = (snap?.skills ?? [])
+    .filter((s) => s.active && SKILL_BY_NAME.get(s.name)?.icon)
+    .slice(0, 5)
+    .map((s) => s.name);
+  // A cut-in skill cast lately: the white flash, the darkening and the beam onto the slayer.
+  const cutIn = (snap?.casts ?? []).filter((c) => CUT_INS.has(c.name) && time - c.real >= 0 && time - c.real < CUT_IN_SECONDS).at(-1) ?? null;
+  const cutInAge = cutIn ? time - cutIn.real : 0;
+  const dust = `hsl(${hue} 85% 52%)`;
   const visible = field.enemies.filter((e) => e.hp > 0 && x(e.position) > -UNIT && x(e.position) < W + UNIT);
   // The latest skills used, newest nearest the head: named skills (and the familiar), not beasts or specials.
   const named = (snap?.casts ?? [])
@@ -790,7 +963,19 @@ export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiri
 
       {snap?.raveStopping ? <TimeStop x={x(shown)} y={GROUND} time={time} /> : null}
 
-      <Slayer x={x(shown)} y={GROUND} element={element} moving={moving} time={time} auras={auras} />
+      {cutIn ? (
+        <>
+          <rect width={W} height={H} fill="#000000" fillOpacity={0.78 * cutInDarkness(cutInAge)} pointerEvents="none" />
+          {cutInAge > 0.12 && cutInAge < 0.45 ? (
+            <g opacity={Math.min(1, (0.45 - cutInAge) / 0.12)}>
+              <rect x={x(shown) - UNIT * 0.55 * (1 - (cutInAge - 0.12) / 0.4)} y={0} width={UNIT * 1.1 * (1 - (cutInAge - 0.12) / 0.4)} height={GROUND} fill={tintOf(cutIn.name, (SKILL_BY_NAME.get(cutIn.name)?.element ?? null) as Element | null)} fillOpacity="0.75" />
+              <rect x={x(shown) - UNIT * 0.1} y={0} width={UNIT * 0.2} height={GROUND} fill="#ffffff" fillOpacity="0.85" />
+            </g>
+          ) : null}
+        </>
+      ) : null}
+
+      <Slayer x={x(shown)} y={GROUND} element={element} moving={moving} time={time} buffs={buffs} />
 
       {recent.map((event, i) => (
         <Effect
@@ -803,10 +988,13 @@ export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiri
           time={time}
           spiritArt={spiritArt}
           spiritSlot={Math.max(0, spirits.indexOf(event))}
+          dust={dust}
         />
       ))}
 
       <SkillNames x={x(shown)} y={GROUND} casts={named} time={time} />
+
+      {cutIn && cutInAge < 0.07 ? <rect width={W} height={H} fill="#ffffff" fillOpacity={0.85 * (1 - cutInAge / 0.07)} pointerEvents="none" /> : null}
 
       {/* What to read at a glance: where the run is and how fast the slayer walks. */}
       <g className="font-mono" fill={INK}>

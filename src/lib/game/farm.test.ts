@@ -59,14 +59,15 @@ describe("stage farming fights", () => {
     expect(walkedTo(charge("farthest", 3))).toBe(WAVE_GAP - 1);
     // Supersonic-style batches stop at the first monster they didn't kill, and the next batch starts from there.
     const blocked = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [{ ...charge("through", 7), effect: { type: "damage", power: 0.01, hits: 6 } }] });
-    blocked.advance(0.7);
+    // The batches come CHARGE_SECONDS apart.
+    blocked.advance(2.5);
     expect(blocked.state().field!.position).toBe(WAVE_GAP - 1);
     expect(blocked.state().events.filter((e) => e.kind === "charge")).toHaveLength(6);
     // Killing what they reach, all 6 batches charge on: 3 → 10 → 17 → 24 → 31 → 38 → 45.
     const sweeping = createFight({ ...base, farm: stage, skills: [{ ...charge("through", 7), effect: { type: "damage", power: 10, hits: 6 } }] });
-    sweeping.advance(0.7);
+    sweeping.advance(2.5);
     expect(sweeping.state().field!.position).toBeGreaterThanOrEqual(45);
-    expect(sweeping.state().field!.kills).toBe(6);
+    expect(sweeping.state().field!.kills).toBeGreaterThanOrEqual(6);
   });
 
   it("charges Fulgurous-style skills forward even with nothing in reach", () => {

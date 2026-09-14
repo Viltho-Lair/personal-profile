@@ -507,7 +507,10 @@ function SkillGrid({
           const auto = !manual.includes(name);
           const reason = skipped.find((s) => s === name || s.startsWith(`${name} (`));
           const running = phase === "running";
-          const blinking = Boolean(status && snap && status.lastCast >= 0 && snap.real - status.lastCast < BLINK_SECONDS);
+          const blink = status && snap && status.lastCast >= 0 ? Math.max(0, 1 - (snap.real - status.lastCast) / BLINK_SECONDS) : 0;
+          const recharging = Boolean(status && status.ready < 1 && !status.complete && !status.active && fightSkill && (fightSkill.trigger === "seconds" || fightSkill.trigger === "hits"));
+          // What's left to go: seconds of cooldown, or strikes for skills that go on basic attacks.
+          const left = recharging && fightSkill && status ? (1 - status.ready) * fightSkill.every : 0;
           const ready = status ? status.ready : 1;
           const canPress = castable && (running ? !auto && (ready >= 1 || Boolean(status?.charged)) && !status?.queued : true);
           const stages = fightSkill?.maxStacks ?? null;
@@ -527,18 +530,32 @@ function SkillGrid({
               aria-pressed={castable ? auto : undefined}
               disabled={!includeSkills || !canPress}
               onClick={() => (running ? onCast(name) : onToggleAuto(name))}
-              className={`relative aspect-square overflow-hidden rounded-md border bg-zinc-900 outline-none transition-[filter,box-shadow] focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default ${
-                blinking ? "border-amber-300 shadow-[0_0_0_2px_rgba(252,211,77,0.9)] brightness-150" : "border-ink/25"
+              className={`relative aspect-square overflow-hidden rounded-md border bg-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default ${
+                blink > 0 ? "border-white" : "border-ink/25"
               } ${!includeSkills || reason ? "opacity-40" : ""}`}
             >
               {data?.icon && data.iconSize ? (
-                <Image src={data.icon} alt="" width={data.iconSize} height={data.iconSize} className="size-full object-cover" draggable={false} />
+                <Image
+                  src={data.icon}
+                  alt=""
+                  width={data.iconSize}
+                  height={data.iconSize}
+                  className={`size-full object-cover ${recharging ? "brightness-50 grayscale" : ""}`}
+                  draggable={false}
+                />
               ) : (
                 <span className="p-0.5 font-mono text-[7px] leading-none text-dim">{name}</span>
               )}
-              {status && ready < 1 && !status.complete ? (
-                <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} />
+              {/* Recharging, as in the game: the icon greys, a blue fill rises from the bottom and the time left counts down. */}
+              {recharging ? (
+                <>
+                  <span className="absolute inset-x-0 bottom-0 bg-sky-500/45" style={{ height: `${ready * 100}%` }} />
+                  <span className="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold text-white tabular-nums [text-shadow:0_0_3px_#000]">
+                    {fightSkill?.trigger === "hits" ? Math.ceil(left) : left.toFixed(1)}
+                  </span>
+                </>
               ) : null}
+              {blink > 0 ? <span className="absolute inset-0 bg-white" style={{ opacity: 0.85 * blink }} /> : null}
               {castable && fightSkill?.mpCost ? (
                 <span
                   className={`absolute top-0 left-0 rounded-sm px-px font-mono text-[6px] leading-tight tabular-nums ${

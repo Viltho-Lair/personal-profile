@@ -83,8 +83,8 @@ export type FightEvent = {
   gap?: number;
 };
 
-/** Seconds a Supersonic-style charge takes on screen, one after another. */
-export const CHARGE_SECONDS = 0.12;
+/** Seconds between a Supersonic-style skill's charges on screen, one after another (about 0.22 in the game). */
+export const CHARGE_SECONDS = 0.22;
 /** Seconds Rave's pillar takes to deal what it stored. */
 export const RAVE_RELEASE_SECONDS = 2;
 
@@ -419,7 +419,24 @@ export function createFight(input: FightInput): Fight {
   let raveRate = 0;
   /** Real time the pillar starts dealing, once the cast's animation is over. */
   let raveFrom = -1;
-  const later: { at: number; amount: number; source: string; range: number; max?: number }[] = [];
+  /** Hits (and charge batches) still to come, at an action-clock time. */
+  const later: { at: number; amount: number; source: string; range: number; max?: number; charge?: { element: Element | null; index: number } }[] = [];
+  /**
+   * One charge batch: hit what's in range, then charge up to the range, stopping beside the first monster it didn't
+   * kill (farming), or into the one enemy where it stands.
+   */
+  const chargeBatch = (amount: number, name: string, element: Element | null, reach: number, max: number | undefined, index: number) => {
+    const start = at();
+    deal(amount, name, false, reach, false, { max });
+    if (!field) {
+      log({ kind: "charge", name, element, from: start, to: start + BASIC_RANGE, count: index });
+      return;
+    }
+    const survivor = field.firstAhead(reach);
+    const to = survivor ? Math.max(start, survivor.position - BASIC_RANGE) : start + reach;
+    field.dash(to);
+    log({ kind: "charge", name, element, from: start, to, count: index });
+  };
   /** Spirit skills show their spirit once when they kick in. */
   const spiritShown = new Set<string>();
   const showSpirit = (name: string, once = false) => {
@@ -569,16 +586,11 @@ export function createFight(input: FightInput): Fight {
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
       const reach = s.range ?? BASIC_RANGE;
       const kind = s.familiar ? "familiar" : "sweep";
-      if (field && s.dash) {
-        // Charges: each batch hits what's in range, then charges up to the range, stopping at the first monster
-        // it didn't kill; the next batch goes on from there.
-        for (let i = 0; i < whole; i += 1) {
-          const start = at();
-          deal(perHit, s.name, false, reach, false, { max: s.maxTargets });
-          const survivor = field.firstAhead(reach);
-          const to = survivor ? Math.max(start, survivor.position - BASIC_RANGE) : start + reach;
-          field.dash(to);
-          log({ kind: "charge", name: s.name, element: s.element, from: start, to, count: i, real: real + i * CHARGE_SECONDS });
+      if (s.dash) {
+        // Charges come one after another, CHARGE_SECONDS apart; each batch goes on from where the last one stopped.
+        chargeBatch(perHit, s.name, s.element, reach, s.maxTargets, 0);
+        for (let i = 1; i < whole; i += 1) {
+          later.push({ at: action + i * CHARGE_SECONDS, amount: perHit, source: s.name, range: reach, max: s.maxTargets, charge: { element: s.element, index: i } });
         }
       } else if (field && s.randomTiles) {
         // Meteors and lightning land on random tiles within reach and hit what stands there.
@@ -596,13 +608,6 @@ export function createFight(input: FightInput): Fight {
         for (let i = 0; i < whole; i += 1) later.push({ at: action + i * s.hitEvery, amount: perHit, source: s.name, range: reach, max: s.maxTargets });
         const targets = field ? field.positionsInRange(reach).slice(0, 12) : [start + BASIC_RANGE];
         log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets, ...(s.familiar ? { gap: s.hitEvery } : { seconds: whole * s.hitEvery }) });
-      } else if (!field && s.dash) {
-        // One enemy: each batch charges into it where it stands.
-        const start = at();
-        for (let i = 0; i < whole; i += 1) {
-          deal(perHit, s.name, false, reach, false);
-          log({ kind: "charge", name: s.name, element: s.element, from: start, to: start + BASIC_RANGE, count: i, real: real + i * CHARGE_SECONDS });
-        }
       } else {
         const start = at();
         const targets = field ? field.positionsInRange(reach).slice(0, Math.min(12, s.maxTargets ?? 12)) : [start + BASIC_RANGE];
@@ -714,11 +719,13 @@ export function createFight(input: FightInput): Fight {
       raveLeft -= chunk;
       record(field ? field.hit(chunk, BASIC_RANGE, true) : chunk, "Rave", false);
     }
-    for (let i = later.length - 1; i >= 0; i -= 1) {
+    for (let i = 0; i < later.length; i += 1) {
       const hit = later[i]!;
       if (action < hit.at) continue;
       later.splice(i, 1);
-      deal(hit.amount, hit.source, false, hit.range, false, { max: hit.max });
+      i -= 1;
+      if (hit.charge) chargeBatch(hit.amount, hit.source, hit.charge.element, hit.range, hit.max, hit.charge.index);
+      else deal(hit.amount, hit.source, false, hit.range, false, { max: hit.max });
     }
 
     if (raveUntil >= 0 && action >= raveUntil) {
