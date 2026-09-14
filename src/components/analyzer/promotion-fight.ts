@@ -8,7 +8,7 @@ import { openRefinementLines, refinementEffects, type RefinementData } from "@/l
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
 import { activeFamiliars, activeSkillStones, effectiveSkillLevel, familiarStars, masteryLevel, presetBeast } from "@/lib/profile/rules";
-import type { ProfileV1 } from "@/lib/profile/types";
+import { MAX_FAMILIAR_STARS, type ProfileV1 } from "@/lib/profile/types";
 import { FAMILIARS, MANA_ALTAR, MASTERY_PAGES, SKILL_BY_NAME, type Familiar, type Skill } from "./data";
 import { altarStars, manaAltar, proficiencyBonuses } from "@/lib/game/familiars";
 import type { SpiritFactors } from "./spirit-stats";
@@ -301,11 +301,11 @@ export const PE_REPEAT_SECONDS = 1;
 type FamiliarPart = { familiar: Familiar; stars: number; values: Record<string, number | null> };
 
 /**
- * The equipped familiars' combined use, once a battle unless a familiar says otherwise (Ku: 2 uses): the
- * weapon familiar's range and damage, times the attribute familiar's damage and element, hitting the battle
- * familiar's number of times (Ku and Sha: Hits, Pe: Seconds, Po: Hits). Pe repeats the attack that many
- * times one after another, a second apart (10% faster at Immortal). Specials that play in a fight come with
- * it; the rest are listed as not modelled.
+ * The equipped familiars' combined use, once a battle: the weapon familiar's range and damage, times the attribute
+ * familiar's damage and element, hitting the battle familiar's number of times (Ku and Sha: Hits, Pe: Seconds, Po:
+ * Hits). Pe repeats the attack that many times one after another, a second apart. Each familiar's special only works
+ * once it's at 11 stars (Ku: +10% and a second use, Pe: repeats 10% faster ...); the ones that play in a fight come
+ * with it, the rest are listed as not modelled.
  */
 export function familiarFightSkills(profile: ProfileV1, duration: number) {
   const equipped = activeFamiliars(profile);
@@ -335,7 +335,8 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
   let every = FAMILIAR_COOLDOWN;
   let bonus = 0;
   let maxUses = 1;
-  let hitEvery: number | undefined;
+  // Pe repeats its attack a second apart; its special makes the repeats 10% faster.
+  let hitEvery: number | undefined = battle.familiar.name === "Pe" ? PE_REPEAT_SECONDS : undefined;
   const skill: FightSkill = {
     name: FAMILIAR_SKILL,
     element,
@@ -367,7 +368,9 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
     ...extra,
   });
   const specials: FightSkill[] = [];
-  for (const { familiar } of [attribute, battle, weapon]) {
+  for (const { familiar, stars } of [attribute, battle, weapon]) {
+    // A special unlocks at 11 stars.
+    if (stars < MAX_FAMILIAR_STARS) continue;
     switch (familiar.name) {
       case "Na":
         skill.lowHpBonus = { below: 0.6, bonus: 0.1 };
@@ -390,8 +393,8 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
         every = 20;
         break;
       case "Pe":
-        // Repeats the attack its Seconds number of times, a second apart; at Immortal the repeats come 10% faster.
-        hitEvery = PE_REPEAT_SECONDS * (battle.familiar.stars.find((s) => s.star === battle.stars)?.rarity === "Immortal" ? 0.9 : 1);
+        // Reduces the activation cycle by 10%: the repeats come faster.
+        hitEvery = PE_REPEAT_SECONDS * 0.9;
         break;
       case "Po":
         // 15 extra attacks 2 seconds before the end: a one-off that starts ready then.

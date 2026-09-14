@@ -189,16 +189,14 @@ export default function Guide() {
       <p>
         In a fight, your three equipped familiars combine into one attack, for example Hi + Ku + Na.
         The weapon familiar gives its range and damage, the attribute familiar multiplies that
-        damage and sets the element, and the battle familiar sets how many times it hits. It goes
-        once per battle, and you can put it on auto or use it by hand like a skill. Some specials
-        change it:
+        damage and sets the element, and the battle familiar sets how many times it hits. With Pe as
+        the battle familiar, the attack repeats that many times, one a second. It goes once per
+        battle, and you can put it on auto or use it by hand like a skill. A familiar at 11 stars
+        adds its special:
       </p>
       <ul>
         <li><strong>Ku</strong> adds 10% damage and allows two uses, 20 seconds apart.</li>
-        <li>
-          <strong>Pe</strong> repeats the attack its number of times, one a second (10% faster at
-          Immortal).
-        </li>
+        <li><strong>Pe</strong> makes its repeats 10% faster.</li>
         <li><strong>Na</strong> adds 10% damage while the enemy is at 60% HP or less.</li>
         <li>
           <strong>Rion</strong> (+200% ATK SPD for 10s), <strong>Ru</strong> (+150% ATK for 5s),{" "}
@@ -208,7 +206,8 @@ export default function Guide() {
         <li><strong>Po</strong> adds 15 extra attacks 2 seconds before the battle ends.</li>
       </ul>
       <p>
-        The other specials are listed as not modelled.
+        Below 11 stars a familiar has no special. Other specials at 11 stars are listed as not
+        modelled.
       </p>
 
       <h2>How skills play in a fight</h2>

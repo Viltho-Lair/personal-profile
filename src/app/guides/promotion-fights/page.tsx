@@ -176,10 +176,11 @@ export default function Guide() {
       <ul>
         <li>
           <strong>The familiar</strong> combines your attribute, battle and weapon familiars into one
-          skill, shown as a tile next to your skills. It goes once a battle (Ku allows two uses, 20
-          seconds apart), hits its number of times for its share of your ATK as the attribute
-          familiar’s element, and brings its familiars’ specials. Pe repeats the attack. You can
-          leave it on auto or press it yourself.
+          skill, shown as a tile next to your skills. It goes once a battle and hits its number of
+          times for its share of your ATK as the attribute familiar’s element; Pe repeats the attack
+          instead, a second apart. Each familiar’s special only works at 11 stars: Ku allows a second
+          use 20 seconds later, Pe repeats 10% faster, and so on. You can leave it on auto or press it
+          yourself.
         </li>
         <li>
           <strong>The equipped beast’s skill</strong> runs on its own, once a battle. Wolves go after
