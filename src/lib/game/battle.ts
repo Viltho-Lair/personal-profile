@@ -14,8 +14,8 @@
  *   percent of life missing and stops HP recovery while it lasts.
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
- * - Rave stores the damage skills and basic attacks deal for its duration (5
- *   seconds) while the fight carries on. It can then be used again to unleash
+ * - Rave stores all the damage done to the enemy for its duration (5 seconds):
+ *   skills, basic attacks and spirit skills alike, while the fight carries on. It can then be used again to unleash
  *   its share of that damage (110% at level 5) as it is, with no multipliers on
  *   top, played out in stopped time, and only then does its cooldown start.
  * - Meditation charges every attack and buff, their cooldowns and strike
@@ -321,7 +321,7 @@ export function createFight(input: FightInput): Fight {
   };
 
   const boss = 1 + (input.bossDamage ?? 0);
-  /** Adds damage; only skills' and basic attacks' damage is `stored` by a storing Rave. */
+  /** Adds damage to the enemy; a storing Rave stores all of it except its own release (`stored` false). */
   const record = (amount: number, source: string | null, stored = true) => {
     total += amount;
     if (source) bySkill[source] = (bySkill[source] ?? 0) + amount;
@@ -337,17 +337,17 @@ export function createFight(input: FightInput): Fight {
       if (spirits?.lastFight && clock >= input.duration - spirits.lastFight.seconds) amount *= spirits.lastFight.multiplier;
       if (spirits?.highHpDamage && enemyHp > 0 && total < enemyHp * (1 - HIGH_HP_THRESHOLD)) amount *= 1 + spirits.highHpDamage;
     }
-    record(amount, source, !raw);
+    record(amount, source);
     if (bossMonster || !spirits || enemyHp <= 0) return;
     // Thief Wind: the first hit on a normal monster takes a share of its HP.
     if (spirits.firstStrike && !struck) {
       struck = true;
-      record(enemyHp * spirits.firstStrike, "Thief Wind", false);
+      record(enemyHp * spirits.firstStrike, "Thief Wind");
     }
     // Judge's Torpedo: a normal monster below its share of HP dies at once.
     if (spirits.execute && !executed && total < enemyHp && enemyHp - total <= enemyHp * spirits.execute) {
       executed = true;
-      record(enemyHp - total, "Judge's Torpedo", false);
+      record(enemyHp - total, "Judge's Torpedo");
     }
   };
 

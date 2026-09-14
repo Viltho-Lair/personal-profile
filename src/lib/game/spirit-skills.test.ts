@@ -44,6 +44,18 @@ describe("spirit skills in the fight", () => {
     expect(simulateFight({ ...base, spirits }).total).toBeCloseTo(1500);
   });
 
+  it("stores Breath of Fire in a storing Rave like any other damage", () => {
+    const rave: FightSkill = {
+      name: "Rave", element: null, kind: "attack", trigger: "seconds", every: 60, duration: 5, delay: 0, startAt: 10, freezes: false, bonus: 0,
+      effect: { type: "rave", power: 1.1 },
+    };
+    const spirits = { ...noSpiritSkills(), breath: { every: 12, share: 0.1 } };
+    const result = simulateFight({ ...base, duration: 20, skills: [rave], spirits, enemyHp: 100_000 });
+    // Stored from 10s to 15s: basics at 10..14 (500) and the 12s breath of the HP left then.
+    const breath = result.bySkill["Breath of Fire"] ?? 0;
+    expect(result.bySkill.Rave).toBeCloseTo((500 + breath) * 1.1, -1);
+  });
+
   it("takes a share of the remaining HP every 12 seconds with Breath of Fire", () => {
     const spirits = { ...noSpiritSkills(), breath: { every: 12, share: 0.1 } };
     const result = simulateFight({ ...base, duration: 13, spirits, enemyHp: 100_000 });
