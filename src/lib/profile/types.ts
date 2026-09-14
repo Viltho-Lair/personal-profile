@@ -222,6 +222,8 @@ export type ProfileV1 = {
   includeSkills: boolean;
   /** The fight's enemy is a boss monster; off, a normal monster. */
   bossMonster: boolean;
+  /** The enemy's element when it's element restricted; null when it isn't. */
+  enemyElement: "Fire" | "Water" | "Wind" | "Earth" | null;
   soulEngraving: SoulEngraving;
   /** Refinement lines by attack skill name. */
   skillRefinement: Record<string, RefinementLine[]>;
@@ -282,6 +284,7 @@ export function emptyProfile(): ProfileV1 {
     mainSpirits: [],
     includeSkills: false,
     bossMonster: true,
+    enemyElement: null,
     soulEngraving: emptySoulEngraving(),
     skillRefinement: {},
     sealedShrine: emptyShrineLevels(),

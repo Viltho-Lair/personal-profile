@@ -6,6 +6,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFight, type Fight, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME } from "./data";
+import { ELEMENTS } from "@/lib/game/stats";
+import { BeastArt } from "./beast-panel";
+import { ELEMENT_TEXT } from "./tiers";
 import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
@@ -34,7 +37,7 @@ type Phase = "idle" | "running" | "done";
  * once the fight's over.
  */
 export function ProgressChart() {
-  const { profile, setPromotionTarget } = useProfile();
+  const { profile, setPromotionTarget, setBossMonster, setEnemyElement } = useProfile();
   const factors = useSpiritFactors();
   const [logScale, setLogScale] = useState(false);
   const [manual, setManual] = useState<string[]>([]);
@@ -139,6 +142,35 @@ export function ProgressChart() {
           <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
           Log scale
         </label>
+        <div className="flex basis-full flex-wrap items-center gap-x-3 gap-y-1">
+          <label className={`flex items-center gap-1 ${LABEL}`} title="Off: a normal monster">
+            <input type="checkbox" checked={profile.bossMonster} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
+            Boss monster
+          </label>
+          <label className={`flex items-center gap-1 ${LABEL}`} title="x2 from the element that beats it, x0.7 from the one it beats">
+            <input
+              type="checkbox"
+              checked={profile.enemyElement !== null}
+              onChange={(event) => setEnemyElement(event.target.checked ? "Fire" : null)}
+              className="accent-ink"
+            />
+            Element restricted
+          </label>
+          {profile.enemyElement ? (
+            <select
+              aria-label="Enemy element"
+              value={profile.enemyElement}
+              onChange={(event) => setEnemyElement(event.target.value as NonNullable<typeof profile.enemyElement>)}
+              className={`${SELECT} ${ELEMENT_TEXT[profile.enemyElement] ?? ""}`}
+            >
+              {ELEMENTS.map((element) => (
+                <option key={element} value={element}>
+                  {element}
+                </option>
+              ))}
+            </select>
+          ) : null}
+        </div>
         <span className="ml-auto flex items-center gap-1.5">
           {phase === "running" ? (
             <button
@@ -239,6 +271,7 @@ export function ProgressChart() {
       <LiveReadout snap={snap} input={setup.input} duration={duration} />
 
       <SkillGrid
+        beast={setup.beast}
         profileSlots={profile.skillPresets[profile.activeSkillPreset] ?? []}
         fightSkills={setup.skills}
         skipped={setup.skipped}
@@ -396,6 +429,7 @@ const SLOTS = 10;
  * tapping them once ready. A tile flashes each time its skill goes.
  */
 function SkillGrid({
+  beast,
   profileSlots,
   fightSkills,
   skipped,
@@ -406,6 +440,7 @@ function SkillGrid({
   onToggleAuto,
   onCast,
 }: {
+  beast: ReturnType<typeof promotionFight>["beast"];
   profileSlots: (string | null)[];
   fightSkills: FightSkill[];
   skipped: string[];
@@ -421,7 +456,9 @@ function SkillGrid({
 
   return (
     <div className="flex shrink-0 flex-col gap-1">
-      <div className="mx-auto grid w-3/4 max-w-72 grid-cols-5 gap-1">
+      <div className="mx-auto flex w-full items-center justify-center gap-2">
+      <BeastTile beast={beast} snap={snap} />
+      <div className="grid w-3/4 max-w-72 grid-cols-5 gap-1">
         {slots.map((name, i) => {
           if (!name) return <div key={i} className="aspect-square rounded-md border border-dashed border-ink/15" />;
           const data = SKILL_BY_NAME.get(name);
@@ -494,6 +531,7 @@ function SkillGrid({
             </button>
           );
         })}
+      </div>
       </div>
       <p className="text-[10px] leading-snug text-dim">
         {!includeSkills
@@ -682,5 +720,27 @@ function DamageBreakdown({ total, breakdown }: { total: number; breakdown: Pick<
         ))}
       </dl>
     </details>
+  );
+}
+
+/** The equipped beast, left of the skills: always on auto, filling toward its condition and lit while its effect lasts. */
+function BeastTile({ beast, snap }: { beast: ReturnType<typeof promotionFight>["beast"]; snap: FightState | null }) {
+  const { profile } = useProfile();
+  const size = "w-[calc(3/4*18rem/5)] max-w-[3.4rem]";
+  if (!beast.beast) return <div aria-hidden className={`${size} aspect-square shrink-0`} />;
+  const status = snap?.skills.find((s) => s.name === beast.beast?.name);
+  const ready = status ? status.ready : 0;
+  const title = beast.note ?? `${beast.beast.name}: ${beast.beast.skill.text.replace("X", String(beast.beast.skill.x))} (always auto)`;
+  return (
+    <div title={title} aria-label={title} className={`relative ${size} aspect-square shrink-0 overflow-hidden rounded-md border ${status?.active ? "border-amber-300" : "border-ink/25"} bg-zinc-900`}>
+      <span className="absolute inset-0 flex items-center justify-center">
+        <BeastArt beast={beast.beast} awaken={profile.beasts[beast.beast.name]?.awaken ?? null} size={48} />
+      </span>
+      {beast.skill && status && !status.active && ready < 1 ? (
+        <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} />
+      ) : null}
+      {beast.note ? <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-dim">RIFT</span> : null}
+      {status?.active ? <span className="absolute inset-x-0 bottom-0 bg-amber-400/80 text-center font-mono text-[6px] leading-tight text-black">ON</span> : null}
+    </div>
   );
 }

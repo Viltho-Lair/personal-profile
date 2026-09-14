@@ -461,6 +461,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
     bossMonster: data.bossMonster !== false,
+    enemyElement: (["Fire", "Water", "Wind", "Earth"] as const).find((e) => e === data.enemyElement) ?? null,
     soulEngraving: soulEngraving(data.soulEngraving),
     skillRefinement: skillRefinement(data.skillRefinement),
     sealedShrine: sealedShrine(data.sealedShrine),

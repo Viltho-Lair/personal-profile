@@ -142,6 +142,7 @@ export function useProfile() {
       update((p) => rules.setShrineLevel(p, statue, level, max)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
+    setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
     resetProfile: () => update(() => emptyProfile()),
     replaceProfile: (next: ProfileV1) => update(() => next),
   };

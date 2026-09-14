@@ -27,6 +27,11 @@
  *   cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
  *   refreshes it rather than stacking.
+ * - An element-restricted enemy takes x2 from the element that beats it, x0.7
+ *   from the one it beats, x1 from the rest.
+ * - The equipped beast's skill runs on its own: wolves after strike skills,
+ *   boars after knockbacks (a 50% chance every 10 seconds), dracos once a
+ *   stacking skill maxes out, bats after kills.
  * - Spirit skills of the accompanying spirits: Last Fight multiplies the last
  *   seconds' damage, Breath of Fire takes a share of the enemy's remaining HP,
  *   Wilderness Roar / Reign raise skill damage against bosses / normal
@@ -35,6 +40,7 @@
  *   cooldowns, and Time Freeze stops the battle timer while the fight goes on.
  */
 
+import { elementMatchup } from "./elements";
 import { HIGH_HP_THRESHOLD, type SpiritSkillEffects } from "./spirit-skills";
 import type { ByElement, Element } from "./stats";
 
@@ -60,14 +66,22 @@ export type SkillEffect =
   /** Mana Recovery +power while it's on (Mana's Blessing). */
   | { type: "manaRecovery"; power: number }
   /** Restores these shares of max life and max mana at once (Life Mana). */
-  | { type: "restore"; hp: number; mana: number };
+  | { type: "restore"; hp: number; mana: number }
+  /** Boss damage +power while it's on, against a boss only (Draco beasts). */
+  | { type: "bossDamage"; power: number }
+  /** Movement speed +power while it's on (Bat beasts). */
+  | { type: "mspd"; power: number };
 
 export type FightSkill = {
   name: string;
   element: Element | null;
   kind: "attack" | "buff" | "passive";
   /** What readies it: seconds of cooldown, basic-attack hits, always on, uses of skills of its element, or attack skill casts. */
-  trigger: "seconds" | "hits" | "always" | "elementCasts" | "attackCasts";
+  trigger: "seconds" | "hits" | "always" | "elementCasts" | "attackCasts" | "stacksComplete" | "kills";
+  /** For "stacksComplete": the stacking skill to watch, or "all" for every stacking skill in the fight. */
+  watch?: string;
+  /** Goes on its own condition, so Meditation, Wind Force and cooldown charges leave it alone (beasts). */
+  uncharged?: boolean;
   every: number;
   /** Seconds a buff lasts. */
   duration: number;
@@ -105,6 +119,8 @@ export type FightInput = {
   elementAmp?: ByElement;
   /** Extra damage against the enemy on every hit (Black Orb boss or monster damage). */
   bossDamage?: number;
+  /** The enemy's element when it's element restricted; null or unset hits every element for x1. */
+  enemyElement?: Element | null;
   /** A boss monster (the default) or a normal monster. */
   bossMonster?: boolean;
   /** The enemy's HP, read by spirit skills (remaining HP share, execute, first strike, above 70%). */
@@ -302,6 +318,8 @@ export function createFight(input: FightInput): Fight {
     let cooldownRate = 0;
     let rage = false;
     let manaRate = 0;
+    let bossDamage = 0;
+    let mspd = 0;
     const element: Partial<Record<Element, number>> = {};
     const missing = maxHp > 0 ? Math.max(0, 1 - hp / maxHp) * 100 : 0;
     for (const l of live) {
@@ -314,12 +332,14 @@ export function createFight(input: FightInput): Fight {
       if (e.type === "speed") speed += e.power;
       if (e.type === "cooldownRate") cooldownRate += e.power;
       if (e.type === "manaRecovery") manaRate += e.power;
+      if (e.type === "bossDamage") bossDamage += e.power;
+      if (e.type === "mspd") mspd += e.power;
       if (e.type === "rage") {
         atk += e.power * missing;
         rage = true;
       }
     }
-    return { atk, speed, cooldownRate, element, rage, manaRate };
+    return { atk, speed, cooldownRate, element, rage, manaRate, bossDamage, mspd };
   };
 
   const boss = 1 + (input.bossDamage ?? 0);
@@ -335,7 +355,7 @@ export function createFight(input: FightInput): Fight {
   const deal = (hit: number, source: string | null, raw = false) => {
     let amount = hit;
     if (!raw) {
-      amount *= boss;
+      amount *= boss * (bossMonster ? 1 + bonuses().bossDamage : 1);
       if (spirits?.lastFight && clock >= input.duration - spirits.lastFight.seconds) amount *= spirits.lastFight.multiplier;
       if (spirits?.highHpDamage && enemyHp > 0 && total < enemyHp * (1 - HIGH_HP_THRESHOLD)) amount *= 1 + spirits.highHpDamage;
     }
@@ -382,7 +402,7 @@ export function createFight(input: FightInput): Fight {
       }
       const hits = e.growsTo ? Math.min(e.growsTo, Math.round(e.hits) + l.uses - 1) : e.hits;
       const whole = Math.max(1, Math.round(hits));
-      const amp = s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1;
+      const amp = (s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1) * elementMatchup(s.element, input.enemyElement ?? null);
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * skillAmp * hits) / whole;
       for (let i = 0; i < whole; i += 1) deal(perHit, s.name);
       if (s.freezes) {
@@ -418,7 +438,7 @@ export function createFight(input: FightInput): Fight {
       // conditional passives (strikes, skill uses, stacks) aren't charged.
       for (const other of live) {
         // A skill that starts on its cooldown (Wrath of Gods) isn't charged until it has gone once.
-        if (other === l || isStack(other.skill) || other.holding || (other.skill.startsOnCooldown && other.uses === 0)) continue;
+        if (other === l || isStack(other.skill) || other.skill.uncharged || other.holding || (other.skill.startsOnCooldown && other.uses === 0)) continue;
         const t = other.skill.trigger;
         if (t === "seconds" || (t === "hits" && castable(other.skill))) {
           other.progress = Math.min(target(other), other.progress + e.power * other.skill.every);
@@ -457,7 +477,7 @@ export function createFight(input: FightInput): Fight {
         nextRecovery += spirits.cooldownRecovery.every;
         for (const l of live) {
           const s = l.skill;
-          if (s.trigger !== "seconds" || isStack(s) || l.queued || l.holding || (s.startsOnCooldown && l.uses === 0)) continue;
+          if (s.trigger !== "seconds" || isStack(s) || s.uncharged || l.queued || l.holding || (s.startsOnCooldown && l.uses === 0)) continue;
           l.progress = Math.min(target(l), l.progress + spirits.cooldownRecovery.share * s.every);
         }
       }
@@ -478,6 +498,13 @@ export function createFight(input: FightInput): Fight {
       if (!l.started && clock >= s.startAt) {
         l.started = true;
         if (readyAtStart(s)) l.progress = s.every;
+      }
+      // Goes once, when the stacking skill it watches (or every one, for "all") is complete.
+      if (s.trigger === "stacksComplete") {
+        if (!l.started || l.uses > 0) continue;
+        const watched = live.filter((o) => o !== l && isStack(o.skill) && (s.watch === "all" || o.skill.name === s.watch));
+        if (watched.length && watched.every(complete)) go(l, null);
+        continue;
       }
       if (!l.started || s.trigger === "always" || l.queued || l.holding || complete(l)) continue;
       if (s.trigger === "seconds" && !frozen) l.progress += step * (1 + now.cooldownRate);

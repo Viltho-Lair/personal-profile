@@ -62,7 +62,7 @@ function StoneTriangle({ stone }: { stone: SkillStone | null }) {
  * the chosen presets hold (skills, spirits, skill stones, beast, familiars, promotion ability).
  */
 export function PresetsPanel() {
-  const { profile, selectPreset, selectSkillPreset, selectLoadout, setIncludeSkills, setBossMonster, setBeastMounted } = useProfile();
+  const { profile, selectPreset, selectSkillPreset, selectLoadout, setIncludeSkills, setBeastMounted } = useProfile();
   const picker = (kind: PresetKind, label: string) => (
     <PresetPicker size="sm" label={`${label} preset`} active={profile.activePresets[kind]} onSelect={(index) => selectPreset(kind, index)} />
   );
@@ -87,10 +87,6 @@ export function PresetsPanel() {
           <label className="flex items-center gap-1.5 text-[11px] text-dim">
             <input type="checkbox" checked={profile.includeSkills} onChange={(event) => setIncludeSkills(event.target.checked)} className="accent-ink" />
             Include Skills
-          </label>
-          <label className="flex items-center gap-1.5 text-[11px] text-dim" title="Off: a normal monster">
-            <input type="checkbox" checked={profile.bossMonster} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
-            Boss monster
           </label>
         </span>
       </div>

@@ -267,6 +267,29 @@ describe("simulateFight", () => {
     expect(casts([passive, meditation], "Passive")[0]).toBeGreaterThanOrEqual(casts([passive], "Passive")[0]);
   });
 
+  it("hits an element-restricted enemy x2, x0.7 or x1 by element", () => {
+    const fire = skill({ name: "Fire", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
+    const hit = (enemyElement: "Earth" | "Water" | "Wind" | null) => simulateFight({ ...base, skills: [fire], enemyElement }).bySkill.Fire;
+    expect(hit("Earth")).toBeCloseTo(200);
+    expect(hit("Water")).toBeCloseTo(70);
+    expect(hit("Wind")).toBeCloseTo(100);
+    expect(hit(null)).toBeCloseTo(100);
+  });
+
+  it("raises boss damage once a draco's stacking skill maxes out, and leaves boars to their knockbacks", () => {
+    const stack = skill({ name: "Burning Sword", kind: "passive", every: 1, maxStacks: 3, effect: { type: "atkStack", power: 0 } });
+    const draco = skill({ name: "Fire Draco", kind: "passive", trigger: "stacksComplete", watch: "Burning Sword", every: 1, duration: 60, uncharged: true, effect: { type: "bossDamage", power: 1 } });
+    const result = simulateFight({ ...base, skills: [stack, draco] });
+    // Stacks complete at 3s: basics from then on deal x2.
+    expect(result.casts.find((c) => c.name === "Fire Draco")?.t).toBeCloseTo(3, 0);
+    expect(result.basic).toBeGreaterThan(1500);
+    expect(simulateFight({ ...base, skills: [stack, draco], bossMonster: false }).basic).toBeCloseTo(1000);
+
+    const boar = skill({ name: "Boar", kind: "passive", every: 60, startsOnCooldown: true, uncharged: true, duration: 30, effect: { type: "atk", power: 1 } });
+    const meditation = skill({ name: "Meditation", kind: "buff", every: 1, effect: { type: "chargeCooldowns", power: 0.9 } });
+    expect(simulateFight({ ...base, duration: 30, skills: [boar, meditation] }).casts.some((c) => c.name === "Boar")).toBe(false);
+  });
+
   it("releases Rave's stored damage as it is, without the boss damage again", () => {
     const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1.1 } });
     const result = simulateFight({ ...base, duration: 20, bossDamage: 8.5, skills: [rave] });

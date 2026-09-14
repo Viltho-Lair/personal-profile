@@ -7,7 +7,7 @@ import refinementData from "@/data/optimizer/skill-refinement.json";
 import { openRefinementLines, refinementEffects, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
-import { activeSkillStones, awakening, effectiveSkillLevel, equippedKey, gearState, masteryLevel, mountedBeast } from "@/lib/profile/rules";
+import { activeSkillStones, awakening, effectiveSkillLevel, equippedKey, gearState, masteryLevel, presetBeast } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
 import { AWAKENING, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
@@ -249,33 +249,45 @@ export function presetFightSkills(profile: ProfileV1) {
     else skills.push(withStones(result, stones));
   }
 
-  // The mounted beast's skill: wolves raise ATK after a number of attack skill casts.
-  const beast = BEASTS.beasts.find((b) => b.name === mountedBeast(profile));
-  const awaken = beast ? profile.beasts[beast.name]?.awaken : null;
-  if (beast && awaken !== null && awaken !== undefined) {
-    if (beast.family === "Wolf" && typeof beast.skill.x === "number") {
-      skills.push({
-        name: beast.name,
-        element: null,
-        kind: "passive",
-        trigger: "attackCasts",
-        every: beast.skill.x,
-        duration: 10,
-        delay: 0,
-        startAt: 0,
-        freezes: false,
-        bonus: 0,
-        effect: { type: "atk", power: (beast.skill.values[awaken] ?? 0) / 100 },
-      });
-    } else {
-      skipped.push(`${beast.name} (mounted skill not modelled)`);
-    }
-  }
   return { skills, skipped };
 }
 
 /** The enemy: boss or normal monster, its HP, and the accompanying spirits' skills. */
-export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits">;
+export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits" | "enemyElement">;
+
+/** A knockback has a 50% chance every 10 seconds, so a boar's knockbacks come one every 20 seconds on average. */
+export const KNOCKBACK_SECONDS = 10 / 0.5;
+
+/**
+ * The equipped beast's skill (equipping it is enough; mounting only adds the ride bonuses), or why it
+ * doesn't go: wolves after X strike skills (ATK +Y% 10s), boars after X knockbacks (ATK +Y% 30s),
+ * bats after X kills (MSPD +Y% 30s), dracos once their stacking skill maxes (boss DMG +Y% 60s).
+ * Golems only work in the Rift.
+ */
+export function beastFightSkill(profile: ProfileV1): { skill: FightSkill | null; beast: (typeof BEASTS.beasts)[number] | null; note: string | null } {
+  const beast = BEASTS.beasts.find((b) => b.name === presetBeast(profile)) ?? null;
+  const awaken = beast ? profile.beasts[beast.name]?.awaken : null;
+  if (!beast || awaken === null || awaken === undefined) return { skill: null, beast: null, note: null };
+  const power = (beast.skill.values[awaken] ?? 0) / 100;
+  const base = { name: beast.name, element: null, kind: "passive" as const, delay: 0, startAt: 0, freezes: false, bonus: 0, uncharged: true };
+  const x = typeof beast.skill.x === "number" ? beast.skill.x : 0;
+  switch (beast.family) {
+    case "Wolf":
+      return { beast, note: null, skill: { ...base, trigger: "attackCasts", every: x, duration: 10, effect: { type: "atk", power } } };
+    case "Boar":
+      return { beast, note: null, skill: { ...base, trigger: "seconds", startsOnCooldown: true, every: x * KNOCKBACK_SECONDS, duration: 30, effect: { type: "atk", power } } };
+    case "Bat":
+      return { beast, note: null, skill: { ...base, trigger: "kills", every: x, duration: 30, effect: { type: "mspd", power } } };
+    case "Draco":
+      return {
+        beast,
+        note: null,
+        skill: { ...base, trigger: "stacksComplete", watch: beast.skill.x === "all buffs" ? "all" : String(beast.skill.x), every: 1, duration: 60, effect: { type: "bossDamage", power } },
+      };
+    default:
+      return { beast, skill: null, note: `${beast.name}: only in the Rift` };
+  }
+}
 
 /** The fight's input from the stats: hit, element damage, attack speed, life and mana pools. */
 export function fightInput(
@@ -495,17 +507,21 @@ function solveHitLever(
 export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null, promotionIndex: number, duration: number, manual: string[] = []) {
   // Skill buffs play out in the fight itself, so the stats come without them.
   const sources = collectSources(profile, factors, false);
-  const { skills, skipped } = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
-  // The accompanying spirits' skills are on whenever they are, Include Skills or not.
+  const preset = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
+  // The equipped beast's skill always runs, like the accompanying spirits' skills.
+  const beast = beastFightSkill(profile);
+  const skills = beast.skill ? [...preset.skills, beast.skill] : preset.skills;
+  const skipped = beast.note ? [...preset.skipped, beast.note] : preset.skipped;
   const spirits = activeSpiritSkills(profile);
+  const enemyElement = profile.enemyElement;
 
   if (profile.bossMonster) {
     const boss = promotionBoss(promotionIndex);
-    const target: FightTarget = { bossMonster: true, enemyHp: boss?.hp ?? 0, spirits };
-    return { mode: "promotion" as const, boss, stages: null, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
+    const target: FightTarget = { bossMonster: true, enemyHp: boss?.hp ?? 0, spirits, enemyElement };
+    return { mode: "promotion" as const, boss, stages: null, beast, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
   }
 
-  const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits });
+  const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits, enemyElement });
   const clears = (stage: number) => fight(sources, skills, duration, undefined, manual, against(stage)).total >= bossHpAt(stage);
   let reached = 0;
   let high = BOSS_HP.length;
@@ -523,6 +539,7 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
     mode: "stages" as const,
     boss,
     stages: { reached, next },
+    beast,
     sources,
     skills,
     skipped,
@@ -559,6 +576,6 @@ export function promotionSuggestions(
     .slice(0, 4)
     .map(({ label, detail }) => ({ label, detail }));
   spread = Math.pow(ratio, 1 / 5);
-  if (!profile.includeSkills) withSkills = fight(sources, presetFightSkills(profile).skills, duration, undefined, [], target).total;
+  if (!profile.includeSkills) withSkills = fight(sources, [...presetFightSkills(profile).skills, ...fightSetup.skills.filter((s) => s.uncharged)], duration, undefined, [], target).total;
   return { suggestions, spread, withSkills };
 }
