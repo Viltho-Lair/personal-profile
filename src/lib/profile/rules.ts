@@ -1,4 +1,4 @@
-import { SPIRIT_LEVEL_CAP } from "./types";
+import { FOREST_LEVELS_PER_GRADE, SPIRIT_LEVEL_CAP } from "./types";
 import type { ResourceKey } from "./types";
 import type { OrbAccessory, OrbLine } from "@/lib/game/black-orb";
 import type { Element } from "@/lib/game/stats";
@@ -641,6 +641,11 @@ export function toggleManualSkill(profile: ProfileV1, name: string): ProfileV1 {
   const current = profile.skillPresetManual[preset] ?? [];
   const next = current.includes(name) ? current.filter((n) => n !== name) : [...current, name];
   return { ...profile, skillPresetManual: profile.skillPresetManual.map((list, i) => (i === preset ? next : list)) };
+}
+
+/** The Fountain of Circulation's grade: one more every 30 Forest of Circulation levels (240 is grade 9); 0 when not set. */
+export function fountainGrade(forestLevel: number): number {
+  return forestLevel > 0 ? Math.floor(forestLevel / FOREST_LEVELS_PER_GRADE) + 1 : 0;
 }
 
 export function setAbbreviateNumbers(profile: ProfileV1, abbreviateNumbers: boolean): ProfileV1 {

@@ -144,6 +144,7 @@ function character(value: unknown): CharacterState {
     growth: wholeRecord(value.growth),
     slayerLevel: wholeLevel(value.slayerLevel) ?? base.slayerLevel,
     highestStage: wholeLevel(value.highestStage) ?? 0,
+    forestLevel: wholeLevel(value.forestLevel) ?? 0,
     trainingDiary: wholeLevel(value.trainingDiary) ?? 0,
     diaryUpgrades: wholeRecord(value.diaryUpgrades),
     latent: Object.fromEntries(

@@ -18,6 +18,8 @@ export type SpiritState = { owned: boolean; level: number; awakening: string | n
 export const MIN_SPIRIT_ENHANCE = 1;
 /** Spirits level to 700; the partner (the spirit preset's first slot) goes on to the data's max, 1000. */
 export const SPIRIT_LEVEL_CAP = 700;
+/** Forest of Circulation difficulty levels per Fountain of Circulation grade. */
+export const FOREST_LEVELS_PER_GRADE = 30;
 export const MAX_SPIRIT_ENHANCE = 5;
 /** The tier a spirit is at when first owned. */
 export const FIRST_SPIRIT_TIER = "Common";
@@ -68,6 +70,8 @@ export type CharacterState = {
   slayerLevel: number;
   /** Highest stage the slayer has reached (0 = not set). */
   highestStage: number;
+  /** Highest Forest of Circulation difficulty cleared (0 = not set); it sets the Fountain of Circulation's grade. */
+  forestLevel: number;
   /** Training Diary level (each adds 100 growth skill points once unlocked). */
   trainingDiary: number;
   /** Over Point max-level upgrades bought per growth stat (0-48). */
@@ -95,6 +99,7 @@ export function emptyCharacter(): CharacterState {
     growth: {},
     slayerLevel: 1,
     highestStage: 0,
+    forestLevel: 0,
     trainingDiary: 0,
     diaryUpgrades: {},
     latent: Object.fromEntries(LATENT_STATS.map((stat) => [stat, Array<number>(LATENT_SLOTS).fill(0)])),

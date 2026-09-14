@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { parseProfile } from "@/lib/profile/storage";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatNumber, parseAmount } from "@/lib/number-format";
+import { fountainGrade } from "@/lib/profile/rules";
 import { RESOURCES } from "@/lib/profile/types";
 
 export function OwnedToggle({
@@ -72,7 +73,8 @@ const ACTION = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase under
 /** Slayer level and the highest stage reached. */
 function SlayerProgress() {
   const { profile, updateCharacter } = useProfile();
-  const { slayerLevel, highestStage } = profile.character;
+  const { slayerLevel, highestStage, forestLevel } = profile.character;
+  const grade = fountainGrade(forestLevel);
   const field = (label: string, value: number, min: number, onChange: (value: number) => void) => (
     <label className="flex items-center justify-between gap-3">
       <span className={LABEL}>{label}</span>
@@ -96,6 +98,10 @@ function SlayerProgress() {
     <section aria-label="Slayer progress" className="flex flex-col gap-1.5">
       {field("Slayer level", slayerLevel, 1, (value) => updateCharacter((c) => ({ ...c, slayerLevel: value })))}
       {field("Highest stage reached", highestStage, 0, (value) => updateCharacter((c) => ({ ...c, highestStage: value })))}
+      {field("Forest of Circulation level", forestLevel, 0, (value) => updateCharacter((c) => ({ ...c, forestLevel: value })))}
+      <p className="text-right font-mono text-[10px] text-dim">
+        {grade > 0 ? `Fountain of Circulation grade ${grade}` : "Sets the Fountain of Circulation grade"}
+      </p>
     </section>
   );
 }

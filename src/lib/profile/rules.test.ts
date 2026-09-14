@@ -45,6 +45,7 @@ import {
   setFamiliarProficiency,
   setFamiliarStars,
   setFountainEffect,
+  fountainGrade,
   setGearLevel,
   setMasteryLevel,
   setMasteryPage,
@@ -533,6 +534,14 @@ describe("familiar proficiency and fountain", () => {
     p = setFountainEffect(p, 0, -1);
     expect(p.familiarProficiency).toEqual({ attribute: 0, weapon: 12, battle: 0 });
     expect(p.fountainEffects).toEqual([0, 0, 0.35, 0]);
+  });
+
+  it("takes the fountain grade from the Forest of Circulation level", () => {
+    expect(fountainGrade(0)).toBe(0);
+    expect(fountainGrade(29)).toBe(1);
+    expect(fountainGrade(240)).toBe(9);
+    expect(fountainGrade(269)).toBe(9);
+    expect(fountainGrade(270)).toBe(10);
   });
 });
 
