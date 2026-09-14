@@ -19,10 +19,10 @@ import {
 } from "@/lib/game/costs";
 import { rarityGroup } from "@/lib/game/formulas";
 import type { MemoryTree } from "@/lib/game/memory-tree";
-import { awakening, companionState, gearState, spiritState } from "@/lib/profile/rules";
-import { RESOURCES, type ProfileV1, type ResourceKey } from "@/lib/profile/types";
-import { ACCESSORIES, AWAKENING, MASTERY_PAGES, MAX_AWAKENING, RELICS, SKILL_BY_NAME, SOUL_WEAPONS, SPIRITS, WEAPONS } from "./data";
-import { classLevelCap } from "./stat-sources";
+import { activeFamiliars, awakening, companionState, equippedKey, familiarStars, gearState, spiritState } from "@/lib/profile/rules";
+import { MAX_FAMILIAR_STARS, MAX_SPIRIT_ENHANCE, RESOURCES, type ProfileV1, type ResourceKey } from "@/lib/profile/types";
+import { ACCESSORIES, AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, RELICS, SKILL_BY_NAME, SOUL_WEAPONS, SPIRIT_TIERS, SPIRITS, WEAPONS } from "./data";
+import { BEASTS, classLevelCap, SHRINE } from "./stat-sources";
 import { promotionFight } from "./promotion-fight";
 import type { SpiritFactors } from "./spirit-stats";
 
@@ -56,7 +56,12 @@ const other = (label: string, amount: number): UpgradeCost => ({ resources: {}, 
 const UNPRICED: UpgradeCost = { resources: {}, other: [], unpriced: true };
 const character = (profile: ProfileV1, change: Partial<ProfileV1["character"]>): ProfileV1 => ({ ...profile, character: { ...profile.character, ...change } });
 
-/** Every upgrade the player could make from this profile, each short of its cap. */
+/** Nova's Awakened Blast goes to 18; the Black Orb's summon levels to 75. */
+const MAX_CLASS_AWAKENING = 18;
+const MAX_BLACK_ORB_LEVEL = 75;
+const MAX_BEAST_AWAKEN = 6;
+
+/** Every upgrade the player could make from this profile, each short of its cap: nothing maxed is offered. */
 export function listUpgrades(profile: ProfileV1): Upgrade[] {
   const c = profile.character;
   const upgrades: Upgrade[] = [];
@@ -112,6 +117,40 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
     }
   }
 
+  // Weapon and accessory awakening (Orr and Orb): raises the level cap and the effects; the workbook has no cost.
+  for (const [kind, key, list, label] of [
+    ["weapons", "weaponAwakening", WEAPONS, "Weapon awakening"],
+    ["accessories", "accessoryAwakening", ACCESSORIES, "Accessory awakening"],
+  ] as const) {
+    const equippedGrade = equippedKey(profile, kind);
+    const art = list.find((g) => g.grade === equippedGrade) ?? list[list.length - 1];
+    add({
+      id: `awakening:${kind}`,
+      kind: label,
+      name: kind === "weapons" ? "Orr" : "Orb",
+      icon: art?.icon ?? null,
+      iconSize: art?.iconSize ?? null,
+      current: awakening(profile, kind, MAX_AWAKENING),
+      max: MAX_AWAKENING,
+      apply: (p, level) => ({ ...p, [key]: level }),
+      cost: () => UNPRICED,
+    });
+  }
+
+  // Class awakening (Awakened Blast): unpriced.
+  const lastClass = CLASSES[CLASSES.length - 1];
+  add({
+    id: "awakening:class",
+    kind: "Class awakening",
+    name: "Awakened Blast",
+    icon: lastClass?.icon ?? null,
+    iconSize: lastClass?.iconSize ?? null,
+    current: c.classAwakening,
+    max: MAX_CLASS_AWAKENING,
+    apply: (p, level) => character(p, { classAwakening: level }),
+    cost: () => UNPRICED,
+  });
+
   // Classes: cubes, by class grade (Trainee 1 ... the 20th and later at 20).
   CLASSES.forEach((cls, index) => {
     const state = c.classes[cls.name];
@@ -147,6 +186,102 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
       cost: (from, to) => priced(spiritCost(TABLES, from, to)),
     });
   }
+
+  // Spirit awakening and skill enhance: unpriced.
+  for (const spirit of SPIRITS) {
+    const state = spiritState(profile, spirit.name, spirit.maxLevel);
+    if (!state.owned) continue;
+    const art = spirit.art[state.awakening ? rarityGroup(state.awakening) : "Common"] ?? spirit.art.Common;
+    const tier = Math.max(0, SPIRIT_TIERS.indexOf(state.awakening ?? "Common"));
+    add({
+      id: `spirit-awakening:${spirit.name}`,
+      kind: "Spirit awakening",
+      name: `${spirit.name} · ${state.awakening ?? "Common"}`,
+      icon: art?.icon ?? null,
+      iconSize: art?.iconSize ?? null,
+      current: tier,
+      max: SPIRIT_TIERS.length - 1,
+      apply: (p, level) => ({ ...p, spirits: { ...p.spirits, [spirit.name]: { ...p.spirits[spirit.name]!, awakening: SPIRIT_TIERS[level] ?? null } } }),
+      cost: () => UNPRICED,
+    });
+    if (spirit.skill) {
+      add({
+        id: `spirit-enhance:${spirit.name}`,
+        kind: "Spirit skill enhance",
+        name: `${spirit.name} · ${spirit.skill.name}`,
+        icon: art?.icon ?? null,
+        iconSize: art?.iconSize ?? null,
+        current: state.enhance,
+        max: MAX_SPIRIT_ENHANCE,
+        apply: (p, level) => ({ ...p, spirits: { ...p.spirits, [spirit.name]: { ...p.spirits[spirit.name]!, enhance: level } } }),
+        cost: () => UNPRICED,
+      });
+    }
+  }
+
+  // The equipped familiars' stars: unpriced here.
+  for (const name of Object.values(activeFamiliars(profile))) {
+    const familiar = name ? FAMILIARS.find((f) => f.name === name) : undefined;
+    const stars = familiar ? familiarStars(profile, familiar.name) : null;
+    if (!familiar || stars === null) continue;
+    const art = familiar.art.find((band) => band.from <= stars && stars <= band.to) ?? familiar.art[0];
+    add({
+      id: `familiar:${familiar.name}`,
+      kind: "Familiar stars",
+      name: familiar.name,
+      icon: art?.icon ?? null,
+      iconSize: art?.iconSize ?? null,
+      current: stars,
+      max: MAX_FAMILIAR_STARS,
+      apply: (p, level) => ({ ...p, familiars: { ...p.familiars, [familiar.name]: { stars: level } } }),
+      cost: () => UNPRICED,
+    });
+  }
+
+  // Owned beasts' awaken levels: unpriced.
+  for (const beast of BEASTS.beasts) {
+    const state = profile.beasts[beast.name];
+    if (!state || state.awaken === null) continue;
+    add({
+      id: `beast:${beast.name}`,
+      kind: "Beast awaken",
+      name: beast.name,
+      icon: beast.art.sprite ?? null,
+      iconSize: 64,
+      current: state.awaken,
+      max: MAX_BEAST_AWAKEN,
+      apply: (p, level) => ({ ...p, beasts: { ...p.beasts, [beast.name]: { ...p.beasts[beast.name]!, awaken: level } } }),
+      cost: () => UNPRICED,
+    });
+  }
+
+  // Sealed Shrine statues: unpriced.
+  for (const statue of SHRINE.statues) {
+    add({
+      id: `shrine:${statue.key}`,
+      kind: "Sealed Shrine",
+      name: statue.name,
+      icon: statue.icon ?? null,
+      iconSize: statue.iconSize ?? null,
+      current: profile.sealedShrine[statue.key as keyof ProfileV1["sealedShrine"]] ?? 0,
+      max: statue.levels.length,
+      apply: (p, level) => ({ ...p, sealedShrine: { ...p.sealedShrine, [statue.key]: level } }),
+      cost: () => UNPRICED,
+    });
+  }
+
+  // The Black Orb's level: unpriced here.
+  add({
+    id: "black-orb",
+    kind: "Black Orb",
+    name: "Black Orb level",
+    icon: null,
+    iconSize: null,
+    current: profile.blackOrb.level,
+    max: MAX_BLACK_ORB_LEVEL,
+    apply: (p, level) => ({ ...p, blackOrb: { ...p.blackOrb, level } }),
+    cost: () => UNPRICED,
+  });
 
   // Companion passives: Stones and Emeralds.
   for (const companion of COMPANIONS) {
@@ -288,7 +423,13 @@ export type PlanTarget = {
   manual: string[];
 };
 
-/** The damage a profile deals in the fight and the HP it has to beat: coarse steps for searching, null for the fight's own. */
+/** Spirit skills' damage: part of beating the enemy, but not the player's own damage that upgrades raise. */
+const SPIRIT_DAMAGE = ["Breath of Fire", "Thief Wind", "Judge's Torpedo"];
+
+/**
+ * The damage a profile deals in the fight (all of it, and the player's own without spirit skills) and the HP it has
+ * to beat: coarse steps for searching, null for the fight's own.
+ */
 export function planFight(profile: ProfileV1, factors: SpiritFactors | null, target: PlanTarget, step: number | null = 0.1) {
   const planned: ProfileV1 = {
     ...profile,
@@ -298,8 +439,9 @@ export function planFight(profile: ProfileV1, factors: SpiritFactors | null, tar
   };
   const setup = promotionFight(planned, factors, target.promotionIndex, target.duration, target.manual, target.mode === "stages" ? { stage: target.stage } : {});
   const hp = setup.boss?.hp ?? 0;
-  const total = simulateFight({ ...setup.input, step: step ?? undefined }).total;
-  return { total, hp };
+  const result = simulateFight({ ...setup.input, step: step ?? undefined });
+  const own = result.total - SPIRIT_DAMAGE.reduce((sum, name) => sum + (result.bySkill[name] ?? 0), 0);
+  return { total: result.total, own, hp };
 }
 
 /** Whether a cost fits what the player owns; unnamed units and unpriced upgrades can't be checked. */
@@ -316,17 +458,19 @@ export function affordable(cost: UpgradeCost, owned: ProfileV1["resources"]): { 
 export type PlanStep = { upgrade: Omit<Upgrade, "apply" | "cost">; level: number; cost: UpgradeCost };
 /** A plan: its upgrades, their total cost, and the damage the fight deals with them. */
 export type Plan = { steps: PlanStep[]; cost: UpgradeCost; total: number };
-/** How far one upgrade maxed takes the damage, for when nothing gets there. */
-export type Gain = { upgrade: Omit<Upgrade, "apply" | "cost">; total: number };
+/** One upgrade maxed: how much it raises the player's own damage (×), the fight's total with it, and what maxing costs. */
+export type Gain = { upgrade: Omit<Upgrade, "apply" | "cost">; ownGain: number; total: number; cost: UpgradeCost };
 
 export type UpgradePlans = {
   baseline: number;
+  /** The player's own damage, without spirit skills. */
+  own: number;
   hp: number;
   /** Single upgrades that beat the target alone, cheapest for what's owned first. */
   singles: Plan[];
   /** The fewest upgrades that beat it together when no single one does, a few alternatives. */
   combos: Plan[];
-  /** The damage with every upgrade maxed, and the upgrades that add the most on their own. */
+  /** The damage with every upgrade maxed, and the upgrades that raise the player's own damage the most on their own. */
   maxed: number;
   gains: Gain[];
 };
@@ -378,7 +522,7 @@ export function planUpgrades(
   target: PlanTarget,
   progress?: (done: number, of: number) => void,
 ): UpgradePlans {
-  const { total: baseline, hp } = planFight(profile, factors, target);
+  const { total: baseline, own, hp } = planFight(profile, factors, target);
   const upgrades = listUpgrades(profile);
   const owned = profile.resources;
   const damage = (p: ProfileV1, step: number | null = 0.1) => planFight(p, factors, target, step).total;
@@ -386,14 +530,16 @@ export function planUpgrades(
   let done = 0;
   const tick = () => progress?.(Math.min(work, (done += 1)), work);
 
-  // Each upgrade maxed on its own: what raises the damage at all, and by how much.
-  const useful: { upgrade: Upgrade; best: number }[] = [];
+  // Each upgrade maxed on its own: what raises the player's own damage at all, and by how much. Spirit skills'
+  // damage (Breath of Fire takes a share of the enemy's HP) doesn't grow with upgrades, so it isn't what's compared.
+  const useful: { upgrade: Upgrade; best: number; ownGain: number }[] = [];
   for (const upgrade of upgrades) {
-    const best = damage(upgrade.apply(profile, upgrade.max));
+    const fight = planFight(upgrade.apply(profile, upgrade.max), factors, target);
     tick();
-    if (best > baseline * (1 + 1e-9)) useful.push({ upgrade, best });
+    const ownGain = fight.own / Math.max(own, 1e-300);
+    if (ownGain > 1 + 1e-9) useful.push({ upgrade, best: fight.total, ownGain });
   }
-  useful.sort((a, b) => b.best - a.best);
+  useful.sort((a, b) => b.ownGain - a.ownGain);
 
   /** The lowest level of one upgrade that keeps `base` (with the others applied) at or over the HP. */
   const lowest = (upgrade: Upgrade, base: ProfileV1): number | null => {
@@ -470,10 +616,11 @@ export function planUpgrades(
 
   return {
     baseline,
+    own,
     hp,
     singles,
     combos,
     maxed,
-    gains: useful.slice(0, 6).map(({ upgrade, best }) => ({ upgrade: strip(upgrade), total: best })),
+    gains: useful.slice(0, 8).map(({ upgrade, best, ownGain }) => ({ upgrade: strip(upgrade), ownGain, total: best, cost: upgrade.cost(upgrade.current, upgrade.max) })),
   };
 }

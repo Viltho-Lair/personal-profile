@@ -94,7 +94,10 @@ export function spiritCost(tables: CostTables, from: number, to: number): { cube
 
 /** Stones and Emeralds to level a companion's passive. */
 export function passiveCost(tables: CostTables, companion: string, passive: string, from: number, to: number): { stones: number; emeralds: number } | null {
-  const table = tables.companionPassives[companion]?.[passive];
+  const passives = tables.companionPassives[companion];
+  // The Understanding passives go by slightly different names ("Flame's Understanding" / "Fire Understanding").
+  const table =
+    passives?.[passive] ?? (passive.endsWith("Understanding") ? Object.entries(passives ?? {}).find(([name]) => name.endsWith("Understanding"))?.[1] : undefined);
   if (!table) return null;
   return { stones: tableSum(table.stone, from, to), emeralds: tableSum(table.emerald, from, to) };
 }

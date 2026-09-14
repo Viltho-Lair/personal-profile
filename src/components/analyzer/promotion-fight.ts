@@ -1,26 +1,22 @@
-import characterData from "@/data/optimizer/character.json";
 import promotionBossData from "@/data/optimizer/promotion-bosses.json";
 import stagesData from "@/data/optimizer/stages.json";
 import type { FarmStage } from "@/lib/game/farm";
 import { ANIMATION_SECONDS, simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
-import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
 import refinementData from "@/data/optimizer/skill-refinement.json";
 import { openRefinementLines, refinementEffects, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
-import { activeFamiliars, activeSkillStones, awakening, effectiveSkillLevel, equippedKey, familiarStars, gearState, masteryLevel, presetBeast } from "@/lib/profile/rules";
+import { activeFamiliars, activeSkillStones, effectiveSkillLevel, familiarStars, masteryLevel, presetBeast } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
-import { AWAKENING, FAMILIARS, MANA_ALTAR, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Familiar, type Skill } from "./data";
+import { FAMILIARS, MANA_ALTAR, MASTERY_PAGES, SKILL_BY_NAME, type Familiar, type Skill } from "./data";
 import { altarStars, manaAltar, proficiencyBonuses } from "@/lib/game/familiars";
 import type { SpiritFactors } from "./spirit-stats";
-import { activeSpiritSkills, BEASTS, classLevelCap, classTotals, collectSources, companionSkill, gearTotals, SHRINE } from "./stat-sources";
-import { formatNumber } from "@/lib/number-format";
+import { activeSpiritSkills, BEASTS, collectSources, companionSkill, SHRINE } from "./stat-sources";
 
 type PromotionStage = { name: string; stage: number; range: number };
 export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[];
 const BOSS_HP = promotionBossData.bossHp as number[];
-const ENHANCE = characterData.enhance as unknown as EnhanceStat[];
 
 export const FIGHT_SECONDS = 60;
 /** A farming run ends when the box breaks, or after this long. */
@@ -477,180 +473,6 @@ function fight(sources: StatSources, skills: FightSkill[], duration: number, ste
   return simulateFight(fightInput(sources, skills, duration, manual, step, target));
 }
 
-export type Suggestion = { label: string; detail: string };
-
-const pctText = (fraction: number) => `${formatNumber(fraction * 100, 1)}%`;
-const levelText = (level: number) => formatNumber(level);
-/** The needed rise as a share: x1.033 (+3.3%). */
-const shareText = (ratio: number) => `+${pctText(ratio - 1)}`;
-
-/** The lowest level in [from, to] where `reaches` holds, or null when even `to` falls short. */
-function lowestLevel(from: number, to: number, reaches: (level: number) => boolean): number | null {
-  if (to < from || !reaches(to)) return null;
-  let low = from;
-  let high = to;
-  while (low < high) {
-    const mid = Math.floor((low + high) / 2);
-    if (reaches(mid)) high = mid;
-    else low = mid + 1;
-  }
-  return low;
-}
-const atkStat = ENHANCE.find((stat) => stat.name === "ATK");
-
-/**
- * Levers that multiply ATK, so damage scales with them directly: raising the
- * group's total by `ratio` scales every hit by `ratio`. Each says how much
- * more that group needs as a share, and what to level for it where there's
- * one thing to level (the equipped weapon, the equipped class, ATK enhance).
- */
-const ATK_GROUPS: {
-  label: string;
-  group: (s: StatSources) => number;
-  describe: (s: StatSources, ratio: number, profile: ProfileV1) => string | null;
-}[] = [
-  {
-    label: "Enhance ATK",
-    group: (s) =>
-      (s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk) +
-      s.soulWeapon.atk * (1 + s.soulWeapon.engravingAtk + s.shrine.soulWeaponAtk),
-    describe: (s, ratio, profile) => {
-      const added =
-        ((s.enhance.atk + s.growth.atk + s.knowledge) * (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk) +
-          s.soulWeapon.atk * (1 + s.soulWeapon.engravingAtk + s.shrine.soulWeaponAtk)) *
-        (ratio - 1);
-      if (!atkStat) return null;
-      const target = s.enhance.atk + added / (1 + s.engraving.atk + s.refinement.atk + s.appearance.atk + s.shrine.atk);
-      const max = atkStat.maxLevel ?? 2_200_000;
-      if (enhanceStat(atkStat.formula, max).value < target) return null;
-      let low = 0;
-      let high = max;
-      while (low < high) {
-        const mid = Math.floor((low + high) / 2);
-        if (enhanceStat(atkStat.formula, mid).value >= target) high = mid;
-        else low = mid + 1;
-      }
-      return `${shareText(ratio)} base ATK: ATK enhance to about Lv ${levelText(low)} (now Lv ${levelText(profile.character.enhance.ATK ?? 0)})`;
-    },
-  },
-  {
-    label: "Weapons",
-    group: (s) => 100 + s.weapon.equip + s.weapon.owned,
-    describe: (s, ratio, profile) => {
-      const grade = equippedKey(profile, "weapons");
-      const gear = WEAPONS.find((w) => w.grade === grade);
-      if (!gear) return `${shareText(ratio)} weapon effect: no weapon equipped`;
-      const need = (100 + s.weapon.equip + s.weapon.owned) * ratio;
-      const cap = Math.min(gear.maxLevel, AWAKENING[awakening(profile, "weapons", MAX_AWAKENING)]?.maxLevel ?? gear.maxLevel);
-      const now = gearState(profile, "weapons", gear.grade, gear.maxLevel).level;
-      const at = (level: number) => {
-        const t = gearTotals({ ...profile, weapons: { ...profile.weapons, [gear.grade]: { owned: true, level } } }, "weapons", WEAPONS);
-        return 100 + t.equip + t.owned >= need;
-      };
-      const level = lowestLevel(now + 1, cap, at);
-      return level !== null
-        ? `${shareText(ratio)} weapon effect: equipped ${gear.grade} weapon from Lv ${levelText(now)} to Lv ${levelText(level)}`
-        : `${shareText(ratio)} weapon effect: more than the equipped ${gear.grade} weapon gives at its Lv ${levelText(cap)} cap, so it needs a higher awakening`;
-    },
-  },
-  {
-    label: "Classes",
-    group: (s) => 100 + s.classes.equip + s.classes.owned,
-    describe: (s, ratio, profile) => {
-      const c = profile.character;
-      const name = c.equippedClass;
-      const state = name ? c.classes[name] : undefined;
-      if (!name || !state?.owned) return `${shareText(ratio)} class effect: no class equipped`;
-      const need = (100 + s.classes.equip + s.classes.owned) * ratio;
-      const cap = classLevelCap(c);
-      const at = (level: number) => {
-        const t = classTotals({ ...c, classes: { ...c.classes, [name]: { ...state, level } } });
-        return 100 + t.equip + t.owned >= need;
-      };
-      const level = lowestLevel(state.level + 1, cap, at);
-      return level !== null
-        ? `${shareText(ratio)} class effect: ${name} from Lv ${levelText(state.level)} to Lv ${levelText(level)}`
-        : `${shareText(ratio)} class effect: more than ${name} gives at its Lv ${levelText(cap)} cap, so it needs Awakened Blast or Constellation levels`;
-    },
-  },
-  {
-    label: "Extra ATK",
-    group: (s) => 1 + s.relics.atk + s.companionPromotion.atk + s.slayerPromotion.atk + s.mastery.atk + s.companions.blessingOfForest + s.memoryTree.atk + s.constellation.atk,
-    describe: (s, ratio) => {
-      const group = 1 + s.relics.atk + s.companionPromotion.atk + s.slayerPromotion.atk + s.mastery.atk + s.companions.blessingOfForest + s.memoryTree.atk + s.constellation.atk;
-      return `${shareText(ratio)} Extra ATK: +${pctText(group * (ratio - 1))} more Extra ATK (now +${pctText(group - 1)}) from companion or slayer promotion, Skill Mastery, Memory Tree or Constellation`;
-    },
-  },
-  {
-    label: "Spirits",
-    group: (s) => 1 + s.spirits.atk,
-    describe: (s, ratio) => `${shareText(ratio)} spirit ATK: +${pctText((1 + s.spirits.atk) * (ratio - 1))} more from the spirit preset (now +${pctText(s.spirits.atk)}): spirit levels, awakening or Fountain of Circulation`,
-  },
-  {
-    label: "Breakthrough",
-    group: (s) => 1 + s.memoryTree.atkMultiplier + s.constellation.promotion,
-    describe: (s, ratio) => {
-      const group = 1 + s.memoryTree.atkMultiplier + s.constellation.promotion;
-      return `${shareText(ratio)} promotion ATK: +${pctText(group * (ratio - 1))} more from Memory Tree breakthrough or completed constellations (now +${pctText(group - 1)})`;
-    },
-  },
-];
-
-/** Hit multipliers that don't scale linearly: solved by re-running the fight. */
-const HIT_LEVERS: { label: string; apply: (s: StatSources, x: number) => void; cap: (s: StatSources) => number | null; describe: (x: number) => string }[] = [
-  {
-    label: "CRIT DMG",
-    apply: (s, x) => (s.enhance.critDamage += x),
-    cap: () => null,
-    describe: (x) => `+${pctText(x)} CRIT DMG (about ${formatNumber(Math.ceil(x / 0.01))} CRIT DMG levels)`,
-  },
-  {
-    label: "CRIT chance",
-    apply: (s, x) => (s.enhance.critChance += x),
-    cap: (s) => Math.max(0, 1 - s.enhance.critChance),
-    describe: (x) => `+${pctText(x)} CRIT chance`,
-  },
-  {
-    label: "Death Strike",
-    apply: (s, x) => (s.enhance.deathStrikeDamage += x),
-    cap: () => null,
-    describe: (x) => `+${pctText(x)} Death Strike damage`,
-  },
-];
-
-function solveHitLever(
-  lever: (typeof HIT_LEVERS)[number],
-  base: StatSources,
-  skills: FightSkill[],
-  duration: number,
-  hp: number,
-  manual: string[],
-  target: FightTarget,
-) {
-  const beats = (x: number) => {
-    const s = structuredClone(base);
-    lever.apply(s, x);
-    return fight(s, skills, duration, 0.1, manual, target).total >= hp;
-  };
-  const cap = lever.cap(base);
-  let high = cap ?? 1;
-  if (cap === null) {
-    while (!beats(high)) {
-      high *= 16;
-      if (high > 1e300) return null;
-    }
-  } else if (cap <= 0 || !beats(cap)) {
-    return null;
-  }
-  let low = 0;
-  for (let i = 0; i < 24; i += 1) {
-    const mid = (low + high) / 2;
-    if (beats(mid)) high = mid;
-    else low = mid;
-  }
-  return high;
-}
-
 /**
  * Everything a fight needs before it's played: the preset's fight skills, the input and what it's against.
  * Against a boss monster it's the chosen promotion's boss. Otherwise it's the stages: the highest stage
@@ -743,33 +565,3 @@ export function promotionFight(
   };
 }
 
-/** After a fight falls short: what alone would close the gap, and the same with skills when they were left out. */
-export function promotionSuggestions(
-  profile: ProfileV1,
-  fightSetup: ReturnType<typeof promotionFight>,
-  total: number,
-  duration: number,
-  manual: string[] = [],
-) {
-  const { boss, sources, skills, target } = fightSetup;
-  let suggestions: Suggestion[] = [];
-  let spread: number | null = null;
-  let withSkills: number | null = null;
-  if (!boss || total <= 0 || total >= boss.hp) return { suggestions, spread, withSkills };
-  const ratio = boss.hp / total;
-  const atk = ATK_GROUPS.flatMap((lever) => {
-    const detail = lever.describe(sources, ratio, profile);
-    return detail ? [{ label: lever.label, detail, rank: ratio }] : [];
-  });
-  const hits = HIT_LEVERS.flatMap((lever) => {
-    const x = solveHitLever(lever, sources, skills, duration, boss.hp, manual, target);
-    return x === null ? [] : [{ label: lever.label, detail: lever.describe(x), rank: 1 + x }];
-  });
-  suggestions = [...hits, ...atk]
-    .sort((a, b) => a.rank - b.rank)
-    .slice(0, 4)
-    .map(({ label, detail }) => ({ label, detail }));
-  spread = Math.pow(ratio, 1 / 5);
-  if (!profile.includeSkills) withSkills = fight(sources, [...presetFightSkills(profile).skills, ...fightSetup.skills.filter((s) => s.uncharged || s.familiar)], duration, undefined, [], target).total;
-  return { suggestions, spread, withSkills };
-}

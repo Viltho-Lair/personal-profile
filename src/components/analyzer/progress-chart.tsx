@@ -16,9 +16,10 @@ import { BattleRender, type SingleEnemy } from "./farm-render";
 import { DamageChart, type ChartLevel } from "./damage-chart";
 import { rarityGroup } from "@/lib/game/formulas";
 import { spiritState } from "@/lib/profile/rules";
-import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
+import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
+import { UpgradePlans } from "./upgrade-plans";
 import { castInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
-import { useSpiritFactors } from "./spirit-stats";
+import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const SELECT =
@@ -294,11 +295,11 @@ export function ProgressChart() {
         farmMode && setup.farm ? (
           <FarmResults stage={setup.farm} snap={snap} duration={duration} />
         ) : stagesMode ? (
-          <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
+          <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} factors={factors} />
         ) : monsterMode && boss ? (
-          <MonsterResults name={boss.name} stage={boss.stage} hp={boss.hp} snap={snap} duration={duration} />
+          <MonsterResults name={boss.name} stage={boss.stage} hp={boss.hp} snap={snap} duration={duration} manual={manual} factors={factors} />
         ) : boss ? (
-          <Results setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
+          <Results setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} factors={factors} />
         ) : null
       ) : null}
     </section>
@@ -315,8 +316,28 @@ const enemyKey = (setup: ReturnType<typeof promotionFight>) =>
   setup.mode === "stages" ? "stages" : `${setup.mode}|${setup.boss?.name ?? ""}|${setup.boss?.stage ?? ""}|${setup.farm?.stage ?? ""}`;
 
 /** A normal monster's verdict: whether it went down, and how fast. */
-function MonsterResults({ name, stage, hp, snap, duration }: { name: string; stage: number; hp: number; snap: FightState; duration: number }) {
+function MonsterResults({
+  name,
+  stage,
+  hp,
+  snap,
+  duration,
+  manual,
+  factors,
+}: {
+  name: string;
+  stage: number;
+  hp: number;
+  snap: FightState;
+  duration: number;
+  manual: string[];
+  factors: SpiritFactors | null;
+}) {
   const killedAt = snap.points.find((point) => point.damage >= hp)?.t ?? null;
+  const target = useMemo(
+    () => ({ mode: "monster" as const, promotionIndex: Math.max(0, PROMOTION_STAGES.findIndex((p) => p.name === name)), duration, manual }),
+    [name, duration, manual],
+  );
   return (
     <div className="flex shrink-0 flex-col gap-1 border-t border-ink/10 pt-2 text-[11px] leading-snug">
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px]">
@@ -333,6 +354,7 @@ function MonsterResults({ name, stage, hp, snap, duration }: { name: string; sta
           : `Still standing after ${duration}s: ${formatValue(Math.round((snap.total / Math.max(1, hp)) * 1000) / 10)}% of its HP.`}
       </p>
       <DamageBreakdown total={snap.total} breakdown={snap} />
+      {killedAt === null && snap.total > 0 ? <UpgradePlans title={`How to beat ${name}'s monster in ${duration}s`} target={target} factors={factors} /> : null}
     </div>
   );
 }
@@ -615,22 +637,21 @@ function Results({
   duration,
   manual,
   breakdown,
+  factors,
 }: {
   setup: ReturnType<typeof promotionFight>;
   total: number;
   duration: number;
   manual: string[];
   breakdown: Pick<FightState, "basic" | "bySkill">;
+  factors: SpiritFactors | null;
 }) {
   const { profile } = useProfile();
   const boss = setup.boss!;
-  const [analysis, setAnalysis] = useState<ReturnType<typeof promotionSuggestions> | null>(null);
-
-  useEffect(() => {
-    // The suggestions replay the fight many times; let the verdict paint first.
-    const id = window.setTimeout(() => setAnalysis(promotionSuggestions(profile, setup, total, duration, manual)), 30);
-    return () => window.clearTimeout(id);
-  }, [profile, setup, total, duration, manual]);
+  const target = useMemo(
+    () => ({ mode: "promotion" as const, promotionIndex: Math.max(0, PROMOTION_STAGES.findIndex((p) => p.name === boss.name)), duration, manual }),
+    [boss.name, duration, manual],
+  );
 
   const ratio = boss.hp > 0 ? total / boss.hp : 0;
   const verdict =
@@ -654,30 +675,7 @@ function Results({
       </dl>
       <p className={`font-medium ${verdict.tone}`}>{verdict.text}</p>
       <DamageBreakdown total={total} breakdown={breakdown} />
-      {analysis === null && total < boss.hp && total > 0 ? <p className="text-dim">Working out what would close the gap…</p> : null}
-      {analysis?.suggestions.length ? (
-        <div>
-          <p className="text-dim">Each of these alone would get there:</p>
-          <ul className="list-disc pl-4">
-            {analysis.suggestions.map((s) => (
-              <li key={s.label}>
-                <span className="font-medium">{s.label}:</span> {s.detail}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {analysis?.spread != null ? (
-        <p className="text-dim">
-          Or spread it: every damage source scales with ATK, so raising Weapons, Classes, Spirits, Extra ATK and Breakthrough
-          each by about ×{formatValue(analysis.spread)} gets there too.
-        </p>
-      ) : null}
-      {analysis?.withSkills != null ? (
-        <p className="text-dim">
-          With Include Skills ticked: {formatValue(analysis.withSkills)} ({formatValue((analysis.withSkills / Math.max(1, boss.hp)) * 100)}% of the boss HP).
-        </p>
-      ) : null}
+      {total < boss.hp && total > 0 ? <UpgradePlans title={`How to beat ${boss.name}`} target={target} factors={factors} /> : null}
       {profile.includeSkills && setup.skipped.length ? <p className="text-dim">Skills not modelled: {setup.skipped.join(", ")}.</p> : null}
       <p className="text-[10px] text-dim">
         Approximate, hit by hit: one basic attack a second before ATK SPD (the workbook has no base attack speed), skills
@@ -696,25 +694,23 @@ function StageResults({
   duration,
   manual,
   breakdown,
+  factors,
 }: {
   setup: ReturnType<typeof promotionFight>;
   total: number;
   duration: number;
   manual: string[];
   breakdown: Pick<FightState, "basic" | "bySkill">;
+  factors: SpiritFactors | null;
 }) {
   const { profile } = useProfile();
   const cleared = stagesCleared(total);
   const next = cleared < STAGE_COUNT ? cleared + 1 : null;
   const nextHp = next ? stageBossHp(next) : 0;
   const highest = profile.character.highestStage;
-  const [analysis, setAnalysis] = useState<ReturnType<typeof promotionSuggestions> | null>(null);
-
-  useEffect(() => {
-    if (!setup.boss) return;
-    const id = window.setTimeout(() => setAnalysis(promotionSuggestions(profile, setup, total, duration, manual)), 30);
-    return () => window.clearTimeout(id);
-  }, [profile, setup, total, duration, manual]);
+  // Plans aim at the first stage these presets don't clear, fought on its own.
+  const planStage = setup.stages?.next ?? next;
+  const target = useMemo(() => (planStage ? { mode: "stages" as const, promotionIndex: 0, stage: planStage, duration, manual } : null), [planStage, duration, manual]);
 
   return (
     <div className="flex shrink-0 flex-col gap-1 border-t border-ink/10 pt-2 text-[11px] leading-snug">
@@ -745,18 +741,7 @@ function StageResults({
             }.`}
       </p>
       {next ? <p className="text-dim">Stage {next} needs about {formatValue(nextHp / Math.max(total, 1e-300))}× this damage.</p> : null}
-      {analysis?.suggestions.length ? (
-        <div>
-          <p className="text-dim">Each of these alone would clear stage {next}:</p>
-          <ul className="list-disc pl-4">
-            {analysis.suggestions.map((s) => (
-              <li key={s.label}>
-                <span className="font-medium">{s.label}:</span> {s.detail}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      {target ? <UpgradePlans title={`How to clear stage ${formatValue(target.stage)}`} target={target} factors={factors} /> : null}
       <p className="text-[10px] text-dim">
         Against normal monsters: each stage&apos;s boss HP is passed as the damage builds up. Skills that read the enemy&apos;s HP
         (Breath of Fire, Judge&apos;s Torpedo, Thief Wind, Leveling) read stage {formatValue(Math.max(1, setup.stages?.reached ?? 1))}&apos;s boss.
