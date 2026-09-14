@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 export const metadata: Metadata = {
   title: "Slayer Legends Analyzer",
   description:
-    "Plan a Slayer Legends build: character, skills, equipment, companion, adventure and shop.",
+    "Free Slayer Legends build planner. Enter your character, skills, equipment and companions to see every stat source added up the way the game does.",
+  alternates: { canonical: "/slayer-legends-analyzer" },
   openGraph: {
     title: "Slayer Legends Analyzer",
     description: "Plan a Slayer Legends build, one tab at a time.",

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Instrument_Sans, Unbounded } from "next/font/google";
 import { ADSENSE_CLIENT, ADSENSE_SCRIPT_URL } from "@/lib/adsense";
+import { OWNER, SITE_URL } from "@/lib/site";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -23,13 +24,19 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono-face",
 });
 
+const DESCRIPTION =
+  "Abdullah Abu Hamad: full-stack developer, data scientist and engineering manager. Home of the Slayer Legends Analyzer and its guides.";
+
 export const metadata: Metadata = {
-  title: "Abdullah Abu Hamad — Soon™",
-  description: "The personal profile of Abdullah Abu Hamad. Coming soon.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: OWNER, template: `%s | ${OWNER}` },
+  description: DESCRIPTION,
   icons: { icon: "/logo.svg" },
   openGraph: {
-    title: "Abdullah Abu Hamad — Soon™",
-    description: "A proper introduction is on its way.",
+    siteName: OWNER,
+    type: "website",
+    title: OWNER,
+    description: DESCRIPTION,
   },
   // AdSense site verification looks for this tag in the page head.
   other: { "google-adsense-account": ADSENSE_CLIENT },

@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
 import { unknownEntries } from "@/lib/profile/rules";
@@ -17,15 +16,17 @@ import { ResetProfileButton, SlayerProgress } from "./profile-controls";
 import { ProgressChart } from "./progress-chart";
 import { SkillPanel } from "./skill-panel";
 import { StatsSummary } from "./stats-summary";
-import { ANALYZER_TABS, DEFAULT_TAB, isTabId } from "./tabs";
+import { ANALYZER_TABS, type TabId } from "./tabs";
 
 const TAB_ICONS: Record<string, { icon: string; iconSize: number } | undefined> = navigationData.icons;
 
-export function AnalyzerShell() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const requested = searchParams.get("tab");
-  const active = isTabId(requested) ? requested : DEFAULT_TAB;
+/**
+ * The page reads ?tab= on the server and passes it in, so the first HTML
+ * already holds the right panel. Tab changes only rewrite the URL: Next.js
+ * picks up history.replaceState without a server round trip.
+ */
+export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
+  const [active, setActive] = useState<TabId>(initialTab);
   const { profile, resetProfile } = useProfile();
 
   // Rule 6: entries for items a data update renamed or removed are kept but
@@ -45,9 +46,10 @@ export function AnalyzerShell() {
   return (
     <Tabs
       value={active}
-      onValueChange={(value) =>
-        router.replace(`?tab=${String(value)}`, { scroll: false })
-      }
+      onValueChange={(value) => {
+        setActive(value as TabId);
+        window.history.replaceState(null, "", `?tab=${String(value)}`);
+      }}
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
       {/* Top half is a 3 x 2 grid: the progress chart and the Stats Summary
@@ -88,14 +90,8 @@ export function AnalyzerShell() {
             <SkillPanel />
           ) : tab.id === "equips" ? (
             <EquipmentPanel />
-          ) : tab.id === "companion" ? (
-            <CompanionPanel />
           ) : (
-            <div className="flex h-full items-center justify-center p-6">
-              <p className="max-w-[40ch] text-center font-mono text-xs tracking-[0.08em] text-dim uppercase">
-                {tab.empty}
-              </p>
-            </div>
+            <CompanionPanel />
           )}
         </TabsContent>
       ))}

@@ -10,7 +10,7 @@ type Piece = {
   polygons: { fill: string; points: string }[];
 };
 
-const PIECES: Piece[] = [
+export const PIECES: Piece[] = [
   {
     name: "blue",
     dx: -18,
@@ -72,6 +72,29 @@ export function LogoMark({
         >
           {piece.polygons.map((polygon) => (
             <polygon key={polygon.points} {...polygon} />
+          ))}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/**
+ * One piece of the mark on its own, kept where it sits in the whole mark so
+ * the three pieces still read as parts of one shape.
+ */
+export function LogoPiece({ name, className }: { name: string; className?: string }) {
+  const piece = PIECES.find((candidate) => candidate.name === name);
+  return (
+    <svg viewBox="40 0 519 599" aria-hidden focusable="false" className={className}>
+      {PIECES.map((candidate) => (
+        <g key={candidate.name} opacity={candidate === piece ? 1 : 0.12}>
+          {candidate.polygons.map((polygon) => (
+            <polygon
+              key={polygon.points}
+              points={polygon.points}
+              fill={candidate === piece ? polygon.fill : "currentColor"}
+            />
           ))}
         </g>
       ))}
