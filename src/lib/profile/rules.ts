@@ -1,3 +1,4 @@
+import { SPIRIT_LEVEL_CAP } from "./types";
 import type { ResourceKey } from "./types";
 import type { OrbAccessory, OrbLine } from "@/lib/game/black-orb";
 import type { Element } from "@/lib/game/stats";
@@ -165,7 +166,7 @@ export function setSpiritLevel(
   level: number,
   maxLevel: number | null,
 ): ProfileV1 {
-  const clamped = clampLevel(level, maxLevel);
+  const clamped = clampLevel(level, spiritLevelCap(profile, name, maxLevel));
   const current = profile.spirits[name] ?? NO_SPIRIT;
   const awakening = current.awakening ?? (clamped > 0 ? FIRST_SPIRIT_TIER : null);
   return withSpirit(profile, name, { ...current, owned: awakening !== null, level: clamped, awakening });
@@ -674,9 +675,19 @@ export function relicLevel(profile: ProfileV1, name: string, maxLevel: number): 
   return clampLevel(profile.relics[name]?.level ?? 0, maxLevel);
 }
 
+/**
+ * How far a spirit can level: the partner (first slot of the active spirit preset) to the data's max level, every
+ * other spirit to 700, as the workbook's Spirit Leveling calculator caps them.
+ */
+export function spiritLevelCap(profile: ProfileV1, name: string, maxLevel: number | null): number | null {
+  const partner = activeSpiritPreset(profile)[0] === name;
+  if (partner) return maxLevel;
+  return maxLevel === null ? SPIRIT_LEVEL_CAP : Math.min(maxLevel, SPIRIT_LEVEL_CAP);
+}
+
 export function spiritState(profile: ProfileV1, name: string, maxLevel: number | null): SpiritState {
   const state = profile.spirits[name] ?? NO_SPIRIT;
-  return { ...state, level: clampLevel(state.level, maxLevel) };
+  return { ...state, level: clampLevel(state.level, spiritLevelCap(profile, name, maxLevel)) };
 }
 
 export function soulWeaponOwned(profile: ProfileV1, name: string): boolean {

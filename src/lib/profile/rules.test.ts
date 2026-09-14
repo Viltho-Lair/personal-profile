@@ -58,6 +58,7 @@ import {
   setSpiritLevel,
   skillLevel,
   soulWeaponOwned,
+  spiritLevelCap,
   spiritState,
   unknownEntries,
 } from "./rules";
@@ -567,5 +568,19 @@ describe("fight settings", () => {
     p = toggleManualSkill(p, "Rave");
     expect(p.skillPresetManual[0]).toEqual(["Familiar"]);
     expect(p.skillPresetManual[1]).toEqual(["Supersonic"]);
+  });
+});
+
+describe("spirit level cap", () => {
+  it("lets the partner level to the data's max and every other spirit to 700", () => {
+    let p = emptyProfile();
+    p = setSpiritPresetSlot(p, 0, "Sala");
+    p = setSpiritPresetSlot(p, 1, "Loar");
+    expect(spiritLevelCap(p, "Sala", 1000)).toBe(1000);
+    expect(spiritLevelCap(p, "Loar", 1000)).toBe(700);
+    p = setSpiritLevel(p, "Loar", 900, 1000);
+    expect(spiritState(p, "Loar", 1000).level).toBe(700);
+    p = setSpiritLevel(p, "Sala", 900, 1000);
+    expect(spiritState(p, "Sala", 1000).level).toBe(900);
   });
 });

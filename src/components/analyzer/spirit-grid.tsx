@@ -1,7 +1,7 @@
 "use client";
 
 import { rarityGroup } from "@/lib/game/formulas";
-import { activeSpiritPreset, effectiveSpiritLevel, spiritLineup, spiritState } from "@/lib/profile/rules";
+import { activeSpiritPreset, effectiveSpiritLevel, spiritLevelCap, spiritLineup, spiritState } from "@/lib/profile/rules";
 import { MAIN_SPIRIT_COUNT, MAX_SPIRIT_ENHANCE, MIN_SPIRIT_ENHANCE } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
 import { SPIRIT_TIERS, SPIRITS, type Spirit } from "./data";
@@ -95,7 +95,7 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
         <InlineLevel
           value={lineupLevel}
           min={0}
-          max={spirit.maxLevel}
+          max={spiritLevelCap(profile, spirit.name, spirit.maxLevel) ?? spirit.maxLevel}
           name={spirit.name}
           disabled={!isMain && lineup !== null}
           title={!isMain && lineup ? `Carries Lv ${lineup.level}, the lowest of the main 6 (${lineup.lowest})` : undefined}

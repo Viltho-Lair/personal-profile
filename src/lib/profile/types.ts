@@ -16,6 +16,8 @@ export type GearState = { owned: boolean; level: number };
 /** A spirit's awakening tier ("Legendary A3"), level, and enhance (its skill level, 1-5). */
 export type SpiritState = { owned: boolean; level: number; awakening: string | null; enhance: number };
 export const MIN_SPIRIT_ENHANCE = 1;
+/** Spirits level to 700; the partner (the spirit preset's first slot) goes on to the data's max, 1000. */
+export const SPIRIT_LEVEL_CAP = 700;
 export const MAX_SPIRIT_ENHANCE = 5;
 /** The tier a spirit is at when first owned. */
 export const FIRST_SPIRIT_TIER = "Common";

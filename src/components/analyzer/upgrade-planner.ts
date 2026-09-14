@@ -19,7 +19,7 @@ import {
 } from "@/lib/game/costs";
 import { rarityGroup } from "@/lib/game/formulas";
 import type { MemoryTree } from "@/lib/game/memory-tree";
-import { activeFamiliars, awakening, companionState, equippedKey, familiarStars, gearState, spiritState } from "@/lib/profile/rules";
+import { activeFamiliars, awakening, companionState, equippedKey, familiarStars, gearState, spiritLevelCap, spiritState } from "@/lib/profile/rules";
 import { MAX_FAMILIAR_STARS, MAX_SPIRIT_ENHANCE, RESOURCES, type ProfileV1, type ResourceKey } from "@/lib/profile/types";
 import { ACCESSORIES, AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, RELICS, SKILL_BY_NAME, SOUL_WEAPONS, SPIRIT_TIERS, SPIRITS, WEAPONS } from "./data";
 import { BEASTS, classLevelCap, SHRINE } from "./stat-sources";
@@ -181,7 +181,7 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
       icon: art?.icon ?? null,
       iconSize: art?.iconSize ?? null,
       current: state.level,
-      max: spirit.maxLevel ?? state.level,
+      max: spiritLevelCap(profile, spirit.name, spirit.maxLevel) ?? state.level,
       apply: (p, level) => ({ ...p, spirits: { ...p.spirits, [spirit.name]: { ...p.spirits[spirit.name]!, owned: true, level } } }),
       cost: (from, to) => priced(spiritCost(TABLES, from, to)),
     });
