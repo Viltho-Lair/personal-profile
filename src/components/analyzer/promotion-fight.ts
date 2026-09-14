@@ -10,7 +10,7 @@ import { activeSkillStones, effectiveSkillLevel, masteryLevel, mountedBeast } fr
 import type { ProfileV1 } from "@/lib/profile/types";
 import { MASTERY_PAGES, SKILL_BY_NAME, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
-import { BEASTS, collectSources, companionSkill, SHRINE } from "./stat-sources";
+import { activeSpiritSkills, BEASTS, collectSources, companionSkill, SHRINE } from "./stat-sources";
 
 type PromotionStage = { name: string; stage: number; range: number };
 export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[];
@@ -237,8 +237,18 @@ export function presetFightSkills(profile: ProfileV1) {
   return { skills, skipped };
 }
 
+/** The enemy: boss or normal monster, its HP, and the accompanying spirits' skills. */
+export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits">;
+
 /** The fight's input from the stats: hit, element damage, attack speed, life and mana pools. */
-export function fightInput(sources: StatSources, skills: FightSkill[], duration: number, manual: string[] = [], step?: number): FightInput {
+export function fightInput(
+  sources: StatSources,
+  skills: FightSkill[],
+  duration: number,
+  manual: string[] = [],
+  step?: number,
+  target: FightTarget = {},
+): FightInput {
   const stats = computeStats(sources);
   return {
     attack: stats.attack,
@@ -248,7 +258,8 @@ export function fightInput(sources: StatSources, skills: FightSkill[], duration:
     deathStrikeDamage: stats.deathStrikeDamage,
     extraDamage: stats.elementDamage,
     elementAmp: stats.elementAmp,
-    bossDamage: stats.bossDamage,
+    bossDamage: target.bossMonster === false ? stats.monsterDamage : stats.bossDamage,
+    ...target,
     attackSpeed: stats.attackSpeed,
     maxHp: stats.hp,
     hpRecovery: stats.hpRecovery,
@@ -261,8 +272,8 @@ export function fightInput(sources: StatSources, skills: FightSkill[], duration:
   };
 }
 
-function fight(sources: StatSources, skills: FightSkill[], duration: number, step?: number, manual: string[] = []): FightResult {
-  return simulateFight(fightInput(sources, skills, duration, manual, step));
+function fight(sources: StatSources, skills: FightSkill[], duration: number, step?: number, manual: string[] = [], target: FightTarget = {}): FightResult {
+  return simulateFight(fightInput(sources, skills, duration, manual, step, target));
 }
 
 export type Suggestion = { label: string; detail: string };
@@ -344,11 +355,19 @@ const HIT_LEVERS: { label: string; apply: (s: StatSources, x: number) => void; c
   },
 ];
 
-function solveHitLever(lever: (typeof HIT_LEVERS)[number], base: StatSources, skills: FightSkill[], duration: number, hp: number, manual: string[]) {
+function solveHitLever(
+  lever: (typeof HIT_LEVERS)[number],
+  base: StatSources,
+  skills: FightSkill[],
+  duration: number,
+  hp: number,
+  manual: string[],
+  target: FightTarget,
+) {
   const beats = (x: number) => {
     const s = structuredClone(base);
     lever.apply(s, x);
-    return fight(s, skills, duration, 0.1, manual).total >= hp;
+    return fight(s, skills, duration, 0.1, manual, target).total >= hp;
   };
   const cap = lever.cap(base);
   let high = cap ?? 1;
@@ -375,7 +394,10 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
   // Skill buffs play out in the fight itself, so the stats come without them.
   const sources = collectSources(profile, factors, false);
   const { skills, skipped } = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
-  return { boss, sources, skills, skipped, input: fightInput(sources, skills, duration, manual) };
+  // The accompanying spirits' skills are on whenever they are, Include Skills or not.
+  const spirits = activeSpiritSkills(profile);
+  const target: FightTarget = { bossMonster: profile.bossMonster, enemyHp: boss?.hp ?? 0, spirits };
+  return { boss, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
 }
 
 /** After a fight falls short: what alone would close the gap, and the same with skills when they were left out. */
@@ -386,7 +408,7 @@ export function promotionSuggestions(
   duration: number,
   manual: string[] = [],
 ) {
-  const { boss, sources, skills } = fightSetup;
+  const { boss, sources, skills, target } = fightSetup;
   let suggestions: Suggestion[] = [];
   let spread: number | null = null;
   let withSkills: number | null = null;
@@ -398,7 +420,7 @@ export function promotionSuggestions(
     return detail ? [{ label: lever.label, detail, rank: ratio }] : [];
   });
   const hits = HIT_LEVERS.flatMap((lever) => {
-    const x = solveHitLever(lever, sources, skills, duration, boss.hp, manual);
+    const x = solveHitLever(lever, sources, skills, duration, boss.hp, manual, target);
     return x === null ? [] : [{ label: lever.label, detail: lever.describe(x), rank: 1 + x }];
   });
   suggestions = [...hits, ...atk]
@@ -406,6 +428,6 @@ export function promotionSuggestions(
     .slice(0, 4)
     .map(({ label, detail }) => ({ label, detail }));
   spread = Math.pow(ratio, 1 / 5);
-  if (!profile.includeSkills) withSkills = fight(sources, presetFightSkills(profile).skills, duration).total;
+  if (!profile.includeSkills) withSkills = fight(sources, presetFightSkills(profile).skills, duration, undefined, [], target).total;
   return { suggestions, spread, withSkills };
 }

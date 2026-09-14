@@ -138,6 +138,7 @@ export function useProfile() {
     setShrineLevel: (statue: Parameters<typeof rules.setShrineLevel>[1], level: number, max: number) =>
       update((p) => rules.setShrineLevel(p, statue, level, max)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
+    setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
     resetProfile: () => update(() => emptyProfile()),
   };
 }

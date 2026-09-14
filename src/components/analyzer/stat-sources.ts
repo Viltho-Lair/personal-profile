@@ -41,7 +41,9 @@ import {
   gearState,
   masteryLevel,
   relicLevel,
+  spiritState,
 } from "@/lib/profile/rules";
+import { spiritSkillEffects, type SpiritSkillEffects } from "@/lib/game/spirit-skills";
 import { LATENT_STATS, type CharacterState, type GearKind, type ProfileV1 } from "@/lib/profile/types";
 import companionsData from "@/data/optimizer/companions.json";
 import {
@@ -209,6 +211,18 @@ export function skillBuffs(profile: ProfileV1) {
 }
 
 /** Everything the Stats Summary adds up, from the profile and its active presets. */
+/** The skills of the active spirit preset's owned spirits, at each spirit's skill level. */
+export function activeSpiritSkills(profile: ProfileV1): SpiritSkillEffects {
+  return spiritSkillEffects(
+    activeSpiritPreset(profile).flatMap((name) => {
+      const spirit = SPIRITS.find((sp) => sp.name === name);
+      if (!spirit?.skill) return [];
+      const state = spiritState(profile, spirit.name, spirit.maxLevel);
+      return state.owned && state.awakening ? [{ spirit: spirit.name, skill: spirit.skill, level: state.enhance }] : [];
+    }),
+  );
+}
+
 export function collectSources(profile: ProfileV1, factors: SpiritFactors | null, includeSkills: boolean): StatSources {
   const s = emptySources();
   const c = profile.character;
@@ -260,6 +274,8 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
       s.spirits[key] += spiritStatValue(profile, spirit, key, factors) ?? 0;
     }
   }
+  // Their skills are on with them.
+  s.spiritSkills = { hp: activeSpiritSkills(profile).hp };
 
   const enhance = (name: string) => {
     const stat = ENHANCE.find((e) => e.name === name);

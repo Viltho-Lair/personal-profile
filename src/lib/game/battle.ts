@@ -20,8 +20,15 @@
  *   cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
  *   refreshes it rather than stacking.
+ * - Spirit skills of the accompanying spirits: Last Fight multiplies the last
+ *   seconds' damage, Breath of Fire takes a share of the enemy's remaining HP,
+ *   Wilderness Roar / Reign raise skill damage against bosses / normal
+ *   monsters, Judge's Torpedo and Thief Wind only work on normal monsters,
+ *   Leveling adds damage while the enemy is above 70% HP, Wind Force recovers
+ *   cooldowns, and Time Freeze stops the battle timer while the fight goes on.
  */
 
+import { HIGH_HP_THRESHOLD, type SpiritSkillEffects } from "./spirit-skills";
 import type { ByElement, Element } from "./stats";
 
 export const ANIMATION_SECONDS = 0.3;
@@ -89,8 +96,14 @@ export type FightInput = {
   /** Element damage and its amps: an element skill deals x (1 + damage + bonuses) x (1 + amp). */
   extraDamage: ByElement;
   elementAmp?: ByElement;
-  /** Extra damage against the boss on every hit (Black Orb). */
+  /** Extra damage against the enemy on every hit (Black Orb boss or monster damage). */
   bossDamage?: number;
+  /** A boss monster (the default) or a normal monster. */
+  bossMonster?: boolean;
+  /** The enemy's HP, read by spirit skills (remaining HP share, execute, first strike, above 70%). */
+  enemyHp?: number;
+  /** Spirit skills of the accompanying spirits. */
+  spirits?: SpiritSkillEffects;
   /** Basic attacks a second before ATK SPD buffs (1 plus the Bracelet of Speed). */
   attackSpeed?: number;
   /** Life and mana pools and what they refill each second; no pools means skills cost nothing. */
@@ -146,6 +159,8 @@ export type FightState = FightResult & {
   manaRecovery: number;
   /** Whether HP Recovery is running (Rage stops it). */
   recovering: boolean;
+  /** Time Freeze holds the battle timer right now. */
+  timeStopped: boolean;
   attacksPerSecond: number;
   /** Total ATK and ATK SPD the buffs, stacks and Rage add right now, as fractions. */
   atkBonus: number;
@@ -239,9 +254,23 @@ export function createFight(input: FightInput): Fight {
   let mana = maxMana;
   const baseSpeed = input.attackSpeed ?? 1;
 
+  const spirits = input.spirits;
+  const bossMonster = input.bossMonster !== false;
+  const enemyHp = input.enemyHp ?? 0;
+  const skillAmp = 1 + (spirits ? (bossMonster ? spirits.bossSkillDamage : spirits.monsterSkillDamage) : 0);
+
   let real = 0;
+  /** The battle timer: it stops for stopped-time attacks and Time Freeze. */
   let clock = 0;
+  /** Seconds of action: buffs and spirit timers run on it, through Time Freeze too. */
+  let action = 0;
   let frozenUntil = 0; // real time the clock runs again
+  let stopUntil = -1; // real time Time Freeze ends
+  let timeStopUsed = false;
+  let nextBreath = spirits?.breath?.every ?? Infinity;
+  let nextRecovery = spirits?.cooldownRecovery?.every ?? Infinity;
+  let struck = false;
+  let executed = false;
   /** Fight-clock time Rave's storing ends, -1 when it isn't storing. */
   let raveUntil = -1;
   let raveStored = 0;
@@ -253,7 +282,7 @@ export function createFight(input: FightInput): Fight {
   const points = [{ t: 0, damage: 0 }];
   const casts: { name: string; t: number }[] = [];
 
-  const isOn = (l: Live) => l.skill.trigger === "always" || (clock >= l.activeFrom && clock < l.activeUntil);
+  const isOn = (l: Live) => l.skill.trigger === "always" || (action >= l.activeFrom && action < l.activeUntil);
 
   const bonuses = () => {
     let atk = 0;
@@ -282,13 +311,33 @@ export function createFight(input: FightInput): Fight {
   };
 
   const boss = 1 + (input.bossDamage ?? 0);
-  const deal = (hit: number, source: string | null) => {
-    const amount = hit * boss;
+  const record = (amount: number, source: string | null) => {
     total += amount;
     if (source) bySkill[source] = (bySkill[source] ?? 0) + amount;
     else basic += amount;
-    if (clock < raveUntil) raveStored += amount;
+    if (action < raveUntil) raveStored += amount;
     points.push({ t: clock, damage: total });
+  };
+  /** A hit with the enemy multipliers; `raw` damage (a share of the enemy's HP) skips them. */
+  const deal = (hit: number, source: string | null, raw = false) => {
+    let amount = hit;
+    if (!raw) {
+      amount *= boss;
+      if (spirits?.lastFight && clock >= input.duration - spirits.lastFight.seconds) amount *= spirits.lastFight.multiplier;
+      if (spirits?.highHpDamage && enemyHp > 0 && total < enemyHp * (1 - HIGH_HP_THRESHOLD)) amount *= 1 + spirits.highHpDamage;
+    }
+    record(amount, source);
+    if (bossMonster || !spirits || enemyHp <= 0) return;
+    // Thief Wind: the first hit on a normal monster takes a share of its HP.
+    if (spirits.firstStrike && !struck) {
+      struck = true;
+      record(enemyHp * spirits.firstStrike, "Thief Wind");
+    }
+    // Judge's Torpedo: a normal monster below its share of HP dies at once.
+    if (spirits.execute && !executed && total < enemyHp && enemyHp - total <= enemyHp * spirits.execute) {
+      executed = true;
+      record(enemyHp - total, "Judge's Torpedo");
+    }
   };
 
   const countElementUse = (element: Element, except: Live) => {
@@ -321,7 +370,7 @@ export function createFight(input: FightInput): Fight {
       const hits = e.growsTo ? Math.min(e.growsTo, Math.round(e.hits) + l.uses - 1) : e.hits;
       const whole = Math.max(1, Math.round(hits));
       const amp = s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1;
-      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * hits) / whole;
+      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * skillAmp * hits) / whole;
       for (let i = 0; i < whole; i += 1) deal(perHit, s.name);
       if (s.freezes) {
         animation = castSeconds * whole;
@@ -340,7 +389,7 @@ export function createFight(input: FightInput): Fight {
         frozenUntil = Math.max(frozenUntil, real + ANIMATION_SECONDS);
       } else {
         // Storing runs with the fight: everything keeps going for the duration.
-        raveUntil = clock + s.duration;
+        raveUntil = action + s.duration;
         raveStored = 0;
         l.holding = true;
       }
@@ -360,8 +409,8 @@ export function createFight(input: FightInput): Fight {
     } else if (isStack(s)) {
       l.stacks += 1;
     } else {
-      l.activeFrom = clock + s.delay;
-      l.activeUntil = clock + s.delay + s.duration;
+      l.activeFrom = action + s.delay;
+      l.activeUntil = action + s.delay + s.duration;
     }
 
     if (queue) {
@@ -376,7 +425,27 @@ export function createFight(input: FightInput): Fight {
     const frozen = real < frozenUntil;
     const now = bonuses();
 
-    if (raveUntil >= 0 && clock >= raveUntil) {
+    if (spirits && !frozen) {
+      // Time Freeze stops the battle timer once, a few seconds in; the fight carries on meanwhile.
+      if (spirits.timeStop && !timeStopUsed && clock >= spirits.timeStop.at) {
+        timeStopUsed = true;
+        stopUntil = real + spirits.timeStop.seconds;
+      }
+      if (spirits.breath && action >= nextBreath) {
+        nextBreath += spirits.breath.every;
+        if (enemyHp > 0) deal(spirits.breath.share * Math.max(0, enemyHp - total), "Breath of Fire", true);
+      }
+      if (spirits.cooldownRecovery && action >= nextRecovery) {
+        nextRecovery += spirits.cooldownRecovery.every;
+        for (const l of live) {
+          const s = l.skill;
+          if (s.trigger !== "seconds" || isStack(s) || l.queued || l.holding || (s.startsOnCooldown && l.uses === 0)) continue;
+          l.progress = Math.min(target(l), l.progress + spirits.cooldownRecovery.share * s.every);
+        }
+      }
+    }
+
+    if (raveUntil >= 0 && action >= raveUntil) {
       raveUntil = -1;
       // Rave is ready to release: on auto it queues straight away, by hand it waits for a press.
       for (const l of live) {
@@ -433,7 +502,10 @@ export function createFight(input: FightInput): Fight {
     }
 
     real += step;
-    if (real >= frozenUntil) clock = Math.min(input.duration, clock + step);
+    if (real >= frozenUntil) {
+      action += step;
+      if (real >= stopUntil) clock = Math.min(input.duration, clock + step);
+    }
   };
 
   let carry = 0;
@@ -469,6 +541,7 @@ export function createFight(input: FightInput): Fight {
         hpRecovery: input.hpRecovery ?? 0,
         manaRecovery: (input.manaRecovery ?? 0) * (1 + now.manaRate),
         recovering: !now.rage,
+        timeStopped: real < stopUntil,
         attacksPerSecond: baseSpeed * (1 + now.speed),
         atkBonus: now.atk,
         speedBonus: now.speed,

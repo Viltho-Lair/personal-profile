@@ -201,6 +201,12 @@ export function ProgressChart() {
         onCast={castByHand}
       />
 
+      <p className="shrink-0 text-[10px] leading-snug text-dim">
+        {profile.bossMonster ? "Against a boss monster" : "Against a normal monster"} · Spirit skills:{" "}
+        {setup.spirits.active.length ? setup.spirits.active.join(", ") : "none in the spirit preset"}
+        {setup.spirits.unknown.length ? ` · no value for ${setup.spirits.unknown.join(", ")}` : ""}.
+      </p>
+
       {phase === "done" && snap && boss ? <Results setup={setup} total={snap.total} duration={duration} manual={manual} /> : null}
     </section>
   );
@@ -236,7 +242,7 @@ function LiveReadout({ snap, input, duration }: { snap: FightState | null; input
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2">
         <dt className="text-dim">Time</dt>
         <dd className="text-right tabular-nums">
-          {(snap?.clock ?? 0).toFixed(1)}s / {duration}s
+          {(snap?.clock ?? 0).toFixed(1)}s / {duration}s{snap?.timeStopped ? " · time stopped" : ""}
         </dd>
         <dt className="text-dim">Damage</dt>
         <dd className="truncate text-right tabular-nums" title={formatValue(snap?.total ?? 0)}>

@@ -23,7 +23,7 @@ const PRESET_ROWS: { kind: PresetKind | "skills"; label: string; note?: string }
 ];
 
 export function StatsSummary() {
-  const { profile, selectPreset, selectSkillPreset, setIncludeSkills } = useProfile();
+  const { profile, selectPreset, selectSkillPreset, setIncludeSkills, setBossMonster } = useProfile();
   const factors = useSpiritFactors();
   // Skill buffs don't raise the summary on their own: they show on Attack only while the fight renders and they're on.
   const stats = useMemo(() => computeStats(collectSources(profile, factors, false)), [profile, factors]);
@@ -62,15 +62,26 @@ export function StatsSummary() {
 
       <div className="flex items-center justify-between gap-2 border-t border-ink/15 pt-2">
         <h3 className="text-xs font-semibold">Presets</h3>
-        <label className="flex items-center gap-1.5 text-[11px] text-dim">
-          <input
-            type="checkbox"
-            checked={profile.includeSkills}
-            onChange={(event) => setIncludeSkills(event.target.checked)}
-            className="accent-ink"
-          />
-          Include Skills
-        </label>
+        <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          <label className="flex items-center gap-1.5 text-[11px] text-dim">
+            <input
+              type="checkbox"
+              checked={profile.includeSkills}
+              onChange={(event) => setIncludeSkills(event.target.checked)}
+              className="accent-ink"
+            />
+            Include Skills
+          </label>
+          <label className="flex items-center gap-1.5 text-[11px] text-dim" title="Off: a normal monster">
+            <input
+              type="checkbox"
+              checked={profile.bossMonster}
+              onChange={(event) => setBossMonster(event.target.checked)}
+              className="accent-ink"
+            />
+            Boss monster
+          </label>
+        </span>
       </div>
       <ul className="flex flex-col gap-1.5">
         {PRESET_ROWS.map((row) => (

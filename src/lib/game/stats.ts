@@ -22,6 +22,8 @@ export type StatSources = {
   /** The promotion's ATK / HP multiplier (1 with no promotion). */
   promotionBonus: number;
   spirits: { atk: number; hp: number; gold: number; exp: number };
+  /** Spirit skills that raise a stat: Bo's Wild Heart Total HP, as a fraction. */
+  spiritSkills: { hp: number };
   enhance: {
     atk: number; hp: number; hpRecovery: number; critDamage: number; critChance: number;
     /** Death Strike damage and chance, as fractions (DMG Efficiency Data B44, B48). */
@@ -143,7 +145,8 @@ export function computeStats(s: StatSources): Stats {
     breakthrough *
     familiarHp *
     (1 + s.beasts.combat) *
-    (1 + s.blackOrb.hp);
+    (1 + s.blackOrb.hp) *
+    (1 + s.spiritSkills.hp);
 
   const hpRecovery =
     mantra *
@@ -233,6 +236,7 @@ export function emptySources(): StatSources {
     classes: { equip: 0, owned: 0 },
     promotionBonus: 1,
     spirits: { atk: 0, hp: 0, gold: 0, exp: 0 },
+    spiritSkills: { hp: 0 },
     enhance: { atk: 0, hp: 0, hpRecovery: 0, critDamage: 0, critChance: 0, deathStrikeDamage: 0, deathStrikeChance: 0 },
     growth: { atk: 0, hp: 0, hpRecovery: 0, crit: 0, gold: 0, accuracy: 0, dodge: 0 },
     knowledge: 0,

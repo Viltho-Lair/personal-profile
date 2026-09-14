@@ -440,6 +440,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     activePresets: activePresets(data.activePresets),
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
+    bossMonster: data.bossMonster !== false,
     soulEngraving: soulEngraving(data.soulEngraving),
     skillRefinement: skillRefinement(data.skillRefinement),
     sealedShrine: sealedShrine(data.sealedShrine),

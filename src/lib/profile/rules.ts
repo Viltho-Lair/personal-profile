@@ -582,6 +582,10 @@ export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): Pr
   return { ...profile, includeSkills };
 }
 
+export function setBossMonster(profile: ProfileV1, bossMonster: boolean): ProfileV1 {
+  return { ...profile, bossMonster };
+}
+
 export function gearState(
   profile: ProfileV1,
   kind: GearKind,

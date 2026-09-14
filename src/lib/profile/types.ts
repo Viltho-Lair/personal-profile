@@ -211,6 +211,8 @@ export type ProfileV1 = {
   mainSpirits: string[];
   /** The Stats Summary adds the active skill preset's buffs. */
   includeSkills: boolean;
+  /** The fight's enemy is a boss monster; off, a normal monster. */
+  bossMonster: boolean;
   soulEngraving: SoulEngraving;
   /** Refinement lines by attack skill name. */
   skillRefinement: Record<string, RefinementLine[]>;
@@ -268,6 +270,7 @@ export function emptyProfile(): ProfileV1 {
     activePresets: emptyActivePresets(),
     mainSpirits: [],
     includeSkills: false,
+    bossMonster: true,
     soulEngraving: emptySoulEngraving(),
     skillRefinement: {},
     sealedShrine: emptyShrineLevels(),
