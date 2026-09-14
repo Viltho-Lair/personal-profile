@@ -105,6 +105,8 @@ import type { ByElement, Element } from "./stats";
 
 export const ANIMATION_SECONDS = 0.3;
 export const DEFAULT_STEP = 0.02;
+/** Spirit skills that deal damage: a share of the enemy's HP rather than the player's own hits. */
+export const SPIRIT_DAMAGE_SKILLS: readonly string[] = ["Breath of Fire", "Thief Wind", "Judge's Torpedo"];
 
 export type SkillEffect =
   /** `growsTo`: one more hit per use, up to this many (Sea Judgment). */
@@ -235,8 +237,8 @@ export type FightResult = {
   points: { t: number; damage: number }[];
   /** Every skill that went: its name, fight-clock time and the real time it went. */
   casts: { name: string; t: number; real: number }[];
-  /** Each time Rave unleashed its stored damage: when, and how much it dealt. */
-  releases: { t: number; damage: number; amount: number }[];
+  /** Each time Rave unleashed its stored damage: when, how much it dealt, and how much of that copied spirit skills' damage. */
+  releases: { t: number; damage: number; amount: number; spirit: number }[];
   total: number;
   basic: number;
   bySkill: Record<string, number>;
@@ -460,6 +462,8 @@ export function createFight(input: FightInput): Fight {
   /** Fight-clock time Rave's storing ends, -1 when it isn't storing. */
   let raveUntil = -1;
   let raveStored = 0;
+  /** The part of the stored damage spirit skills dealt (a share of the enemy's HP, not the player's own). */
+  let raveStoredSpirit = 0;
   let nextBasic = 0;
   const nextSkillBonus: Partial<Record<Element, number>> = {};
   let total = 0;
@@ -508,7 +512,10 @@ export function createFight(input: FightInput): Fight {
     total += amount;
     if (source) bySkill[source] = (bySkill[source] ?? 0) + amount;
     else basic += amount;
-    if (stored && action < raveUntil) raveStored += amount;
+    if (stored && action < raveUntil) {
+      raveStored += amount;
+      if (source && SPIRIT_DAMAGE_SKILLS.includes(source)) raveStoredSpirit += amount;
+    }
     points.push({ t: clock, damage: total });
   };
   /**
@@ -636,14 +643,16 @@ export function createFight(input: FightInput): Fight {
         raveFrom = real + ANIMATION_SECONDS;
         frozenUntil = Math.max(frozenUntil, raveFrom + RAVE_RELEASE_SECONDS);
         log({ kind: "rave", name: s.name, element: null, from: at(), to: field?.front()?.position ?? at() + BASIC_RANGE, count: 1, seconds: RAVE_RELEASE_SECONDS, real: raveFrom });
-        releases.push({ t: clock, damage: total, amount: raveStored * e.power });
+        releases.push({ t: clock, damage: total, amount: raveStored * e.power, spirit: raveStoredSpirit * e.power });
         raveStored = 0;
+        raveStoredSpirit = 0;
         l.charged = false;
         l.holding = false;
       } else {
         // Storing runs with the fight: everything keeps going for the duration.
         raveUntil = action + s.duration;
         raveStored = 0;
+        raveStoredSpirit = 0;
         l.holding = true;
       }
     } else if (e.type === "restore") {

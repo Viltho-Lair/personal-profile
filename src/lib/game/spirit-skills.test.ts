@@ -63,6 +63,8 @@ describe("spirit skills in the fight", () => {
     // Stored from 10s to 15s: basics at 10..14 (500) and the 12s breath of the HP left then.
     const breath = result.bySkill["Breath of Fire"] ?? 0;
     expect(result.bySkill.Rave).toBeCloseTo((500 + breath) * 1.1, -1);
+    // The release says how much of it copied the spirit's damage.
+    expect(result.releases[0]!.spirit).toBeCloseTo(breath * 1.1, -1);
   });
 
   it("takes a share of the remaining HP every 12 seconds with Breath of Fire", () => {

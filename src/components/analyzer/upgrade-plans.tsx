@@ -9,6 +9,8 @@ import type { SpiritFactors } from "./spirit-stats";
 import { affordable, type Gain, type Plan, type PlanStep, type PlanTarget, type UpgradeCost, type UpgradePlans } from "./upgrade-planner";
 
 const LABEL = "font-mono text-[9px] tracking-[0.08em] text-dim uppercase";
+const pct = (damage: number, hp: number) => `${formatValue(Math.floor((damage / Math.max(1, hp)) * 1000) / 10)}%`;
+const times = (value: number) => `×${formatValue(Math.round(value * 100) / 100)}`;
 
 /** Runs the planner in a worker whenever the profile or the target changes. */
 function usePlans(profile: ProfileV1, factors: SpiritFactors | null, target: PlanTarget) {
@@ -32,7 +34,7 @@ function usePlans(profile: ProfileV1, factors: SpiritFactors | null, target: Pla
 function CostChips({ cost, owned }: { cost: UpgradeCost; owned: ProfileV1["resources"] }) {
   const { short } = affordable(cost, owned);
   const resources = RESOURCES.filter((r) => (cost.resources[r.key] ?? 0) > 0);
-  if (cost.unpriced) return <span className="font-mono text-[9px] text-dim">Cost not in the workbook</span>;
+  if (cost.unpriced && !resources.length && !cost.other.length) return <span className="font-mono text-[9px] text-dim">Cost not in the workbook</span>;
   return (
     <span className="flex flex-wrap gap-1">
       {resources.map((r) => {
@@ -52,14 +54,22 @@ function CostChips({ cost, owned }: { cost: UpgradeCost; owned: ProfileV1["resou
           {formatValue(Math.ceil(o.amount))} {o.label}
         </span>
       ))}
+      {cost.unpriced ? <span className="font-mono text-[9px] text-dim">+ upgrades the workbook doesn&apos;t price</span> : null}
     </span>
   );
+}
+
+/** Where an upgrade goes, the way its levels read: levels, stars, a skill swapped in, or more soul weapons. */
+function levelText(upgrade: PlanStep["upgrade"], level: number): string {
+  if (upgrade.id === "soul-weapon") return `${formatValue(level - upgrade.current)} more soul weapon${level - upgrade.current === 1 ? "" : "s"}`;
+  if (upgrade.unit === "swap") return "Swap it into the preset";
+  if (upgrade.unit === "stars") return `${upgrade.current < 0 ? "Not owned" : `★${upgrade.current}`} → ★${level}`;
+  return `Lv ${formatValue(upgrade.current)} → ${formatValue(level)}`;
 }
 
 /** One upgrade: its picture, what it is, the levels, and the cost. */
 function UpgradeCard({ step, owned, note }: { step: Pick<PlanStep, "upgrade" | "level" | "cost">; owned: ProfileV1["resources"]; note?: string }) {
   const { upgrade, level, cost } = step;
-  const soulWeapon = upgrade.id === "soul-weapon";
   return (
     <li className="flex min-w-0 gap-2 rounded-md border border-ink/15 bg-ink/[0.03] p-2">
       <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-black/30">
@@ -73,8 +83,8 @@ function UpgradeCard({ step, owned, note }: { step: Pick<PlanStep, "upgrade" | "
         <span className={LABEL}>{upgrade.kind}</span>
         <span className="truncate text-xs leading-tight font-medium text-ink">{upgrade.name}</span>
         <span className="font-mono text-[10px] text-ink tabular-nums">
-          {soulWeapon ? `${formatValue(level - upgrade.current)} more soul weapon${level - upgrade.current === 1 ? "" : "s"}` : `Lv ${formatValue(upgrade.current)} → ${formatValue(level)}`}
-          {level >= upgrade.max ? <span className="text-dim"> (max)</span> : null}
+          {levelText(upgrade, level)}
+          {level >= upgrade.max && upgrade.unit !== "swap" ? <span className="text-dim"> (max)</span> : null}
         </span>
         {note ? <span className="font-mono text-[10px] text-sky-400">{note}</span> : null}
         <CostChips cost={cost} owned={owned} />
@@ -83,17 +93,16 @@ function UpgradeCard({ step, owned, note }: { step: Pick<PlanStep, "upgrade" | "
   );
 }
 
-function PlanBlock({ plan, index, hp, owned }: { plan: Plan; index: number; hp: number; owned: ProfileV1["resources"] }) {
-  const fits = affordable(plan.cost, owned).fits;
+/** The plan: its upgrades from where they are to where they go, what they cost together, and how far the fight gets. */
+function PlanBlock({ plan, hp, owned }: { plan: Plan; hp: number; owned: ProfileV1["resources"] }) {
   return (
     <div className="flex flex-col gap-1.5 rounded-lg border border-ink/15 p-2">
       <p className="flex flex-wrap items-baseline justify-between gap-x-2 text-[11px]">
         <span className="font-medium text-ink">
-          Plan {index + 1} · {plan.steps.length} upgrade{plan.steps.length === 1 ? "" : "s"}
-          {fits ? <span className="ml-1.5 font-mono text-[9px] text-emerald-400">affordable now</span> : null}
+          {plan.steps.length} upgrade{plan.steps.length === 1 ? "" : "s"}, steepest first
         </span>
         <span className="font-mono text-[10px] text-dim tabular-nums">
-          deals {formatValue(plan.total)} ({formatValue(Math.floor((plan.total / Math.max(1, hp)) * 1000) / 10)}% of the HP)
+          then deals {formatValue(plan.total)} ({pct(plan.total, hp)} of the HP)
         </span>
       </p>
       <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
@@ -103,75 +112,98 @@ function PlanBlock({ plan, index, hp, owned }: { plan: Plan; index: number; hp: 
       </ul>
       {plan.steps.length > 1 ? (
         <p className="flex flex-wrap items-center gap-1.5 text-[10px] text-dim">
-          Total: <CostChips cost={plan.cost} owned={owned} />
+          Together: <CostChips cost={plan.cost} owned={owned} />
         </p>
       ) : null}
     </div>
   );
 }
 
+function GainList({ intro, gains, owned }: { intro: string; gains: Gain[]; owned: ProfileV1["resources"] }) {
+  if (!gains.length) return null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p className="text-[11px] text-dim">{intro}</p>
+      <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        {gains.map((gain) => (
+          <UpgradeCard key={gain.upgrade.id} step={{ upgrade: gain.upgrade, level: gain.level, cost: gain.cost }} owned={owned} note={`${times(gain.ownGain)} your damage`} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /**
- * How to beat the fight's enemy: single upgrades that do it alone, else the fewest together, else how far everything
- * maxed gets and which upgrades raise your own damage the most. Upgrades are compared by your own damage; spirit
- * skills (Breath of Fire) still count toward beating the HP.
+ * How to beat the fight's enemy. The gap first (how much more of your own damage it takes), then the plan up the
+ * steepest curves of the content that isn't maxed, then the biggest boosts of any single upgrade. Upgrades are compared
+ * by your own damage; spirit skills (Breath of Fire) still count toward beating the HP.
  */
 export function UpgradePlans({ title, target, factors }: { title: string; target: PlanTarget; factors: SpiritFactors | null }) {
   const { profile } = useProfile();
   const { progress, result } = usePlans(profile, factors, target);
   const owned = profile.resources;
-  const anyOwned = RESOURCES.some((r) => owned[r.key] > 0);
 
   return (
     <section aria-label={title} className="flex flex-col gap-2 border-t border-ink/10 pt-2">
       <h3 className="text-sm font-semibold">{title}</h3>
-      {!anyOwned ? <p className="text-[10px] text-dim">Add what you own under Settings → Owned resources to see which plans you can afford now.</p> : null}
       {!result ? (
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] text-dim">Trying every upgrade in the fight…</p>
+          <p className="text-[10px] text-dim">Trying upgrades in the fight…</p>
           <span className="h-1 overflow-hidden rounded-full bg-ink/10">
             <span className="block h-full bg-sky-500 transition-[width]" style={{ width: `${Math.round(progress * 100)}%` }} />
           </span>
         </div>
       ) : result.baseline >= result.hp ? (
-        <p className="text-[11px] text-emerald-500">Already beaten with what you have.</p>
+        <p className="text-[11px] text-emerald-500">
+          Already beaten with what you have{result.rave ? `, pressing Rave at ${result.rave.first}s and ${result.rave.second}s` : ""}.
+        </p>
       ) : (
         <>
-          {result.singles.length ? (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[11px] text-dim">One upgrade that gets there on its own, the most affordable first:</p>
-              {result.singles.slice(0, 6).map((plan, i) => (
-                <PlanBlock key={plan.steps[0]!.upgrade.id} plan={plan} index={i} hp={result.hp} owned={owned} />
-              ))}
-            </div>
-          ) : result.combos.length ? (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[11px] text-dim">No single upgrade gets there. The fewest that do together:</p>
-              {result.combos.map((plan, i) => (
-                <PlanBlock key={plan.steps.map((s) => s.upgrade.id).join()} plan={plan} index={i} hp={result.hp} owned={owned} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-[11px] text-red-500">
-              Out of reach for now: even with every upgrade maxed the fight deals {formatValue(result.maxed)}, {formatValue(Math.floor((result.maxed / Math.max(1, result.hp)) * 1000) / 10)}% of the HP.
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[12px] text-ink">
+              {result.needed === null ? (
+                "Your own damage would need over a million times what it is now."
+              ) : (
+                <>
+                  Your own damage needs <span className="font-semibold tabular-nums">{times(result.needed)}</span> to win.
+                </>
+              )}
             </p>
-          )}
-          {result.gains.length ? (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[11px] text-dim">
-                The biggest boosts to your own damage ({formatValue(result.own)} now, spirit skills aside), each maxed:
-              </p>
-              <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                {result.gains.map((gain: Gain) => (
-                  <UpgradeCard
-                    key={gain.upgrade.id}
-                    step={{ upgrade: gain.upgrade, level: gain.upgrade.max, cost: gain.cost }}
-                    owned={owned}
-                    note={`×${formatValue(Math.round(gain.ownGain * 100) / 100)} your damage`}
-                  />
-                ))}
-              </ul>
-            </div>
+            <p className="text-[10px] text-dim">
+              Now {pct(result.baseline, result.hp)} of the HP, spirit skills included
+              {result.rave ? `, with Rave pressed by hand at ${result.rave.first}s and ${result.rave.second}s (its best timing here)` : ""}. Every plan below
+              fights the same way.
+            </p>
+          </div>
+
+          {result.checks.length ? (
+            <ul className="flex flex-col gap-0.5 rounded-md border border-amber-400/40 bg-amber-400/[0.06] p-2 text-[10px] leading-snug text-amber-500">
+              {result.checks.map((check) => (
+                <li key={check}>{check}</li>
+              ))}
+            </ul>
           ) : null}
+
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[11px] text-dim">
+              The plan: every piece of content that isn&apos;t maxed is a curve from its start to its max (levels, tiers, stars, enhance). Step by step,
+              the one whose next stretch lifts your damage the most moves. A stretch that costs resources counts as big as its price against what you own
+              (or what you&apos;ve already spent on it) when that&apos;s more, and the plan spends at most {formatValue(result.budget)}× that.
+            </p>
+            {result.plan ? <PlanBlock plan={result.plan} hp={result.hp} owned={owned} /> : <p className="text-[11px] text-dim">No upgrade adds damage here.</p>}
+            {result.won ? (
+              <p className="text-[11px] text-emerald-500">That gets there.</p>
+            ) : (
+              <p className="text-[11px] text-red-400">
+                Still short after that: your own damage needs {result.stillNeeded === null ? "over a million times" : times(result.stillNeeded)} more.{" "}
+                {result.maxed >= result.hp
+                  ? `Everything maxed would deal ${pct(result.maxed, result.hp)} of the HP, so it's reachable with a bigger budget.`
+                  : `Even everything maxed deals only ${pct(result.maxed, result.hp)} of the HP.`}
+              </p>
+            )}
+          </div>
+
+          <GainList intro={`The biggest boosts to your own damage (${formatValue(result.own)} now, spirit skills aside), each maxed on its own:`} gains={result.gains} owned={owned} />
         </>
       )}
     </section>

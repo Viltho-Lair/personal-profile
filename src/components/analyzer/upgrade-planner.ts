@@ -2,7 +2,7 @@ import characterData from "@/data/optimizer/character.json";
 import companionsData from "@/data/optimizer/companions.json";
 import memoryTreeData from "@/data/optimizer/memory-tree.json";
 import costTablesData from "@/data/optimizer/upgrade-costs.json";
-import { simulateFight } from "@/lib/game/battle";
+import { SPIRIT_DAMAGE_SKILLS, type FightInput } from "@/lib/game/battle";
 import { enhanceMax, type EnhanceStat, type KnowledgeGrade } from "@/lib/game/character";
 import {
   classCubes,
@@ -19,9 +19,13 @@ import {
 } from "@/lib/game/costs";
 import { rarityGroup } from "@/lib/game/formulas";
 import type { MemoryTree } from "@/lib/game/memory-tree";
-import { activeFamiliars, awakening, companionState, equippedKey, familiarStars, gearState, spiritLevelCap, spiritState } from "@/lib/profile/rules";
-import { MAX_FAMILIAR_STARS, MAX_SPIRIT_ENHANCE, RESOURCES, type ProfileV1, type ResourceKey } from "@/lib/profile/types";
-import { ACCESSORIES, AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, RELICS, SKILL_BY_NAME, SOUL_WEAPONS, SPIRIT_TIERS, SPIRITS, WEAPONS } from "./data";
+import { buildPath, MAX_PATH_SPEND, mergeSteps } from "@/lib/game/plan-path";
+import { bestRaveTiming, playFight, raveTimings, type RaveTiming } from "@/lib/game/rave-timing";
+import { openRefinementLines } from "@/lib/game/refinement";
+import { maxAffection } from "@/lib/game/beasts";
+import { activeFamiliars, awakening, companionState, effectiveSkillLevel, equippedKey, familiarStars, gearState, presetBeast, spiritLevelCap, spiritState } from "@/lib/profile/rules";
+import { MAX_FAMILIAR_STARS, MAX_SPIRIT_ENHANCE, MIN_SPIRIT_ENHANCE, RESOURCES, type ProfileV1, type ResourceKey } from "@/lib/profile/types";
+import { ACCESSORIES, AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, RELICS, SKILL_BY_NAME, SKILLS, SOUL_WEAPONS, SPIRIT_TIERS, SPIRITS, WEAPONS } from "./data";
 import { BEASTS, classLevelCap, SHRINE } from "./stat-sources";
 import { promotionFight } from "./promotion-fight";
 import type { SpiritFactors } from "./spirit-stats";
@@ -46,6 +50,10 @@ export type Upgrade = {
   iconSize: number | null;
   current: number;
   max: number;
+  /** Where its curve starts (0 unless said): a spirit's skill enhance at 1, a familiar not owned at -1. */
+  min?: number;
+  /** How its levels read: levels, stars (-1 = not owned), or a skill swapped into the preset (0 = not yet, 1 = swapped). */
+  unit?: "stars" | "swap";
   /** The profile with this upgrade at `level`. */
   apply: (profile: ProfileV1, level: number) => ProfileV1;
   cost: (from: number, to: number) => UpgradeCost;
@@ -60,9 +68,14 @@ const character = (profile: ProfileV1, change: Partial<ProfileV1["character"]>):
 const MAX_CLASS_AWAKENING = 18;
 const MAX_BLACK_ORB_LEVEL = 75;
 const MAX_BEAST_AWAKEN = 6;
+/** Skills with "attack" mechanics that aren't damage to swap in: Rave and Meditation work through the others. */
+const NOT_SWAPPED = new Set(["Rave", "Meditation"]);
 
-/** Every upgrade the player could make from this profile, each short of its cap: nothing maxed is offered. */
-export function listUpgrades(profile: ProfileV1): Upgrade[] {
+/**
+ * Every upgrade the player could make from this profile, each short of its cap: nothing maxed is offered. With the
+ * active preset's weakest attack skill named, other learned attack skills are offered in its place.
+ */
+export function listUpgrades(profile: ProfileV1, options: { weakestAttack?: string | null } = {}): Upgrade[] {
   const c = profile.character;
   const upgrades: Upgrade[] = [];
   const add = (upgrade: Upgrade) => {
@@ -212,6 +225,7 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
         icon: art?.icon ?? null,
         iconSize: art?.iconSize ?? null,
         current: state.enhance,
+        min: MIN_SPIRIT_ENHANCE,
         max: MAX_SPIRIT_ENHANCE,
         apply: (p, level) => ({ ...p, spirits: { ...p.spirits, [spirit.name]: { ...p.spirits[spirit.name]!, enhance: level } } }),
         cost: () => UNPRICED,
@@ -219,20 +233,21 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
     }
   }
 
-  // The equipped familiars' stars: unpriced here.
-  for (const name of Object.values(activeFamiliars(profile))) {
-    const familiar = name ? FAMILIARS.find((f) => f.name === name) : undefined;
-    const stars = familiar ? familiarStars(profile, familiar.name) : null;
-    if (!familiar || stars === null) continue;
-    const art = familiar.art.find((band) => band.from <= stars && stars <= band.to) ?? familiar.art[0];
+  // Every familiar's stars, owned or not (-1): the Mana Altar counts the best six, and the equipped ones fight. Unpriced.
+  const equippedFamiliars = new Set(Object.values(activeFamiliars(profile)));
+  for (const familiar of FAMILIARS) {
+    const stars = familiarStars(profile, familiar.name);
+    const art = familiar.art.find((band) => band.from <= (stars ?? 0) && (stars ?? 0) <= band.to) ?? familiar.art[0];
     add({
       id: `familiar:${familiar.name}`,
-      kind: "Familiar stars",
+      kind: stars === null ? "New familiar" : equippedFamiliars.has(familiar.name) ? "Familiar stars · equipped" : "Familiar stars",
       name: familiar.name,
       icon: art?.icon ?? null,
       iconSize: art?.iconSize ?? null,
-      current: stars,
+      current: stars ?? -1,
+      min: -1,
       max: MAX_FAMILIAR_STARS,
+      unit: "stars",
       apply: (p, level) => ({ ...p, familiars: { ...p.familiars, [familiar.name]: { stars: level } } }),
       cost: () => UNPRICED,
     });
@@ -251,6 +266,24 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
       current: state.awaken,
       max: MAX_BEAST_AWAKEN,
       apply: (p, level) => ({ ...p, beasts: { ...p.beasts, [beast.name]: { ...p.beasts[beast.name]!, awaken: level } } }),
+      cost: () => UNPRICED,
+    });
+  }
+
+  // Owned beasts' affection, up to their awaken's cap: unpriced.
+  for (const beast of BEASTS.beasts) {
+    const state = profile.beasts[beast.name];
+    if (!state || state.awaken === null) continue;
+    add({
+      id: `beast-affection:${beast.name}`,
+      kind: "Beast affection",
+      name: beast.name,
+      icon: beast.art.sprite ?? null,
+      iconSize: 64,
+      current: state.affection,
+      min: 1,
+      max: maxAffection(state.awaken),
+      apply: (p, level) => ({ ...p, beasts: { ...p.beasts, [beast.name]: { ...p.beasts[beast.name]!, affection: level } } }),
       cost: () => UNPRICED,
     });
   }
@@ -327,8 +360,10 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
     }
   }
 
-  // Skill Mastery nodes: points a level (unnamed in the workbook).
-  for (const page of MASTERY_PAGES) {
+  // Skill Mastery nodes: points a level (unnamed in the workbook), on the pages open so far: up to the first unfinished one.
+  const nodeLevel = (id: string, max: number) => Math.min(max, profile.masteryNodes[id]?.level ?? 0);
+  const openPage = MASTERY_PAGES.find((page) => page.nodes.some((node) => node.cost && nodeLevel(node.id, node.maxLevel) < node.maxLevel))?.page ?? Infinity;
+  for (const page of MASTERY_PAGES.filter((pg) => pg.page <= openPage)) {
     for (const node of page.nodes) {
       if (!node.cost) continue;
       const perLevel = node.cost.perLevel < 0 ? -node.cost.perLevel : node.cost.base;
@@ -376,6 +411,33 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
         current: profile.skills[skill.name]?.level ?? 0,
         max: skill.maxLevel,
         apply: (p, level) => ({ ...p, skills: { ...p.skills, [skill.name]: { level } } }),
+        cost: () => UNPRICED,
+      });
+    }
+  }
+
+  // Learned attack skills in place of the preset's weakest one.
+  const presetSkills = profile.skillPresets[profile.activeSkillPreset] ?? [];
+  const weakest = options.weakestAttack;
+  if (weakest && presetSkills.includes(weakest)) {
+    for (const skill of SKILLS) {
+      const mechanics = (skill as typeof skill & { mechanics?: { type: string | null } | null }).mechanics;
+      if (mechanics?.type !== "attack" || skill.baseValue === null || NOT_SWAPPED.has(skill.name) || presetSkills.includes(skill.name)) continue;
+      if (effectiveSkillLevel(profile, skill.name, skill.maxLevel) < 1) continue;
+      add({
+        id: `swap:${skill.name}`,
+        kind: `Skill preset · instead of ${weakest}`,
+        name: skill.name,
+        icon: skill.icon,
+        iconSize: skill.iconSize,
+        current: 0,
+        max: 1,
+        unit: "swap",
+        apply: (p, level) => {
+          if (level < 1) return p;
+          const presets = p.skillPresets.map((preset, index) => (index === p.activeSkillPreset ? preset.map((name) => (name === weakest ? skill.name : name)) : preset));
+          return { ...p, skillPresets: presets };
+        },
         cost: () => UNPRICED,
       });
     }
@@ -430,14 +492,8 @@ export type PlanTarget = {
   manual: string[];
 };
 
-/** Spirit skills' damage: part of beating the enemy, but not the player's own damage that upgrades raise. */
-const SPIRIT_DAMAGE = ["Breath of Fire", "Thief Wind", "Judge's Torpedo"];
-
-/**
- * The damage a profile deals in the fight (all of it, and the player's own without spirit skills) and the HP it has
- * to beat: coarse steps for searching, null for the fight's own.
- */
-export function planFight(profile: ProfileV1, factors: SpiritFactors | null, target: PlanTarget, step: number | null = 0.1) {
+/** The fight a plan runs: the target's setup for this profile, with the plan's precision. */
+function planSetup(profile: ProfileV1, factors: SpiritFactors | null, target: PlanTarget, step: number | null) {
   const planned: ProfileV1 = {
     ...profile,
     bossMonster: target.mode === "promotion",
@@ -445,10 +501,21 @@ export function planFight(profile: ProfileV1, factors: SpiritFactors | null, tar
     stageFarming: { ...profile.stageFarming, on: false },
   };
   const setup = promotionFight(planned, factors, target.promotionIndex, target.duration, target.manual, target.mode === "stages" ? { stage: target.stage } : {});
+  return { setup, input: { ...setup.input, step: step ?? undefined } };
+}
+
+/**
+ * The damage a profile deals in the fight (all of it, and the player's own without spirit skills) and the HP it has
+ * to beat, with Rave pressed at `rave` (auto without): coarse steps for searching, null for the fight's own.
+ */
+export function planFight(profile: ProfileV1, factors: SpiritFactors | null, target: PlanTarget, step: number | null = 0.1, rave: RaveTiming | null = null) {
+  const { setup, input } = planSetup(profile, factors, target, step);
   const hp = setup.boss?.hp ?? 0;
-  const result = simulateFight({ ...setup.input, step: step ?? undefined });
-  const own = result.total - SPIRIT_DAMAGE.reduce((sum, name) => sum + (result.bySkill[name] ?? 0), 0);
-  return { total: result.total, own, hp };
+  const result = playFight(input, rave);
+  // Spirit skills' damage (and Rave's copy of it) helps beat the enemy but isn't the player's own damage that upgrades raise.
+  const spirit = SPIRIT_DAMAGE_SKILLS.reduce((sum, name) => sum + (result.bySkill[name] ?? 0), 0) + result.releases.reduce((sum, r) => sum + r.spirit, 0);
+  const own = result.total - spirit;
+  return { total: result.total, own, hp, bySkill: result.bySkill, setup };
 }
 
 /** Whether a cost fits what the player owns; unnamed units and unpriced upgrades can't be checked. */
@@ -463,22 +530,32 @@ export function affordable(cost: UpgradeCost, owned: ProfileV1["resources"]): { 
 
 /** An upgrade in a plan: the upgrade (without its functions), the level it goes to, and what that costs. */
 export type PlanStep = { upgrade: Omit<Upgrade, "apply" | "cost">; level: number; cost: UpgradeCost };
-/** A plan: its upgrades, their total cost, and the damage the fight deals with them. */
+/** A plan: its upgrades from where they are to where they go, their total cost, and the fight's damage after them. */
 export type Plan = { steps: PlanStep[]; cost: UpgradeCost; total: number };
-/** One upgrade maxed: how much it raises the player's own damage (×), the fight's total with it, and what maxing costs. */
-export type Gain = { upgrade: Omit<Upgrade, "apply" | "cost">; ownGain: number; total: number; cost: UpgradeCost };
+/** One upgrade maxed on its own: how much it raises the player's own damage (×), the fight's total with it, and its cost. */
+export type Gain = { upgrade: Omit<Upgrade, "apply" | "cost">; level: number; ownGain: number; total: number; cost: UpgradeCost };
 
 export type UpgradePlans = {
   baseline: number;
   /** The player's own damage, without spirit skills. */
   own: number;
   hp: number;
-  /** Single upgrades that beat the target alone, cheapest for what's owned first. */
-  singles: Plan[];
-  /** The fewest upgrades that beat it together when no single one does, a few alternatives. */
-  combos: Plan[];
-  /** The damage with every upgrade maxed, and the upgrades that raise the player's own damage the most on their own. */
+  /** When Rave is pressed by hand in every planned fight, or null on auto. */
+  rave: RaveTiming | null;
+  /** How many times the player's own damage has to grow to win; null when a million times isn't enough. */
+  needed: number | null;
+  /** Things the profile seems to be missing that change the plans. */
+  checks: string[];
+  /** The path up the steepest curves; `won` when it gets there. */
+  plan: Plan | null;
+  won: boolean;
+  /** When the path falls short: how many times the player's own damage still has to grow after it (null past a million). */
+  stillNeeded: number | null;
+  /** The fight with every upgrade that adds damage maxed: the end of every curve. */
   maxed: number;
+  /** The path's budget, in multiples of what's owned (or what's been spent so far). */
+  budget: number;
+  /** The upgrades that raise the player's own damage the most, each maxed on its own. */
   gains: Gain[];
 };
 
@@ -504,24 +581,95 @@ export function sumCosts(costs: UpgradeCost[]): UpgradeCost {
   return total;
 }
 
-/** How much of the owned resources a cost takes at worst (Infinity for what can't be checked). */
-function ownedShare(cost: UpgradeCost, owned: ProfileV1["resources"]) {
-  if (cost.unpriced) return Infinity;
-  let worst = 0;
-  for (const { key } of RESOURCES) {
-    const need = cost.resources[key] ?? 0;
-    if (need > 0) worst = Math.max(worst, need / Math.max(1, owned[key] ?? 0));
-  }
-  return worst + (cost.other.length ? 1e6 : 0);
-}
-
-const byAffordability = (owned: ProfileV1["resources"]) => (a: Plan, b: Plan) =>
-  Number(!affordable(b.cost, owned).fits) - Number(!affordable(a.cost, owned).fits) || ownedShare(a.cost, owned) - ownedShare(b.cost, owned);
+/** The part of an upgrade's curve a step covers: its levels over the whole track, from its start to its max. */
+export const curveShare = (upgrade: Pick<Upgrade, "min" | "max">, from: number, to: number) => (to - from) / Math.max(1, upgrade.max - (upgrade.min ?? 0));
 
 /**
- * What would beat the target, by re-running the fight: single upgrades at the lowest level that does it alone, and
- * when none does, the fewest upgrades that do it together (the strongest maxed first, then each lowered as far as it
- * can go), with alternatives that leave out an earlier plan's strongest pick. `progress` reports the work done.
+ * What a resource's price is measured against: what the player owns of it, or when that isn't entered, what they
+ * have already put into these upgrades (every upgrade's cost from nothing to where it is).
+ */
+export function resourceScale(upgrades: readonly Upgrade[], owned: ProfileV1["resources"]): Record<ResourceKey, number> {
+  const invested = Object.fromEntries(RESOURCES.map((r) => [r.key, 0])) as Record<ResourceKey, number>;
+  for (const upgrade of upgrades) {
+    if (upgrade.current <= 0) continue;
+    const cost = upgrade.cost(Math.max(0, upgrade.min ?? 0), upgrade.current);
+    for (const [key, amount] of Object.entries(cost.resources) as [ResourceKey, number][]) {
+      if (Number.isFinite(amount) && amount > 0) invested[key] += amount;
+    }
+  }
+  return Object.fromEntries(RESOURCES.map((r) => [r.key, (owned[r.key] ?? 0) > 0 ? owned[r.key] : invested[r.key]])) as Record<ResourceKey, number>;
+}
+
+/** A price as a share of the player's means, summed over its resources: 0 without one, Infinity when a resource can't be measured. */
+export function costShare(cost: UpgradeCost, scale: Record<ResourceKey, number>): number {
+  let share = 0;
+  for (const [key, amount] of Object.entries(cost.resources) as [ResourceKey, number][]) {
+    if (!(amount > 0)) continue;
+    if (!(scale[key] > 0)) return Infinity;
+    share += amount / scale[key];
+  }
+  return share;
+}
+
+/** The Mana Altar counts the six familiars with the most stars. */
+const ALTAR_FAMILIARS = 6;
+
+/** Things missing from the profile that change what the plans suggest. */
+export function profileChecks(profile: ProfileV1): string[] {
+  const checks: string[] = [];
+  const owned = FAMILIARS.filter((f) => familiarStars(profile, f.name) !== null).length;
+  if (owned < ALTAR_FAMILIARS) checks.push(`Only ${owned} familiar${owned === 1 ? "" : "s"} entered: the Mana Altar counts your best ${ALTAR_FAMILIARS}, so add any others you own.`);
+  const unrefined = (profile.skillPresets[profile.activeSkillPreset] ?? []).filter((name): name is string => {
+    const skill = name ? SKILL_BY_NAME.get(name) : undefined;
+    const mechanics = (skill as (typeof skill & { mechanics?: { type: string | null } | null }) | undefined)?.mechanics;
+    if (!skill || mechanics?.type !== "attack" || NOT_SWAPPED.has(skill.name)) return false;
+    const open = openRefinementLines(effectiveSkillLevel(profile, skill.name, skill.maxLevel));
+    return open > 0 && !(profile.skillRefinement[skill.name] ?? []).some((line) => line.option && line.value);
+  });
+  if (unrefined.length) checks.push(`No refinement lines entered for ${unrefined.join(", ")}: their extra damage is left out.`);
+  if (!presetBeast(profile)) checks.push("No beast picked in the active beast preset.");
+  if (SHRINE.statues.every((statue) => (profile.sealedShrine[statue.key as keyof ProfileV1["sealedShrine"]] ?? 0) === 0)) checks.push("Sealed Shrine statues are all at 0.");
+  if (RESOURCES.every((r) => (profile.resources[r.key] ?? 0) <= 0)) {
+    checks.push("No owned resources entered (Settings → Owned resources): prices are measured against what you've already spent on these upgrades.");
+  }
+  return checks;
+}
+
+/** How many times the fight's attack has to grow for the total to reach the HP: 1 when it already does, null past a million. */
+function neededAttack(input: FightInput, hp: number, rave: RaveTiming | null, onFight?: () => void): number | null {
+  const total = (scale: number) => {
+    onFight?.();
+    return playFight({ ...input, attack: input.attack * scale }, rave).total;
+  };
+  if (total(1) >= hp) return 1;
+  let low = 1;
+  let high = 2;
+  while (total(high) < hp) {
+    low = high;
+    high *= 4;
+    if (high > 1e6) return null;
+  }
+  while (high / low > 1.01) {
+    const mid = Math.sqrt(low * high);
+    if (total(mid) >= hp) high = mid;
+    else low = mid;
+  }
+  return high;
+}
+
+/** The preset's attack skill that dealt the least in this fight: the one other skills are tried in place of. */
+function weakestAttack(profile: ProfileV1, bySkill: Record<string, number>, attacks: readonly string[]): string | null {
+  const preset = (profile.skillPresets[profile.activeSkillPreset] ?? []).filter((name): name is string => name !== null && attacks.includes(name));
+  if (!preset.length) return null;
+  return preset.reduce((weak, name) => ((bySkill[name] ?? 0) < (bySkill[weak] ?? 0) ? name : weak));
+}
+
+/**
+ * How to beat the target. First the gap: how much more of their own damage the player needs, with Rave pressed at its
+ * best timing. Then the path: every piece of content that isn't maxed is a curve from its start to its max, and step
+ * by step the one whose next stretch (5% of it) lifts the combined damage the most moves, until the fight is won.
+ * Alongside it, the end of every curve (everything maxed) and the biggest single boosts. Fights run coarse while
+ * searching; the plan's result is confirmed at full precision.
  */
 export function planUpgrades(
   profile: ProfileV1,
@@ -529,105 +677,92 @@ export function planUpgrades(
   target: PlanTarget,
   progress?: (done: number, of: number) => void,
 ): UpgradePlans {
-  const { total: baseline, own, hp } = planFight(profile, factors, target);
-  const upgrades = listUpgrades(profile);
-  const owned = profile.resources;
-  const damage = (p: ProfileV1, step: number | null = 0.1) => planFight(p, factors, target, step).total;
-  const work = upgrades.length * 2;
   let done = 0;
-  const tick = () => progress?.(Math.min(work, (done += 1)), work);
+  let of = 1;
+  const tick = () => {
+    done += 1;
+    // The path's length isn't known ahead, so the bar keeps some room until the end.
+    if (done >= of - 1) of = done + 20;
+    progress?.(done, of);
+  };
 
-  // Each upgrade maxed on its own: what raises the player's own damage at all, and by how much. Spirit skills'
-  // damage (Breath of Fire takes a share of the enemy's HP) doesn't grow with upgrades, so it isn't what's compared.
-  const useful: { upgrade: Upgrade; best: number; ownGain: number }[] = [];
-  for (const upgrade of upgrades) {
-    const fight = planFight(upgrade.apply(profile, upgrade.max), factors, target);
+  const { input } = planSetup(profile, factors, target, 0.1);
+  of = raveTimings(input.duration).length + 30;
+  const rave = bestRaveTiming(input, tick);
+  const base = planFight(profile, factors, target, null, rave);
+  const { hp } = base;
+  const needed = neededAttack(input, hp, rave, tick);
+  const checks = profileChecks(profile);
+  const attacks = base.setup.skills.filter((s) => s.effect.type === "damage").map((s) => s.name);
+  const upgrades = listUpgrades(profile, { weakestAttack: weakestAttack(profile, base.bySkill, attacks) });
+  const byId = new Map(upgrades.map((u) => [u.id, u]));
+  const scale = resourceScale(upgrades, profile.resources);
+  const fight = (p: ProfileV1, step: number | null = 0.1) => {
     tick();
-    const ownGain = fight.own / Math.max(own, 1e-300);
-    if (ownGain > 1 + 1e-9) useful.push({ upgrade, best: fight.total, ownGain });
+    return planFight(p, factors, target, step, rave);
+  };
+  const coarse = fight(profile);
+  of = done + upgrades.length * 3 + 100;
+
+  // Every upgrade maxed on its own: which curves raise the player's own damage at all. Spirit skills' damage (Breath
+  // of Fire takes a share of the enemy's HP) doesn't grow with upgrades, so it isn't what's compared.
+  const useful: { upgrade: Upgrade; ownGain: number; total: number }[] = [];
+  for (const upgrade of upgrades) {
+    const maxed = fight(upgrade.apply(profile, upgrade.max));
+    const ownGain = maxed.own / Math.max(coarse.own, 1e-300);
+    if (ownGain > 1 + 1e-9) useful.push({ upgrade, ownGain, total: maxed.total });
   }
   useful.sort((a, b) => b.ownGain - a.ownGain);
+  // Skill swaps replace the same skill: only the best of them counts toward everything maxed.
+  const bestSwap = useful.find(({ upgrade }) => upgrade.unit === "swap");
+  const maxedProfile = useful.filter(({ upgrade }) => upgrade.unit !== "swap" || upgrade === bestSwap?.upgrade).reduce((p, { upgrade }) => upgrade.apply(p, upgrade.max), profile);
+  const maxed = useful.length ? fight(maxedProfile, null).total : base.total;
 
-  /** The lowest level of one upgrade that keeps `base` (with the others applied) at or over the HP. */
-  const lowest = (upgrade: Upgrade, base: ProfileV1): number | null => {
-    const beats = (level: number, step: number | null) => damage(upgrade.apply(base, level), step) >= hp;
-    const search = (from: number, step: number | null) => {
-      let low = from;
-      let high = upgrade.max;
-      if (!beats(high, step)) return null;
-      while (low < high) {
-        const mid = Math.floor((low + high) / 2);
-        if (beats(mid, step)) high = mid;
-        else low = mid + 1;
-      }
-      return low;
-    };
-    const coarse = search(upgrade.current, 0.1);
-    if (coarse === null) return null;
-    // Confirmed at the fight's own precision; when the coarse search was just short, searched again at it.
-    return beats(coarse, null) ? coarse : search(coarse + 1, null);
-  };
+  const withLevels = (levels: Record<string, number>) =>
+    Object.entries(levels).reduce((p, [id, level]) => {
+      const upgrade = byId.get(id)!;
+      return level !== upgrade.current ? upgrade.apply(p, level) : p;
+    }, profile);
+  const path =
+    base.total >= hp
+      ? { steps: [], levels: {} }
+      : buildPath({
+          // A step is as big as the stretch of its curve, or as its price against the player's means when that's more.
+          candidates: useful.map(({ upgrade }) => {
+            const price = (from: number, to: number) => costShare(upgrade.cost(from, to), scale);
+            return { id: upgrade.id, current: upgrade.current, max: upgrade.max, size: (from, to) => Math.max(curveShare(upgrade, from, to), price(from, to)), spend: price };
+          }),
+          hp,
+          fight: (levels) => {
+            const result = fight(withLevels(levels));
+            return { own: result.own, total: result.total };
+          },
+        });
 
-  const singles: Plan[] = [];
-  for (const { upgrade, best } of useful) {
-    tick();
-    if (best < hp) continue;
-    const level = lowest(upgrade, profile);
-    if (level === null || level <= upgrade.current) continue;
-    const cost = upgrade.cost(upgrade.current, level);
-    singles.push({ steps: [{ upgrade: strip(upgrade), level, cost }], cost, total: damage(upgrade.apply(profile, level)) });
+  let plan: Plan | null = null;
+  if (path.steps.length) {
+    const steps = mergeSteps(path.steps).map(({ id, from, to }) => {
+      const upgrade = byId.get(id)!;
+      return { upgrade: { ...strip(upgrade), current: from }, level: to, cost: upgrade.cost(from, to) };
+    });
+    plan = { steps, cost: sumCosts(steps.map((s) => s.cost)), total: fight(withLevels(path.levels), null).total };
   }
-  singles.sort(byAffordability(owned));
-
-  // Every useful upgrade maxed: the most this profile could deal.
-  const maxed = useful.length ? damage(useful.reduce((p, { upgrade }) => upgrade.apply(p, upgrade.max), profile)) : baseline;
-
-  /** The fewest of `pool` (strongest first) that beat the HP maxed together, then each lowered as far as it goes. */
-  const combine = (pool: { upgrade: Upgrade }[]): Plan | null => {
-    const chosen: Upgrade[] = [];
-    let p = profile;
-    for (const { upgrade } of pool) {
-      chosen.push(upgrade);
-      p = upgrade.apply(p, upgrade.max);
-      if (damage(p) >= hp) break;
-    }
-    if (damage(p, null) < hp) return null;
-    // Lower each, the last picked (the least damage) first, keeping the others where they are.
-    const levels = new Map(chosen.map((u) => [u.id, u.max]));
-    for (const upgrade of [...chosen].reverse()) {
-      const base = chosen.filter((u) => u !== upgrade).reduce((q, u) => u.apply(q, levels.get(u.id)!), profile);
-      const level = lowest(upgrade, base);
-      if (level !== null) levels.set(upgrade.id, level);
-    }
-    const kept = chosen.filter((u) => levels.get(u.id)! > u.current);
-    const steps = kept.map((u) => ({ upgrade: strip(u), level: levels.get(u.id)!, cost: u.cost(u.current, levels.get(u.id)!) }));
-    const final = kept.reduce((q, u) => u.apply(q, levels.get(u.id)!), profile);
-    return { steps, cost: sumCosts(steps.map((s) => s.cost)), total: damage(final, null) };
-  };
-
-  const combos: Plan[] = [];
-  if (!singles.length && maxed >= hp) {
-    let pool = useful;
-    for (let attempt = 0; attempt < 3 && pool.length; attempt += 1) {
-      const plan = combine(pool);
-      if (!plan || plan.total < hp) break;
-      const key = plan.steps.map((s) => s.upgrade.id).sort().join();
-      if (!combos.some((c) => c.steps.map((s) => s.upgrade.id).sort().join() === key)) combos.push(plan);
-      // The next alternative goes without this plan's strongest upgrade.
-      const first = plan.steps[0]?.upgrade.id;
-      pool = pool.filter(({ upgrade }) => upgrade.id !== first);
-    }
-    combos.sort((a, b) => a.steps.length - b.steps.length || byAffordability(owned)(a, b));
-  }
-  progress?.(work, work);
+  const won = (plan?.total ?? base.total) >= hp;
+  const stillNeeded = won ? 1 : neededAttack(planSetup(withLevels(path.levels), factors, target, 0.1).input, hp, rave, tick);
+  progress?.(of, of);
 
   return {
-    baseline,
-    own,
+    baseline: base.total,
+    own: base.own,
     hp,
-    singles,
-    combos,
+    rave,
+    needed,
+    checks,
+    plan,
+    won,
+    stillNeeded,
     maxed,
-    gains: useful.slice(0, 8).map(({ upgrade, best, ownGain }) => ({ upgrade: strip(upgrade), ownGain, total: best, cost: upgrade.cost(upgrade.current, upgrade.max) })),
+    budget: MAX_PATH_SPEND,
+    gains: useful.slice(0, 6).map(({ upgrade, ownGain, total }) => ({ upgrade: strip(upgrade), level: upgrade.max, ownGain, total, cost: upgrade.cost(upgrade.current, upgrade.max) })),
   };
 }
