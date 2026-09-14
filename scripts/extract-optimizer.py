@@ -23,6 +23,12 @@ from PIL import Image  # noqa: E402
 from optimizer.art import find_existing_art  # noqa: E402
 from optimizer.character import extract_character  # noqa: E402
 from optimizer.companions import extract_companions  # noqa: E402
+from optimizer.costs import (  # noqa: E402
+    extract_companion_passive_costs,
+    extract_cube_costs,
+    extract_gold_costs,
+    extract_spirit_crystals,
+)
 from optimizer.familiars import extract_familiars  # noqa: E402
 from optimizer.gear import (  # noqa: E402
     extract_awakening,
@@ -264,6 +270,10 @@ def main():
         companions, promotion, companion_art = extract_companions(
             formulas["COMPANIONS"], values["Companions Data"], formulas["Sprites"]
         )
+        cube_costs = extract_cube_costs(values["Equipment Data"])
+        spirit_crystals = extract_spirit_crystals(values["Equipment Data"])
+        gold_costs = extract_gold_costs(values["Gold Enhancement Data"])
+        passive_costs = extract_companion_passive_costs(values["Companions Data"], [c["name"] for c in companions])
     except (MissingHeader, ValueError, KeyError) as error:
         print(f"Extraction stopped, nothing was written: {error}", file=sys.stderr)
         return 1
@@ -413,6 +423,16 @@ def main():
         "bossHp": stage_bosses,
     }, compact=True)  # boss HP for every stage
     print(f"promotion bosses: {len(promotion_stages)} promotions, boss HP for stages 1-{len(stage_bosses)}")
+
+    write_json(DATA / "upgrade-costs.json", {
+        "source": {"file": source.name, "sheet": "Equipment Data, Gold Enhancement Data, Companions Data", "extractedOn": today},
+        "gold": gold_costs,
+        "cubes": cube_costs,
+        "spiritCrystals": spirit_crystals,
+        "companionPassives": passive_costs,
+    }, compact=True)  # long per-level tables
+    print(f"upgrade costs: {len(cube_costs['orr'])} Orr levels, {len(spirit_crystals)} spirit levels, "
+          f"{len(gold_costs['bands'])} gold bands, {sum(len(p) for p in passive_costs.values())} companion passives")
 
     write_json(DATA / "stages.json", {
         "source": {"file": source.name, "sheet": "Stage Data", "extractedOn": today},

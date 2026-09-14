@@ -264,14 +264,22 @@ export type KnownNames = Record<
   string[]
 > & { masteryNodes?: string[]; familiars?: string[] };
 
-/** Resources upgrades are paid with, as the workbook names them. */
+/**
+ * Resources upgrades are paid with, as the workbook names them: Gold for enhance levels, Cubes for gear, classes
+ * and spirits, Mana Crystals for spirits, Stones and Emeralds for companion passives, souls for soul weapons, Soul
+ * Marble for familiars and Black Mana for the Black Orb.
+ */
 export const RESOURCES = [
   { key: "gold", label: "Gold" },
-  { key: "cubes", label: "Enhance Cubes" },
+  { key: "cubes", label: "Cubes" },
   { key: "crystals", label: "Mana Crystals" },
   { key: "stones", label: "Stones" },
   { key: "emeralds", label: "Emeralds" },
-  { key: "dice", label: "Dice" },
+  { key: "greenSouls", label: "Green Souls" },
+  { key: "blueSouls", label: "Blue Souls" },
+  { key: "redSouls", label: "Red Souls" },
+  { key: "soulMarble", label: "Soul Marble" },
+  { key: "blackMana", label: "Black Mana" },
 ] as const;
 export type ResourceKey = (typeof RESOURCES)[number]["key"];
 export type OwnedResources = Record<ResourceKey, number>;
