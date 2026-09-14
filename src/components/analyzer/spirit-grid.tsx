@@ -1,6 +1,7 @@
 "use client";
 
 import { rarityGroup } from "@/lib/game/formulas";
+import { PARTNER_LABEL } from "@/lib/game/spirit-skills";
 import { activeSpiritPreset, effectiveSpiritLevel, spiritLevelCap, spiritLineup, spiritState } from "@/lib/profile/rules";
 import { MAIN_SPIRIT_COUNT, MAX_SPIRIT_ENHANCE, MIN_SPIRIT_ENHANCE } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
@@ -195,24 +196,29 @@ function SpiritPresetSettings() {
       </div>
       <div className="flex flex-wrap gap-2">
         {slots.map((name, slot) => (
-          <select
-            key={slot}
-            aria-label={`Spirit preset slot ${slot + 1}`}
-            value={name ?? ""}
-            onChange={(event) => setSpiritPresetSlot(slot, event.target.value || null)}
-            className={SELECT}
-          >
-            <option value="">Slot {slot + 1} · empty</option>
-            {owned.map((spirit) => (
-              <option key={spirit.id} value={spirit.name}>
-                {spirit.name}
-              </option>
-            ))}
-          </select>
+          // The first slot holds the partner, whose skill is stronger.
+          <label key={slot} className="flex flex-col gap-0.5">
+            <span className={`font-mono text-[9px] tracking-[0.06em] uppercase ${slot === 0 ? "text-amber-500" : "text-dim"}`}>
+              {slot === 0 ? PARTNER_LABEL : `Slot ${slot + 1}`}
+            </span>
+            <select
+              aria-label={slot === 0 ? "Spirit preset partner slot" : `Spirit preset slot ${slot + 1}`}
+              value={name ?? ""}
+              onChange={(event) => setSpiritPresetSlot(slot, event.target.value || null)}
+              className={slot === 0 ? SELECT.replace("border-ink/20", "border-amber-400/80") : SELECT}
+            >
+              <option value="">{slot === 0 ? "Partner" : `Slot ${slot + 1}`} · empty</option>
+              {owned.map((spirit) => (
+                <option key={spirit.id} value={spirit.name}>
+                  {spirit.name}
+                </option>
+              ))}
+            </select>
+          </label>
         ))}
       </div>
       <p className="text-[11px] leading-snug text-dim">
-        Equip up to three owned spirits per preset. Mark six spirits as main: every other spirit then counts at the lowest main level.
+        Equip up to three owned spirits per preset; the first is the partner, whose skill effect is 10% stronger. Mark six spirits as main: every other spirit then counts at the lowest main level.
       </p>
     </section>
   );

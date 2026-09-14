@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import type { SkillStone } from "@/lib/game/battle";
 import { rarityGroup } from "@/lib/game/formulas";
+import { PARTNER_LABEL } from "@/lib/game/spirit-skills";
 import { activeAbilityPreset, activeFamiliars, activeSkillStones, activeSpiritPreset, familiarStars, mountedBeast, presetBeast, spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_GROUPS, LOADOUT_COUNT, type PresetKind } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
@@ -135,16 +136,19 @@ export function PresetsPanel() {
               const spirit = name ? SPIRITS.find((s) => s.name === name) : undefined;
               const state = spirit ? spiritState(profile, spirit.name, spirit.maxLevel) : null;
               const art = spirit ? (spirit.art[state?.awakening ? rarityGroup(state.awakening) : "Common"] ?? spirit.art.Common) : null;
+              // The first slot holds the partner, whose skill effect is stronger.
+              const partner = i === 0;
               return (
-                <span key={i} className="flex w-12 flex-col items-center gap-0.5">
+                <span key={i} className="flex w-12 flex-col items-center gap-0.5" title={partner ? `${spirit?.name ?? "Empty"} · ${PARTNER_LABEL}` : spirit?.name}>
                   {spirit && art ? (
-                    <span className="flex size-12 items-center justify-center rounded-md bg-ink/[0.05]" title={spirit.name}>
+                    <span className={`flex size-12 items-center justify-center rounded-md bg-ink/[0.05] ${partner ? "ring-1 ring-amber-400/80" : ""}`}>
                       <Sprite src={art.icon} native={art.iconSize} size={40} />
                     </span>
                   ) : (
-                    <span className={`size-12 ${EMPTY}`} />
+                    <span className={`size-12 ${partner ? EMPTY.replace("border-ink/15", "border-amber-400/80") : EMPTY}`} />
                   )}
-                  <span className="w-full truncate text-center font-mono text-[9px] text-dim">{spirit?.name ?? "Empty"}</span>
+                  <span className={`w-full truncate text-center font-mono text-[9px] ${partner ? "text-amber-500" : "text-dim"}`}>{spirit?.name ?? "Empty"}</span>
+                  {partner ? <span className="font-mono text-[8px] tracking-[0.06em] text-amber-500 uppercase">Partner</span> : null}
                 </span>
               );
             })}

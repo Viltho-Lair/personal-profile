@@ -64,6 +64,8 @@ function levelValue(skill: SpiritSkillData, level: number): number | null {
 
 /** The partner (the spirit preset's first slot) has its skill 10% stronger. */
 export const PARTNER_BONUS = 1.1;
+/** How the partner's stronger skill reads: "Partner · skill +10%". */
+export const PARTNER_LABEL = `Partner · skill +${Math.round((PARTNER_BONUS - 1) * 100)}%`;
 
 /** Adds up the skills of the given spirits: each with its skill data and skill level, and whether it's the partner. */
 export function spiritSkillEffects(spirits: { spirit: string; skill: SpiritSkillData; level: number; partner?: boolean }[]): SpiritSkillEffects {
