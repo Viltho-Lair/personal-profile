@@ -77,8 +77,10 @@ export type SkillEffect =
   | { type: "restore"; hp: number; mana: number }
   /** Boss damage +power while it's on, against a boss only (Draco beasts). */
   | { type: "bossDamage"; power: number }
-  /** Movement speed +power while it's on (Bat beasts). */
-  | { type: "mspd"; power: number };
+  /** Movement speed +power while it's on (Bat beasts, Agile). */
+  | { type: "mspd"; power: number }
+  /** Movement speed +power for every monster killed so far (Storm Rush). */
+  | { type: "mspdPerKill"; power: number };
 
 export type FightSkill = {
   name: string;
@@ -90,6 +92,11 @@ export type FightSkill = {
   familiar?: boolean;
   /** How far ahead an attack reaches when stage farming: it hits every monster within it. */
   range?: number;
+  /**
+   * Farming, the attack charges the slayer forward: to the farthest monster it hits ("farthest", Fulgurous)
+   * or through its whole range ("through", Supersonic).
+   */
+  dash?: "farthest" | "through";
   /** Extra damage while the enemy is at or below this share of its HP (Na: +10% at 60% or less). */
   lowHpBonus?: { below: number; bonus: number };
   /** For "stacksComplete": the stacking skill to watch, or "all" for every stacking skill in the fight. */
@@ -360,6 +367,7 @@ export function createFight(input: FightInput): Fight {
       if (e.type === "manaRecovery") manaRate += e.power;
       if (e.type === "bossDamage") bossDamage += e.power;
       if (e.type === "mspd") mspd += e.power;
+      if (e.type === "mspdPerKill") mspd += e.power * (field?.kills() ?? 0);
       if (e.type === "rage") {
         atk += e.power * missing;
         rage = true;
@@ -449,7 +457,14 @@ export function createFight(input: FightInput): Fight {
       const whole = Math.max(1, Math.round(hits));
       const amp = (s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1) * elementMatchup(s.element, input.enemyElement ?? null);
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
-      for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, s.range ?? BASIC_RANGE, false);
+      const reach = s.range ?? BASIC_RANGE;
+      const farthest = field && s.dash ? field.farthest(reach) : null;
+      for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, reach, false);
+      // A charge moves the slayer with it.
+      if (field && s.dash) {
+        const at = field.state().position;
+        field.dash(s.dash === "through" ? at + reach : (farthest ?? at));
+      }
       if (s.freezes) {
         animation = castSeconds * whole;
         frozenUntil = Math.max(frozenUntil, real + animation);

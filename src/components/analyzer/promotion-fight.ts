@@ -83,6 +83,9 @@ const num = (pattern: RegExp, text: string) => {
   return match ? Number(match[1]) : null;
 };
 
+/** Attack skills that charge the slayer forward when stage farming. */
+const DASHES: Record<string, "farthest" | "through"> = { Fulgurous: "farthest", Supersonic: "through" };
+
 /** Skills played out in stopped time. */
 const FREEZING = new Set(["Demon Hunt"]);
 
@@ -191,6 +194,9 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   if (skill.name === "Rage") return make({ type: "rage", power, drain: 0.005 }, { kind: "buff" });
   // Mana's Blessing raises Mana Recovery for the whole fight, as in the Stats Summary.
   if (skill.name === "Mana's Blessing") return make({ type: "manaRecovery", power }, { kind: "passive", trigger: "always" });
+  // Agile raises movement speed for its duration; Storm Rush for every monster killed.
+  if (skill.name === "Agile") return make({ type: "mspd", power }, { kind: "buff" });
+  if (skill.name === "Storm Rush") return make({ type: "mspdPerKill", power }, { kind: "passive", trigger: "always", maxStacks: null });
   if (skill.name === "Life Mana")
     return make({ type: "restore", hp: power, mana: (num(/(\d+)% recovery of mana/i, text) ?? 30) / 100 }, { kind: "buff" });
   if (skill.name === "Lightning Body")
@@ -225,7 +231,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     }
     return make(
       { type: "damage", power: power * amp, hits },
-      { bonus: bonus + refined.damage + shrine + wisdom, every, mpCost, animation, freezes },
+      { bonus: bonus + refined.damage + shrine + wisdom, every, mpCost, animation, freezes, dash: DASHES[skill.name] },
     );
   }
 

@@ -27,6 +27,10 @@ export type Field = {
   hit: (amount: number, range: number, single?: boolean) => number;
   /** Walks right, stopping at the front monster's reach. */
   move: (distance: number) => void;
+  /** Where the farthest monster still standing within range is, or null when none is. */
+  farthest: (range: number) => number | null;
+  /** Charges right to a position; monsters still standing that it passes are carried along, just ahead of the slayer. */
+  dash: (to: number) => void;
   kills: () => number;
   cleared: () => boolean;
   state: () => FieldState;
@@ -50,7 +54,7 @@ export function createField(stage: FarmStage): Field {
   let kills = 0;
   const standing = () => enemies.filter((e) => e.hp > 0);
   const front = () => standing()[0] ?? null;
-  const reach = (range: number) => standing().filter((e) => e.position - position <= range);
+  const reach = (range: number) => standing().filter((e) => Math.abs(e.position - position) <= range);
   const damage = (enemy: FieldEnemy, amount: number) => {
     const lost = Math.min(enemy.hp, Math.max(0, amount));
     enemy.hp -= lost;
@@ -67,7 +71,15 @@ export function createField(stage: FarmStage): Field {
     },
     move: (distance) => {
       const next = front();
-      position = next ? Math.min(position + distance, next.position - BASIC_RANGE) : position + distance;
+      position = next ? Math.max(position, Math.min(position + distance, next.position - BASIC_RANGE)) : position + distance;
+    },
+    farthest: (range) => {
+      const targets = reach(range);
+      return targets.length ? Math.max(...targets.map((e) => e.position)) : null;
+    },
+    dash: (to) => {
+      position = Math.max(position, to);
+      for (const e of standing()) if (e.position < position + BASIC_RANGE) e.position = position + BASIC_RANGE;
     },
     kills: () => kills,
     cleared: () => front() === null,

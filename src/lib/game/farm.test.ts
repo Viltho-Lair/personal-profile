@@ -44,6 +44,39 @@ describe("stage farming fights", () => {
     expect(state.done).toBe(true);
   });
 
+  it("charges the slayer forward with a dashing attack", () => {
+    const charge = (dash: "farthest" | "through", range: number): FightSkill => ({
+      name: "Charge", element: null, kind: "attack", trigger: "seconds", every: 100, duration: 0, delay: 0, startAt: 0, freezes: false, bonus: 0,
+      range, dash, effect: { type: "damage", power: 0.01, hits: 1 },
+    });
+    const walkedTo = (skill: FightSkill) => {
+      const fight = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [skill] });
+      // The charge goes as soon as wave 1 (10 range away) comes within its range.
+      fight.advance(3);
+      return fight.state().field!.position;
+    };
+    // Range 3 reaches wave 1's first monster from 7 away, and the charge stops on it.
+    expect(walkedTo(charge("farthest", 3))).toBe(WAVE_GAP);
+    // Supersonic-style goes its whole range: from 3 (wave 1 just in reach) it charges to 10, carrying the monsters it passes along.
+    const through = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [charge("through", 7)] });
+    through.advance(3);
+    const state = through.state().field!;
+    expect(state.position).toBeGreaterThanOrEqual(WAVE_GAP);
+    expect(state.enemies.filter((e) => e.wave === 1 && e.hp > 0).every((e) => e.position === state.position + 1)).toBe(true);
+  });
+
+  it("walks faster with movement speed buffs", () => {
+    const agile: FightSkill = {
+      name: "Agile", element: null, kind: "buff", trigger: "seconds", every: 100, duration: 10, delay: 0, startAt: 0, freezes: false, bonus: 0,
+      effect: { type: "mspd", power: 1 },
+    };
+    const plain = createFight({ ...base, farm: { ...stage, enemyHp: 1e12 } });
+    const fast = createFight({ ...base, farm: { ...stage, enemyHp: 1e12 }, skills: [agile] });
+    plain.advance(1);
+    fast.advance(1);
+    expect(fast.state().field!.position).toBeGreaterThan(plain.state().field!.position * 1.8);
+  });
+
   it("hits every monster in a skill's range, and readies a bat after its kills", () => {
     const sweep: FightSkill = {
       name: "Sweep", element: null, kind: "attack", trigger: "seconds", every: 1, duration: 0, delay: 0, startAt: 0, freezes: false, bonus: 0, range: 5,

@@ -847,6 +847,8 @@ function FamiliarTile({
 /** Range the farming view shows at once, and how far behind the slayer it starts. */
 const FARM_VIEW = 30;
 const FARM_BEHIND = 4;
+/** Circles drawn for monsters sharing a spot before the rest are shown as a count. */
+const FARM_STACK = 3;
 
 /**
  * Stage farming, drawn in place of the graph: the slayer as a circle walking right, the monsters and the
@@ -872,18 +874,30 @@ function FarmStrip({ stage, snap }: { stage: FarmStage; snap: FightState | null 
             {e.box ? "Box" : `Wave ${e.wave}`}
           </text>
         ))}
-      {visible.map((e) => (
-        <circle
-          key={e.id}
-          cx={x(e.position)}
-          cy={ground}
-          r={unit * (e.box ? 0.45 : 0.35)}
-          fill="white"
-          fillOpacity={0.25 + 0.75 * (e.hp / Math.max(1e-300, e.maxHp))}
-          stroke="white"
-          strokeWidth={e === front ? 2 : 1}
-        />
-      ))}
+      {visible.map((e, i) => {
+        // Monsters carried onto one spot by a charge stack upward: three show, the rest are counted.
+        const below = visible.slice(0, i).filter((o) => o.position === e.position).length;
+        const onSpot = visible.filter((o) => o.position === e.position).length;
+        if (below >= FARM_STACK) return null;
+        return (
+          <g key={e.id}>
+            <circle
+              cx={x(e.position)}
+              cy={ground - below * unit * 0.8}
+              r={unit * (e.box ? 0.45 : 0.35)}
+              fill="white"
+              fillOpacity={0.25 + 0.75 * (e.hp / Math.max(1e-300, e.maxHp))}
+              stroke="white"
+              strokeWidth={e === front ? 2 : 1}
+            />
+            {below === FARM_STACK - 1 && onSpot > FARM_STACK ? (
+              <text x={x(e.position)} y={ground - FARM_STACK * unit * 0.8} textAnchor="middle" fill="white" fontSize="9" className="font-mono">
+                +{onSpot - FARM_STACK}
+              </text>
+            ) : null}
+          </g>
+        );
+      })}
       <circle cx={x(field.position)} cy={ground} r={unit * 0.4} className="fill-sky-400" stroke="white" strokeWidth="1.5" />
       <text x={8} y={14} fill="white" fillOpacity="0.7" fontSize="10" className="font-mono">
         Stage {stage.stage} · {field.kills} / {field.enemies.length} down{field.cleared ? " · cleared" : ""}
