@@ -55,16 +55,54 @@ describe("stage farming fights", () => {
       fight.advance(3);
       return fight.state().field!.position;
     };
-    // Range 3 reaches wave 1's first monster from 7 away, and the charge stops on it.
-    expect(walkedTo(charge("farthest", 3))).toBe(WAVE_GAP);
-    // Supersonic-style: from 3 (wave 1 just in reach) it charges 7 through wave 1, carrying its monsters along,
-    // and charges on while they're still ahead within range.
-    const through = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [{ ...charge("through", 7), effect: { type: "damage", power: 0.01, hits: 6 } }] });
-    through.advance(3);
-    const state = through.state();
-    expect(state.field!.position).toBeGreaterThanOrEqual(WAVE_GAP + 7 * 5);
-    expect(state.field!.enemies.filter((e) => e.wave === 1 && e.hp > 0).every((e) => e.position === state.field!.position + 1)).toBe(true);
-    expect(state.events.filter((e) => e.kind === "charge")).toHaveLength(6);
+    // Range 3 reaches wave 1's first monster from 7 away; it survives, so the charge stops beside it.
+    expect(walkedTo(charge("farthest", 3))).toBe(WAVE_GAP - 1);
+    // Supersonic-style batches stop at the first monster they didn't kill, and the next batch starts from there.
+    const blocked = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [{ ...charge("through", 7), effect: { type: "damage", power: 0.01, hits: 6 } }] });
+    blocked.advance(0.7);
+    expect(blocked.state().field!.position).toBe(WAVE_GAP - 1);
+    expect(blocked.state().events.filter((e) => e.kind === "charge")).toHaveLength(6);
+    // Killing what they reach, all 6 batches charge on: 3 → 10 → 17 → 24 → 31 → 38 → 45.
+    const sweeping = createFight({ ...base, farm: stage, skills: [{ ...charge("through", 7), effect: { type: "damage", power: 10, hits: 6 } }] });
+    sweeping.advance(0.7);
+    expect(sweeping.state().field!.position).toBeGreaterThanOrEqual(45);
+    expect(sweeping.state().field!.kills).toBe(6);
+  });
+
+  it("charges Fulgurous-style skills forward even with nothing in reach", () => {
+    const fulgurous: FightSkill = {
+      name: "Fulgurous", element: null, kind: "attack", trigger: "seconds", every: 0.5, duration: 0, delay: 0, startAt: 0, freezes: false, bonus: 0,
+      range: 3, dash: "farthest", castsAnyway: true, effect: { type: "damage", power: 0.01, hits: 1 },
+    };
+    const fight = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [fulgurous] });
+    fight.advance(0.05);
+    // The first cast at the start charges 3 range with no monster anywhere near.
+    expect(fight.state().field!.position).toBeGreaterThanOrEqual(3);
+  });
+
+  it("lands meteor strikes on random tiles, hitting only what stands there", () => {
+    const meteors: FightSkill = {
+      name: "Ice Shower", element: null, kind: "attack", trigger: "seconds", every: 100, duration: 0, delay: 0, startAt: 0, freezes: false, bonus: 0,
+      range: 8, randomTiles: true, effect: { type: "damage", power: 1, hits: 12 },
+    };
+    const fight = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [meteors] });
+    fight.advance(1);
+    const state = fight.state();
+    const strikes = state.events.find((e) => e.name === "Ice Shower")!;
+    expect(strikes.targets).toHaveLength(12);
+    // Only strikes on the two monsters' tiles dealt damage.
+    const onMonsters = strikes.targets!.filter((t) => t === WAVE_GAP || t === WAVE_GAP + 1).length;
+    expect(state.bySkill["Ice Shower"] ?? 0).toBeCloseTo(onMonsters * 100);
+  });
+
+  it("hits at most the enemies a skill names", () => {
+    const slash: FightSkill = {
+      name: "Lightning Slash", element: null, kind: "attack", trigger: "seconds", every: 100, duration: 0, delay: 0, startAt: 0, freezes: false, bonus: 0,
+      range: 30, maxTargets: 1, effect: { type: "damage", power: 1, hits: 1 },
+    };
+    const fight = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [slash] });
+    fight.advance(0.05);
+    expect(fight.state().bySkill["Lightning Slash"]).toBeCloseTo(100);
   });
 
   it("walks faster with movement speed buffs", () => {

@@ -18,7 +18,13 @@
  *   their stages (then they're complete), skill uses, or starting later.
  * - Rave stores all the damage done to the enemy for its duration (5 seconds):
  *   skills, basic attacks and spirit skills alike. It stops time while it
- *   stores: the battle timer and skill cooldowns hold while attacks keep landing. It can then be used again to unleash
+ *   stores: the battle timer and skill cooldowns hold while attacks keep landing.
+ *   Its reuse raises a pillar that deals the stored share over 2 seconds.
+ * - Farming, charges move the slayer: each batch charges up to its range and
+ *   stops at the first monster it didn't kill (Supersonic's 6 batches go on
+ *   from there); Fulgurous charges even with nothing in reach. Meteors and
+ *   lightning strikes land on random range tiles, hitting what stands there,
+ *   and some skills hit only so many enemies. It can then be used again to unleash
  *   its share of that damage (110% at level 5) as it is, with no multipliers on
  *   top, played out in stopped time, and only then does its cooldown start.
  * - Meditation charges every attack and buff, their cooldowns and strike
@@ -56,7 +62,7 @@ import { BASIC_RANGE, createField, MOVE_SPEED, type FarmStage, type FieldState }
  * buff, a spirit skill, Rave's release or a kill. `real` is when it shows; `from` and `to` are field positions.
  */
 export type FightEvent = {
-  kind: "basic" | "sweep" | "charge" | "buff" | "breath" | "rave" | "kill" | "familiar";
+  kind: "basic" | "sweep" | "charge" | "buff" | "breath" | "rave" | "kill" | "familiar" | "spirit";
   real: number;
   name: string;
   element: Element | null;
@@ -64,12 +70,28 @@ export type FightEvent = {
   to: number;
   /** Hits (sweeps, familiar), which charge it was, or the fallen monster's id (kills). */
   count: number;
-  /** Where the monsters it reached stood, nearest first (sweeps, familiar). */
+  /** Where the monsters it reached stood, nearest first (sweeps, familiar), or the tiles its strikes landed on. */
   targets?: number[];
+  /** Seconds it lasts on screen when that differs by use (Rave's pillar, Blizzard's storm). */
+  seconds?: number;
 };
 
 /** Seconds a Supersonic-style charge takes on screen, one after another. */
 export const CHARGE_SECONDS = 0.12;
+/** Seconds Rave's pillar takes to deal what it stored. */
+export const RAVE_RELEASE_SECONDS = 2;
+
+/** A small seeded random number generator, so a fight plays out the same way every time. */
+function seeded(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 const MAX_EVENTS = 240;
 import { HIGH_HP_THRESHOLD, type SpiritSkillEffects } from "./spirit-skills";
 import type { ByElement, Element } from "./stats";
@@ -120,6 +142,14 @@ export type FightSkill = {
    * in range before each charge.
    */
   dash?: "farthest" | "through";
+  /** Farming, it goes even with nothing in reach (Fulgurous charges on). */
+  castsAnyway?: boolean;
+  /** Hits at most this many enemies, nearest first (Lightning Slash: 5). */
+  maxTargets?: number;
+  /** Farming, each hit lands on a random range tile within reach (meteors, lightning strikes). */
+  randomTiles?: boolean;
+  /** Its hits come one a second instead of all at once (Blizzard: damage per second). */
+  perSecond?: boolean;
   /** Extra damage while the enemy is at or below this share of its HP (Na: +10% at 60% or less). */
   lowHpBonus?: { below: number; bonus: number };
   /** For "stacksComplete": the stacking skill to watch, or "all" for every stacking skill in the fight. */
@@ -360,9 +390,20 @@ export function createFight(input: FightInput): Fight {
   const field = input.farm ? createField(input.farm) : null;
   const struckIds = new Set<number>();
   let lastKills = 0;
+  const random = seeded(1);
+  /** Rave's pillar: what it still has to deal, how fast, and hits of skills that come one a second. */
+  let raveLeft = 0;
+  let raveRate = 0;
+  const later: { at: number; amount: number; source: string; range: number; max?: number }[] = [];
+  /** Spirit skills show their spirit once when they kick in. */
+  const spiritShown = new Set<string>();
+  const showSpirit = (name: string, once = false) => {
+    if (once && spiritShown.has(name)) return;
+    spiritShown.add(name);
+    log({ kind: "spirit", name, element: null, from: at(), to: at(), count: 0 });
+  };
   const events: FightEvent[] = [];
   const log = (event: Omit<FightEvent, "real"> & { real?: number }) => {
-    if (!field) return;
     events.push({ real, ...event });
     if (events.length > MAX_EVENTS) events.splice(0, events.length - MAX_EVENTS);
   };
@@ -429,7 +470,7 @@ export function createFight(input: FightInput): Fight {
    * A hit with the enemy multipliers; `raw` damage (a share of the enemy's HP) skips them. Farming, it lands on
    * the monster in front (`single`) or every monster within `range`, and counts what they lost.
    */
-  const deal = (hit: number, source: string | null, raw = false, range = BASIC_RANGE, single = true) => {
+  const deal = (hit: number, source: string | null, raw = false, range = BASIC_RANGE, single = true, aim: { max?: number; tile?: number } = {}) => {
     let amount = hit;
     if (!raw) {
       amount *= boss * (bossMonster ? 1 + bonuses().bossDamage : 1);
@@ -442,12 +483,14 @@ export function createFight(input: FightInput): Fight {
       if (spirits?.firstStrike && front && field.inRange(range) && !struckIds.has(front.id)) {
         struckIds.add(front.id);
         record(field.hit(front.maxHp * spirits.firstStrike, range, true), "Thief Wind");
+        showSpirit("Thief Wind");
       }
-      record(field.hit(amount, range, single), source);
+      record(aim.tile !== undefined ? field.hitTile(amount, aim.tile) : field.hit(amount, range, single, aim.max), source);
       const next = field.front();
       // Judge's Torpedo finishes a normal monster below its share of HP.
       if (spirits?.execute && next && field.inRange(range) && next.hp <= next.maxHp * spirits.execute) {
         record(field.hit(next.hp, range, true), "Judge's Torpedo");
+        showSpirit("Judge's Torpedo");
       }
       return;
     }
@@ -457,11 +500,13 @@ export function createFight(input: FightInput): Fight {
     if (spirits.firstStrike && !struck) {
       struck = true;
       record(enemyHp * spirits.firstStrike, "Thief Wind");
+      showSpirit("Thief Wind");
     }
     // Judge's Torpedo: a normal monster below its share of HP dies at once.
     if (spirits.execute && !executed && total < enemyHp && enemyHp - total <= enemyHp * spirits.execute) {
       executed = true;
       record(enemyHp - total, "Judge's Torpedo");
+      showSpirit("Judge's Torpedo");
     }
   };
 
@@ -499,26 +544,44 @@ export function createFight(input: FightInput): Fight {
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
       const reach = s.range ?? BASIC_RANGE;
       const kind = s.familiar ? "familiar" : "sweep";
-      if (field && s.dash === "through") {
-        // Consecutive charges: each hits what's in range, then charges through it while anything is left ahead.
+      if (field && s.dash) {
+        // Charges: each batch hits what's in range, then charges up to the range, stopping at the first monster
+        // it didn't kill; the next batch goes on from there.
         for (let i = 0; i < whole; i += 1) {
           const start = at();
+          deal(perHit, s.name, false, reach, false, { max: s.maxTargets });
+          const survivor = field.firstAhead(reach);
+          const to = survivor ? Math.max(start, survivor.position - BASIC_RANGE) : start + reach;
+          field.dash(to);
+          log({ kind: "charge", name: s.name, element: s.element, from: start, to, count: i, real: real + i * CHARGE_SECONDS });
+        }
+      } else if (field && s.randomTiles) {
+        // Meteors and lightning land on random tiles within reach and hit what stands there.
+        const start = at();
+        const tiles: number[] = [];
+        for (let i = 0; i < whole; i += 1) {
+          const tile = Math.round(start) + Math.floor(random() * (reach + 1));
+          tiles.push(tile);
+          deal(perHit, s.name, false, reach, false, { tile });
+        }
+        log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets: tiles.slice(0, 60) });
+      } else if (s.perSecond) {
+        // One hit a second for as many seconds as it has hits.
+        const start = at();
+        for (let i = 0; i < whole; i += 1) later.push({ at: action + i, amount: perHit, source: s.name, range: reach, max: s.maxTargets });
+        log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets: field ? field.positionsInRange(reach).slice(0, 12) : [start + BASIC_RANGE], seconds: whole });
+      } else if (!field && s.dash) {
+        // One enemy: each batch charges into it where it stands.
+        const start = at();
+        for (let i = 0; i < whole; i += 1) {
           deal(perHit, s.name, false, reach, false);
-          const onward = field.aheadInRange(reach);
-          if (onward) field.dash(start + reach);
-          log({ kind: "charge", name: s.name, element: s.element, from: start, to: onward ? start + reach : start, count: i, real: real + i * CHARGE_SECONDS });
+          log({ kind: "charge", name: s.name, element: s.element, from: start, to: start + BASIC_RANGE, count: i, real: real + i * CHARGE_SECONDS });
         }
       } else {
-        const farthest = field && s.dash ? field.farthest(reach) : null;
         const start = at();
-        const targets = field?.positionsInRange(reach).slice(0, 12);
-        for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, reach, false);
+        const targets = field ? field.positionsInRange(reach).slice(0, Math.min(12, s.maxTargets ?? 12)) : [start + BASIC_RANGE];
+        for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, reach, false, { max: s.maxTargets });
         log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets });
-        // A charge moves the slayer with it.
-        if (field && s.dash) {
-          field.dash(farthest ?? start);
-          log({ kind: "charge", name: s.name, element: s.element, from: start, to: farthest ?? start, count: 0 });
-        }
       }
       if (s.freezes) {
         animation = castSeconds * whole;
@@ -533,8 +596,10 @@ export function createFight(input: FightInput): Fight {
       if (release) {
         // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored
         // hits already had their multipliers. The cooldown starts now.
-        record(field ? field.hit(raveStored * e.power, BASIC_RANGE, true) : raveStored * e.power, s.name, false);
-        log({ kind: "rave", name: s.name, element: null, from: at(), to: field?.front()?.position ?? at(), count: 1 });
+        // A pillar rises and deals the stored share over 2 seconds.
+        raveLeft += raveStored * e.power;
+        raveRate = raveLeft / RAVE_RELEASE_SECONDS;
+        log({ kind: "rave", name: s.name, element: null, from: at(), to: field?.front()?.position ?? at() + BASIC_RANGE, count: 1, seconds: RAVE_RELEASE_SECONDS });
         releases.push({ t: clock, damage: total, amount: raveStored * e.power });
         raveStored = 0;
         l.charged = false;
@@ -581,7 +646,7 @@ export function createFight(input: FightInput): Fight {
   const inReach = (l: Live) => {
     if (!field) return true;
     const e = l.skill.effect;
-    if (e.type === "damage") return field.inRange(l.skill.range ?? BASIC_RANGE);
+    if (e.type === "damage") return Boolean(l.skill.castsAnyway) || field.inRange(l.skill.range ?? BASIC_RANGE);
     if (e.type === "rave" && l.charged) return field.inRange(BASIC_RANGE);
     return true;
   };
@@ -595,22 +660,43 @@ export function createFight(input: FightInput): Fight {
       if (spirits.timeStop && !timeStopUsed && clock >= spirits.timeStop.at) {
         timeStopUsed = true;
         stopUntil = real + spirits.timeStop.seconds;
+        showSpirit("Time Freeze");
       }
+      // Always-on spirit skills show their spirit once as the fight starts; Last Fight as its 5 seconds begin.
+      if (bossMonster && spirits.bossSkillDamage) showSpirit("Wilderness Roar", true);
+      if (!bossMonster && spirits.monsterSkillDamage) showSpirit("Reign", true);
+      if (spirits.highHpDamage) showSpirit("Leveling", true);
+      if (spirits.hp) showSpirit("Wild Heart", true);
+      if (spirits.lastFight && clock >= input.duration - spirits.lastFight.seconds) showSpirit("Last Fight", true);
       if (spirits.breath && action >= nextBreath) {
         nextBreath += spirits.breath.every;
         if (targetMax() > 0 && (!field || field.inRange(BASIC_RANGE))) {
           deal(spirits.breath.share * targetLeft(), "Breath of Fire", true);
-          log({ kind: "breath", name: "Breath of Fire", element: "Fire", from: at(), to: field?.front()?.position ?? at(), count: 1 });
+          log({ kind: "breath", name: "Breath of Fire", element: "Fire", from: at(), to: field?.front()?.position ?? at() + BASIC_RANGE, count: 1 });
+          showSpirit("Breath of Fire");
         }
       }
       if (spirits.cooldownRecovery && action >= nextRecovery) {
         nextRecovery += spirits.cooldownRecovery.every;
+        showSpirit("Wind Force");
         for (const l of live) {
           const s = l.skill;
           if (s.trigger !== "seconds" || isStack(s) || s.uncharged || l.queued || l.holding || (s.startsOnCooldown && l.uses === 0)) continue;
           l.progress = Math.min(target(l), l.progress + spirits.cooldownRecovery.share * s.every);
         }
       }
+    }
+
+    if (!frozen && raveLeft > 0) {
+      const chunk = Math.min(raveLeft, raveRate * step);
+      raveLeft -= chunk;
+      record(field ? field.hit(chunk, BASIC_RANGE, true) : chunk, "Rave", false);
+    }
+    for (let i = later.length - 1; i >= 0; i -= 1) {
+      const hit = later[i]!;
+      if (action < hit.at) continue;
+      later.splice(i, 1);
+      deal(hit.amount, hit.source, false, hit.range, false, { max: hit.max });
     }
 
     if (raveUntil >= 0 && action >= raveUntil) {

@@ -78,13 +78,18 @@ describe("simulateFight", () => {
     // Waiting doesn't run the cooldown.
     fight.advance(30);
     expect(fight.state().skills[0].charged).toBe(true);
+    const stored = fight.state().skills[0].stored!;
     expect(fight.cast("Rave")).toBe(true);
-    fight.advance(0.1);
+    // The pillar rises after the cast and deals what was stored over 2 seconds.
+    fight.advance(1);
     state = fight.state();
-    expect(state.bySkill.Rave).toBeGreaterThan(400);
+    expect(state.bySkill.Rave).toBeGreaterThan(stored * 0.3);
+    expect(state.bySkill.Rave).toBeLessThan(stored * 0.6);
     expect(state.skills[0]).toMatchObject({ charged: false });
-    expect(state.skills[0].ready).toBeLessThan(0.05);
+    expect(state.skills[0].ready).toBeLessThan(0.1);
     expect(fight.cast("Rave")).toBe(false);
+    fight.advance(1.5);
+    expect(fight.state().bySkill.Rave).toBeCloseTo(stored, 0);
   });
 
   it("stops time and skill cooldowns for the five seconds Rave stores", () => {

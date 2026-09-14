@@ -5,14 +5,17 @@ import { Settings } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFight, type Fight, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
-import { formatValue, SKILL_BY_NAME } from "./data";
+import { formatValue, SKILL_BY_NAME, SPIRITS } from "./data";
 import { ELEMENTS } from "@/lib/game/stats";
 import { BeastArt } from "./beast-panel";
 import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
 import { FamiliarArt } from "./skill-familiars";
 import { FARM_WAVES, MOVE_SPEED, type FarmStage } from "@/lib/game/farm";
 import type { Element } from "@/lib/game/stats";
-import { FarmRender } from "./farm-render";
+import { BattleRender, type SingleEnemy } from "./farm-render";
+import { DamageChart, type ChartLevel } from "./damage-chart";
+import { rarityGroup } from "@/lib/game/formulas";
+import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
@@ -23,10 +26,6 @@ const SELECT =
 const BUTTON =
   "rounded-md border px-3 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40";
 
-const W = 400;
-const H = 220;
-const LEFT = 8;
-const BOTTOM = 16;
 /** Frames are ~30 a second; a throttled background tab still catches up to real time, a second at most per frame. */
 const FRAME_MS = 33;
 const MAX_FRAME_SECONDS = 1;
@@ -44,6 +43,7 @@ export function ProgressChart() {
   const { profile, setPromotionTarget, setBossMonster, setEnemyElement, setStageFarming } = useProfile();
   const factors = useSpiritFactors();
   const [logScale, setLogScale] = useState(false);
+  const [view, setView] = useState<"analysis" | "render">("render");
   const [manual, setManual] = useState<string[]>([]);
   const [run, setRun] = useState<{ for: unknown; phase: Phase; snap: FightState | null } | null>(null);
   const fightRef = useRef<Fight | null>(null);
@@ -116,19 +116,60 @@ export function ProgressChart() {
   const cleared = stagesMode ? (snap ? stagesCleared(total) : 0) : 0;
   const nextStage = stagesMode ? (snap ? (cleared < STAGE_COUNT ? cleared + 1 : null) : (boss?.stage ?? null)) : null;
   const nextHp = nextStage ? stageBossHp(nextStage) : 0;
-  const top = Math.max(total, stagesMode ? nextHp : (boss?.maxHp ?? 0), 1) * 1.08;
-  const scaleY = (value: number) => {
-    const ratio = logScale ? Math.log10(1 + Math.max(0, value)) / Math.log10(1 + top) : value / top;
-    return H - BOTTOM - ratio * (H - BOTTOM - 8);
-  };
-  const scaleX = (t: number) => LEFT + (t / duration) * (W - LEFT - 8);
-  const path = snap ? snap.points.map((p, i) => `${i ? "L" : "M"} ${scaleX(p.t).toFixed(1)} ${scaleY(p.damage).toFixed(1)}`).join(" ") : "";
-  const last = snap?.points[snap.points.length - 1];
+  const top = Math.max(total, farmMode ? 0 : stagesMode ? nextHp : (boss?.maxHp ?? 0), 1) * 1.08;
+  const levels: ChartLevel[] = farmMode
+    ? []
+    : stagesMode
+      ? [
+          ...(cleared > 0 ? [{ value: stageBossHp(cleared), label: `Stage ${cleared} cleared`, tone: "green" as const, align: "start" as const }] : []),
+          ...(nextStage ? [{ value: nextHp, label: `Stage ${nextStage} boss HP`, tone: "red" as const, align: "end" as const }] : []),
+        ]
+      : boss
+        ? [{ value: boss.hp, label: `Boss HP · stage ${boss.stage}`, tone: "red", align: "end" }]
+        : [];
+  // The one enemy the render shows outside stage farming: the promotion boss, or the next stage's boss.
+  const enemy: SingleEnemy | null = farmMode
+    ? null
+    : stagesMode
+      ? nextStage
+        ? { maxHp: nextHp, boss: Boolean(setup.input.bossMonster), title: `Stage ${nextStage} boss`, subtitle: `${formatValue(cleared)} stages cleared` }
+        : null
+      : boss
+        ? { maxHp: boss.hp, boss: Boolean(setup.input.bossMonster), title: boss.name, subtitle: `Promotion boss · stage ${boss.stage}` }
+        : null;
+  // Each spirit shows in its awakening's art when its skill kicks in.
+  const spiritArt = useMemo(
+    () =>
+      Object.fromEntries(
+        SPIRITS.flatMap((spirit) => {
+          if (!spirit.skill) return [];
+          const awakening = spiritState(profile, spirit.name, spirit.maxLevel).awakening;
+          const art = spirit.art[awakening ? rarityGroup(awakening) : "Common"] ?? spirit.art.Common;
+          return art ? [[spirit.skill.name, art.icon]] : [];
+        }),
+      ) as Record<string, string>,
+    [profile],
+  );
 
   return (
     <section aria-label={farmMode ? "Stage farming" : stagesMode ? "Stages chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <h2 className="text-sm font-semibold">{farmMode ? "Stage farming" : stagesMode ? "Stages" : "Promotion"}</h2>
+        <div className="flex gap-1" role="group" aria-label="Fight view">
+          {(["analysis", "render"] as const).map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={view === id}
+              onClick={() => setView(id)}
+              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                view === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink hover:text-ink"
+              }`}
+            >
+              {id === "analysis" ? "Analysis" : "Render"}
+            </button>
+          ))}
+        </div>
         {stagesMode || farmMode ? null : (
           <select
             aria-label="Desired promotion"
@@ -143,7 +184,7 @@ export function ProgressChart() {
             ))}
           </select>
         )}
-        {farmMode ? null : (
+        {view === "render" ? null : (
           <label className={`flex items-center gap-1 ${LABEL}`}>
             <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
             Log scale
@@ -221,67 +262,29 @@ export function ProgressChart() {
         </span>
       </div>
 
-      {farmMode && setup.farm ? (
-        <FarmRender stage={setup.farm} snap={snap} element={mainElement(setup.skills)} baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)} />
-      ) : null}
-      <svg viewBox={`0 0 ${W} ${H}`} className={`h-56 w-full shrink-0 md:h-[34svh] ${farmMode ? "hidden" : ""}`} preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
-        {stagesMode ? (
-          <>
-            {cleared > 0 ? (
-              <>
-                <line x1={LEFT} x2={W - 8} y1={scaleY(stageBossHp(cleared))} y2={scaleY(stageBossHp(cleared))} className="stroke-emerald-500" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
-                <text x={LEFT + 4} y={scaleY(stageBossHp(cleared)) - 3} className="fill-emerald-500 font-mono" fontSize="9">
-                  Stage {cleared} cleared
-                </text>
-              </>
-            ) : null}
-            {nextStage ? (
-              <>
-                <line x1={LEFT} x2={W - 8} y1={scaleY(nextHp)} y2={scaleY(nextHp)} className="stroke-red-500" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
-                <text x={W - 10} y={scaleY(nextHp) - 3} textAnchor="end" className="fill-red-500 font-mono" fontSize="9">
-                  Stage {nextStage} boss HP
-                </text>
-              </>
-            ) : null}
-          </>
-        ) : boss ? (
-          <>
-            <rect x={LEFT} y={scaleY(boss.maxHp)} width={W - LEFT - 8} height={Math.max(0, scaleY(boss.minHp) - scaleY(boss.maxHp))} className="fill-red-500/10" />
-            <line x1={LEFT} x2={W - 8} y1={scaleY(boss.hp)} y2={scaleY(boss.hp)} className="stroke-red-500" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
-            <text x={W - 10} y={scaleY(boss.hp) - 3} textAnchor="end" className="fill-red-500 font-mono" fontSize="9">
-              Boss HP · stage {boss.stage}
-            </text>
-          </>
-        ) : null}
-        <line x1={LEFT} y1={8} x2={LEFT} y2={H - BOTTOM} className="stroke-ink/60" vectorEffect="non-scaling-stroke" />
-        <line x1={LEFT} y1={H - BOTTOM} x2={W - 8} y2={H - BOTTOM} className="stroke-ink/60" vectorEffect="non-scaling-stroke" />
-        {snap ? (
-          <>
-            <path d={path} fill="none" className="stroke-sky-500" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-            <line x1={scaleX(snap.clock)} x2={scaleX(snap.clock)} y1={8} y2={H - BOTTOM} className="stroke-ink/20" vectorEffect="non-scaling-stroke" />
-          </>
-        ) : (
-          <text x={W / 2} y={H / 2} textAnchor="middle" className="fill-dim font-mono" fontSize="10">
-            Press Render to play the {duration}s fight
-          </text>
-        )}
-        {snap?.releases.map((release) => (
-          <g key={`${release.t}-${release.damage}`}>
-            <circle cx={scaleX(release.t)} cy={scaleY(release.damage)} r="3.5" className="fill-fuchsia-500 stroke-ground" vectorEffect="non-scaling-stroke" />
-            <text x={scaleX(release.t) + 5} y={scaleY(release.damage) + 10} className="fill-fuchsia-400 font-mono" fontSize="9">
-              Rave
-            </text>
-          </g>
-        ))}
-        {last ? (
-          <rect x={scaleX(last.t) - 3} y={scaleY(last.damage) - 3} width="6" height="6" transform={`rotate(45 ${scaleX(last.t)} ${scaleY(last.damage)})`} className="fill-ground stroke-ink" vectorEffect="non-scaling-stroke" />
-        ) : null}
-        {[0, 0.5, 1].map((f) => (
-          <text key={f} x={scaleX(duration * f)} y={H - 4} textAnchor={f === 0 ? "start" : f === 1 ? "end" : "middle"} className="fill-dim font-mono" fontSize="9">
-            {Math.round(duration * f)}s
-          </text>
-        ))}
-      </svg>
+      {view === "render" ? (
+        <BattleRender
+          stage={farmMode ? setup.farm : null}
+          enemy={enemy}
+          snap={snap}
+          element={mainElement(setup.skills)}
+          baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)}
+          spiritArt={spiritArt}
+        />
+      ) : (
+        <DamageChart
+          points={snap ? snap.points : null}
+          clock={snap?.clock ?? 0}
+          duration={duration}
+          top={top}
+          logScale={logScale}
+          levels={levels}
+          band={!farmMode && !stagesMode && boss ? { from: boss.minHp, to: boss.maxHp } : null}
+          releases={snap?.releases ?? []}
+          placeholder={`Press Render to play the ${duration}s fight`}
+          label={farmMode ? "Damage over the stage farming run" : "Damage over the fight against the boss HP"}
+        />
+      )}
 
       {farmMode && setup.farm ? (
         <FarmHealth stage={setup.farm} snap={snap} />

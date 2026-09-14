@@ -23,8 +23,12 @@ export type Field = {
   front: () => FieldEnemy | null;
   /** Whether anything standing is within this range ahead. */
   inRange: (range: number) => boolean;
-  /** Deals `amount` to every monster within range (only the front one when `single`); what they lost in all. */
-  hit: (amount: number, range: number, single?: boolean) => number;
+  /** Deals `amount` to every monster within range (only the front one when `single`, the nearest `max` when set); what they lost in all. */
+  hit: (amount: number, range: number, single?: boolean, max?: number) => number;
+  /** Deals `amount` to whatever stands on one range tile; what it lost. */
+  hitTile: (amount: number, tile: number) => number;
+  /** The nearest monster still standing ahead of the slayer within range, or null. */
+  firstAhead: (range: number) => FieldEnemy | null;
   /** Walks right, stopping at the front monster's reach. */
   move: (distance: number) => void;
   /** Positions of the monsters still standing within range, nearest first. */
@@ -79,10 +83,12 @@ export function createField(stage: FarmStage): Field {
     inRange: (range) => reach(range).length > 0,
     positionsInRange: (range) => reach(range).map((e) => e.position),
     aheadInRange: (range) => standing().some((e) => e.position > position && e.position - position <= range),
-    hit: (amount, range, single = false) => {
-      const targets = single ? reach(range).slice(0, 1) : reach(range);
+    hit: (amount, range, single = false, max) => {
+      const targets = reach(range).slice(0, single ? 1 : (max ?? Infinity));
       return targets.reduce((total, enemy) => total + damage(enemy, amount), 0);
     },
+    hitTile: (amount, tile) => standing().filter((e) => Math.round(e.position) === tile).reduce((total, enemy) => total + damage(enemy, amount), 0),
+    firstAhead: (range) => standing().find((e) => e.position > position && e.position - position <= range) ?? null,
     move: (distance) => {
       const next = front();
       position = next ? Math.max(position, Math.min(position + distance, next.position - BASIC_RANGE)) : position + distance;

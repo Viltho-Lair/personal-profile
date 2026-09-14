@@ -1,15 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import type { FightEvent, FightState } from "@/lib/game/battle";
-import { createField, FARM_WAVES, type FarmStage, type FieldEnemy } from "@/lib/game/farm";
+import { CHARGE_SECONDS, type FightEvent, type FightState } from "@/lib/game/battle";
+import { BASIC_RANGE, createField, FARM_WAVES, type FarmStage, type FieldEnemy, type FieldState } from "@/lib/game/farm";
 import type { Element } from "@/lib/game/stats";
 import { SKILL_BY_NAME } from "./data";
 
 /**
- * Stage farming as a small side-on battlefield. The floor is laid in one tile per range, so every reach can
- * be read off it; the slayer wears its preset's element, monsters share one horned shape and the box one
- * crowned shape; skills draw in their element's colour with a bracket on the floor over the range they cover.
+ * A fight as a small side-on battlefield: stage farming's waves and box, or the one boss or monster of a
+ * promotion or stages fight. The floor is laid in one tile per range, so every reach can be read off it; the
+ * slayer wears its preset's element, monsters share one horned shape, bosses one crowned brute and the box
+ * one chest; skills draw in their element's colour with a bracket on the floor over the range they cover.
  */
 
 const W = 400;
@@ -88,7 +89,8 @@ const styleOf = (event: FightEvent): Style => STYLES[event.name] ?? (event.eleme
 /** A steady pseudo-random number in [0, 1) for an integer: the same tile always gets the same pebble. */
 function noise(n: number) {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
+  // Rounded, so the server's and the browser's Math.sin agree on every digit the page draws.
+  return Math.round((x - Math.floor(x)) * 1e6) / 1e6;
 }
 
 /** A stage's area picks the sky's hue, so Red Twilight and Frozen Daybreak don't look alike. */
@@ -123,7 +125,12 @@ const LIFE: Record<FightEvent["kind"], number> = {
   rave: 0.55,
   kill: 0.55,
   familiar: 0.42,
+  spirit: 1,
 };
+/** Styles that rain strikes one after another take longer on screen. */
+const STRIKE_STYLES = new Set<Style>(["meteor", "shards", "bolt"]);
+const lifeOf = (event: FightEvent) =>
+  event.seconds ?? (event.kind === "sweep" && STRIKE_STYLES.has(styleOf(event)) && event.count > 1 ? 0.9 : LIFE[event.kind]);
 
 function Monster({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
   const s = UNIT * 0.42;
@@ -155,6 +162,82 @@ function Box({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; 
       <rect x={-s * 0.18} y={-s * 0.95} width={s * 0.36} height={s * 0.45} fill={GOLD} />
       <rect x={-s} y={s * 0.2} width={s * 2} height={2} fill="#000" fillOpacity="0.5" />
       <rect x={-s} y={s * 0.2} width={s * 2 * hp} height={2} fill={GOLD} />
+    </g>
+  );
+}
+
+function Boss({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
+  const s = UNIT * 0.95;
+  const hp = enemy.hp / Math.max(1e-300, enemy.maxHp);
+  const body = flash ? "#ffffff" : "#b9423f";
+  return (
+    // Its front stands at its position, so the slayer a range away isn't hidden inside it.
+    <g transform={`translate(${x + s * 1.1} ${y}) scale(${flash ? 1.05 : 1})`}>
+      {/* A hulking horned brute under a spiked crown: every boss wears it. */}
+      <ellipse cx={0} cy={1} rx={s * 1.1} ry={2.5} fill="#000" fillOpacity="0.5" />
+      <path d={`M ${-s * 1.05} 0 C ${-s * 1.25} ${-s * 0.9} ${-s * 0.95} ${-s * 1.75} ${-s * 0.2} ${-s * 1.8} L ${s * 0.25} ${-s * 1.8} C ${s * 0.95} ${-s * 1.75} ${s * 1.25} ${-s * 0.9} ${s * 1.05} 0 Z`} fill={body} stroke="#1a0808" strokeWidth="1.2" />
+      <path d={`M ${-s * 0.55} ${-s * 1.6} C ${-s * 1.1} ${-s * 1.8} ${-s * 1.3} ${-s * 2.3} ${-s * 1.05} ${-s * 2.75} C ${-s * 0.95} ${-s * 2.25} ${-s * 0.7} ${-s * 2.0} ${-s * 0.25} ${-s * 1.8} Z`} fill={BONE} />
+      <path d={`M ${s * 0.55} ${-s * 1.6} C ${s * 1.1} ${-s * 1.8} ${s * 1.3} ${-s * 2.3} ${s * 1.05} ${-s * 2.75} C ${s * 0.95} ${-s * 2.25} ${s * 0.7} ${-s * 2.0} ${s * 0.25} ${-s * 1.8} Z`} fill={BONE} />
+      <path d={`M ${-s * 0.4} ${-s * 1.78} L ${-s * 0.3} ${-s * 2.2} L ${-s * 0.12} ${-s * 1.95} L 0 ${-s * 2.35} L ${s * 0.12} ${-s * 1.95} L ${s * 0.3} ${-s * 2.2} L ${s * 0.4} ${-s * 1.78} Z`} fill={GOLD} />
+      <path d={`M ${-s * 0.5} ${-s * 1.2} L ${-s * 0.15} ${-s * 1.05}`} stroke="#ffe08a" strokeWidth="2.2" strokeLinecap="round" />
+      <path d={`M ${s * 0.5} ${-s * 1.2} L ${s * 0.15} ${-s * 1.05}`} stroke="#ffe08a" strokeWidth="2.2" strokeLinecap="round" />
+      <path d={`M ${-s * 0.35} ${-s * 0.6} L ${-s * 0.2} ${-s * 0.42} L 0 ${-s * 0.6} L ${s * 0.2} ${-s * 0.42} L ${s * 0.35} ${-s * 0.6}`} fill="none" stroke="#1a0808" strokeWidth="1.4" />
+      <rect x={-s * 1.1} y={s * 0.25} width={s * 2.2} height={2.4} fill="#000" fillOpacity="0.5" />
+      <rect x={-s * 1.1} y={s * 0.25} width={s * 2.2 * hp} height={2.4} fill="#ff5b5e" />
+    </g>
+  );
+}
+
+/** A familiar hovering at the slayer's shoulder while it attacks. */
+function FamiliarBody({ x, y, colour, time }: { x: number; y: number; colour: string; time: number }) {
+  const bob = Math.sin(time * 6) * 1.5;
+  return (
+    <g transform={`translate(${x} ${y + bob})`}>
+      <circle r={UNIT * 0.32} fill={colour} fillOpacity="0.25" />
+      <circle r={UNIT * 0.18} fill={colour} stroke={INK} strokeWidth="0.8" />
+      <path d={`M ${-UNIT * 0.18} 0 L ${-UNIT * 0.42} ${-UNIT * 0.2} L ${-UNIT * 0.3} ${UNIT * 0.08} Z`} fill={INK} fillOpacity="0.7" />
+    </g>
+  );
+}
+
+/** A spirit showing itself for the second its skill kicks in. */
+function SpiritVisit({ x, y, art, name, age, slot }: { x: number; y: number; art: string | undefined; name: string; age: number; slot: number }) {
+  const size = UNIT * 1.7;
+  const fade = Math.min(1, age / 0.15, (1 - age) / 0.25);
+  const lift = Math.min(1, age / 0.2) * 6 + Math.sin(age * 9) * 1.2;
+  const sx = x - UNIT * (1.4 + slot * 1.5);
+  const sy = y - UNIT * 2.4 - lift;
+  return (
+    <g opacity={Math.max(0, fade)}>
+      <circle cx={sx} cy={sy} r={size * 0.55} fill="#ffffff" fillOpacity="0.08" stroke={INK} strokeOpacity="0.35" strokeWidth="0.8" />
+      {art ? (
+        <image href={art} x={sx - size / 2} y={sy - size / 2} width={size} height={size} preserveAspectRatio="xMidYMid meet" />
+      ) : (
+        <circle cx={sx} cy={sy} r={size * 0.3} fill={INK} fillOpacity="0.5" />
+      )}
+      <text x={sx} y={sy + size * 0.72} textAnchor="middle" fontSize="6" fill={INK} className="font-mono">
+        {name}
+      </text>
+    </g>
+  );
+}
+
+/** Rave's release: a pillar rising from the ground under the enemy, dealing the stored damage while it stands. */
+function RavePillar({ x, ground, age, life }: { x: number; ground: number; age: number; life: number }) {
+  const rise = Math.min(1, age / 0.35);
+  const fade = Math.min(1, (life - age) / 0.3);
+  const height = (ground - 6) * rise;
+  const pulse = 0.8 + 0.2 * Math.sin(age * 18);
+  const w = UNIT * 1.2 * pulse;
+  return (
+    <g opacity={Math.max(0, fade)}>
+      <ellipse cx={x} cy={ground} rx={UNIT * 1.3} ry={UNIT * 0.35} fill={RAVE} fillOpacity="0.35" />
+      <rect x={x - w / 2} y={ground - height} width={w} height={height} fill={RAVE} fillOpacity="0.45" />
+      <rect x={x - w * 0.18} y={ground - height} width={w * 0.36} height={height} fill="#ffe6ff" fillOpacity="0.8" />
+      {Array.from({ length: 6 }, (_, i) => {
+        const p = (age * 1.4 + i / 6) % 1;
+        return <rect key={i} x={x + (noise(i) - 0.5) * w} y={ground - height * p} width={2} height={5} fill="#ffe6ff" opacity={rise * (1 - p)} />;
+      })}
     </g>
   );
 }
@@ -273,36 +356,10 @@ function Styled({ style, from, to, targets, t, colour, chest, ground, hits }: {
           })}
         </g>
       );
-    case "meteor": {
-      // Something heavy falls on the nearest monster and breaks on impact.
-      const fall = Math.min(1, t * 2.2);
-      const cy = -UNIT + (chest + UNIT) * fall;
-      return (
-        <g>
-          {fall < 1 ? (
-            <g>
-              <line x1={first + UNIT * 1.2 * (1 - fall) + UNIT} y1={cy - UNIT * 1.6} x2={first + UNIT * 1.2 * (1 - fall)} y2={cy} stroke={colour} strokeWidth="3" strokeOpacity="0.5" />
-              <polygon points={`${first + UNIT * 1.2 * (1 - fall)},${cy - UNIT * 0.6} ${first + UNIT * 1.2 * (1 - fall) + UNIT * 0.5},${cy} ${first + UNIT * 1.2 * (1 - fall)},${cy + UNIT * 0.6} ${first + UNIT * 1.2 * (1 - fall) - UNIT * 0.5},${cy}`} fill={colour} stroke={INK} strokeWidth="1" />
-            </g>
-          ) : (
-            <circle cx={first} cy={chest} r={UNIT * (0.4 + (t - 0.45) * 3)} fill="none" stroke={colour} strokeWidth={3 * fade} opacity={fade} />
-          )}
-        </g>
-      );
-    }
+    case "meteor":
     case "shards":
-      // Ice falling across the whole reach.
-      return (
-        <g stroke={colour} strokeWidth="2" strokeLinecap="round">
-          {Array.from({ length: 12 }, (_, i) => {
-            const sx = from + (to - from) * noise(i + 3);
-            const drop = Math.min(1, Math.max(0, t * 1.8 - noise(i + 11) * 0.6));
-            if (drop <= 0 || drop >= 1) return null;
-            const sy = ground * drop;
-            return <line key={i} x1={sx + 3} y1={sy - UNIT * 0.8} x2={sx} y2={sy} opacity={1 - drop * 0.5} />;
-          })}
-        </g>
-      );
+    case "bolt":
+      return <Strikes style={style} targets={targets} t={t} colour={colour} ground={ground} hits={hits} />;
     case "vortex": {
       // A whirlwind over the middle of the reach.
       const mid = (from + to) / 2;
@@ -325,18 +382,6 @@ function Styled({ style, from, to, targets, t, colour, chest, ground, hits }: {
         </g>
       );
     }
-    case "bolt":
-      // Lightning from the sky onto each monster, flickering.
-      return (
-        <g opacity={fade * (0.6 + 0.4 * Math.round(noise(Math.floor(t * 20)) ))}>
-          {targets.slice(0, 6).map((tx, i) => (
-            <g key={i}>
-              <path d={boltPath(tx, chest, i * 7 + Math.floor(t * 8))} fill="none" stroke={colour} strokeWidth="4" strokeOpacity="0.5" />
-              <path d={boltPath(tx, chest, i * 7 + Math.floor(t * 8))} fill="none" stroke={INK} strokeWidth="1.3" />
-            </g>
-          ))}
-        </g>
-      );
     case "quake": {
       // The floor cracks along the reach and rocks jump out of it.
       const reach = from + (to - from) * Math.min(1, t * 2);
@@ -392,22 +437,70 @@ function Styled({ style, from, to, targets, t, colour, chest, ground, hits }: {
   }
 }
 
-/** The familiar's shots arcing from the slayer to the monsters it reached. */
-function FamiliarShots({ from, targets, t, colour, chest, count }: { from: number; targets: number[]; t: number; colour: string; chest: number; count: number }) {
+/**
+ * Strikes falling one after another, each on its own tile: meteors, icicles or lightning. Farming, the tiles
+ * are where they landed at random within reach; against one enemy, every strike lands on it.
+ */
+function Strikes({ style, targets, t, colour, ground, hits }: { style: Style; targets: number[]; t: number; colour: string; ground: number; hits: number }) {
+  const count = Math.min(30, Math.max(1, hits, targets.length));
+  const fall = 0.3;
+  return (
+    <g>
+      {Array.from({ length: count }, (_, k) => {
+        const start = count > 1 ? (k / count) * (1 - fall) : 0;
+        const local = (t - start) / fall;
+        if (local <= 0) return null;
+        // Several strikes on one target spread a little around it.
+        const spread = targets.length >= count ? 0 : (noise(k + 17) - 0.5) * UNIT * 0.9;
+        const tx = (targets[k % Math.max(1, targets.length)] ?? 0) + spread;
+        if (local >= 1) {
+          const after = Math.min(1, (local - 1) * 2);
+          if (after >= 1) return null;
+          return <ellipse key={k} cx={tx} cy={ground} rx={UNIT * (0.3 + after * 0.6)} ry={UNIT * 0.18} fill="none" stroke={colour} strokeWidth={2 * (1 - after)} opacity={1 - after} />;
+        }
+        if (style === "bolt") {
+          return (
+            <g key={k} opacity={0.6 + 0.4 * noise(k + Math.floor(t * 30))}>
+              <path d={boltPath(tx, ground, k * 7)} fill="none" stroke={colour} strokeWidth="3.5" strokeOpacity="0.5" />
+              <path d={boltPath(tx, ground, k * 7)} fill="none" stroke={INK} strokeWidth="1.1" />
+            </g>
+          );
+        }
+        const y = -UNIT + (ground + UNIT) * local;
+        const drift = UNIT * 1.4 * (1 - local);
+        if (style === "shards") return <line key={k} x1={tx + drift + 3} y1={y - UNIT * 0.9} x2={tx + drift} y2={y} stroke={colour} strokeWidth="2.2" strokeLinecap="round" />;
+        return (
+          <g key={k}>
+            <line x1={tx + drift + UNIT} y1={y - UNIT * 1.4} x2={tx + drift} y2={y} stroke={colour} strokeWidth="3" strokeOpacity="0.45" />
+            <polygon points={`${tx + drift},${y - UNIT * 0.4} ${tx + drift + UNIT * 0.35},${y} ${tx + drift},${y + UNIT * 0.4} ${tx + drift - UNIT * 0.35},${y}`} fill={colour} stroke={INK} strokeWidth="0.8" />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/**
+ * The familiar's hits: a shot from where it hovers to the nearest monster in its range, each splashing over
+ * the whole range, since every hit reaches every monster within it.
+ */
+function FamiliarShots({ origin, from, to, targets, t, colour, chest, ground, count }: {
+  origin: { x: number; y: number }; from: number; to: number; targets: number[]; t: number; colour: string; chest: number; ground: number; count: number;
+}) {
   const shots = Math.min(10, Math.max(1, count));
+  const tx = targets[0] ?? from + UNIT;
   return (
     <g>
       {Array.from({ length: shots }, (_, i) => {
-        const lead = Math.min(1, t * 2.2 - i * 0.07);
+        const lead = Math.min(1.6, t * 2.6 - (i / shots) * 1.2);
         if (lead <= 0) return null;
-        const tx = targets[i % targets.length] ?? from + UNIT;
-        const px = from + (tx - from) * lead;
-        const py = chest - UNIT * 0.8 - Math.sin(lead * Math.PI) * UNIT * (0.8 + (i % 3) * 0.3);
-        return lead < 1 ? (
-          <circle key={i} cx={px} cy={py} r={2.4} fill={colour} stroke={INK} strokeWidth="0.6" />
-        ) : (
-          <circle key={i} cx={tx} cy={chest} r={UNIT * 0.4 * (1 - t)} fill={colour} fillOpacity="0.5" />
-        );
+        if (lead < 1) {
+          const px = origin.x + (tx - origin.x) * lead;
+          const py = origin.y + (chest - origin.y) * lead - Math.sin(lead * Math.PI) * UNIT * 0.6;
+          return <circle key={i} cx={px} cy={py} r={2.4} fill={colour} stroke={INK} strokeWidth="0.6" />;
+        }
+        const after = (lead - 1) / 0.6;
+        return <rect key={i} x={from} y={ground - UNIT * 0.9} width={Math.max(1, to - from)} height={UNIT * 0.9} rx={UNIT * 0.3} fill={colour} fillOpacity={0.28 * (1 - after)} />;
       })}
     </g>
   );
@@ -457,8 +550,11 @@ function TimeStop({ x, y, time }: { x: number; y: number; time: number }) {
 /** Seconds a skill's name stays over the slayer's head. */
 const NAME_SECONDS = 0.9;
 
-function Effect({ event, age, x, y }: { event: FightEvent; age: number; x: (position: number) => number; y: number }) {
-  const t = age / LIFE[event.kind];
+function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot }: {
+  event: FightEvent; age: number; x: (position: number) => number; y: number; slayerX: number; time: number; spiritArt: Record<string, string>; spiritSlot: number;
+}) {
+  const life = lifeOf(event);
+  const t = age / life;
   const fade = 1 - t;
   const colour = colourOf(event.element);
   const from = x(event.from);
@@ -475,14 +571,21 @@ function Effect({ event, age, x, y }: { event: FightEvent; age: number; x: (posi
       const label = `${event.kind === "familiar" ? "Familiar" : event.name} · ${Math.round(event.to - event.from)}`;
       return (
         <g>
-          {event.kind === "familiar" ? <FamiliarShots from={from} targets={targets} t={t} colour={colour} chest={chest} count={event.count} /> : <Styled style={styleOf(event)} from={from} to={to} targets={targets} t={t} colour={colour} chest={chest} ground={y} hits={event.count} />}
+          {event.kind === "familiar" ? (
+            <>
+              <FamiliarBody x={slayerX - UNIT * 0.7} y={chest - UNIT * 1.1} colour={colour} time={time} />
+              <FamiliarShots origin={{ x: slayerX - UNIT * 0.7, y: chest - UNIT * 1.1 }} from={from} to={to} targets={targets} t={t} colour={colour} chest={chest} ground={y} count={event.count} />
+            </>
+          ) : (
+            <Styled style={styleOf(event)} from={from} to={to} targets={targets} t={t} colour={colour} chest={chest} ground={y} hits={event.count} />
+          )}
           <Bracket x1={from} x2={to} colour={colour} fade={fade} label={label} />
         </g>
       );
     }
     case "charge": {
       // A streak from where the charge began to where it landed, with afterimages along it.
-      const head = from + (to - from) * Math.min(1, t * 2.5);
+      const head = from + (to - from) * Math.min(1, age / CHARGE_SECONDS);
       return (
         <g>
           <rect x={Math.min(from, head)} y={chest - 3} width={Math.max(2, Math.abs(head - from))} height={6} rx={3} fill={colour} opacity={0.75 * fade} />
@@ -508,16 +611,9 @@ function Effect({ event, age, x, y }: { event: FightEvent; age: number; x: (posi
         </g>
       );
     case "rave":
-      return (
-        <g opacity={fade} stroke={RAVE} strokeWidth="2" strokeLinecap="round">
-          {Array.from({ length: 8 }, (_, i) => {
-            const a = (i / 8) * Math.PI * 2;
-            const r1 = UNIT * 0.3;
-            const r2 = UNIT * (0.7 + t * 1.4);
-            return <line key={i} x1={to + Math.cos(a) * r1} y1={chest + Math.sin(a) * r1} x2={to + Math.cos(a) * r2} y2={chest + Math.sin(a) * r2} />;
-          })}
-        </g>
-      );
+      return <RavePillar x={to} ground={y} age={age} life={life} />;
+    case "spirit":
+      return <SpiritVisit x={slayerX} y={y} art={spiritArt[event.name]} name={event.name} age={age} slot={spiritSlot} />;
     case "kill": {
       const box = event.name === "Box";
       return (
@@ -533,28 +629,57 @@ function Effect({ event, age, x, y }: { event: FightEvent; age: number; x: (posi
   }
 }
 
-export function FarmRender({ stage, snap, element, baseMoveSpeed }: { stage: FarmStage; snap: FightState | null; element: Element | null; baseMoveSpeed: number }) {
-  const initial = useMemo(() => createField(stage).state(), [stage]);
-  const field = snap?.field ?? initial;
+/** The one enemy of a promotion or stages fight: its HP and whether it's a boss. */
+export type SingleEnemy = { maxHp: number; boss: boolean; title: string; subtitle: string };
+
+export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiritArt }: {
+  stage: FarmStage | null;
+  enemy: SingleEnemy | null;
+  snap: FightState | null;
+  element: Element | null;
+  baseMoveSpeed: number;
+  spiritArt: Record<string, string>;
+}) {
+  const initial = useMemo(() => (stage ? createField(stage).state() : null), [stage]);
+  const lost = snap?.total ?? 0;
+  const single: FieldState | null = enemy
+    ? {
+        position: 0,
+        enemies: [{ id: 0, position: BASIC_RANGE, hp: Math.max(0, enemy.maxHp - lost), maxHp: enemy.maxHp, wave: 1, box: false }],
+        kills: enemy.maxHp - lost > 0 ? 0 : 1,
+        cleared: enemy.maxHp - lost <= 0,
+        total: lost,
+      }
+    : null;
+  const field = (stage ? (snap?.field ?? initial) : single) ?? { position: 0, enemies: [], kills: 0, cleared: false, total: 0 };
   const time = snap?.real ?? 0;
-  const camera = field.position - BEHIND;
+  const events = snap?.events ?? [];
+  const recent = events.filter((e) => time - e.real >= 0 && time - e.real <= lifeOf(e));
+  // A charge carries the slayer along it rather than jumping: follow the batch in flight, or wait at the start of the next.
+  const inFlight = stage ? events.find((e) => e.kind === "charge" && e.real > time - CHARGE_SECONDS) : undefined;
+  const shown = inFlight
+    ? inFlight.real > time
+      ? inFlight.from
+      : inFlight.from + (inFlight.to - inFlight.from) * Math.min(1, (time - inFlight.real) / CHARGE_SECONDS)
+    : field.position;
+  const camera = shown - BEHIND;
   const x = (position: number) => (position - camera) * UNIT;
-  const hue = areaHue(stage.name);
+  const hue = areaHue(stage?.name ?? enemy?.title ?? "");
   const front = field.enemies.find((e) => e.hp > 0) ?? null;
-  const moving = Boolean(snap && front && front.position - field.position > 1.01);
-  const recent = (snap?.events ?? []).filter((e) => time - e.real >= 0 && time - e.real <= LIFE[e.kind]);
+  const moving = Boolean(snap && stage && front && (front.position - field.position > 1.01 || inFlight));
+  const boss = enemy?.boss ?? false;
   // A monster flashes for a moment when something reaches it.
-  const flashing = (enemy: FieldEnemy) =>
+  const flashing = (target: FieldEnemy) =>
     recent.some((e) => {
       if (time - e.real > 0.12) return false;
-      if (e.kind === "basic" || e.kind === "breath" || e.kind === "rave") return enemy === front;
-      if (e.kind === "sweep" || e.kind === "familiar" || e.kind === "charge") return enemy.position >= e.from - 0.5 && enemy.position <= Math.max(e.to, e.from + 1) + 0.5;
+      if (e.kind === "basic" || e.kind === "breath" || e.kind === "rave") return target === front;
+      if (e.kind === "sweep" || e.kind === "familiar" || e.kind === "charge") return target.position >= e.from - 0.5 && target.position <= Math.max(e.to, e.from + 1) + 0.5;
       return false;
     });
   const auras = (snap?.skills ?? [])
     .filter((s) => s.active)
     .slice(0, 3)
-    .map((s) => snap?.events.find((e) => e.kind === "buff" && e.name === s.name)?.element ?? null);
+    .map((s) => events.find((e) => e.kind === "buff" && e.name === s.name)?.element ?? null);
   const visible = field.enemies.filter((e) => e.hp > 0 && x(e.position) > -UNIT && x(e.position) < W + UNIT);
   // The latest skills used, newest nearest the head: named skills (and the familiar), not beasts or specials.
   const named = (snap?.casts ?? [])
@@ -565,6 +690,7 @@ export function FarmRender({ stage, snap, element, baseMoveSpeed }: { stage: Far
   const wave = front ? (front.box ? FARM_WAVES : front.wave) : FARM_WAVES;
   const speed = snap ? snap.moveSpeed : baseMoveSpeed;
   const firstTile = Math.floor(camera) - 1;
+  const spirits = recent.filter((e) => e.kind === "spirit");
 
   return (
     <svg
@@ -572,7 +698,7 @@ export function FarmRender({ stage, snap, element, baseMoveSpeed }: { stage: Far
       className="h-56 w-full shrink-0 overflow-hidden rounded-md md:h-[34svh]"
       preserveAspectRatio="xMidYMid slice"
       role="img"
-      aria-label={`Stage ${stage.stage} farming: wave ${wave} of ${FARM_WAVES}, ${field.kills} of ${field.enemies.length} down`}
+      aria-label={stage ? `Stage ${stage.stage} farming: wave ${wave} of ${FARM_WAVES}, ${field.kills} of ${field.enemies.length} down` : `${enemy?.title ?? "Fight"}: ${enemy?.subtitle ?? ""}`}
     >
       <defs>
         <linearGradient id="farm-sky" x1="0" y1="0" x2="0" y2="1">
@@ -614,7 +740,7 @@ export function FarmRender({ stage, snap, element, baseMoveSpeed }: { stage: Far
       })}
 
       {/* Wave markers where each wave begins. */}
-      {field.enemies
+      {stage && field.enemies
         .filter((e, i, all) => i === 0 || all[i - 1].wave !== e.wave)
         .filter((e) => x(e.position) > -UNIT * 4 && x(e.position) < W)
         .map((e) => (
@@ -623,15 +749,15 @@ export function FarmRender({ stage, snap, element, baseMoveSpeed }: { stage: Far
           </text>
         ))}
 
-      {visible.map((enemy, i) => {
-        const below = visible.slice(0, i).filter((o) => o.position === enemy.position).length;
+      {visible.map((foe, i) => {
+        const below = visible.slice(0, i).filter((o) => o.position === foe.position).length;
         if (below >= 3) return null;
-        const ex = x(enemy.position);
+        const ex = x(foe.position);
         const ey = GROUND - below * UNIT * 0.9;
-        const onSpot = visible.filter((o) => o.position === enemy.position).length;
+        const onSpot = visible.filter((o) => o.position === foe.position).length;
         return (
-          <g key={enemy.id}>
-            {enemy.box ? <Box x={ex} y={ey} enemy={enemy} flash={flashing(enemy)} /> : <Monster x={ex} y={ey} enemy={enemy} flash={flashing(enemy)} />}
+          <g key={foe.id}>
+            {foe.box ? <Box x={ex} y={ey} enemy={foe} flash={flashing(foe)} /> : single && boss ? <Boss x={ex} y={ey} enemy={foe} flash={flashing(foe)} /> : <Monster x={ex} y={ey} enemy={foe} flash={flashing(foe)} />}
             {below === 2 && onSpot > 3 ? (
               <text x={ex} y={ey - UNIT * 1.3} textAnchor="middle" fontSize="7" fill={INK} className="font-mono">
                 +{onSpot - 3}
@@ -641,30 +767,48 @@ export function FarmRender({ stage, snap, element, baseMoveSpeed }: { stage: Far
         );
       })}
 
-      {snap?.raveStopping ? <TimeStop x={x(field.position)} y={GROUND} time={time} /> : null}
+      {snap?.raveStopping ? <TimeStop x={x(shown)} y={GROUND} time={time} /> : null}
 
-      <Slayer x={x(field.position)} y={GROUND} element={element} moving={moving} time={time} auras={auras} />
+      <Slayer x={x(shown)} y={GROUND} element={element} moving={moving} time={time} auras={auras} />
 
       {recent.map((event, i) => (
-        <Effect key={`${event.kind}-${event.real}-${i}`} event={event} age={time - event.real} x={x} y={GROUND} />
+        <Effect
+          key={`${event.kind}-${event.real}-${i}`}
+          event={event}
+          age={time - event.real}
+          x={x}
+          y={GROUND}
+          slayerX={x(shown)}
+          time={time}
+          spiritArt={spiritArt}
+          spiritSlot={Math.max(0, spirits.indexOf(event))}
+        />
       ))}
 
-      <SkillNames x={x(field.position)} y={GROUND} casts={named} time={time} />
+      <SkillNames x={x(shown)} y={GROUND} casts={named} time={time} />
 
       {/* What to read at a glance: where the run is and how fast the slayer walks. */}
       <g className="font-mono" fill={INK}>
-        <text x={8} y={14} fontSize="9" fillOpacity="0.9">
-          Stage {stage.stage} · {stage.name}
+        <text x={22} y={16} fontSize="9" fillOpacity="0.9">
+          {stage ? `Stage ${stage.stage} · ${stage.name}` : enemy?.title}
         </text>
-        <text x={8} y={25} fontSize="7.5" fillOpacity="0.6">
-          Wave {wave} / {FARM_WAVES} · {field.kills} / {field.enemies.length} down{field.cleared ? " · cleared" : ""}
+        <text x={22} y={27} fontSize="7.5" fillOpacity="0.6">
+          {stage ? `Wave ${wave} / ${FARM_WAVES} · ${field.kills} / ${field.enemies.length} down${field.cleared ? " · cleared" : ""}` : enemy?.subtitle}
         </text>
-        <text x={W - 8} y={14} fontSize="8" textAnchor="end" fillOpacity="0.8">
-          MSPD {speed.toFixed(1)} range/s
-        </text>
-        <text x={W - 8} y={25} fontSize="7" textAnchor="end" fillOpacity="0.5">
-          {front ? `next ${Math.max(0, front.position - field.position).toFixed(1)} range ahead` : "stage clear"}
-        </text>
+        {stage ? (
+          <>
+            <text x={W - 22} y={16} fontSize="8" textAnchor="end" fillOpacity="0.8">
+              MSPD {speed.toFixed(1)} range/s
+            </text>
+            <text x={W - 22} y={27} fontSize="7" textAnchor="end" fillOpacity="0.5">
+              {front ? `next ${Math.max(0, front.position - field.position).toFixed(1)} range ahead` : "stage clear"}
+            </text>
+          </>
+        ) : snap ? (
+          <text x={W - 22} y={16} fontSize="8" textAnchor="end" fillOpacity="0.8">
+            {snap.clock.toFixed(1)}s
+          </text>
+        ) : null}
       </g>
     </svg>
   );

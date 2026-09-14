@@ -80,11 +80,18 @@ const nodeDone = (profile: ProfileV1, id: string) => {
 
 const num = (pattern: RegExp, text: string) => {
   const match = text.match(pattern);
-  return match ? Number(match[1]) : null;
+  const value = match?.slice(1).find((group) => group !== undefined);
+  return value !== undefined ? Number(value) : null;
 };
 
 /** Attack skills that charge the slayer forward when stage farming. */
 const DASHES: Record<string, "farthest" | "through"> = { Fulgurous: "farthest", Supersonic: "through" };
+/** Fulgurous charges every time it has the mana, target or not. */
+const CASTS_ANYWAY = new Set(["Fulgurous"]);
+/** Meteors and lightning strikes land on random tiles within reach. */
+const RANDOM_TILES = new Set(["Ice Stone", "Ice Shower", "Ice Time", "Lightning Stroke", "Red Lightning"]);
+/** Skills that deal their damage once a second. */
+const PER_SECOND = new Set(["Blizzard"]);
 
 /** Skills played out in stopped time. */
 const FREEZING = new Set(["Demon Hunt"]);
@@ -163,8 +170,13 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     startAt: num(/after (\d+) seconds into battle/i, text) ?? 0,
     freezes: FREEZING.has(skill.name),
     bonus: 0,
-    // Farming, an attack skill hits every monster within its Range.
-    range: m.type === "attack" ? Math.max(1, skill.range ?? 1) : undefined,
+    // Farming, an attack skill hits every monster within the range its text gives (the workbook's Range otherwise),
+    // up to the number of enemies the text names.
+    range: m.type === "attack" ? Math.max(1, num(/within (?:a )?(\d+) range|within range (\d+)|range (\d+)/i, text) ?? skill.range ?? 1) : undefined,
+    maxTargets: num(/to (\d+) enemies/i, text) ?? undefined,
+    castsAnyway: CASTS_ANYWAY.has(skill.name) || undefined,
+    randomTiles: RANDOM_TILES.has(skill.name) || undefined,
+    perSecond: PER_SECOND.has(skill.name) || undefined,
   };
   const make = (effect: SkillEffect, extra: Partial<FightSkill> = {}): FightSkill => ({ ...base, ...extra, effect });
 
