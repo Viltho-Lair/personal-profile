@@ -154,6 +154,24 @@ describe("simulateFight", () => {
     expect(raged.basic).toBeGreaterThan(plain.basic * 1.8);
   });
 
+  it("drains 0.5% of max life a second while Rage lasts, and ends Rage rather than emptying life", () => {
+    const pools = { maxHp: 1000, hpRecovery: 50, maxMana: 100, manaRecovery: 0 };
+    const rage = skill({ name: "Rage", kind: "buff", every: 100, duration: 10, effect: { type: "rage", power: 0, drain: 0.005 } });
+    const fight = createFight({ ...base, ...pools, duration: 20, skills: [rage] });
+    fight.advance(4);
+    // No recovery, 5 life a second.
+    expect(fight.state().hp).toBeCloseTo(1000 - 20, 0);
+    expect(fight.state().recovering).toBe(false);
+
+    const low = skill({ name: "Burn", kind: "buff", every: 100, duration: 1, hpCost: 0.995, effect: { type: "speed", power: 0 } });
+    const nearlyEmpty = createFight({ ...base, ...pools, hpRecovery: 0, duration: 20, skills: [low, rage] });
+    nearlyEmpty.advance(3);
+    const state = nearlyEmpty.state();
+    // 5 life left drains out in about a second; Rage stops just before zero and life stays above it.
+    expect(state.hp).toBeGreaterThan(0);
+    expect(state.skills.find((s) => s.name === "Rage")?.active).toBe(false);
+  });
+
   it("doesn't let cheaper skills keep taking the mana a costlier skill ahead of them waits for", () => {
     const pools = { maxHp: 1000, hpRecovery: 0, maxMana: 60, manaRecovery: 10 };
     const cheap = skill({ name: "Cheap", every: 3, mpCost: 25, effect: { type: "damage", power: 1, hits: 1 } });

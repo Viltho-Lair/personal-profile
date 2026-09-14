@@ -1,7 +1,8 @@
 "use client";
 
 import refinementData from "@/data/optimizer/skill-refinement.json";
-import { optionLabel, ownedEffect, refinementOptions, tierOf, type RefinementData } from "@/lib/game/refinement";
+import { openRefinementLines, optionLabel, ownedEffect, REFINEMENT_LINE_LEVELS, refinementOptions, tierOf, type RefinementData } from "@/lib/game/refinement";
+import { effectiveSkillLevel } from "@/lib/profile/rules";
 import { ELEMENTS, type Element } from "@/lib/game/stats";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, type Skill } from "./data";
@@ -23,8 +24,11 @@ export function SkillRefinement({ skill }: { skill: Skill & { mechanics?: Mechan
   const trigger = skill.mechanics.trigger === "hits" ? "hits" : "seconds";
   const element = (ELEMENTS as readonly string[]).includes(skill.element ?? "") ? (skill.element as Element) : null;
   const options = refinementOptions(REFINEMENT, trigger);
-  const lines = Array.from({ length: entry.lines }, (_, i) => profile.skillRefinement[skill.name]?.[i] ?? { option: null, value: null });
-  const owned = ownedEffect(REFINEMENT, skill.name, lines);
+  // Three lines from the start; the 4th opens at skill Lv 40 and the 5th at Lv 100.
+  const level = effectiveSkillLevel(profile, skill.name, skill.maxLevel);
+  const open = openRefinementLines(level);
+  const lines = REFINEMENT_LINE_LEVELS.map((_, i) => profile.skillRefinement[skill.name]?.[i] ?? { option: null, value: null });
+  const owned = ownedEffect(REFINEMENT, skill.name, lines, open);
 
   return (
     <section aria-label="Skill refinement" className="flex flex-col gap-2 rounded-lg border border-ink/15 p-3">
@@ -33,6 +37,16 @@ export function SkillRefinement({ skill }: { skill: Skill & { mechanics?: Mechan
         {lines.map((line, index) => {
           const ranges = line.option ? REFINEMENT.options[line.option] : undefined;
           const tier = tierOf(REFINEMENT, line.option, line.value);
+          if (index >= open) {
+            return (
+              <li key={index} className="flex items-center justify-between gap-1.5 rounded-md border border-dashed border-ink/20 px-2 py-1">
+                <span className="font-mono text-[10px] text-dim uppercase">Line {index + 1} · locked</span>
+                <span className="font-mono text-[10px] text-dim">
+                  Opens at skill Lv {REFINEMENT_LINE_LEVELS[index]} (now Lv {level})
+                </span>
+              </li>
+            );
+          }
           return (
             <li key={index} className="flex items-center gap-1.5">
               <select

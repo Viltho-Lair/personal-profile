@@ -371,7 +371,7 @@ function LiveReadout({ snap, input, duration }: { snap: FightState | null; input
           note={
             recovering
               ? `+${maxHp > 0 ? formatValue(Math.round((hpRecovery / maxHp) * 1000) / 10) : 0}% a second (HP Recovery)`
-              : "No recovery while Rage lasts"
+              : "Rage: no recovery, -0.5% a second"
           }
         />
         <Bar

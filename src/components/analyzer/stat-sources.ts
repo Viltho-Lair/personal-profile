@@ -15,7 +15,7 @@ import { companionEffect, companionLevel, companionStatus, promotionBuff, type C
 import { constellationTotals, type Constellation } from "@/lib/game/constellation";
 import { proficiencyBonuses } from "@/lib/game/familiars";
 import { everyGem, gemSoulWeaponAtk, gemTotals } from "@/lib/game/engraving";
-import { ownedEffect, type RefinementData } from "@/lib/game/refinement";
+import { openRefinementLines, ownedEffect, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects, type ShrineData, type ShrineLevels } from "@/lib/game/shrine";
 import shrineData from "@/data/optimizer/sealed-shrine.json";
 import { appearanceTotals, sweatsuitMultiplier, type AppearanceData } from "@/lib/game/appearance";
@@ -265,7 +265,9 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
     Dodge: "dodge",
   };
   for (const [skill, lines] of Object.entries(profile.skillRefinement)) {
-    const owned = ownedEffect(refinementData as unknown as RefinementData, skill, lines);
+    const data = SKILL_BY_NAME.get(skill);
+    const open = openRefinementLines(data ? effectiveSkillLevel(profile, skill, data.maxLevel) : 0);
+    const owned = ownedEffect(refinementData as unknown as RefinementData, skill, lines, open);
     const target = owned ? REFINEMENT_TARGET[owned.stat] : undefined;
     if (owned && target) s.refinement[target] += owned.value;
   }

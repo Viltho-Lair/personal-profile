@@ -41,12 +41,18 @@ export function tierOf(data: RefinementData, option: string | null, value: numbe
   return tier;
 }
 
-/** Owned effect: nothing below 3 top-colour lines, then the 2nd, 3rd and 4th value for 3, 4 and 5. */
-export function ownedEffect(data: RefinementData, skill: string, lines: RefinementLine[]) {
+/** Skill level each refinement line needs: three lines from the start, the 4th at Lv 40, the 5th at Lv 100. */
+export const REFINEMENT_LINE_LEVELS = [0, 0, 0, 40, 100] as const;
+
+/** How many refinement lines an attack skill at this level has open. */
+export const openRefinementLines = (skillLevel: number) => REFINEMENT_LINE_LEVELS.filter((level) => skillLevel >= level).length;
+
+/** Owned effect from the open lines: nothing below 3 top-colour lines, then the 2nd, 3rd and 4th value for 3, 4 and 5. */
+export function ownedEffect(data: RefinementData, skill: string, lines: RefinementLine[], openLines: number = REFINEMENT_LINE_LEVELS.length) {
   const entry = data.skills.find((s) => s.name === skill);
   if (!entry) return null;
   const top = data.tiers.length - 1;
-  const mythic = lines.slice(0, entry.lines).filter((line) => tierOf(data, line.option, line.value) === top).length;
+  const mythic = lines.slice(0, openLines).filter((line) => tierOf(data, line.option, line.value) === top).length;
   const step = Math.min(entry.owned.values.length - 1, Math.max(0, mythic - 2));
   return { stat: entry.owned.stat, value: entry.owned.values[step] ?? 0, percent: entry.owned.percent, mythic };
 }

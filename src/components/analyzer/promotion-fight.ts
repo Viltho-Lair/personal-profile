@@ -3,7 +3,7 @@ import promotionBossData from "@/data/optimizer/promotion-bosses.json";
 import { ANIMATION_SECONDS, simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
-import { refinementEffects } from "@/lib/game/refinement";
+import { openRefinementLines, refinementEffects } from "@/lib/game/refinement";
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
 import { activeSkillStones, awakening, effectiveSkillLevel, equippedKey, gearState, masteryLevel, mountedBeast } from "@/lib/profile/rules";
@@ -115,7 +115,8 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   const power = (skillPower(skill.baseValue, skill.upgradeValue, level) ?? 0) / 100;
   const text = skill.description.specific ?? "";
   const element = (ELEMENTS as readonly string[]).includes(skill.element ?? "") ? (skill.element as Element) : null;
-  const refined = refinementEffects(profile.skillRefinement[skill.name] ?? []);
+  // Only the lines the skill's level has opened count.
+  const refined = refinementEffects((profile.skillRefinement[skill.name] ?? []).slice(0, openRefinementLines(level)));
   const base: Omit<FightSkill, "effect"> = {
     mpCost: Math.max(0, (skill.mpCost ?? 0) * (1 - refined.mana)),
     // Stacking passives complete after their stages (Skills Data's Range column).
@@ -155,7 +156,8 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   if (skill.name === "Sea Judgment")
     return make({ type: "damage", power, hits: 1, growsTo: 7 }, { kind: "passive", trigger: "elementCasts", every: m.additional[0] || 3 });
   if (skill.name === "Blast Wind") return make({ type: "elementStack", power }, { kind: "passive", trigger: "elementCasts", every: 5 });
-  if (skill.name === "Rage") return make({ type: "rage", power }, { kind: "buff" });
+  // Rage drains 0.5% of max life a second while it lasts.
+  if (skill.name === "Rage") return make({ type: "rage", power, drain: 0.005 }, { kind: "buff" });
   // Mana's Blessing raises Mana Recovery for the whole fight, as in the Stats Summary.
   if (skill.name === "Mana's Blessing") return make({ type: "manaRecovery", power }, { kind: "passive", trigger: "always" });
   if (skill.name === "Life Mana")

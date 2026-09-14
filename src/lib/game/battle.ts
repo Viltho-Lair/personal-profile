@@ -11,7 +11,9 @@
  *   manual cast once ready.
  * - Life and mana pools refill every second by HP Recovery and Mana Recovery.
  *   Lightning Body spends half of the current life; Rage adds ATK for each
- *   percent of life missing and stops HP recovery while it lasts.
+ *   percent of life missing, stops HP recovery and drains 0.5% of max life a
+ *   second while it lasts, ending early (its cooldown carries on) rather than
+ *   taking life to zero.
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
  * - Rave stores all the damage done to the enemy for its duration (5 seconds):
@@ -53,8 +55,8 @@ export type SkillEffect =
   | { type: "chargeCooldowns"; power: number }
   /** The next attack skill of the same element deals +power (Ignition). */
   | { type: "nextSkill"; power: number }
-  /** Total ATK +power for each percent of life missing, no HP recovery while it lasts (Rage). */
-  | { type: "rage"; power: number }
+  /** Total ATK +power for each percent of life missing; no HP recovery and `drain` of max life a second while it lasts (Rage). */
+  | { type: "rage"; power: number; drain?: number }
   /** Mana Recovery +power while it's on (Mana's Blessing). */
   | { type: "manaRecovery"; power: number }
   /** Restores these shares of max life and max mana at once (Life Mana). */
@@ -514,6 +516,14 @@ export function createFight(input: FightInput): Fight {
 
     if (!frozen) {
       if (maxHp > 0 && !now.rage) hp = Math.min(maxHp, hp + (input.hpRecovery ?? 0) * step);
+      // Rage drains life while it lasts; when the drain would empty it, Rage ends instead (its cooldown runs on).
+      for (const l of live) {
+        const e = l.skill.effect;
+        if (maxHp <= 0 || e.type !== "rage" || !e.drain || !isOn(l)) continue;
+        const drain = e.drain * maxHp * step;
+        if (hp - drain <= 0) l.activeUntil = action;
+        else hp -= drain;
+      }
       if (pools) mana = Math.min(maxMana, mana + (input.manaRecovery ?? 0) * (1 + now.manaRate) * step);
     }
 
