@@ -84,8 +84,8 @@ function FamiliarTile({
 
 const PROFICIENCIES = [
   { kind: "attribute", label: "Attribute" },
-  { kind: "weapon", label: "Weapon" },
   { kind: "battle", label: "Battle" },
+  { kind: "weapon", label: "Weapon" },
 ] as const;
 
 function ProficiencySettings() {

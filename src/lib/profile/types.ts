@@ -107,7 +107,8 @@ export function emptyCharacter(): CharacterState {
 }
 
 export type FamiliarGroup = "weapon" | "attribute" | "battle";
-export const FAMILIAR_GROUPS: readonly FamiliarGroup[] = ["weapon", "attribute", "battle"];
+/** The order familiars show in, as the game combines them: attribute, battle, weapon (Hi, Ku, Na). */
+export const FAMILIAR_GROUPS: readonly FamiliarGroup[] = ["attribute", "battle", "weapon"];
 export const MAX_FAMILIAR_STARS = 11;
 
 export const SPIRIT_PRESET_SLOTS = 3;

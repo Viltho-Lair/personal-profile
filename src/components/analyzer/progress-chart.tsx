@@ -816,7 +816,7 @@ function FamiliarTile({
   const { weapon, attribute, battle } = familiar.parts;
   if (!familiar.skill || !weapon || !attribute || !battle) {
     return (
-      <div title="Familiar: equip a weapon, attribute and battle familiar" className={`${size} flex aspect-square shrink-0 items-center justify-center rounded-md border border-dashed border-ink/15 font-mono text-[7px] text-dim`}>
+      <div title="Familiar: equip an attribute, battle and weapon familiar" className={`${size} flex aspect-square shrink-0 items-center justify-center rounded-md border border-dashed border-ink/15 font-mono text-[7px] text-dim`}>
         FAMILIAR
       </div>
     );
@@ -828,7 +828,7 @@ function FamiliarTile({
   const spent = Boolean(status?.complete);
   const canPress = running ? !auto && !spent && ready >= 1 && !status?.queued : true;
   const uses = familiar.skill.maxUses ?? 1;
-  const title = `Familiar (${weapon.familiar.name} + ${attribute.familiar.name} + ${battle.familiar.name}): ${effect?.hits ?? 1} hits of ${formatValue(Math.round((effect?.power ?? 0) * 10000) / 100)}% ATK${
+  const title = `Familiar (${attribute.familiar.name} + ${battle.familiar.name} + ${weapon.familiar.name}): ${effect?.hits ?? 1} hits of ${formatValue(Math.round((effect?.power ?? 0) * 10000) / 100)}% ATK${
     familiar.skill.element ? ` as ${familiar.skill.element}` : ""
   }, range ${familiar.range}, ${uses > 1 ? `${uses} uses a battle, ${formatValue(familiar.skill.every)}s apart` : "once a battle"} · ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}`;
   return (

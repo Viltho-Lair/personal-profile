@@ -347,7 +347,7 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
     ...extra,
   });
   const specials: FightSkill[] = [];
-  for (const { familiar } of [weapon, attribute, battle]) {
+  for (const { familiar } of [attribute, battle, weapon]) {
     switch (familiar.name) {
       case "Na":
         skill.lowHpBonus = { below: 0.6, bonus: 0.1 };
