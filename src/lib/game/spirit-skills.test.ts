@@ -30,6 +30,15 @@ describe("spiritSkillEffects", () => {
     expect(effects.active).toContain("Last Fight V (Noah)");
   });
 
+  it("makes the partner's skill 10% stronger, all but Time Freeze's seconds", () => {
+    const loar = { ...at("Loar", 5), partner: true };
+    const ark = { ...at("Ark", 1), partner: true };
+    const effects = spiritSkillEffects([loar, ark]);
+    expect(effects.bossSkillDamage).toBeCloseTo(0.88);
+    expect(effects.timeStop).toEqual({ at: 8, seconds: 4 });
+    expect(effects.active).toContain("Wilderness Roar V (Loar) · partner");
+  });
+
   it("leaves out a level with no known value", () => {
     const effects = spiritSkillEffects([at("Bo", 3)]);
     expect(effects.hp).toBe(0);

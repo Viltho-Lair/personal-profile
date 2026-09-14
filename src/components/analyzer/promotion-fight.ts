@@ -11,7 +11,8 @@ import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
 import { activeFamiliars, activeSkillStones, awakening, effectiveSkillLevel, equippedKey, familiarStars, gearState, masteryLevel, presetBeast } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
-import { AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Familiar, type Skill } from "./data";
+import { AWAKENING, FAMILIARS, MANA_ALTAR, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Familiar, type Skill } from "./data";
+import { altarStars, manaAltar, proficiencyBonuses } from "@/lib/game/familiars";
 import type { SpiritFactors } from "./spirit-stats";
 import { activeSpiritSkills, BEASTS, classLevelCap, classTotals, collectSources, companionSkill, gearTotals, SHRINE } from "./stat-sources";
 import { formatNumber } from "@/lib/number-format";
@@ -147,6 +148,18 @@ export function skillMasteryOnSkill(profile: ProfileV1, skill: SkillWithMechanic
 }
 
 /** A preset skill as a fight skill, or the reason it's left out. */
+/**
+ * The skill damage multipliers the workbook applies to every skill hit (SKILLS "ALL AMP"), each on its own: the Mana
+ * Altar's skill damage with Statue of Demon's Amplify Skill DMG, and Luna's Wisdom of War.
+ */
+export function skillDamageAmp(profile: ProfileV1) {
+  const owned = FAMILIARS.map((familiar) => familiarStars(profile, familiar.name)).filter((stars): stars is number => stars !== null);
+  const altar = manaAltar(altarStars(owned), MANA_ALTAR).skillDamage;
+  const shrine = shrineEffects(SHRINE, profile.sealedShrine).skillDamage;
+  const wisdom = companionSkill(profile, "Luna", "Wisdom of War");
+  return { altar, shrine, wisdom, multiplier: (1 + altar + shrine) * (1 + wisdom) };
+}
+
 function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: SkillWithMechanics[]): FightSkill | string {
   const m = skill.mechanics;
   const level = effectiveSkillLevel(profile, skill.name, skill.maxLevel);
@@ -217,7 +230,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
 
   if (m.type === "attack") {
     if (!/X%.{0,20}(damage|DMG)|X% of (their )?ATK|(damage|DMG) X%/i.test(text) || /copy the last|frozen|Y%/i.test(text)) return skill.name;
-    const { hits, multiplier: amp } = skillMasteryOnSkill(profile, skill);
+    const { hits, multiplier: mastery } = skillMasteryOnSkill(profile, skill);
     const heartOfFire = preset.find((s) => s.name === "Heart of Fire");
     const fireSkills = preset.filter((s) => s.element === "Fire" && s.mechanics?.type === "attack").length;
     let bonus = 0;
@@ -227,9 +240,9 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     }
     // Refinement: extra damage, and a shorter cooldown or fewer required hits.
     let every = base.trigger === "hits" ? base.every * (1 - refined.strikes) : base.every * (1 - refined.cooldown);
-    // Statue of Demon and Luna's Wisdom of War add skill damage.
-    const shrine = shrineEffects(SHRINE, profile.sealedShrine).skillDamage;
-    const wisdom = companionSkill(profile, "Luna", "Wisdom of War");
+    // As in the workbook, each multiplies the hit on its own: Skill Polishing (refinement damage), the Mana Altar with
+    // Statue of Demon, and Luna's Wisdom of War. Heart of Fire adds to the element's damage.
+    const amp = skillDamageAmp(profile).multiplier * (1 + refined.damage);
     // Checked mastery nodes the workbook doesn't read.
     const extras = MASTERY_EXTRAS.filter((extra) => extra.skills.includes(skill.name) && nodeDone(profile, extra.node));
     let mpCost = base.mpCost ?? 0;
@@ -243,8 +256,8 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
       if (extra.cooldown && base.trigger === "seconds") every = Math.max(0.1, every + extra.cooldown);
     }
     return make(
-      { type: "damage", power: power * amp, hits },
-      { bonus: bonus + refined.damage + shrine + wisdom, every, mpCost, animation, freezes, dash: DASHES[skill.name] },
+      { type: "damage", power: power * mastery * amp, hits },
+      { bonus, every, mpCost, animation, freezes, dash: DASHES[skill.name] },
     );
   }
 
@@ -311,7 +324,15 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
   if (!weapon || !attribute || !battle) return { skill: null, specials: [] as FightSkill[], parts: { weapon, attribute, battle }, notes, range: 0 };
 
   const hits = Math.max(1, Math.round(battle.familiar.name === "Pe" ? (battle.values.Seconds ?? 1) : (battle.values.Hits ?? 1)));
-  const power = (weapon.values.Damage ?? 0) * (attribute.values.Damage ?? 0);
+  // As the workbook works it out: the weapon familiar's damage times the attribute familiar's, with skill proficiency
+  // (+0.7% a level), Familiar DMG in place of the Slayer DMG already in the attack, and every skill damage multiplier.
+  const proficiency = proficiencyBonuses(profile.familiarProficiency);
+  const power =
+    (weapon.values.Damage ?? 0) *
+    (attribute.values.Damage ?? 0) *
+    (1 + Math.max(0, profile.proficiencyLevel) * 0.007) *
+    ((1 + proficiency.familiarDamage) / (1 + proficiency.slayerDamage)) *
+    skillDamageAmp(profile).multiplier;
   const element = (ELEMENTS as readonly string[]).includes(attribute.familiar.element ?? "") ? (attribute.familiar.element as Element) : null;
   let every = FAMILIAR_COOLDOWN;
   let bonus = 0;

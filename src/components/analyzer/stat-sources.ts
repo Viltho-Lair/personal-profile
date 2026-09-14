@@ -235,11 +235,12 @@ export function skillBuffs(profile: ProfileV1) {
 /** The skills of the active spirit preset's owned spirits, at each spirit's skill level. */
 export function activeSpiritSkills(profile: ProfileV1): SpiritSkillEffects {
   return spiritSkillEffects(
-    activeSpiritPreset(profile).flatMap((name) => {
+    activeSpiritPreset(profile).flatMap((name, slot) => {
       const spirit = SPIRITS.find((sp) => sp.name === name);
       if (!spirit?.skill) return [];
       const state = spiritState(profile, spirit.name, spirit.maxLevel);
-      return state.owned && state.awakening ? [{ spirit: spirit.name, skill: spirit.skill, level: state.enhance }] : [];
+      // The first slot holds the partner.
+      return state.owned && state.awakening ? [{ spirit: spirit.name, skill: spirit.skill, level: state.enhance, partner: slot === 0 }] : [];
     }),
   );
 }

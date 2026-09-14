@@ -62,18 +62,23 @@ function levelValue(skill: SpiritSkillData, level: number): number | null {
   return match ? Number(match[1]) : null;
 }
 
-/** Adds up the skills of the given spirits: each with its skill data and skill level. */
-export function spiritSkillEffects(spirits: { spirit: string; skill: SpiritSkillData; level: number }[]): SpiritSkillEffects {
+/** The partner (the spirit preset's first slot) has its skill 10% stronger. */
+export const PARTNER_BONUS = 1.1;
+
+/** Adds up the skills of the given spirits: each with its skill data and skill level, and whether it's the partner. */
+export function spiritSkillEffects(spirits: { spirit: string; skill: SpiritSkillData; level: number; partner?: boolean }[]): SpiritSkillEffects {
   const effects = noSpiritSkills();
-  for (const { spirit, skill, level: rawLevel } of spirits) {
+  for (const { spirit, skill, level: rawLevel, partner } of spirits) {
     if (!skill.name) continue;
     const level = Math.min(5, Math.max(1, Math.round(rawLevel)));
-    const label = `${skill.name} ${ROMAN[level]} (${spirit})`;
-    const value = levelValue(skill, level);
-    if (value === null) {
+    const label = `${skill.name} ${ROMAN[level]} (${spirit})${partner ? " · partner" : ""}`;
+    const base = levelValue(skill, level);
+    if (base === null) {
       effects.unknown.push(label);
       continue;
     }
+    // Time Freeze's seconds stay as they are; every other effect grows with the partner bonus.
+    const value = partner && skill.name !== "Time Freeze" ? base * PARTNER_BONUS : base;
     const share = value / 100;
     switch (skill.name) {
       case "Last Fight":

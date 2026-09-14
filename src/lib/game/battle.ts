@@ -585,7 +585,7 @@ export function createFight(input: FightInput): Fight {
       const hits = e.growsTo ? Math.min(e.growsTo, Math.round(e.hits) + l.uses - 1) : e.hits;
       const whole = Math.max(1, Math.round(hits));
       const amp = (s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1) * elementMatchup(s.element, input.enemyElement ?? null);
-      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
+      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * skillAmp * hits) / whole;
       const reach = s.range ?? BASIC_RANGE;
       const kind = s.familiar ? "familiar" : "sweep";
       if (s.dash) {
