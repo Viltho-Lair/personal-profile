@@ -214,27 +214,19 @@ export function ProgressChart() {
         ))}
       </svg>
 
-      <dl className="-mt-1 grid shrink-0 grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px] text-dim">
-        {stagesMode ? (
-          <>
-            <dt>{snap ? "Stages cleared" : "Stages this fight clears"}</dt>
-            <dd className="text-right text-ink tabular-nums">{formatValue(snap ? cleared : (setup.stages?.reached ?? 0))}</dd>
-            <dt>{nextStage ? `Stage ${nextStage} boss HP` : "Every stage cleared"}</dt>
-            <dd className="truncate text-right text-ink tabular-nums" title={nextStage ? formatValue(nextHp) : undefined}>
-              {nextStage ? formatValue(nextHp) : ""}
-            </dd>
-          </>
-        ) : boss ? (
-          <>
-            <dt>
-              {boss.name} boss HP · stage {boss.stage}
-            </dt>
-            <dd className="truncate text-right text-ink tabular-nums" title={formatValue(boss.hp)}>
-              {formatValue(boss.hp)}
-            </dd>
-          </>
-        ) : null}
-      </dl>
+      {stagesMode ? (
+        nextStage ? (
+          <HealthBar
+            hp={nextHp}
+            damage={total}
+            label={`Stage ${nextStage} boss HP · stages ${snap ? "cleared" : "this fight clears"}: ${formatValue(snap ? cleared : (setup.stages?.reached ?? 0))}`}
+          />
+        ) : (
+          <p className="shrink-0 font-mono text-[10px] text-dim">Every stage cleared</p>
+        )
+      ) : boss ? (
+        <HealthBar hp={boss.hp} damage={total} label={`${boss.name} boss HP · stage ${boss.stage}`} />
+      ) : null}
 
       <LiveReadout snap={snap} input={setup.input} duration={duration} />
 
@@ -264,6 +256,34 @@ export function ProgressChart() {
         ) : null
       ) : null}
     </section>
+  );
+}
+
+/** The enemy's HP left after the damage so far, with what it is underneath. */
+function HealthBar({ hp, damage, label }: { hp: number; damage: number; label: string }) {
+  const left = Math.max(0, hp - damage);
+  const ratio = hp > 0 ? left / hp : 0;
+  return (
+    <div className="-mt-1 flex shrink-0 flex-col gap-0.5">
+      <div
+        role="meter"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(ratio * 1000) / 10}
+        title={`${formatValue(left)} / ${formatValue(hp)}`}
+        className="relative h-4 overflow-hidden rounded-sm border border-red-500/50 bg-red-950/60"
+      >
+        <div className="absolute inset-y-0 left-0 bg-red-600" style={{ width: `${ratio * 100}%` }} />
+        <span className="absolute inset-0 truncate px-1.5 text-center font-mono text-[9px] leading-[14px] text-white tabular-nums">
+          {formatValue(left)}
+        </span>
+      </div>
+      <p className="flex justify-between gap-2 font-mono text-[10px] text-dim">
+        <span className="truncate">{label}</span>
+        <span className="shrink-0 tabular-nums">{formatValue(Math.round(ratio * 1000) / 10)}% left</span>
+      </p>
+    </div>
   );
 }
 
@@ -366,7 +386,7 @@ function SkillGrid({
 
   return (
     <div className="flex shrink-0 flex-col gap-1">
-      <div className="mx-auto grid w-1/2 grid-cols-5 gap-1">
+      <div className="mx-auto grid w-3/4 grid-cols-5 gap-1">
         {slots.map((name, i) => {
           if (!name) return <div key={i} className="aspect-square rounded-md border border-dashed border-ink/15" />;
           const data = SKILL_BY_NAME.get(name);
@@ -418,7 +438,7 @@ function SkillGrid({
                 </span>
               ) : null}
               {castable && auto ? (
-                <Settings aria-hidden className="absolute top-0 right-0 size-2 animate-[spin_4s_linear_infinite] text-white opacity-35" />
+                <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-35" />
               ) : null}
               {castable && !auto && running && ready >= 1 ? (
                 <span className="absolute inset-0 animate-pulse bg-white/15" />

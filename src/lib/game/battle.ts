@@ -5,7 +5,8 @@
  *   base attack speed), raised by the Bracelet of Speed and ATK SPD buffs.
  * - Attack skills and activated buffs each wait in their own queue once ready
  *   (a cooldown in seconds, or a number of basic-attack hits) and cast when
- *   there's mana for them. Casts don't wait for each other, and every cast
+ *   there's mana for them. Every one of them is ready at the start: its first
+ *   use comes before its first cooldown or strike count. Casts don't wait for each other, and every cast
  *   pauses basic attacks for its animation. Skills with auto off wait for a
  *   manual cast once ready.
  * - Life and mana pools refill every second by HP Recovery and Mana Recovery.
@@ -225,8 +226,10 @@ export type Fight = {
 export function createFight(input: FightInput): Fight {
   const step = input.step ?? DEFAULT_STEP;
   const manual = new Set(input.manual ?? []);
-  // Cooldown skills are ready at the start; stacks and counters start from zero.
-  const readyAtStart = (skill: FightSkill) => skill.trigger === "seconds" && !isStack(skill) && !skill.startsOnCooldown;
+  // Cooldown skills, and every attack or buff you can press (strike-count ones too), are ready at the
+  // start; stacks and other counters start from zero.
+  const readyAtStart = (skill: FightSkill) =>
+    !isStack(skill) && !skill.startsOnCooldown && (skill.trigger === "seconds" || (castable(skill) && skill.trigger === "hits"));
   const live: Live[] = input.skills.map((skill) => ({
     skill,
     progress: readyAtStart(skill) ? skill.every : 0,

@@ -39,13 +39,19 @@ describe("simulateFight", () => {
     expect(result.points).toHaveLength(11);
   });
 
-  it("fires hit-based skills after that many basic attacks and pauses basics for the cast", () => {
+  it("uses a hit-based skill at the start, then after that many basic attacks, pausing basics for the cast", () => {
     const slash = skill({ name: "Slash", trigger: "hits", every: 3, effect: { type: "damage", power: 2, hits: 1 } });
     const result = simulateFight({ ...base, skills: [slash] });
     const castTimes = result.casts.map((c) => c.t);
-    expect(castTimes.length).toBe(3);
-    expect(castTimes[0]).toBeGreaterThan(2);
+    expect(castTimes[0]).toBe(0);
+    expect(castTimes[1]).toBeGreaterThan(2);
+    expect(castTimes.length).toBe(4);
     expect(result.basic).toBeLessThan(1000);
+  });
+
+  it("doesn't start a passive that waits for strikes ready", () => {
+    const passive = skill({ name: "Passive", kind: "passive", trigger: "hits", every: 3, effect: { type: "damage", power: 1, hits: 1 } });
+    expect(simulateFight({ ...base, skills: [passive] }).casts[0]?.t).toBeGreaterThan(2);
   });
 
   it("keeps a buff for its duration and grows stacks over time", () => {
@@ -238,7 +244,7 @@ describe("simulateFight", () => {
     expect(casts([slash, meditation], "Slash")[1]).toBeLessThan(casts([slash], "Slash")[1] - 5);
     expect(casts([buff, meditation], "Buff")[1]).toBeLessThan(casts([buff], "Buff")[1] - 5);
     // Strike still waits for its 20 hits (only Meditation's cast animation holds a basic attack back).
-    expect(casts([strike, meditation], "Strike")[0]).toBeGreaterThanOrEqual(casts([strike], "Strike")[0]);
+    expect(casts([strike, meditation], "Strike")[1]).toBeGreaterThanOrEqual(casts([strike], "Strike")[1]);
   });
 
   it("releases Rave's stored damage as it is, without the boss damage again", () => {
