@@ -624,8 +624,21 @@ export function setIncludeSkills(profile: ProfileV1, includeSkills: boolean): Pr
   return { ...profile, includeSkills };
 }
 
+/** Boss and normal monster are one or the other; with neither ticked the fight is the stages analysis. */
 export function setBossMonster(profile: ProfileV1, bossMonster: boolean): ProfileV1 {
-  return { ...profile, bossMonster };
+  return { ...profile, bossMonster, normalMonster: bossMonster ? false : profile.normalMonster };
+}
+
+export function setNormalMonster(profile: ProfileV1, normalMonster: boolean): ProfileV1 {
+  return { ...profile, normalMonster, bossMonster: normalMonster ? false : profile.bossMonster };
+}
+
+/** Switches a skill (or "Familiar") between auto and cast by hand, saved with the active skill preset. */
+export function toggleManualSkill(profile: ProfileV1, name: string): ProfileV1 {
+  const preset = profile.activeSkillPreset;
+  const current = profile.skillPresetManual[preset] ?? [];
+  const next = current.includes(name) ? current.filter((n) => n !== name) : [...current, name];
+  return { ...profile, skillPresetManual: profile.skillPresetManual.map((list, i) => (i === preset ? next : list)) };
 }
 
 export function setAbbreviateNumbers(profile: ProfileV1, abbreviateNumbers: boolean): ProfileV1 {

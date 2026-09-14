@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  setBossMonster,
+  setNormalMonster,
+  toggleManualSkill,
   addToSkillPreset,
   setShrineLevel,
   setOutfitOwned,
@@ -538,5 +541,31 @@ describe("actions", () => {
     const after = setSkillLevel(before, "Fire Slash", 3, 250);
     expect(before.skills).toEqual({});
     expect(after).not.toBe(before);
+  });
+});
+
+describe("fight settings", () => {
+  it("keeps boss and normal monster one or the other, with neither meaning the stages analysis", () => {
+    let p = emptyProfile();
+    expect([p.bossMonster, p.normalMonster]).toEqual([true, false]);
+    p = setNormalMonster(p, true);
+    expect([p.bossMonster, p.normalMonster]).toEqual([false, true]);
+    p = setBossMonster(p, true);
+    expect([p.bossMonster, p.normalMonster]).toEqual([true, false]);
+    p = setBossMonster(p, false);
+    expect([p.bossMonster, p.normalMonster]).toEqual([false, false]);
+  });
+
+  it("saves which skills are cast by hand with each skill preset", () => {
+    let p = toggleManualSkill(emptyProfile(), "Rave");
+    p = toggleManualSkill(p, "Familiar");
+    expect(p.skillPresetManual[0]).toEqual(["Rave", "Familiar"]);
+    p = selectSkillPreset(p, 1);
+    expect(p.skillPresetManual[1]).toEqual([]);
+    p = toggleManualSkill(p, "Supersonic");
+    p = selectSkillPreset(p, 0);
+    p = toggleManualSkill(p, "Rave");
+    expect(p.skillPresetManual[0]).toEqual(["Familiar"]);
+    expect(p.skillPresetManual[1]).toEqual(["Supersonic"]);
   });
 });

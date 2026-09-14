@@ -668,6 +668,16 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
     };
   }
 
+  // A normal monster of the promotion's stage: one of its waves' monsters, with normal-monster damage.
+  if (profile.normalMonster) {
+    const promotion = PROMOTION_STAGES[promotionIndex];
+    const stage = FARM_STAGES[Math.min(FARM_STAGES.length, Math.max(1, promotion?.stage ?? 1)) - 1] ?? FARM_STAGES[0];
+    const hp = stage?.enemyHp ?? 0;
+    const monster = stage ? { name: promotion?.name ?? stage.name, stage: stage.stage, minStage: stage.stage, maxStage: stage.stage, hp, minHp: hp, maxHp: hp } : null;
+    const target: FightTarget = { bossMonster: false, enemyHp: hp, spirits, enemyElement };
+    return { mode: "monster" as const, boss: monster, stages: null, farm: null, beast, familiar, sources, skills, skipped, spirits, target, input: { ...fightInput(sources, skills, duration, manual, undefined, target), endsOnKill: true } };
+  }
+
   if (profile.bossMonster) {
     const boss = promotionBoss(promotionIndex);
     const target: FightTarget = { bossMonster: true, enemyHp: boss?.hp ?? 0, spirits, enemyElement };

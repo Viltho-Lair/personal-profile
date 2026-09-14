@@ -210,6 +210,8 @@ export type FightInput = {
   bossMonster?: boolean;
   /** The enemy's HP, read by spirit skills (remaining HP share, execute, first strike, above 70%). */
   enemyHp?: number;
+  /** The fight ends as soon as the enemy's HP is gone (a normal monster), not only when its time is up. */
+  endsOnKill?: boolean;
   /** Spirit skills of the accompanying spirits. */
   spirits?: SpiritSkillEffects;
   /** Basic attacks a second before ATK SPD buffs (1 plus the Bracelet of Speed). */
@@ -668,7 +670,7 @@ export function createFight(input: FightInput): Fight {
     }
   };
 
-  const done = () => clock >= input.duration || (field?.cleared() ?? false);
+  const done = () => clock >= input.duration || (field?.cleared() ?? false) || Boolean(input.endsOnKill && enemyHp > 0 && total >= enemyHp);
   /** Farming, an attack (or Rave's release) waits until something is in its reach. */
   const inReach = (l: Live) => {
     if (!field) return true;

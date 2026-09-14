@@ -207,6 +207,8 @@ export type ProfileV1 = {
   skillsAtMax: boolean;
   skillPresets: SkillPreset[];
   activeSkillPreset: number;
+  /** For each skill preset, the skills (and "Familiar") with auto off: cast by hand in a render. */
+  skillPresetManual: string[][];
   /** Skill Mastery node levels by node id ("1-D12"); checkbox nodes use 0 or 1. */
   masteryNodes: Record<string, { level: number }>;
   /** Owned familiars and their stars (0-11); absent means not owned. */
@@ -221,8 +223,10 @@ export type ProfileV1 = {
   mainSpirits: string[];
   /** The Stats Summary adds the active skill preset's buffs. */
   includeSkills: boolean;
-  /** The fight's enemy is a boss monster; off, a normal monster. */
+  /** The fight's enemy is the promotion's boss monster. */
   bossMonster: boolean;
+  /** The fight's enemy is a normal monster of the promotion's stage; with neither, the stages analysis. */
+  normalMonster: boolean;
   /** Numbers written the game's way, a letter for every thousand (1.00A); off, in full. */
   abbreviateNumbers: boolean;
   /** The enemy's element when it's element restricted; null when it isn't. */
@@ -280,6 +284,7 @@ export function emptyProfile(): ProfileV1 {
     skillsAtMax: false,
     skillPresets: emptySkillPresets(),
     activeSkillPreset: 0,
+    skillPresetManual: Array.from({ length: SKILL_PRESET_COUNT }, () => []),
     masteryNodes: {},
     familiars: {},
     presets: emptyPresets(),
@@ -289,6 +294,7 @@ export function emptyProfile(): ProfileV1 {
     mainSpirits: [],
     includeSkills: false,
     bossMonster: true,
+    normalMonster: false,
     abbreviateNumbers: false,
     enemyElement: null,
     stageFarming: { on: false, stage: 1 },

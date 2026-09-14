@@ -152,6 +152,8 @@ export function useProfile() {
       update((p) => rules.setShrineLevel(p, statue, level, max)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
+    setNormalMonster: (on: boolean) => update((p) => rules.setNormalMonster(p, on)),
+    toggleManualSkill: (name: string) => update((p) => rules.toggleManualSkill(p, name)),
     setAbbreviateNumbers: (on: boolean) => update((p) => rules.setAbbreviateNumbers(p, on)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
     setStageFarming: (change: Partial<ProfileV1["stageFarming"]>) => update((p) => rules.setStageFarming(p, change)),

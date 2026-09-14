@@ -18,7 +18,7 @@ const H = 220;
 const GROUND = 158;
 /** Range the view spans, and how much of it sits behind the slayer. */
 const VIEW = 24;
-const BEHIND = 5;
+const BEHIND = 10.8;
 const UNIT = W / VIEW;
 
 const INK = "#eef1f6";
@@ -871,7 +871,8 @@ export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiri
     .slice(0, 5)
     .map((s) => s.name);
   // A cut-in skill cast lately: the white flash, the darkening and the beam onto the slayer.
-  const cutIn = (snap?.casts ?? []).filter((c) => CUT_INS.has(c.name) && time - c.real >= 0 && time - c.real < CUT_IN_SECONDS).at(-1) ?? null;
+  // A finished fight holds its last frame, so it shows no cut-in flash frozen over it.
+  const cutIn = snap?.done ? null : ((snap?.casts ?? []).filter((c) => CUT_INS.has(c.name) && time - c.real >= 0 && time - c.real < CUT_IN_SECONDS).at(-1) ?? null);
   const cutInAge = cutIn ? time - cutIn.real : 0;
   const dust = `hsl(${hue} 85% 52%)`;
   const visible = field.enemies.filter((e) => e.hp > 0 && x(e.position) > -UNIT && x(e.position) < W + UNIT);

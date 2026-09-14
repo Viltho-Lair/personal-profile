@@ -66,6 +66,13 @@ describe("simulateFight", () => {
     expect(stacked.basic).toBeCloseTo(100 * 5 + 150 * 5, -1);
   });
 
+  it("ends a normal monster's fight as soon as it goes down", () => {
+    const result = createFight({ ...base, duration: 60, enemyHp: 350, endsOnKill: true });
+    result.advance(60);
+    expect(result.state().done).toBe(true);
+    expect(result.state().clock).toBeLessThan(5);
+  });
+
   it("holds Rave's stored damage until it's pressed again, and only then starts its cooldown", () => {
     const rave = skill({ name: "Rave", element: null, every: 20, duration: 5, effect: { type: "rave", power: 1 } });
     const fight = createFight({ ...base, duration: 60, skills: [rave], manual: ["Rave"] });

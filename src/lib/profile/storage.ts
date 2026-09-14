@@ -177,6 +177,14 @@ const ownedEntry = (entry: Json) =>
 const name = (value: unknown) => (typeof value === "string" ? value : null);
 
 /** Always 5 presets of 10 slots; anything that isn't a skill name reads as empty. */
+function skillPresetManual(value: unknown): string[][] {
+  const stored = Array.isArray(value) ? value : [];
+  return Array.from({ length: SKILL_PRESET_COUNT }, (_, preset) => {
+    const names = (Array.isArray(stored[preset]) ? stored[preset] : []).filter((n: unknown): n is string => typeof n === "string");
+    return [...new Set(names)];
+  });
+}
+
 function skillPresets(value: unknown): SkillPreset[] {
   const stored = Array.isArray(value) ? value : [];
   return Array.from({ length: SKILL_PRESET_COUNT }, (_, preset) => {
@@ -453,6 +461,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     skillsAtMax: data.skillsAtMax === true,
     skillPresets: skillPresets(data.skillPresets),
     activeSkillPreset: presetIndex(data.activeSkillPreset),
+    skillPresetManual: skillPresetManual(data.skillPresetManual),
     masteryNodes: entries(data.masteryNodes, levelEntry),
     familiars: entries(data.familiars, starsEntry),
     presets: presets(data),
@@ -461,6 +470,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
     bossMonster: data.bossMonster !== false,
+    normalMonster: data.bossMonster === false && data.normalMonster === true,
     abbreviateNumbers: data.abbreviateNumbers === true,
     enemyElement: (["Fire", "Water", "Wind", "Earth"] as const).find((e) => e === data.enemyElement) ?? null,
     stageFarming: {

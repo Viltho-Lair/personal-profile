@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { Settings } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createFight, type Fight, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
+import { useEffect, useMemo, useState } from "react";
+import type { FightInput, FightSkill, FightState, SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME, SPIRITS } from "./data";
 import { ELEMENTS } from "@/lib/game/stats";
@@ -17,7 +17,7 @@ import { DamageChart, type ChartLevel } from "./damage-chart";
 import { rarityGroup } from "@/lib/game/formulas";
 import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
-import { publishLiveFight } from "./live-fight";
+import { castInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors } from "./spirit-stats";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -26,9 +26,6 @@ const SELECT =
 const BUTTON =
   "rounded-md border px-3 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40";
 
-/** Frames are ~30 a second; a throttled background tab still catches up to real time, a second at most per frame. */
-const FRAME_MS = 33;
-const MAX_FRAME_SECONDS = 1;
 const BLINK_SECONDS = 0.45;
 
 type Phase = "idle" | "running" | "done";
@@ -40,76 +37,34 @@ type Phase = "idle" | "running" | "done";
  * once the fight's over.
  */
 export function ProgressChart() {
-  const { profile, setPromotionTarget, setBossMonster, setEnemyElement, setStageFarming } = useProfile();
+  const { profile, setPromotionTarget, setBossMonster, setNormalMonster, setEnemyElement, setStageFarming, toggleManualSkill } = useProfile();
   const factors = useSpiritFactors();
   const [logScale, setLogScale] = useState(false);
   const [view, setView] = useState<"analysis" | "render">("render");
-  const [manual, setManual] = useState<string[]>([]);
-  const [run, setRun] = useState<{ for: unknown; phase: Phase; snap: FightState | null } | null>(null);
-  const fightRef = useRef<Fight | null>(null);
-  const frameRef = useRef<number | null>(null);
-  const setupRef = useRef<unknown>(null);
+  // Which skills are on auto is saved with the skill preset.
+  const manual = profile.skillPresetManual[profile.activeSkillPreset] ?? NO_MANUAL;
 
   const current = profile.character.promotion;
   const index = profile.promotionTarget.promotion ?? Math.min(current, PROMOTION_STAGES.length - 1);
-  const setup = useMemo(() => promotionFight(profile, factors, index, FIGHT_SECONDS, manual), [profile, factors, index, manual]);
+  const next = useMemo(() => promotionFight(profile, factors, index, FIGHT_SECONDS, manual), [profile, factors, index, manual]);
+  // The Analysis and Render views both show the rendered fight, as it was set up when it started, until a new
+  // render or a reload; before any render they show what a render would play now.
+  const run = useFightRun();
+  const setup = run?.setup ?? next;
+  const phase: Phase = run?.phase ?? "idle";
+  const snap = run?.snap ?? null;
   const duration = setup.input.duration;
   const { boss } = setup;
   const stagesMode = setup.mode === "stages";
   const farmMode = setup.mode === "farm";
-  // A changed profile, promotion or auto setting makes the last render stale.
-  const phase: Phase = run && run.for === setup ? run.phase : "idle";
-  const snap = run && run.for === setup ? run.snap : null;
+  const monsterMode = setup.mode === "monster";
+  // What the controls set up for the next render.
+  const nextFarm = next.mode === "farm";
+  const nextStages = next.mode === "stages";
 
-  const stop = useCallback(() => {
-    if (frameRef.current !== null) window.clearTimeout(frameRef.current);
-    frameRef.current = null;
-    fightRef.current = null;
-    publishLiveFight(null);
-  }, []);
-
-  useEffect(() => {
-    setupRef.current = setup;
-  }, [setup]);
-  useEffect(() => stop, [stop]);
-
-  const render = () => {
-    stop();
-    const fight = createFight(setup.input);
-    const owner = setup;
-    fightRef.current = fight;
-    setRun({ for: owner, phase: "running", snap: fight.state() });
-    let last = performance.now();
-    const frame = () => {
-      const now = performance.now();
-      if (fightRef.current !== fight) return;
-      if (setupRef.current !== owner) {
-        stop();
-        return;
-      }
-      fight.advance(Math.min(MAX_FRAME_SECONDS, (now - last) / 1000));
-      last = now;
-      const state = fight.state();
-      if (state.done) {
-        frameRef.current = null;
-        fightRef.current = null;
-        publishLiveFight(null);
-        setRun({ for: owner, phase: "done", snap: state });
-      } else {
-        // The Stats Summary shows Attack with the buffs that are on as the fight plays.
-        publishLiveFight({ atkBonus: state.atkBonus, speedBonus: state.speedBonus });
-        setRun({ for: owner, phase: "running", snap: state });
-        frameRef.current = window.setTimeout(frame, FRAME_MS);
-      }
-    };
-    frameRef.current = window.setTimeout(frame, FRAME_MS);
-  };
-
-  const toggleAuto = (name: string) =>
-    setManual((list) => (list.includes(name) ? list.filter((n) => n !== name) : [...list, name]));
-  const castByHand = (name: string) => {
-    fightRef.current?.cast(name);
-  };
+  const render = () => startFightRun(next);
+  const toggleAuto = (name: string) => toggleManualSkill(name);
+  const castByHand = (name: string) => castInFightRun(name);
 
   const total = snap?.total ?? 0;
   // Stages: the chart follows the next stage's boss as the damage passes each one.
@@ -125,12 +80,16 @@ export function ProgressChart() {
           ...(nextStage ? [{ value: nextHp, label: `Stage ${nextStage} boss HP`, tone: "red" as const, align: "end" as const }] : []),
         ]
       : boss
-        ? [{ value: boss.hp, label: `Boss HP · stage ${boss.stage}`, tone: "red", align: "end" }]
+        ? [{ value: boss.hp, label: `${monsterMode ? "Monster" : "Boss"} HP · stage ${boss.stage}`, tone: "red", align: "end" }]
         : [];
-  // The one enemy the render shows outside stage farming: the promotion boss, or the next stage's boss.
+  // The one enemy the render shows outside stage farming: the promotion boss, a normal monster, or the next stage's boss.
   const enemy: SingleEnemy | null = farmMode
     ? null
-    : stagesMode
+    : monsterMode
+      ? boss
+        ? { maxHp: boss.hp, boss: false, title: `${boss.name} monster`, subtitle: `Normal monster · stage ${boss.stage}` }
+        : null
+      : stagesMode
       ? nextStage
         ? { maxHp: nextHp, boss: Boolean(setup.input.bossMonster), title: `Stage ${nextStage} boss`, subtitle: `${formatValue(cleared)} stages cleared` }
         : null
@@ -152,9 +111,9 @@ export function ProgressChart() {
   );
 
   return (
-    <section aria-label={farmMode ? "Stage farming" : stagesMode ? "Stages chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
+    <section aria-label={farmMode ? "Stage farming" : stagesMode ? "Stages chart" : monsterMode ? "Monster chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <h2 className="text-sm font-semibold">{farmMode ? "Stage farming" : stagesMode ? "Stages" : "Promotion"}</h2>
+        <h2 className="text-sm font-semibold">{nextFarm ? "Stage farming" : nextStages ? "Stages" : next.mode === "monster" ? "Normal monster" : "Promotion"}</h2>
         <div className="flex gap-1" role="group" aria-label="Fight view">
           {(["analysis", "render"] as const).map((id) => (
             <button
@@ -170,7 +129,7 @@ export function ProgressChart() {
             </button>
           ))}
         </div>
-        {stagesMode || farmMode ? null : (
+        {nextStages || nextFarm ? null : (
           <select
             aria-label="Desired promotion"
             value={index}
@@ -191,15 +150,19 @@ export function ProgressChart() {
           </label>
         )}
         <div className="flex basis-full flex-wrap items-center gap-x-3 gap-y-1">
-          <label className={`flex items-center gap-1 ${LABEL} ${farmMode ? "opacity-40" : ""}`} title={farmMode ? "Stage farming fights normal monsters" : "Off: a normal monster"}>
-            <input type="checkbox" checked={profile.bossMonster && !farmMode} disabled={farmMode} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
+          <label className={`flex items-center gap-1 ${LABEL} ${nextFarm ? "opacity-40" : ""}`} title={nextFarm ? "Stage farming fights normal monsters" : "The promotion's boss; with neither ticked, the stages analysis"}>
+            <input type="checkbox" checked={profile.bossMonster && !nextFarm} disabled={nextFarm} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
             Boss monster
+          </label>
+          <label className={`flex items-center gap-1 ${LABEL} ${nextFarm ? "opacity-40" : ""}`} title={nextFarm ? "Stage farming fights normal monsters" : "A normal monster of the promotion's stage; with neither ticked, the stages analysis"}>
+            <input type="checkbox" checked={profile.normalMonster && !nextFarm} disabled={nextFarm} onChange={(event) => setNormalMonster(event.target.checked)} className="accent-ink" />
+            Normal monster
           </label>
           <label className={`flex items-center gap-1 ${LABEL}`} title="Walk through a stage's 10 waves and its box">
             <input type="checkbox" checked={profile.stageFarming.on} onChange={(event) => setStageFarming({ on: event.target.checked })} className="accent-ink" />
             Stage farming
           </label>
-          {farmMode && setup.farm ? (
+          {nextFarm && next.farm ? (
             <label className={`flex items-center gap-1 ${LABEL}`}>
               Stage
               <input
@@ -211,7 +174,7 @@ export function ProgressChart() {
                 onChange={(event) => setStageFarming({ stage: Math.min(FARM_STAGES.length, Math.max(1, Math.floor(event.target.valueAsNumber || 1))) })}
                 className="w-16 rounded-md border border-ink/20 bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
               />
-              <span className="normal-case tracking-normal text-ink">{setup.farm.name}</span>
+              <span className="normal-case tracking-normal text-ink">{next.farm.name}</span>
             </label>
           ) : null}
           <label className={`flex items-center gap-1 ${LABEL}`} title="x2 from the element that beats it, x0.7 from the one it beats">
@@ -242,10 +205,7 @@ export function ProgressChart() {
           {phase === "running" ? (
             <button
               type="button"
-              onClick={() => {
-                stop();
-                setRun(null);
-              }}
+              onClick={() => stopFightRun(true)}
               className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}
             >
               Stop
@@ -254,7 +214,7 @@ export function ProgressChart() {
           <button
             type="button"
             onClick={render}
-            disabled={phase === "running" || (!stagesMode && !farmMode && !boss)}
+            disabled={phase === "running" || (!nextStages && !nextFarm && !next.boss)}
             className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}
           >
             {phase === "done" ? "Render again" : "Render"}
@@ -299,7 +259,7 @@ export function ProgressChart() {
           <p className="shrink-0 font-mono text-[10px] text-dim">Every stage cleared</p>
         )
       ) : boss ? (
-        <HealthBar hp={boss.hp} damage={total} label={`${boss.name} boss HP · stage ${boss.stage}`} />
+        <HealthBar hp={boss.hp} damage={total} label={`${boss.name} ${monsterMode ? "monster" : "boss"} HP · stage ${boss.stage}`} />
       ) : null}
 
       <LiveReadout snap={snap} input={setup.input} duration={duration} />
@@ -319,7 +279,7 @@ export function ProgressChart() {
       />
 
       <p className="shrink-0 text-[10px] leading-snug text-dim">
-        {farmMode ? "Stage farming normal monsters" : profile.bossMonster ? "Against a boss monster" : "Against a normal monster"} · Spirit skills:{" "}
+        {farmMode ? "Stage farming normal monsters" : monsterMode ? "Against a normal monster" : stagesMode ? "Through the stages' bosses" : "Against a boss monster"} · Spirit skills:{" "}
         {setup.spirits.active.length ? setup.spirits.active.join(", ") : "none in the spirit preset"}
         {setup.spirits.unknown.length ? ` · no value for ${setup.spirits.unknown.join(", ")}` : ""}.
       </p>
@@ -329,11 +289,38 @@ export function ProgressChart() {
           <FarmResults stage={setup.farm} snap={snap} duration={duration} />
         ) : stagesMode ? (
           <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
+        ) : monsterMode && boss ? (
+          <MonsterResults name={boss.name} stage={boss.stage} hp={boss.hp} snap={snap} duration={duration} />
         ) : boss ? (
           <Results setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
         ) : null
       ) : null}
     </section>
+  );
+}
+
+const NO_MANUAL: string[] = [];
+
+/** A normal monster's verdict: whether it went down, and how fast. */
+function MonsterResults({ name, stage, hp, snap, duration }: { name: string; stage: number; hp: number; snap: FightState; duration: number }) {
+  const killedAt = snap.points.find((point) => point.damage >= hp)?.t ?? null;
+  return (
+    <div className="flex shrink-0 flex-col gap-1 border-t border-ink/10 pt-2 text-[11px] leading-snug">
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px]">
+        <dt className="text-dim">{name} monster HP · stage {stage}</dt>
+        <dd className="truncate text-right text-ink tabular-nums" title={formatValue(hp)}>{formatValue(hp)}</dd>
+        <dt className="text-dim">Damage dealt</dt>
+        <dd className="truncate text-right text-ink tabular-nums" title={formatValue(snap.total)}>{formatValue(snap.total)}</dd>
+      </dl>
+      <p className={`font-medium ${killedAt !== null ? "text-emerald-500" : "text-red-500"}`}>
+        {killedAt !== null
+          ? killedAt < 0.05
+            ? "Down at once, on the first hits."
+            : `Down in ${killedAt.toFixed(1)}s: about ${formatValue(Math.floor(60 / killedAt))} a minute.`
+          : `Still standing after ${duration}s: ${formatValue(Math.round((snap.total / Math.max(1, hp)) * 1000) / 10)}% of its HP.`}
+      </p>
+      <DamageBreakdown total={snap.total} breakdown={snap} />
+    </div>
   );
 }
 
