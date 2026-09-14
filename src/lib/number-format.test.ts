@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { abbreviate, formatNumber, setAbbreviatedNumbers, thousandsLetter } from "./number-format";
+import { abbreviate, formatNumber, parseAmount, setAbbreviatedNumbers, thousandsLetter, thousandsPower } from "./number-format";
 
 describe("number format", () => {
   afterEach(() => setAbbreviatedNumbers(false));
@@ -28,5 +28,16 @@ describe("number format", () => {
     expect(formatNumber(1_234_567)).toBe("1,234,567");
     setAbbreviatedNumbers(true);
     expect(formatNumber(1_234_567)).toBe("1.23B");
+  });
+
+  it("reads amounts typed in full, in scientific notation or with the game's letters", () => {
+    expect(thousandsPower("A")).toBe(1);
+    expect(thousandsPower("AA")).toBe(27);
+    expect(parseAmount("1,234,567")).toBe(1_234_567);
+    expect(parseAmount("4.71e17")).toBe(4.71e17);
+    expect(parseAmount("471F")).toBeCloseTo(471e18);
+    expect(parseAmount("13.4a")).toBeCloseTo(13_400);
+    expect(parseAmount("1.00AA")).toBeCloseTo(1e81);
+    expect(parseAmount("lots")).toBeNull();
   });
 });

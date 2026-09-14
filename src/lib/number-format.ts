@@ -47,3 +47,21 @@ export function abbreviate(value: number, maximumFractionDigits = 2): string {
 export function formatNumber(value: number, maximumFractionDigits = 2): string {
   return abbreviated ? abbreviate(value, maximumFractionDigits) : value.toLocaleString("en", { maximumFractionDigits });
 }
+
+/** The power of a thousand for thousands letters: A is 1, Z is 26, AA is 27. */
+export function thousandsPower(letters: string): number {
+  let power = 0;
+  for (const ch of letters.toUpperCase()) power = power * 26 + (ch.charCodeAt(0) - 64);
+  return power;
+}
+
+/**
+ * An amount typed as the page or the game writes it: "1,234,567", "4.71e17" or "471F" (a letter for every
+ * thousand). Null when it isn't one.
+ */
+export function parseAmount(text: string): number | null {
+  const match = text.replace(/[,\s]/g, "").match(/^(\d+(?:\.\d+)?(?:e[+-]?\d+)?)([A-Za-z]{0,3})$/i);
+  if (!match) return null;
+  const value = Number(match[1]) * 1000 ** thousandsPower(match[2] ?? "");
+  return Number.isFinite(value) ? value : null;
+}

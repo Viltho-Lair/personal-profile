@@ -21,6 +21,9 @@ import {
   PRESET_KINDS,
   PROMOTION_EFFECTS,
   PROMOTION_SLOTS,
+  emptyResources,
+  RESOURCES,
+  type OwnedResources,
   SKILL_PRESET_COUNT,
   SPIRIT_PRESET_SLOTS,
   type AbilityRoll,
@@ -177,6 +180,16 @@ const ownedEntry = (entry: Json) =>
 const name = (value: unknown) => (typeof value === "string" ? value : null);
 
 /** Always 5 presets of 10 slots; anything that isn't a skill name reads as empty. */
+function resources(value: unknown): OwnedResources {
+  const stored = isRecord(value) ? value : {};
+  const owned = emptyResources();
+  for (const { key } of RESOURCES) {
+    const amount = stored[key];
+    if (typeof amount === "number" && Number.isFinite(amount) && amount > 0) owned[key] = amount;
+  }
+  return owned;
+}
+
 function skillPresetManual(value: unknown): string[][] {
   const stored = Array.isArray(value) ? value : [];
   return Array.from({ length: SKILL_PRESET_COUNT }, (_, preset) => {
@@ -472,6 +485,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     bossMonster: data.bossMonster !== false,
     normalMonster: data.bossMonster === false && data.normalMonster === true,
     abbreviateNumbers: data.abbreviateNumbers === true,
+    resources: resources(data.resources),
     enemyElement: (["Fire", "Water", "Wind", "Earth"] as const).find((e) => e === data.enemyElement) ?? null,
     stageFarming: {
       on: isRecord(data.stageFarming) && data.stageFarming.on === true,

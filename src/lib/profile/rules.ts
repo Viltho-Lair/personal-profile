@@ -1,3 +1,4 @@
+import type { ResourceKey } from "./types";
 import type { OrbAccessory, OrbLine } from "@/lib/game/black-orb";
 import type { Element } from "@/lib/game/stats";
 import type { BeastState } from "@/lib/game/beasts";
@@ -643,6 +644,11 @@ export function toggleManualSkill(profile: ProfileV1, name: string): ProfileV1 {
 
 export function setAbbreviateNumbers(profile: ProfileV1, abbreviateNumbers: boolean): ProfileV1 {
   return { ...profile, abbreviateNumbers };
+}
+
+/** Sets how much of a resource the player has; negative or broken amounts count as none. */
+export function setResource(profile: ProfileV1, key: ResourceKey, amount: number): ProfileV1 {
+  return { ...profile, resources: { ...profile.resources, [key]: Number.isFinite(amount) && amount > 0 ? amount : 0 } };
 }
 
 export function setEnemyElement(profile: ProfileV1, enemyElement: ProfileV1["enemyElement"]): ProfileV1 {

@@ -229,6 +229,8 @@ export type ProfileV1 = {
   normalMonster: boolean;
   /** Numbers written the game's way, a letter for every thousand (1.00A); off, in full. */
   abbreviateNumbers: boolean;
+  /** Resources the player has, for plans that spend only what's there. */
+  resources: OwnedResources;
   /** The enemy's element when it's element restricted; null when it isn't. */
   enemyElement: "Fire" | "Water" | "Wind" | "Earth" | null;
   /** Stage farming instead of one enemy, and the stage to farm. */
@@ -261,6 +263,22 @@ export type KnownNames = Record<
   "skills" | "weapons" | "accessories" | "relics" | "spirits" | "soulWeapons",
   string[]
 > & { masteryNodes?: string[]; familiars?: string[] };
+
+/** Resources upgrades are paid with, as the workbook names them. */
+export const RESOURCES = [
+  { key: "gold", label: "Gold" },
+  { key: "cubes", label: "Enhance Cubes" },
+  { key: "crystals", label: "Mana Crystals" },
+  { key: "stones", label: "Stones" },
+  { key: "emeralds", label: "Emeralds" },
+  { key: "dice", label: "Dice" },
+] as const;
+export type ResourceKey = (typeof RESOURCES)[number]["key"];
+export type OwnedResources = Record<ResourceKey, number>;
+
+export function emptyResources(): OwnedResources {
+  return Object.fromEntries(RESOURCES.map((r) => [r.key, 0])) as OwnedResources;
+}
 
 export function emptySkillPresets(): SkillPreset[] {
   return Array.from({ length: SKILL_PRESET_COUNT }, () =>
@@ -296,6 +314,7 @@ export function emptyProfile(): ProfileV1 {
     bossMonster: true,
     normalMonster: false,
     abbreviateNumbers: false,
+    resources: emptyResources(),
     enemyElement: null,
     stageFarming: { on: false, stage: 1 },
     soulEngraving: emptySoulEngraving(),

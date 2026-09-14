@@ -155,6 +155,7 @@ export function useProfile() {
     setNormalMonster: (on: boolean) => update((p) => rules.setNormalMonster(p, on)),
     toggleManualSkill: (name: string) => update((p) => rules.toggleManualSkill(p, name)),
     setAbbreviateNumbers: (on: boolean) => update((p) => rules.setAbbreviateNumbers(p, on)),
+    setResource: (key: Parameters<typeof rules.setResource>[1], amount: number) => update((p) => rules.setResource(p, key, amount)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
     setStageFarming: (change: Partial<ProfileV1["stageFarming"]>) => update((p) => rules.setStageFarming(p, change)),
     resetProfile: () => update(() => emptyProfile()),
