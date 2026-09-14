@@ -308,7 +308,7 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   const shrine = shrineEffects(SHRINE, profile.sealedShrine);
   s.appearance = appearanceTotals(APPEARANCE, profile.appearance);
   const beasts = beastTotals(BEASTS, profile.beasts, mountedBeast(profile) !== null);
-  s.beasts = { combat: beasts.combat, mountedAtk: beasts.mountedAtk };
+  s.beasts = { combat: beasts.combat, mountedAtk: beasts.mountedAtk, mountedMspd: mountedBeast(profile) !== null ? beasts.mspd : 0 };
   const orb = blackOrbEffects(BLACK_ORB, profile.blackOrb);
   s.blackOrb = { amp: orb.amp, element: orb.element, atk: orb.atk, hp: orb.hp, boss: orb.boss, monster: orb.monster };
   s.shrine = { soulWeaponAtk: shrine.soulWeaponAtk, atk: shrine.atk, hp: shrine.hp, element: shrine.element };

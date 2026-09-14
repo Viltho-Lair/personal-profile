@@ -41,7 +41,7 @@ export type StatSources = {
   /** Black Orb: element amps and element damage by element, resonance ATK and HP, orb level boss / monster damage (fractions). */
   blackOrb: { amp: ByElement; element: ByElement; atk: number; hp: number; boss: number; monster: number };
   /** Beasts: owned (combat) effect on ATK, HP and HP Recovery, and mounted ATK, as fractions. */
-  beasts: { combat: number; mountedAtk: number };
+  beasts: { combat: number; mountedAtk: number; mountedMspd: number };
   /** Owned clothing and guild shop outfits: ATK, HP, gold and EXP fractions, flat Accuracy and Dodge. */
   appearance: { atk: number; hp: number; gold: number; exp: number; accuracy: number; dodge: number };
   /** Sealed Shrine: Chaos soul weapon ATK amp and Character ATK, Demon Character HP, Order element damage. */
@@ -87,6 +87,8 @@ export type Stats = {
   manaRecovery: number;
   /** Basic attacks a second: 1 (the workbook has no base attack speed) raised by the Bracelet of Speed. */
   attackSpeed: number;
+  /** Movement speed as a multiple of the base walk (1 = 100%), raised by a mounted beast. */
+  movementSpeed: number;
   accuracy: number;
   dodge: number;
   ccResist: number;
@@ -217,6 +219,7 @@ export function computeStats(s: StatSources): Stats {
     dodge: 10 + s.appearance.dodge + s.growth.dodge + s.relics.dodge + s.companions.shadowDance + s.refinement.dodge + s.engraving.dodge + s.companionPromotion.dodge + s.slayerPromotion.dodge,
     ccResist: s.companionPromotion.ccResist + s.slayerPromotion.ccResist,
     attackSpeed: 1 + s.relics.speed,
+    movementSpeed: 1 + s.beasts.mountedMspd,
     extraGold: gold,
     extraExp: exp,
     extraDamage,
@@ -246,7 +249,7 @@ export function emptySources(): StatSources {
     refinement: { atk: 0, hp: 0, critDamage: 0, accuracy: 0, dodge: 0 },
     shrine: { soulWeaponAtk: 0, atk: 0, hp: 0, element: noElements() },
     appearance: { atk: 0, hp: 0, gold: 0, exp: 0, accuracy: 0, dodge: 0 },
-    beasts: { combat: 0, mountedAtk: 0 },
+    beasts: { combat: 0, mountedAtk: 0, mountedMspd: 0 },
     blackOrb: { amp: noElements(), element: noElements(), atk: 0, hp: 0, boss: 0, monster: 0 },
     relics: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, gold: 0, accuracy: 0, dodge: 0, speed: 0, element: noElements() },
     companionPromotion: { atk: 0, critDamage: 0, hp: 0, hpRecovery: 0, mana: 0, manaRecovery: 0, gold: 0, accuracy: 0, dodge: 0, exp: 0, ccResist: 0 },

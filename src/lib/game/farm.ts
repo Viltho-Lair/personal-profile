@@ -27,11 +27,19 @@ export type Field = {
   hit: (amount: number, range: number, single?: boolean) => number;
   /** Walks right, stopping at the front monster's reach. */
   move: (distance: number) => void;
+  /** Positions of the monsters still standing within range, nearest first. */
+  positionsInRange: (range: number) => number[];
+  /** Whether anything standing is ahead of the slayer within this range (not beside or behind it). */
+  aheadInRange: (range: number) => boolean;
   /** Where the farthest monster still standing within range is, or null when none is. */
   farthest: (range: number) => number | null;
   /** Charges right to a position; monsters still standing that it passes are carried along, just ahead of the slayer. */
   dash: (to: number) => void;
   kills: () => number;
+  /** The slayer's position, without copying the field. */
+  position: () => number;
+  /** Monsters that have fallen, in the order they fell. */
+  fallen: () => FieldEnemy[];
   cleared: () => boolean;
   state: () => FieldState;
 };
@@ -52,19 +60,25 @@ export function createField(stage: FarmStage): Field {
   enemies.push({ id: id++, position: at, hp: stage.enemyHp, maxHp: stage.enemyHp, wave: FARM_WAVES + 1, box: true });
 
   let kills = 0;
+  const fallenOrder: FieldEnemy[] = [];
   const standing = () => enemies.filter((e) => e.hp > 0);
   const front = () => standing()[0] ?? null;
   const reach = (range: number) => standing().filter((e) => Math.abs(e.position - position) <= range);
   const damage = (enemy: FieldEnemy, amount: number) => {
     const lost = Math.min(enemy.hp, Math.max(0, amount));
     enemy.hp -= lost;
-    if (enemy.hp <= 0) kills += 1;
+    if (enemy.hp <= 0) {
+      kills += 1;
+      fallenOrder.push(enemy);
+    }
     return lost;
   };
 
   return {
     front,
     inRange: (range) => reach(range).length > 0,
+    positionsInRange: (range) => reach(range).map((e) => e.position),
+    aheadInRange: (range) => standing().some((e) => e.position > position && e.position - position <= range),
     hit: (amount, range, single = false) => {
       const targets = single ? reach(range).slice(0, 1) : reach(range);
       return targets.reduce((total, enemy) => total + damage(enemy, amount), 0);
@@ -82,6 +96,8 @@ export function createField(stage: FarmStage): Field {
       for (const e of standing()) if (e.position < position + BASIC_RANGE) e.position = position + BASIC_RANGE;
     },
     kills: () => kills,
+    position: () => position,
+    fallen: () => fallenOrder,
     cleared: () => front() === null,
     state: () => ({
       position,

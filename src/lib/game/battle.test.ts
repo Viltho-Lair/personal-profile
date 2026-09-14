@@ -87,17 +87,22 @@ describe("simulateFight", () => {
     expect(fight.cast("Rave")).toBe(false);
   });
 
-  it("stores five seconds of the fight's damage with Rave while the clock keeps running", () => {
+  it("stops time and skill cooldowns for the five seconds Rave stores", () => {
     const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1 } });
-    const result = simulateFight({ ...base, skills: [rave] });
-    const released = result.casts.filter((c) => c.name === "Rave").map((c) => c.t);
-    // Used at the start, unleashed once the five seconds are up.
-    expect(released[0]).toBeCloseTo(0, 0);
-    expect(released[1]).toBeCloseTo(5, 0);
+    const slash = skill({ name: "Slash", every: 4, effect: { type: "damage", power: 0, hits: 1 } });
+    const result = simulateFight({ ...base, skills: [rave, slash] });
+    const raves = result.casts.filter((c) => c.name === "Rave");
+    // Used at the start and unleashed after five real seconds, with the battle timer still at 0.
+    expect(raves[0].t).toBeCloseTo(0, 1);
+    expect(raves[1].t).toBeCloseTo(0, 1);
+    expect(raves[1].real).toBeCloseTo(5, 0);
     expect(result.bySkill.Rave).toBeGreaterThan(400);
     expect(result.bySkill.Rave).toBeLessThan(600);
-    // No free seconds of basics any more: the fight clock never stopped for the storing.
-    expect(result.basic).toBeLessThanOrEqual(1000);
+    // Basic attacks kept landing for the stopped five seconds on top of the fight's ten.
+    expect(result.basic).toBeGreaterThanOrEqual(1400);
+    // Slash's 4-second cooldown held while time stood still: its second use waits for 4 seconds of the timer.
+    const slashes = result.casts.filter((c) => c.name === "Slash");
+    expect(slashes[1].real).toBeGreaterThan(8.5);
   });
 
   it("keeps Rave's share proportional to what it stored", () => {

@@ -31,6 +31,7 @@ export function StatsSummary() {
     ["Death Strike Damage %", pct(stats.deathStrikeDamage)],
     ["Mana", formatValue(stats.mana)],
     ["Mana Recovery", formatValue(stats.manaRecovery)],
+    ["Movement Speed", pct(stats.movementSpeed)],
     ["Accuracy", formatValue(stats.accuracy)],
     ["Dodge", formatValue(stats.dodge)],
     ["CC Resist", formatValue(stats.ccResist)],

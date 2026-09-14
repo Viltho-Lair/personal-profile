@@ -57,12 +57,14 @@ describe("stage farming fights", () => {
     };
     // Range 3 reaches wave 1's first monster from 7 away, and the charge stops on it.
     expect(walkedTo(charge("farthest", 3))).toBe(WAVE_GAP);
-    // Supersonic-style goes its whole range: from 3 (wave 1 just in reach) it charges to 10, carrying the monsters it passes along.
-    const through = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [charge("through", 7)] });
+    // Supersonic-style: from 3 (wave 1 just in reach) it charges 7 through wave 1, carrying its monsters along,
+    // and charges on while they're still ahead within range.
+    const through = createFight({ ...base, farm: { ...stage, enemyHp: 1e9 }, skills: [{ ...charge("through", 7), effect: { type: "damage", power: 0.01, hits: 6 } }] });
     through.advance(3);
-    const state = through.state().field!;
-    expect(state.position).toBeGreaterThanOrEqual(WAVE_GAP);
-    expect(state.enemies.filter((e) => e.wave === 1 && e.hp > 0).every((e) => e.position === state.position + 1)).toBe(true);
+    const state = through.state();
+    expect(state.field!.position).toBeGreaterThanOrEqual(WAVE_GAP + 7 * 5);
+    expect(state.field!.enemies.filter((e) => e.wave === 1 && e.hp > 0).every((e) => e.position === state.field!.position + 1)).toBe(true);
+    expect(state.events.filter((e) => e.kind === "charge")).toHaveLength(6);
   });
 
   it("walks faster with movement speed buffs", () => {
@@ -75,6 +77,10 @@ describe("stage farming fights", () => {
     plain.advance(1);
     fast.advance(1);
     expect(fast.state().field!.position).toBeGreaterThan(plain.state().field!.position * 1.8);
+    // A mounted beast's MSPD raises the walk through the stats' movement speed.
+    const mounted = createFight({ ...base, farm: { ...stage, enemyHp: 1e12 }, movementSpeed: 1.5 });
+    mounted.advance(1);
+    expect(mounted.state().moveSpeed).toBeCloseTo(7.5);
   });
 
   it("hits every monster in a skill's range, and readies a bat after its kills", () => {

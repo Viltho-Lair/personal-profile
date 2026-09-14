@@ -419,6 +419,7 @@ export function fightInput(
     bossDamage: target.bossMonster === false ? stats.monsterDamage : stats.bossDamage,
     ...target,
     attackSpeed: stats.attackSpeed,
+    movementSpeed: stats.movementSpeed,
     maxHp: stats.hp,
     hpRecovery: stats.hpRecovery,
     maxMana: stats.mana,

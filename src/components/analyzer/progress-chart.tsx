@@ -10,7 +10,9 @@ import { ELEMENTS } from "@/lib/game/stats";
 import { BeastArt } from "./beast-panel";
 import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
 import { FamiliarArt } from "./skill-familiars";
-import { createField, FARM_WAVES, type FarmStage } from "@/lib/game/farm";
+import { FARM_WAVES, MOVE_SPEED, type FarmStage } from "@/lib/game/farm";
+import type { Element } from "@/lib/game/stats";
+import { FarmRender } from "./farm-render";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
@@ -219,7 +221,9 @@ export function ProgressChart() {
         </span>
       </div>
 
-      {farmMode && setup.farm ? <FarmStrip stage={setup.farm} snap={snap} /> : null}
+      {farmMode && setup.farm ? (
+        <FarmRender stage={setup.farm} snap={snap} element={mainElement(setup.skills)} baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)} />
+      ) : null}
       <svg viewBox={`0 0 ${W} ${H}`} className={`h-56 w-full shrink-0 md:h-[34svh] ${farmMode ? "hidden" : ""}`} preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
         {stagesMode ? (
           <>
@@ -844,68 +848,6 @@ function FamiliarTile({
   );
 }
 
-/** Range the farming view shows at once, and how far behind the slayer it starts. */
-const FARM_VIEW = 30;
-const FARM_BEHIND = 4;
-/** Circles drawn for monsters sharing a spot before the rest are shown as a count. */
-const FARM_STACK = 3;
-
-/**
- * Stage farming, drawn in place of the graph: the slayer as a circle walking right, the monsters and the
- * box as white circles a range apart on a black strip, fading as they lose HP and gone once they fall.
- */
-function FarmStrip({ stage, snap }: { stage: FarmStage; snap: FightState | null }) {
-  const initial = useMemo(() => createField(stage).state(), [stage]);
-  const field = snap?.field ?? initial;
-  const left = field.position - FARM_BEHIND;
-  const unit = (W - 16) / FARM_VIEW;
-  const x = (position: number) => 8 + (position - left) * unit;
-  const ground = H * 0.62;
-  const visible = field.enemies.filter((e) => e.hp > 0 && e.position >= left - 1 && e.position <= left + FARM_VIEW + 1);
-  const waveStarts = field.enemies.filter((e, i, all) => i === 0 || all[i - 1].wave !== e.wave);
-  const front = field.enemies.find((e) => e.hp > 0);
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full shrink-0 rounded-md bg-black md:h-[34svh]" role="img" aria-label={`Stage ${stage.stage} farming: ${field.kills} monsters down`}>
-      <line x1={0} x2={W} y1={ground + unit * 0.5} y2={ground + unit * 0.5} stroke="white" strokeOpacity="0.15" />
-      {waveStarts
-        .filter((e) => e.position >= left - 2 && e.position <= left + FARM_VIEW)
-        .map((e) => (
-          <text key={`w${e.wave}`} x={x(e.position)} y={ground - unit * 1.2} fill="white" fillOpacity="0.5" fontSize="9" className="font-mono">
-            {e.box ? "Box" : `Wave ${e.wave}`}
-          </text>
-        ))}
-      {visible.map((e, i) => {
-        // Monsters carried onto one spot by a charge stack upward: three show, the rest are counted.
-        const below = visible.slice(0, i).filter((o) => o.position === e.position).length;
-        const onSpot = visible.filter((o) => o.position === e.position).length;
-        if (below >= FARM_STACK) return null;
-        return (
-          <g key={e.id}>
-            <circle
-              cx={x(e.position)}
-              cy={ground - below * unit * 0.8}
-              r={unit * (e.box ? 0.45 : 0.35)}
-              fill="white"
-              fillOpacity={0.25 + 0.75 * (e.hp / Math.max(1e-300, e.maxHp))}
-              stroke="white"
-              strokeWidth={e === front ? 2 : 1}
-            />
-            {below === FARM_STACK - 1 && onSpot > FARM_STACK ? (
-              <text x={x(e.position)} y={ground - FARM_STACK * unit * 0.8} textAnchor="middle" fill="white" fontSize="9" className="font-mono">
-                +{onSpot - FARM_STACK}
-              </text>
-            ) : null}
-          </g>
-        );
-      })}
-      <circle cx={x(field.position)} cy={ground} r={unit * 0.4} className="fill-sky-400" stroke="white" strokeWidth="1.5" />
-      <text x={8} y={14} fill="white" fillOpacity="0.7" fontSize="10" className="font-mono">
-        Stage {stage.stage} · {field.kills} / {field.enemies.length} down{field.cleared ? " · cleared" : ""}
-      </text>
-    </svg>
-  );
-}
-
 /** The monster in front's HP while farming, with its wave underneath. */
 function FarmHealth({ stage, snap }: { stage: FarmStage; snap: FightState | null }) {
   const field = snap?.field;
@@ -950,4 +892,11 @@ function FarmResults({ stage, snap, duration }: { stage: FarmStage; snap: FightS
       </p>
     </div>
   );
+}
+
+/** The element most of the preset's attack and buff skills share: the slayer wears it while farming. */
+function mainElement(skills: FightSkill[]): Element | null {
+  const counts = new Map<Element, number>();
+  for (const skill of skills) if (skill.element && skill.kind !== "passive") counts.set(skill.element, (counts.get(skill.element) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }

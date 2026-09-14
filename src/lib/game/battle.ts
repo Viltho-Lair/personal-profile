@@ -17,7 +17,8 @@
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
  * - Rave stores all the damage done to the enemy for its duration (5 seconds):
- *   skills, basic attacks and spirit skills alike, while the fight carries on. It can then be used again to unleash
+ *   skills, basic attacks and spirit skills alike. It stops time while it
+ *   stores: the battle timer and skill cooldowns hold while attacks keep landing. It can then be used again to unleash
  *   its share of that damage (110% at level 5) as it is, with no multipliers on
  *   top, played out in stopped time, and only then does its cooldown start.
  * - Meditation charges every attack and buff, their cooldowns and strike
@@ -49,6 +50,27 @@
 
 import { elementMatchup } from "./elements";
 import { BASIC_RANGE, createField, MOVE_SPEED, type FarmStage, type FieldState } from "./farm";
+
+/**
+ * Something the farming view draws: a basic attack, an attack skill's sweep over its range, a charge, a
+ * buff, a spirit skill, Rave's release or a kill. `real` is when it shows; `from` and `to` are field positions.
+ */
+export type FightEvent = {
+  kind: "basic" | "sweep" | "charge" | "buff" | "breath" | "rave" | "kill" | "familiar";
+  real: number;
+  name: string;
+  element: Element | null;
+  from: number;
+  to: number;
+  /** Hits (sweeps, familiar), which charge it was, or the fallen monster's id (kills). */
+  count: number;
+  /** Where the monsters it reached stood, nearest first (sweeps, familiar). */
+  targets?: number[];
+};
+
+/** Seconds a Supersonic-style charge takes on screen, one after another. */
+export const CHARGE_SECONDS = 0.12;
+const MAX_EVENTS = 240;
 import { HIGH_HP_THRESHOLD, type SpiritSkillEffects } from "./spirit-skills";
 import type { ByElement, Element } from "./stats";
 
@@ -93,8 +115,9 @@ export type FightSkill = {
   /** How far ahead an attack reaches when stage farming: it hits every monster within it. */
   range?: number;
   /**
-   * Farming, the attack charges the slayer forward: to the farthest monster it hits ("farthest", Fulgurous)
-   * or through its whole range ("through", Supersonic).
+   * Farming, the attack charges the slayer forward: to the farthest monster it hits ("farthest", Fulgurous),
+   * or once per hit through its whole range ("through", Supersonic's 6 consecutive charges), hitting what's
+   * in range before each charge.
    */
   dash?: "farthest" | "through";
   /** Extra damage while the enemy is at or below this share of its HP (Na: +10% at 60% or less). */
@@ -152,6 +175,8 @@ export type FightInput = {
   spirits?: SpiritSkillEffects;
   /** Basic attacks a second before ATK SPD buffs (1 plus the Bracelet of Speed). */
   attackSpeed?: number;
+  /** Movement speed multiple from the stats (1 = the base walk), before MSPD buffs. */
+  movementSpeed?: number;
   /** Life and mana pools and what they refill each second; no pools means skills cost nothing. */
   maxHp?: number;
   hpRecovery?: number;
@@ -167,7 +192,8 @@ export type FightInput = {
 export type FightResult = {
   /** Cumulative damage after each hit, by fight-clock time. */
   points: { t: number; damage: number }[];
-  casts: { name: string; t: number }[];
+  /** Every skill that went: its name, fight-clock time and the real time it went. */
+  casts: { name: string; t: number; real: number }[];
   /** Each time Rave unleashed its stored damage: when, and how much it dealt. */
   releases: { t: number; damage: number; amount: number }[];
   total: number;
@@ -212,6 +238,13 @@ export type FightState = FightResult & {
   /** Stage farming: where the slayer and the monsters are, and when the box broke. */
   field: FieldState | null;
   clearedAt: number | null;
+  /** Farming: what was drawn lately (basic attacks, sweeps, charges, buffs, kills), oldest first. */
+  events: FightEvent[];
+  /** Range walked a second right now, and the MSPD bonus on it. */
+  moveSpeed: number;
+  mspdBonus: number;
+  /** Rave is storing, so time and skill cooldowns stand still. */
+  raveStopping: boolean;
   attacksPerSecond: number;
   /** Total ATK and ATK SPD the buffs, stacks and Rage add right now, as fractions. */
   atkBonus: number;
@@ -327,6 +360,13 @@ export function createFight(input: FightInput): Fight {
   const field = input.farm ? createField(input.farm) : null;
   const struckIds = new Set<number>();
   let lastKills = 0;
+  const events: FightEvent[] = [];
+  const log = (event: Omit<FightEvent, "real"> & { real?: number }) => {
+    if (!field) return;
+    events.push({ real, ...event });
+    if (events.length > MAX_EVENTS) events.splice(0, events.length - MAX_EVENTS);
+  };
+  const at = () => field?.position() ?? 0;
   let clearedAt: number | null = null;
   /** The current enemy's max and remaining HP: the monster in front when farming, else the one enemy. */
   const targetMax = () => (field ? (field.front()?.maxHp ?? 0) : enemyHp);
@@ -340,7 +380,7 @@ export function createFight(input: FightInput): Fight {
   let basic = 0;
   const bySkill: Record<string, number> = {};
   const points = [{ t: 0, damage: 0 }];
-  const casts: { name: string; t: number }[] = [];
+  const casts: FightResult["casts"] = [];
   const releases: FightResult["releases"] = [];
 
   const isOn = (l: Live) => l.skill.trigger === "always" || (action >= l.activeFrom && action < l.activeUntil);
@@ -434,7 +474,7 @@ export function createFight(input: FightInput): Fight {
   const go = (l: Live, queue: "attack" | "buff" | null) => {
     const s = l.skill;
     const e = s.effect;
-    casts.push({ name: s.name, t: clock });
+    casts.push({ name: s.name, t: clock, real });
     l.progress = 0;
     l.queued = false;
     l.uses += 1;
@@ -458,12 +498,27 @@ export function createFight(input: FightInput): Fight {
       const amp = (s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1) * elementMatchup(s.element, input.enemyElement ?? null);
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
       const reach = s.range ?? BASIC_RANGE;
-      const farthest = field && s.dash ? field.farthest(reach) : null;
-      for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, reach, false);
-      // A charge moves the slayer with it.
-      if (field && s.dash) {
-        const at = field.state().position;
-        field.dash(s.dash === "through" ? at + reach : (farthest ?? at));
+      const kind = s.familiar ? "familiar" : "sweep";
+      if (field && s.dash === "through") {
+        // Consecutive charges: each hits what's in range, then charges through it while anything is left ahead.
+        for (let i = 0; i < whole; i += 1) {
+          const start = at();
+          deal(perHit, s.name, false, reach, false);
+          const onward = field.aheadInRange(reach);
+          if (onward) field.dash(start + reach);
+          log({ kind: "charge", name: s.name, element: s.element, from: start, to: onward ? start + reach : start, count: i, real: real + i * CHARGE_SECONDS });
+        }
+      } else {
+        const farthest = field && s.dash ? field.farthest(reach) : null;
+        const start = at();
+        const targets = field?.positionsInRange(reach).slice(0, 12);
+        for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, reach, false);
+        log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets });
+        // A charge moves the slayer with it.
+        if (field && s.dash) {
+          field.dash(farthest ?? start);
+          log({ kind: "charge", name: s.name, element: s.element, from: start, to: farthest ?? start, count: 0 });
+        }
       }
       if (s.freezes) {
         animation = castSeconds * whole;
@@ -479,6 +534,7 @@ export function createFight(input: FightInput): Fight {
         // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored
         // hits already had their multipliers. The cooldown starts now.
         record(field ? field.hit(raveStored * e.power, BASIC_RANGE, true) : raveStored * e.power, s.name, false);
+        log({ kind: "rave", name: s.name, element: null, from: at(), to: field?.front()?.position ?? at(), count: 1 });
         releases.push({ t: clock, damage: total, amount: raveStored * e.power });
         raveStored = 0;
         l.charged = false;
@@ -511,6 +567,7 @@ export function createFight(input: FightInput): Fight {
     } else {
       l.activeFrom = action + s.delay;
       l.activeUntil = action + s.delay + s.duration;
+      if (s.duration > 0) log({ kind: "buff", name: s.name, element: s.element, from: at(), to: at(), count: 0 });
     }
 
     if (queue) {
@@ -541,7 +598,10 @@ export function createFight(input: FightInput): Fight {
       }
       if (spirits.breath && action >= nextBreath) {
         nextBreath += spirits.breath.every;
-        if (targetMax() > 0 && (!field || field.inRange(BASIC_RANGE))) deal(spirits.breath.share * targetLeft(), "Breath of Fire", true);
+        if (targetMax() > 0 && (!field || field.inRange(BASIC_RANGE))) {
+          deal(spirits.breath.share * targetLeft(), "Breath of Fire", true);
+          log({ kind: "breath", name: "Breath of Fire", element: "Fire", from: at(), to: field?.front()?.position ?? at(), count: 1 });
+        }
       }
       if (spirits.cooldownRecovery && action >= nextRecovery) {
         nextRecovery += spirits.cooldownRecovery.every;
@@ -577,7 +637,8 @@ export function createFight(input: FightInput): Fight {
         continue;
       }
       if (!l.started || s.trigger === "always" || l.queued || l.holding || complete(l)) continue;
-      if (s.trigger === "seconds" && !frozen) l.progress += step * (1 + now.cooldownRate);
+      // Cooldowns hold while Rave stops time.
+      if (s.trigger === "seconds" && !frozen && !(raveUntil >= 0 && action < raveUntil)) l.progress += step * (1 + now.cooldownRate);
       if (l.progress < target(l)) continue;
       l.progress = Math.min(l.progress, target(l));
       if (s.kind === "passive") go(l, null);
@@ -606,8 +667,9 @@ export function createFight(input: FightInput): Fight {
 
     const attacksPerSecond = baseSpeed * (1 + now.speed);
     // Farming, the slayer walks on while nothing is in reach of a basic attack.
-    if (field && !blocked && !field.inRange(BASIC_RANGE)) field.move(MOVE_SPEED * (1 + now.mspd) * step);
+    if (field && !blocked && !field.inRange(BASIC_RANGE)) field.move(MOVE_SPEED * (input.movementSpeed ?? 1) * (1 + now.mspd) * step);
     if (real >= nextBasic && !blocked && (!field || field.inRange(BASIC_RANGE))) {
+      if (field) log({ kind: "basic", name: "Basic attack", element: null, from: at(), to: field.front()?.position ?? at() + BASIC_RANGE, count: 1 });
       deal(expectedHit(input.attack * (1 + now.atk), input), null);
       nextBasic = real + 1 / attacksPerSecond;
       for (const l of live) if (l.skill.trigger === "hits" && l.started && !l.queued && !complete(l)) l.progress += 1;
@@ -629,6 +691,8 @@ export function createFight(input: FightInput): Fight {
     if (field) {
       const kills = field.kills();
       if (kills > lastKills) {
+        // Each monster that fell this tick bursts where it stood.
+        for (const e of field.fallen().slice(lastKills)) log({ kind: "kill", name: e.box ? "Box" : "Monster", element: null, from: e.position, to: e.position, count: e.id });
         for (const l of live) if (l.skill.trigger === "kills" && l.started && !l.queued) l.progress += kills - lastKills;
         lastKills = kills;
       }
@@ -638,7 +702,8 @@ export function createFight(input: FightInput): Fight {
     real += step;
     if (real >= frozenUntil) {
       action += step;
-      if (real >= stopUntil) clock = Math.min(input.duration, clock + step);
+      // Time Freeze and a storing Rave hold the battle timer.
+      if (real >= stopUntil && !(raveUntil >= 0 && action < raveUntil)) clock = Math.min(input.duration, clock + step);
     }
   };
 
@@ -679,6 +744,10 @@ export function createFight(input: FightInput): Fight {
         timeStopped: real < stopUntil,
         field: field?.state() ?? null,
         clearedAt,
+        events,
+        moveSpeed: MOVE_SPEED * (input.movementSpeed ?? 1) * (1 + now.mspd),
+        raveStopping: raveUntil >= 0 && action < raveUntil,
+        mspdBonus: now.mspd,
         attacksPerSecond: baseSpeed * (1 + now.speed),
         atkBonus: now.atk,
         speedBonus: now.speed,
