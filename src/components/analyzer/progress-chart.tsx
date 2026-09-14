@@ -48,8 +48,14 @@ export function ProgressChart() {
   const index = profile.promotionTarget.promotion ?? Math.min(current, PROMOTION_STAGES.length - 1);
   const next = useMemo(() => promotionFight(profile, factors, index, FIGHT_SECONDS, manual), [profile, factors, index, manual]);
   // The Analysis and Render views both show the rendered fight, as it was set up when it started, until a new
-  // render or a reload; before any render they show what a render would play now.
-  const run = useFightRun();
+  // render or a reload; before any render they show what a render would play now. Picking another enemy (fight
+  // type, promotion or farming stage) clears it, so a result never shows under an enemy it wasn't fought against.
+  const rendered = useFightRun();
+  const sameEnemy = rendered !== null && enemyKey(rendered.setup) === enemyKey(next);
+  useEffect(() => {
+    if (rendered && !sameEnemy) stopFightRun(true);
+  }, [rendered, sameEnemy]);
+  const run = sameEnemy ? rendered : null;
   const setup = run?.setup ?? next;
   const phase: Phase = run?.phase ?? "idle";
   const snap = run?.snap ?? null;
@@ -300,6 +306,13 @@ export function ProgressChart() {
 }
 
 const NO_MANUAL: string[] = [];
+
+/**
+ * Which enemy a fight is against: its type, the promotion boss or monster and its stage, or the farmed stage. The
+ * stages analysis is one enemy however far it reaches.
+ */
+const enemyKey = (setup: ReturnType<typeof promotionFight>) =>
+  setup.mode === "stages" ? "stages" : `${setup.mode}|${setup.boss?.name ?? ""}|${setup.boss?.stage ?? ""}|${setup.farm?.stage ?? ""}`;
 
 /** A normal monster's verdict: whether it went down, and how fast. */
 function MonsterResults({ name, stage, hp, snap, duration }: { name: string; stage: number; hp: number; snap: FightState; duration: number }) {
