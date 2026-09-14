@@ -331,6 +331,18 @@ const isStack = (skill: FightSkill) =>
 const complete = (l: Live) =>
   (l.skill.maxUses != null && l.uses >= l.skill.maxUses) || (isStack(l.skill) && l.skill.maxStacks != null && l.stacks >= l.skill.maxStacks);
 const castable = (skill: FightSkill) => skill.kind !== "passive";
+/**
+ * Whether Meditation's and Wind Force's charges reach a skill: anything readied by a cooldown or a strike count,
+ * stacking passives included until they're complete. Skills that go on a condition (skill uses, kills, stacks
+ * completing), beasts and familiar specials aren't, nor Rave while it holds, nor a skill that starts on its
+ * cooldown (Wrath of Gods) before it has gone once.
+ */
+const chargeable = (l: Live) =>
+  (l.skill.trigger === "seconds" || l.skill.trigger === "hits") &&
+  !complete(l) &&
+  !l.skill.uncharged &&
+  !l.holding &&
+  !(l.skill.startsOnCooldown && l.uses === 0);
 /** What readies a skill next: its first cooldown before it has gone, its usual one after. */
 const target = (l: Live) => (l.uses === 0 && l.skill.firstEvery != null ? l.skill.firstEvery : l.skill.every);
 
@@ -632,12 +644,7 @@ export function createFight(input: FightInput): Fight {
       // Meditation charges every skill on a cooldown or strike count, stacking passives too until they're
       // complete; skills that go on a condition (skill uses, kills, stacks completing) aren't charged.
       for (const other of live) {
-        // A skill that starts on its cooldown (Wrath of Gods) isn't charged until it has gone once.
-        if (other === l || complete(other) || other.skill.uncharged || other.holding || (other.skill.startsOnCooldown && other.uses === 0)) continue;
-        const t = other.skill.trigger;
-        if (t === "seconds" || t === "hits") {
-          other.progress = Math.min(target(other), other.progress + e.power * other.skill.every);
-        }
+        if (other !== l && chargeable(other)) other.progress = Math.min(target(other), other.progress + e.power * other.skill.every);
       }
     } else if (isStack(s)) {
       l.stacks += 1;
@@ -691,10 +698,9 @@ export function createFight(input: FightInput): Fight {
       if (spirits.cooldownRecovery && action >= nextRecovery) {
         nextRecovery += spirits.cooldownRecovery.every;
         showSpirit("Wind Force");
+        // Wind Force charges what Meditation does.
         for (const l of live) {
-          const s = l.skill;
-          if (s.trigger !== "seconds" || isStack(s) || s.uncharged || l.queued || l.holding || complete(l) || (s.startsOnCooldown && l.uses === 0)) continue;
-          l.progress = Math.min(target(l), l.progress + spirits.cooldownRecovery.share * s.every);
+          if (!l.queued && chargeable(l)) l.progress = Math.min(target(l), l.progress + spirits.cooldownRecovery.share * l.skill.every);
         }
       }
     }

@@ -106,4 +106,18 @@ describe("spirit skills in the fight", () => {
     const withRecovery = simulateFight({ ...base, duration: 25, skills: [slash], spirits });
     expect(withRecovery.casts.length).toBeGreaterThan(without.casts.length);
   });
+
+  it("charges stacking passives with Wind Force too, on seconds and on strikes", () => {
+    const burning: FightSkill = {
+      name: "Burning Sword", element: null, kind: "passive", trigger: "seconds", every: 5, duration: 0, delay: 0, startAt: 0, freezes: false, bonus: 0,
+      maxStacks: 10, effect: { type: "atkStack", power: 0 },
+    };
+    const speedSword: FightSkill = { ...burning, name: "Speed Sword", trigger: "hits", effect: { type: "speedStack", power: 0 } };
+    // Every 7 seconds, so the charges land between stages rather than on them.
+    const spirits = { ...noSpiritSkills(), cooldownRecovery: { every: 7, share: 0.5 } };
+    const stacks = (skill: FightSkill, withSpirit: boolean) =>
+      simulateFight({ ...base, duration: 30, skills: [skill], spirits: withSpirit ? spirits : undefined }).casts.filter((c) => c.name === skill.name).length;
+    expect(stacks(burning, true)).toBeGreaterThan(stacks(burning, false));
+    expect(stacks(speedSword, true)).toBeGreaterThan(stacks(speedSword, false));
+  });
 });
