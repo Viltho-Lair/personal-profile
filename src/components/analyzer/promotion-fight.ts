@@ -176,7 +176,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     maxTargets: num(/to (\d+) enemies/i, text) ?? undefined,
     castsAnyway: CASTS_ANYWAY.has(skill.name) || undefined,
     randomTiles: RANDOM_TILES.has(skill.name) || undefined,
-    perSecond: PER_SECOND.has(skill.name) || undefined,
+    hitEvery: PER_SECOND.has(skill.name) ? 1 : undefined,
   };
   const make = (effect: SkillEffect, extra: Partial<FightSkill> = {}): FightSkill => ({ ...base, ...extra, effect });
 
@@ -283,14 +283,17 @@ export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits"
 /** Seconds between familiar uses when a familiar allows more than one (Ku: 2 uses, 20 seconds apart). */
 export const FAMILIAR_COOLDOWN = 30;
 export const FAMILIAR_SKILL = "Familiar";
+/** Seconds between Pe's repeated attacks (its stat is labelled Seconds: one repeat a second). */
+export const PE_REPEAT_SECONDS = 1;
 
 type FamiliarPart = { familiar: Familiar; stars: number; values: Record<string, number | null> };
 
 /**
  * The equipped familiars' combined use, once a battle unless a familiar says otherwise (Ku: 2 uses): the
  * weapon familiar's range and damage, times the attribute familiar's damage and element, hitting the battle
- * familiar's number of times (Ku and Sha: Hits, Pe: Seconds, Po: Hits). Specials that play in a fight come
- * with it; the rest are listed as not modelled.
+ * familiar's number of times (Ku and Sha: Hits, Pe: Seconds, Po: Hits). Pe repeats the attack that many
+ * times one after another, a second apart (10% faster at Immortal). Specials that play in a fight come with
+ * it; the rest are listed as not modelled.
  */
 export function familiarFightSkills(profile: ProfileV1, duration: number) {
   const equipped = activeFamiliars(profile);
@@ -312,6 +315,7 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
   let every = FAMILIAR_COOLDOWN;
   let bonus = 0;
   let maxUses = 1;
+  let hitEvery: number | undefined;
   const skill: FightSkill = {
     name: FAMILIAR_SKILL,
     element,
@@ -365,6 +369,10 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
         maxUses = 2;
         every = 20;
         break;
+      case "Pe":
+        // Repeats the attack its Seconds number of times, a second apart; at Immortal the repeats come 10% faster.
+        hitEvery = PE_REPEAT_SECONDS * (battle.familiar.stars.find((s) => s.star === battle.stars)?.rarity === "Immortal" ? 0.9 : 1);
+        break;
       case "Po":
         // 15 extra attacks 2 seconds before the end: a one-off that starts ready then.
         specials.push(special("Po", { type: "damage", power: 1, hits: 15 }, { trigger: "seconds", every: duration * 10, startAt: Math.max(0, duration - 2), familiar: true }));
@@ -373,7 +381,7 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
         if (familiar.special) notes.push(`${familiar.name}: ${familiar.special}`);
     }
   }
-  return { skill: { ...skill, every, bonus, maxUses }, specials, parts: { weapon, attribute, battle }, notes, range: weapon.values.Range ?? 0 };
+  return { skill: { ...skill, every, bonus, maxUses, hitEvery }, specials, parts: { weapon, attribute, battle }, notes, range: weapon.values.Range ?? 0 };
 }
 
 /** A knockback has a 50% chance every 10 seconds, so a boar's knockbacks come one every 20 seconds on average. */

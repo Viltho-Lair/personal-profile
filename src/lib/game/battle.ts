@@ -79,6 +79,8 @@ export type FightEvent = {
   targets?: number[];
   /** Seconds it lasts on screen when that differs by use (Rave's pillar, Blizzard's storm). */
   seconds?: number;
+  /** Seconds between its hits when they come one after another (Pe's repeats). */
+  gap?: number;
 };
 
 /** Seconds a Supersonic-style charge takes on screen, one after another. */
@@ -153,8 +155,8 @@ export type FightSkill = {
   maxTargets?: number;
   /** Farming, each hit lands on a random range tile within reach (meteors, lightning strikes). */
   randomTiles?: boolean;
-  /** Its hits come one a second instead of all at once (Blizzard: damage per second). */
-  perSecond?: boolean;
+  /** Seconds between its hits when they come one after another instead of all at once (Blizzard: 1; Pe's repeats: 1, 0.9 at Immortal). */
+  hitEvery?: number;
   /** Extra damage while the enemy is at or below this share of its HP (Na: +10% at 60% or less). */
   lowHpBonus?: { below: number; bonus: number };
   /** For "stacksComplete": the stacking skill to watch, or "all" for every stacking skill in the fight. */
@@ -588,11 +590,12 @@ export function createFight(input: FightInput): Fight {
           deal(perHit, s.name, false, reach, false, { tile });
         }
         log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets: tiles.slice(0, 60) });
-      } else if (s.perSecond) {
-        // One hit a second for as many seconds as it has hits.
+      } else if (s.hitEvery) {
+        // Hits one after another, `hitEvery` seconds apart: Blizzard's damage per second, Pe's repeated familiar attack.
         const start = at();
-        for (let i = 0; i < whole; i += 1) later.push({ at: action + i, amount: perHit, source: s.name, range: reach, max: s.maxTargets });
-        log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets: field ? field.positionsInRange(reach).slice(0, 12) : [start + BASIC_RANGE], seconds: whole });
+        for (let i = 0; i < whole; i += 1) later.push({ at: action + i * s.hitEvery, amount: perHit, source: s.name, range: reach, max: s.maxTargets });
+        const targets = field ? field.positionsInRange(reach).slice(0, 12) : [start + BASIC_RANGE];
+        log({ kind, name: s.name, element: s.element, from: start, to: start + reach, count: whole, targets, ...(s.familiar ? { gap: s.hitEvery } : { seconds: whole * s.hitEvery }) });
       } else if (!field && s.dash) {
         // One enemy: each batch charges into it where it stands.
         const start = at();

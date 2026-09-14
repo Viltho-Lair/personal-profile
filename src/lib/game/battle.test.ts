@@ -310,6 +310,16 @@ describe("simulateFight", () => {
     expect(fight.state().skills[0].complete).toBe(true);
   });
 
+  it("repeats Pe's familiar attack one hit after another instead of all at once", () => {
+    const pe = skill({ name: "Familiar", every: 30, familiar: true, maxUses: 1, hitEvery: 1, effect: { type: "damage", power: 1, hits: 5 } });
+    const fight = createFight({ ...base, duration: 30, skills: [pe] });
+    fight.advance(0.5);
+    expect(fight.state().bySkill.Familiar).toBeCloseTo(100);
+    fight.advance(4);
+    expect(fight.state().bySkill.Familiar).toBeCloseTo(500);
+    expect(fight.state().events.find((e) => e.kind === "familiar")?.gap).toBe(1);
+  });
+
   it("uses the familiar for its hits and damage, and readies its specials with each use", () => {
     const familiar = skill({ name: "Familiar", element: "Fire", every: 30, familiar: true, effect: { type: "damage", power: 4, hits: 3 } });
     const rion = skill({ name: "Rion", kind: "passive", trigger: "familiarCasts", every: 1, duration: 10, uncharged: true, effect: { type: "speed", power: 1 } });
