@@ -57,10 +57,12 @@ export function ownedEffect(data: RefinementData, skill: string, lines: Refineme
   return { stat: entry.owned.stat, value: entry.owned.values[step] ?? 0, percent: entry.owned.percent, mythic };
 }
 
-/** What a skill's refinement lines do in a fight, as fractions. */
-export function refinementEffects(lines: RefinementLine[]) {
+/** What a skill's refinement lines do in a fight, as fractions: only top-colour (Aqua) lines work. */
+export function refinementEffects(data: RefinementData, lines: RefinementLine[]) {
+  const top = data.tiers.length - 1;
+  const aqua = lines.filter((line) => tierOf(data, line.option, line.value) === top);
   const sum = (option: string) =>
-    lines.reduce((total, line) => total + (line.option === option && line.value !== null ? line.value / 100 : 0), 0);
+    aqua.reduce((total, line) => total + (line.option === option && line.value !== null ? line.value / 100 : 0), 0);
   return {
     damage: sum("DMG Increase(%)"),
     cooldown: sum(COOLDOWN_OPTION),

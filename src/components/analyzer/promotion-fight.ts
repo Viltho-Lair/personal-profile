@@ -3,7 +3,8 @@ import promotionBossData from "@/data/optimizer/promotion-bosses.json";
 import { ANIMATION_SECONDS, simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
-import { openRefinementLines, refinementEffects } from "@/lib/game/refinement";
+import refinementData from "@/data/optimizer/skill-refinement.json";
+import { openRefinementLines, refinementEffects, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
 import { activeSkillStones, awakening, effectiveSkillLevel, equippedKey, gearState, masteryLevel, mountedBeast } from "@/lib/profile/rules";
@@ -18,6 +19,7 @@ const BOSS_HP = promotionBossData.bossHp as number[];
 const ENHANCE = characterData.enhance as unknown as EnhanceStat[];
 
 export const FIGHT_SECONDS = 60;
+const REFINEMENT_DATA = refinementData as unknown as RefinementData;
 
 const bossHpAt = (stage: number) => BOSS_HP[Math.min(BOSS_HP.length, Math.max(1, Math.round(stage))) - 1] ?? 0;
 export const STAGE_COUNT = BOSS_HP.length;
@@ -106,6 +108,28 @@ const MASTERY_EXTRAS: {
   { node: "8-EN12", skills: ["Pillar of Fire"], cooldown: -2 },
 ];
 
+/**
+ * What checked Skill Mastery nodes do to a skill: its hit count (e.g. 2x Hits), the damage
+ * multiplier of every checked node (1.5x, 3x, and the later pages' nodes the workbook doesn't read)
+ * and the nodes that apply.
+ */
+export function skillMasteryOnSkill(profile: ProfileV1, skill: SkillWithMechanics) {
+  const m = skill.mechanics;
+  const hits = m?.hits ? (m.hits.mastery && nodeDone(profile, m.hits.mastery.node) ? m.hits.mastery.hits : m.hits.base) : 1;
+  const nodes = (m?.masteryDamage ?? []).filter((node) => nodeDone(profile, node.node));
+  const extras = MASTERY_EXTRAS.filter((extra) => extra.skills.includes(skill.name) && nodeDone(profile, extra.node));
+  const multiplier = nodes.reduce((product, node) => product * node.multiplier, 1) * extras.reduce((product, extra) => product * (extra.multiplier ?? 1), 1);
+  const add = (key: "manaCost" | "strikes" | "cooldown") => extras.reduce((total, extra) => total + (extra[key] ?? 0), 0);
+  return {
+    hits,
+    multiplier,
+    manaCost: add("manaCost"),
+    strikes: add("strikes"),
+    cooldown: add("cooldown"),
+    nodes: [...nodes.map((node) => node.node), ...extras.map((extra) => extra.node)],
+  };
+}
+
 /** A preset skill as a fight skill, or the reason it's left out. */
 function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: SkillWithMechanics[]): FightSkill | string {
   const m = skill.mechanics;
@@ -116,7 +140,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   const text = skill.description.specific ?? "";
   const element = (ELEMENTS as readonly string[]).includes(skill.element ?? "") ? (skill.element as Element) : null;
   // Only the lines the skill's level has opened count.
-  const refined = refinementEffects((profile.skillRefinement[skill.name] ?? []).slice(0, openRefinementLines(level)));
+  const refined = refinementEffects(REFINEMENT_DATA, (profile.skillRefinement[skill.name] ?? []).slice(0, openRefinementLines(level)));
   const base: Omit<FightSkill, "effect"> = {
     mpCost: Math.max(0, (skill.mpCost ?? 0) * (1 - refined.mana)),
     // Stacking passives complete after their stages (Skills Data's Range column).
@@ -167,8 +191,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
 
   if (m.type === "attack") {
     if (!/X%.{0,20}(damage|DMG)|X% of (their )?ATK|(damage|DMG) X%/i.test(text) || /copy the last|frozen|Y%/i.test(text)) return skill.name;
-    const hits = m.hits?.mastery && nodeDone(profile, m.hits.mastery.node) ? m.hits.mastery.hits : (m.hits?.base ?? 1);
-    const amp = m.masteryDamage.reduce((product, node) => product * (nodeDone(profile, node.node) ? node.multiplier : 1), 1);
+    const { hits, multiplier: amp } = skillMasteryOnSkill(profile, skill);
     const heartOfFire = preset.find((s) => s.name === "Heart of Fire");
     const fireSkills = preset.filter((s) => s.element === "Fire" && s.mechanics?.type === "attack").length;
     let bonus = 0;
@@ -183,12 +206,10 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     const wisdom = companionSkill(profile, "Luna", "Wisdom of War");
     // Checked mastery nodes the workbook doesn't read.
     const extras = MASTERY_EXTRAS.filter((extra) => extra.skills.includes(skill.name) && nodeDone(profile, extra.node));
-    let extraAmp = 1;
     let mpCost = base.mpCost ?? 0;
     let animation: number | undefined;
     let freezes = base.freezes;
     for (const extra of extras) {
-      extraAmp *= extra.multiplier ?? 1;
       mpCost = Math.max(0, mpCost + (extra.manaCost ?? 0));
       if (extra.animation) animation = ANIMATION_SECONDS * extra.animation;
       if (extra.stopsTime) freezes = true;
@@ -196,7 +217,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
       if (extra.cooldown && base.trigger === "seconds") every = Math.max(0.1, every + extra.cooldown);
     }
     return make(
-      { type: "damage", power: power * amp * extraAmp, hits },
+      { type: "damage", power: power * amp, hits },
       { bonus: bonus + refined.damage + shrine + wisdom, every, mpCost, animation, freezes },
     );
   }

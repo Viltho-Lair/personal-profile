@@ -93,7 +93,12 @@ export function SkillRefinement({ skill }: { skill: Skill & { mechanics?: Mechan
         </p>
       ) : null}
       <p className="text-[10px] leading-snug text-dim">
-        Owned effect steps up at 3, 4 and 5 Aqua lines ({entry.owned.values.map((v) => (entry.owned.percent ? `${formatValue(v * 100)}%` : formatValue(v))).join(" / ")}).
+        Only Aqua lines work: each Aqua line gives its bonus in fights, and the owned effect is{" "}
+        {entry.owned.values
+          .slice(1)
+          .map((v, i) => `${entry.owned.percent ? `${formatValue(v * 100)}%` : formatValue(v)} at ${i + 3} Aqua lines`)
+          .join(", ")}{" "}
+        (nothing below 3).
       </p>
     </section>
   );

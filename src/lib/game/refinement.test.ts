@@ -25,6 +25,8 @@ describe("skill refinement", () => {
     expect(ownedEffect(refinement, "Fire Slash", [aqua, aqua, red])?.value).toBe(0);
     expect(ownedEffect(refinement, "Fire Slash", [aqua, aqua, aqua])).toMatchObject({ stat: "Character HP", value: 0.02, mythic: 3 });
     expect(ownedEffect(refinement, "Flame Slash", [aqua, aqua, aqua, aqua, aqua])?.value).toBe(0.09);
-    expect(refinementEffects([aqua, { option: "Cooldown Reduction(%)", value: 1.5 }])).toMatchObject({ damage: 0.15, cooldown: 0.015 });
+    // Only Aqua lines work: the red DMG line and a low cooldown roll add nothing.
+    expect(refinementEffects(refinement, [aqua, red, { option: "Cooldown Reduction(%)", value: 1.0 }])).toMatchObject({ damage: 0.15, cooldown: 0 });
+    expect(refinementEffects(refinement, [{ option: "Cooldown Reduction(%)", value: 1.5 }]).cooldown).toBeCloseTo(0.015);
   });
 });

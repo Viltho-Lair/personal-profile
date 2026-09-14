@@ -5,16 +5,20 @@ import { skillPower } from "@/lib/game/formulas";
 import { effectiveSkillLevel } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
 import type { Skill } from "./data";
+import { skillMasteryOnSkill } from "./promotion-fight";
 import { LevelInput } from "./level-input";
 import { SkillRefinement } from "./skill-refinement";
 import { Sprite } from "./sprite";
 import { ELEMENT_TEXT, TIER_TEXT } from "./tiers";
 
-function Stat({ label, value }: { label: string; value: number | null }) {
+/** Aqua, as the game colours a value Skill Mastery has changed. */
+const BOOSTED = "text-cyan-400";
+
+function Stat({ label, value, boosted = false }: { label: string; value: number | null; boosted?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
       <dt>{label}</dt>
-      <dd className="text-ink tabular-nums">{value ?? "—"}</dd>
+      <dd className={`tabular-nums ${boosted ? BOOSTED : "text-ink"}`}>{value === null ? "—" : value.toLocaleString("en")}</dd>
     </div>
   );
 }
@@ -40,6 +44,8 @@ export function SkillDialog({
     skill.baseValue === null || skill.upgradeValue === null
       ? null
       : skillPower(skill.baseValue, skill.upgradeValue, level);
+  // Checked Skill Mastery nodes multiply an attack skill's damage and can add hits.
+  const mastery = skillMasteryOnSkill(profile, skill);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -108,13 +114,26 @@ export function SkillDialog({
             ? "Not learned"
             : power === null
               ? "Power: —"
-              : `Power at level ${level}: ${power.toLocaleString("en")}%`}
+              : (
+                <>
+                  Power at level {level}:{" "}
+                  <span className={mastery.multiplier !== 1 ? BOOSTED : undefined} title={mastery.multiplier !== 1 ? `${power.toLocaleString("en")}% x${mastery.multiplier} from Skill Mastery` : undefined}>
+                    {(power * mastery.multiplier).toLocaleString("en", { maximumFractionDigits: 2 })}%
+                  </span>
+                  {mastery.hits !== 1 ? <span className={BOOSTED}> · {mastery.hits} hits</span> : null}
+                </>
+              )}
         </p>
+
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
-        <Stat label="MP" value={skill.mpCost} />
-        <Stat label="Cooldown" value={skill.cooldown} />
+        <Stat label="MP" value={skill.mpCost === null ? null : Math.max(0, skill.mpCost + mastery.manaCost)} boosted={mastery.manaCost !== 0} />
+        <Stat
+          label="Cooldown"
+          value={skill.cooldown === null ? null : Math.max(0, skill.cooldown + mastery.cooldown + mastery.strikes)}
+          boosted={mastery.cooldown !== 0 || mastery.strikes !== 0}
+        />
         <Stat label="Range" value={skill.range} />
         <Stat label="Duration" value={skill.duration} />
         <Stat label="Base" value={skill.baseValue} />
