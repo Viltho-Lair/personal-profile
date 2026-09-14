@@ -163,7 +163,7 @@ const lifeOf = (event: FightEvent) =>
 
 function Monster({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
   const s = UNIT * 0.42;
-  const hp = enemy.hp / Math.max(1e-300, enemy.maxHp);
+  const hp = Math.min(1, Math.max(0, enemy.hp / Math.max(1e-300, enemy.maxHp)));
   return (
     <g transform={`translate(${x} ${y}) scale(${flash ? 1.12 : 1})`}>
       {/* A horned blob: every monster wears it. */}
@@ -182,7 +182,7 @@ function Monster({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEne
 
 function Box({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
   const s = UNIT * 0.62;
-  const hp = enemy.hp / Math.max(1e-300, enemy.maxHp);
+  const hp = Math.min(1, Math.max(0, enemy.hp / Math.max(1e-300, enemy.maxHp)));
   return (
     <g transform={`translate(${x} ${y}) scale(${flash ? 1.08 : 1})`}>
       {/* A crowned chest: the one shape every stage's end takes. */}
@@ -197,7 +197,7 @@ function Box({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; 
 
 function Boss({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
   const s = UNIT * 0.95;
-  const hp = enemy.hp / Math.max(1e-300, enemy.maxHp);
+  const hp = Math.min(1, Math.max(0, enemy.hp / Math.max(1e-300, enemy.maxHp)));
   const body = flash ? "#ffffff" : "#b9423f";
   return (
     // Its front stands at its position, so the slayer a range away isn't hidden inside it.
