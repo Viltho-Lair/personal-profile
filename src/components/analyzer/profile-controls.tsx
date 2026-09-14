@@ -1,6 +1,10 @@
 "use client";
 
+import { Eye } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { parseProfile } from "@/lib/profile/storage";
 import { useProfile } from "@/lib/profile/use-profile";
+import { isNewVisit, VISIT_COUNTED_KEY } from "@/lib/visitors";
 
 export function OwnedToggle({
   owned,
@@ -62,13 +66,16 @@ export function EquippedBadge({ position = "top-1 left-1" }: { position?: string
   );
 }
 
-/** Slayer level and the highest stage reached, beside Reset profile in the overview. */
-export function SlayerProgress() {
+const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
+const ACTION = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase underline-offset-4 hover:text-ink hover:underline";
+
+/** Slayer level and the highest stage reached. */
+function SlayerProgress() {
   const { profile, updateCharacter } = useProfile();
   const { slayerLevel, highestStage } = profile.character;
   const field = (label: string, value: number, min: number, onChange: (value: number) => void) => (
     <label className="flex items-center justify-between gap-3">
-      <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">{label}</span>
+      <span className={LABEL}>{label}</span>
       <input
         type="number"
         inputMode="numeric"
@@ -93,22 +100,166 @@ export function SlayerProgress() {
   );
 }
 
-export function ResetProfileButton({ onReset }: { onReset: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        if (
-          window.confirm(
-            "Reset your profile? This clears every level, owned item and equipped item saved in this browser.",
-          )
-        ) {
-          onReset();
+/** Visits so far, counted once a day per browser; hidden until the count can be read. */
+function VisitorCounter() {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    let active = true;
+    const today = new Date().toISOString().slice(0, 10);
+    let last: string | null = null;
+    try {
+      last = window.localStorage.getItem(VISIT_COUNTED_KEY);
+    } catch {}
+    const counting = isNewVisit(last, today);
+    fetch("/api/visitors", { method: counting ? "POST" : "GET", cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : { count: null }))
+      .then(({ count }: { count: number | null }) => {
+        if (!active || typeof count !== "number") return;
+        setCount(count);
+        if (counting) {
+          try {
+            window.localStorage.setItem(VISIT_COUNTED_KEY, today);
+          } catch {}
         }
-      }}
-      className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase underline-offset-4 hover:text-ink hover:underline"
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+  if (count === null) return null;
+  return (
+    <span className={`flex items-center gap-1.5 ${LABEL}`} title="Visits, each browser counted once a day">
+      <Eye aria-hidden className="size-3.5" />
+      Visitors <span className="text-ink tabular-nums">{count.toLocaleString("en")}</span>
+    </span>
+  );
+}
+
+type Confirm = { title: string; body: string; action: string; onConfirm: (() => void) | null };
+
+/** A modal asking before something that can't be undone; with no `onConfirm` it only informs. */
+function ConfirmDialog({ confirm, onClose }: { confirm: Confirm | null; onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (confirm && !dialog.open) dialog.showModal();
+    if (!confirm && dialog.open) dialog.close();
+  }, [confirm]);
+  return (
+    <dialog
+      ref={ref}
+      onClose={onClose}
+      aria-labelledby="settings-dialog-title"
+      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-ink/20 bg-ground p-4 text-ink backdrop:bg-black/50"
     >
-      Reset profile
-    </button>
+      {confirm ? (
+        <div className="flex flex-col gap-3">
+          <h2 id="settings-dialog-title" className="text-sm font-semibold">
+            {confirm.title}
+          </h2>
+          <p className="text-xs leading-snug text-dim">{confirm.body}</p>
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="rounded-md border border-ink/25 px-3 py-1 font-mono text-[10px] tracking-[0.08em] uppercase hover:border-ink">
+              {confirm.onConfirm ? "Cancel" : "OK"}
+            </button>
+            {confirm.onConfirm ? (
+              <button
+                type="button"
+                autoFocus
+                onClick={() => {
+                  confirm.onConfirm?.();
+                  onClose();
+                }}
+                className="rounded-md border border-red-500 bg-red-500 px-3 py-1 font-mono text-[10px] tracking-[0.08em] text-white uppercase hover:brightness-110"
+              >
+                {confirm.action}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </dialog>
+  );
+}
+
+/** Settings in the overview: slayer progress, the visitor count, and saving, loading or resetting the profile. */
+export function SettingsPanel() {
+  const { profile, resetProfile, replaceProfile } = useProfile();
+  const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const exportProfile = () => {
+    const blob = new Blob([JSON.stringify(profile, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `slayer-legends-profile-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importProfile = async (file: File) => {
+    const next = parseProfile(await file.text());
+    if (!next) {
+      setConfirm({ title: "Can't import this file", body: `${file.name} isn't a profile exported from this analyzer.`, action: "", onConfirm: null });
+      return;
+    }
+    setConfirm({
+      title: "Import profile?",
+      body: `This replaces everything saved in this browser with ${file.name}. Export first if you want to keep your current profile.`,
+      action: "Import",
+      onConfirm: () => replaceProfile(next),
+    });
+  };
+
+  return (
+    <section aria-labelledby="settings-title" className="flex h-full flex-col justify-between gap-3">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <h2 id="settings-title" className="text-sm font-semibold">
+            Settings
+          </h2>
+          <VisitorCounter />
+        </div>
+        <SlayerProgress />
+      </div>
+      <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+        <button type="button" onClick={exportProfile} className={ACTION}>
+          Export JSON
+        </button>
+        <button type="button" onClick={() => fileInput.current?.click()} className={ACTION}>
+          Import JSON
+        </button>
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".json,application/json"
+          aria-label="Import profile JSON file"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) void importProfile(file);
+          }}
+        />
+        <button
+          type="button"
+          onClick={() =>
+            setConfirm({
+              title: "Reset profile?",
+              body: "This clears every level, owned item and equipped item saved in this browser. It can't be undone; export first to keep a copy.",
+              action: "Reset",
+              onConfirm: resetProfile,
+            })
+          }
+          className={`${ACTION} hover:text-red-500`}
+        >
+          Reset profile
+        </button>
+      </div>
+      <ConfirmDialog confirm={confirm} onClose={() => setConfirm(null)} />
+    </section>
   );
 }

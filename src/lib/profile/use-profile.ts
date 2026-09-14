@@ -140,5 +140,6 @@ export function useProfile() {
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
     resetProfile: () => update(() => emptyProfile()),
+    replaceProfile: (next: ProfileV1) => update(() => next),
   };
 }

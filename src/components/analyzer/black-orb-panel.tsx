@@ -39,10 +39,7 @@ function AccessoryCard({ element }: { element: Element }) {
     <article className={`flex flex-col gap-2 rounded-lg border border-ink/15 p-3 ${owned ? "" : "opacity-70"}`}>
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h3 className={`text-sm font-medium ${ELEMENT_TEXT[element] ?? ""}`}>{element} accessory</h3>
-        <span className="flex items-center gap-1.5">
-          <span className={LABEL}>Level</span>
-          <InlineLevel value={accessory.level} min={0} max={999} name={`${element} accessory`} onChange={(level) => updateOrbAccessory(element, { level })} />
-        </span>
+        <InlineLevel value={accessory.level} min={0} max={999} name={`${element} accessory`} onChange={(level) => updateOrbAccessory(element, { level })} />
       </header>
       <label className="flex items-center gap-2">
         <span className={LABEL}>{element} Dmg</span>
@@ -129,10 +126,10 @@ export function BlackOrbPanel() {
         ))}
       </div>
       <div className="flex min-h-0 flex-col gap-3 overflow-auto p-3 pb-20 sm:p-4">
-        <label className="flex items-center gap-2">
-          <span className={LABEL}>Black Orb level</span>
+        <div className="flex items-center gap-2">
+          <span className={LABEL}>Black Orb</span>
           <InlineLevel value={orb.level} min={0} max={999} name="Black Orb" onChange={setOrbLevel} />
-        </label>
+        </div>
         <ul className="flex flex-col gap-0.5 font-mono text-[10px] text-dim uppercase">
           <li className={orb.level >= RESONANCE_LEVEL ? "text-ink" : ""}>Lv {RESONANCE_LEVEL}: resonance (50+ total accessory levels)</li>
           <li className={orb.level >= AWAKENING_LEVEL ? "text-ink" : ""}>Lv {AWAKENING_LEVEL}: awakening (+levels on lines)</li>

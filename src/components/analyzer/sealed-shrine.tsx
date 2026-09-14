@@ -32,7 +32,7 @@ function StatueCard({ statue }: { statue: ShrineStatue }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <h3 className="text-sm leading-tight font-medium">
-            {statue.name} <span className={LABEL}>Max Lv.{max}</span>
+            {statue.name} <span className={LABEL}>Max {max}</span>
           </h3>
           <InlineLevel value={level} min={0} max={max} name={statue.name} onChange={(l) => setShrineLevel(statue.key, l, max)} />
         </header>

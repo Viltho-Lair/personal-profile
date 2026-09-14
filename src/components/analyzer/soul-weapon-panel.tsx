@@ -172,7 +172,6 @@ function EngravingSettings() {
         <h3 className={LABEL}>Chaos level</h3>
         <div className="flex flex-wrap items-center gap-3">
           <label className={`flex items-center gap-1.5 ${LABEL}`}>
-            Lv
             <input
               type="number"
               min={0}

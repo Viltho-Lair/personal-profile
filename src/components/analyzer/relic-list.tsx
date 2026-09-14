@@ -41,7 +41,7 @@ function RelicRow({
           <h3 className="text-sm leading-tight font-medium">
             {relic.name}{" "}
             <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
-              Max Lv.{relic.maxLevel}
+              Max {relic.maxLevel}
             </span>
           </h3>
           <InlineLevel

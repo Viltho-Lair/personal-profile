@@ -66,6 +66,7 @@ export function InlineLevel({
   wide = false,
   disabled = false,
   title,
+  prefix = "Lv",
 }: {
   value: number;
   min?: number;
@@ -76,12 +77,14 @@ export function InlineLevel({
   wide?: boolean;
   disabled?: boolean;
   title?: string;
+  /** The word before the box: "Lv" unless the number isn't a level. */
+  prefix?: string;
 }) {
   const clamp = clampTo(min, max);
 
   return (
     <label title={title} className="flex items-center gap-1 font-mono text-[10px] tracking-[0.06em] text-dim uppercase">
-      Lv
+      {prefix}
       <input
         type="number"
         value={value}

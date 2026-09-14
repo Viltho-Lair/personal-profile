@@ -107,13 +107,6 @@ function Split({ left, right }: { left: ReactNode; right: ReactNode }) {
   );
 }
 
-function Missing({ what }: { what: string }) {
-  return (
-    <p className="rounded-md border border-dashed border-ink/25 p-3 text-xs leading-snug text-dim">
-      Not in the Master Optimizer workbook yet: {what}. There&apos;s nothing to set here until that data is added.
-    </p>
-  );
-}
 
 function Art({ item, className = "size-8" }: { item: Icon | undefined; className?: string }) {
   return item?.icon && item.iconSize ? (
@@ -220,7 +213,6 @@ function EnhanceSection() {
           {critLevel >= 1000 ? formatValue((knowledge?.maxDeathStrike ?? 0) + (superhuman?.superhuman ?? 0)) : "CRIT % 1000 first"}
         </dd>
       </dl>
-      <Missing what="Strength, Iron Body and Strong Heart grades" />
     </div>
   );
 
@@ -287,6 +279,7 @@ function TrainingDiary() {
                   min={0}
                   max={affordable}
                   name={`${stat.key} OP upgrades`}
+                  prefix="Bought"
                   title={`Up to ${affordable} with the OP left`}
                   onChange={(value) =>
                     set((c) => ({ ...c, diaryUpgrades: { ...c.diaryUpgrades, [stat.key]: clampLevel(value, affordable) } }))
@@ -433,7 +426,7 @@ function GrowthSection() {
               <p className="text-sm leading-tight font-medium">
                 {stat.key} <span className="text-xs font-normal text-dim">{stat.detail}</span>{" "}
                 <span className={`font-mono text-[10px] ${level > maxLevel ? "text-red-500" : "text-element-water"}`}>
-                  Max Lv.{formatValue(maxLevel)}
+                  Max {formatValue(maxLevel)}
                 </span>
               </p>
               <p className={LABEL}>

@@ -12,7 +12,7 @@ import { CharacterPanel } from "./character-panel";
 import { CompanionPanel } from "./companion-panel";
 import { KNOWN_NAMES } from "./data";
 import { EquipmentPanel } from "./equipment-panel";
-import { ResetProfileButton, SlayerProgress } from "./profile-controls";
+import { SettingsPanel } from "./profile-controls";
 import { ProgressChart } from "./progress-chart";
 import { SkillPanel } from "./skill-panel";
 import { StatsSummary } from "./stats-summary";
@@ -27,7 +27,7 @@ const TAB_ICONS: Record<string, { icon: string; iconSize: number } | undefined> 
  */
 export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
   const [active, setActive] = useState<TabId>(initialTab);
-  const { profile, resetProfile } = useProfile();
+  const { profile } = useProfile();
 
   // Rule 6: entries for items a data update renamed or removed are kept but
   // not shown. Say so during development so they can be remapped - but only
@@ -53,7 +53,7 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
       {/* Top half is a 3 x 2 grid: the progress chart and the Stats Summary
-          fill the left two columns, the ad sits top right, reset below it. */}
+          fill the left two columns, the ad sits top right, Settings below it. */}
       <section
         aria-label="Overview"
         className="flex shrink-0 flex-col border-b border-ink/15 md:grid md:h-1/2 md:grid-cols-3 md:grid-rows-2"
@@ -70,11 +70,8 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
         >
           <AdSlot slot={ANALYZER_AD_SLOT} />
         </aside>
-        <div className="flex flex-col justify-between gap-3 p-3 md:col-start-3 md:row-start-2">
-          <SlayerProgress />
-          <div className="flex justify-end">
-            <ResetProfileButton onReset={resetProfile} />
-          </div>
+        <div className="flex flex-col p-3 md:col-start-3 md:row-start-2">
+          <SettingsPanel />
         </div>
       </section>
 
