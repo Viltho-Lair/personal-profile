@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import * as rules from "./rules";
+import { setAbbreviatedNumbers } from "@/lib/number-format";
 import { createProfileStore } from "./store";
 import { PROFILE_KEY, type StorageLike } from "./storage";
 import {
@@ -48,13 +49,22 @@ function subscribe(listener: () => void) {
 
 type Levelled = { name: string; maxLevel: number };
 
+// Numbers follow the profile's setting: whichever snapshot a render reads decides how its numbers are written,
+// and the server (and hydration) always writes them in full.
+function clientSnapshot() {
+  const profile = store.getSnapshot();
+  setAbbreviatedNumbers(profile.abbreviateNumbers);
+  return profile;
+}
+
+function serverSnapshot() {
+  setAbbreviatedNumbers(false);
+  return SERVER_PROFILE;
+}
+
 /** The player's profile and every action that changes it. */
 export function useProfile() {
-  const profile = useSyncExternalStore(
-    subscribe,
-    store.getSnapshot,
-    () => SERVER_PROFILE,
-  );
+  const profile = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
   const { update } = store;
 
   return {
@@ -142,6 +152,7 @@ export function useProfile() {
       update((p) => rules.setShrineLevel(p, statue, level, max)),
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
+    setAbbreviateNumbers: (on: boolean) => update((p) => rules.setAbbreviateNumbers(p, on)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
     setStageFarming: (change: Partial<ProfileV1["stageFarming"]>) => update((p) => rules.setStageFarming(p, change)),
     resetProfile: () => update(() => emptyProfile()),

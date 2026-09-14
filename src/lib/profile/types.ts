@@ -223,6 +223,8 @@ export type ProfileV1 = {
   includeSkills: boolean;
   /** The fight's enemy is a boss monster; off, a normal monster. */
   bossMonster: boolean;
+  /** Numbers written the game's way, a letter for every thousand (1.00A); off, in full. */
+  abbreviateNumbers: boolean;
   /** The enemy's element when it's element restricted; null when it isn't. */
   enemyElement: "Fire" | "Water" | "Wind" | "Earth" | null;
   /** Stage farming instead of one enemy, and the stage to farm. */
@@ -287,6 +289,7 @@ export function emptyProfile(): ProfileV1 {
     mainSpirits: [],
     includeSkills: false,
     bossMonster: true,
+    abbreviateNumbers: false,
     enemyElement: null,
     stageFarming: { on: false, stage: 1 },
     soulEngraving: emptySoulEngraving(),

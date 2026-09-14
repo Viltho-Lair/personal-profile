@@ -61,8 +61,13 @@ export function DamageChart({
   const { width, height } = size;
   const plotW = Math.max(1, width - PAD.left - PAD.right);
   const plotH = Math.max(1, height - PAD.top - PAD.bottom);
-  const ratio = (value: number) =>
-    logScale ? Math.log10(1 + Math.max(0, value)) / Math.log10(1 + top) : Math.max(0, value) / top;
+  // A log scale starts a power of ten under the first damage dealt (or three under the top before any), so the
+  // fight climbs across the whole height from zero at the bottom instead of hugging the top.
+  const firstDamage = (points ?? []).find((point) => point.damage > 0)?.damage;
+  const lowPower = Math.floor(Math.log10(Math.min(firstDamage ?? top / 1000, top / 10)));
+  const low = 10 ** lowPower;
+  const decades = Math.max(1e-9, Math.log10(top) - lowPower);
+  const ratio = (value: number) => (logScale ? (value <= low ? 0 : (Math.log10(value) - lowPower) / decades) : Math.max(0, value) / top);
   const y = (value: number) => PAD.top + plotH * (1 - Math.min(1, ratio(value)));
   const x = (t: number) => PAD.left + (Math.min(Math.max(t, 0), duration) / Math.max(duration, 1e-9)) * plotW;
   const bottom = PAD.top + plotH;
@@ -83,9 +88,10 @@ export function DamageChart({
   // Gridlines: round values on a linear scale, whole powers of ten on a log scale.
   const grid: number[] = [];
   if (logScale) {
-    const decades = Math.floor(Math.log10(Math.max(1, top)));
-    const every = Math.max(1, Math.ceil(decades / 4));
-    for (let k = every; k <= decades; k += every) grid.push(10 ** k);
+    const first = lowPower + 1;
+    const last = Math.floor(Math.log10(top));
+    const every = Math.max(1, Math.ceil((last - first + 1) / 5));
+    for (let k = first; k <= last; k += every) grid.push(10 ** k);
   } else {
     const step = niceStep(top / 4);
     for (let v = step; v < top; v += step) grid.push(v);

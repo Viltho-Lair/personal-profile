@@ -10,6 +10,7 @@ import { LevelInput } from "./level-input";
 import { SkillRefinement } from "./skill-refinement";
 import { Sprite } from "./sprite";
 import { ELEMENT_TEXT, TIER_TEXT } from "./tiers";
+import { formatNumber } from "@/lib/number-format";
 
 /** Aqua, as the game colours a value Skill Mastery has changed. */
 const BOOSTED = "text-cyan-400";
@@ -18,7 +19,7 @@ function Stat({ label, value, boosted = false }: { label: string; value: number 
   return (
     <div className="flex items-baseline justify-between gap-2">
       <dt>{label}</dt>
-      <dd className={`tabular-nums ${boosted ? BOOSTED : "text-ink"}`}>{value === null ? "—" : value.toLocaleString("en")}</dd>
+      <dd className={`tabular-nums ${boosted ? BOOSTED : "text-ink"}`}>{value === null ? "—" : formatNumber(value)}</dd>
     </div>
   );
 }
@@ -117,8 +118,8 @@ export function SkillDialog({
               : (
                 <>
                   Power at level {level}:{" "}
-                  <span className={mastery.multiplier !== 1 ? BOOSTED : undefined} title={mastery.multiplier !== 1 ? `${power.toLocaleString("en")}% x${mastery.multiplier} from Skill Mastery` : undefined}>
-                    {(power * mastery.multiplier).toLocaleString("en", { maximumFractionDigits: 2 })}%
+                  <span className={mastery.multiplier !== 1 ? BOOSTED : undefined} title={mastery.multiplier !== 1 ? `${formatNumber(power)}% x${mastery.multiplier} from Skill Mastery` : undefined}>
+                    {formatNumber(power * mastery.multiplier, 2)}%
                   </span>
                   {mastery.hits !== 1 ? <span className={BOOSTED}> · {mastery.hits} hits</span> : null}
                 </>

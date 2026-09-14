@@ -10,8 +10,9 @@ import { PresetPicker } from "./preset-picker";
 import { companionAmp, spiritStatValue, useSpiritFactors, type SpiritFactors, type SpiritStatKey } from "./spirit-stats";
 import { Sprite } from "./sprite";
 import { ELEMENT_BORDER, ELEMENT_TEXT, TIER_TEXT } from "./tiers";
+import { formatNumber } from "@/lib/number-format";
 
-const pct = (value: number) => `${(value * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+const pct = (value: number) => `${formatNumber(value * 100, 2)}%`;
 
 const SELECT =
   "rounded-md border border-ink/20 bg-ground px-1.5 py-1 font-mono text-[11px] text-ink outline-none focus-visible:border-ink";
@@ -137,7 +138,7 @@ function SpiritRow({ spirit, factors }: { spirit: Spirit; factors: SpiritFactors
       ) : null}
       {amp.source ? (
         <p className="col-span-2 font-mono text-[9px] tracking-[0.04em] text-dim uppercase sm:col-span-3">
-          ×{(1 + amp.amount).toLocaleString("en", { maximumFractionDigits: 2 })} from {amp.source} · Fountain slots{" "}
+          ×{formatNumber(1 + amp.amount, 2)} from {amp.source} · Fountain slots{" "}
           {Object.values(spirit.fountainSlots).join("/")}
         </p>
       ) : null}

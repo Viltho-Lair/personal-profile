@@ -3,6 +3,7 @@
 import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import { isNewVisit, VISIT_COUNTED_KEY } from "@/lib/visitors";
+import { formatNumber } from "@/lib/number-format";
 
 /** Visits so far, counted once a day per browser; hidden until the count can be read. */
 export function VisitorCounter() {
@@ -36,7 +37,7 @@ export function VisitorCounter() {
   return (
     <li className="flex items-center gap-1.5" title="Visits, each browser counted once a day">
       <Eye aria-hidden className="size-3.5" />
-      Visitors <span className="text-ink tabular-nums">{count.toLocaleString("en")}</span>
+      Visitors <span className="text-ink tabular-nums">{formatNumber(count)}</span>
     </li>
   );
 }

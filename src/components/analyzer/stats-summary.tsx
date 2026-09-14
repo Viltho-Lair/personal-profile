@@ -8,8 +8,9 @@ import { PresetsPanel } from "./presets-panel";
 import { useSpiritFactors } from "./spirit-stats";
 import { useLiveFight } from "./live-fight";
 import { collectSources, UNTRACKED_SOURCES } from "./stat-sources";
+import { formatNumber } from "@/lib/number-format";
 
-const pct = (fraction: number) => `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+const pct = (fraction: number) => `${formatNumber(fraction * 100, 2)}%`;
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 
 

@@ -1,3 +1,5 @@
+import { formatNumber } from "@/lib/number-format";
+
 export type CompanionFormula =
   | { kind: "linear"; perLevel: number; display: EffectDisplay }
   | { kind: "understanding"; display: EffectDisplay };
@@ -27,7 +29,7 @@ export function companionEffect(formula: CompanionFormula, level: number): numbe
 }
 
 export function formatEffect(display: EffectDisplay, value: number): string {
-  const n = (x: number) => x.toLocaleString("en", { maximumFractionDigits: 2 });
+  const n = (x: number) => formatNumber(x, 2);
   if (display === "percent") return `+${n(value * 100)}%`;
   if (display === "percentLiteral") return `+${n(value)}%`;
   return `+${n(value)}`;

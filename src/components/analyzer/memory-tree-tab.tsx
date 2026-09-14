@@ -19,6 +19,7 @@ import {
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue } from "./data";
 import { InlineLevel } from "./level-input";
+import { formatNumber } from "@/lib/number-format";
 
 const TREE = treeData as unknown as MemoryTree & { icons: Record<string, { icon: string; iconSize: number }> };
 
@@ -34,7 +35,7 @@ const MODES: Record<string, string> = {
   ALL: "All modes",
   FoC: "FoC",
 };
-const pct = (fraction: number) => `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+const pct = (fraction: number) => `${formatNumber(fraction * 100, 2)}%`;
 const titleCase = (name: string) =>
   name === "EXP" ? name : name.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 const iconFor = (name: string | null | undefined) =>

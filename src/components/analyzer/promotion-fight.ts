@@ -14,6 +14,7 @@ import type { ProfileV1 } from "@/lib/profile/types";
 import { AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Familiar, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
 import { activeSpiritSkills, BEASTS, classLevelCap, classTotals, collectSources, companionSkill, gearTotals, SHRINE } from "./stat-sources";
+import { formatNumber } from "@/lib/number-format";
 
 type PromotionStage = { name: string; stage: number; range: number };
 export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[];
@@ -457,8 +458,8 @@ function fight(sources: StatSources, skills: FightSkill[], duration: number, ste
 
 export type Suggestion = { label: string; detail: string };
 
-const pctText = (fraction: number) => `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 1 })}%`;
-const levelText = (level: number) => level.toLocaleString("en");
+const pctText = (fraction: number) => `${formatNumber(fraction * 100, 1)}%`;
+const levelText = (level: number) => formatNumber(level);
 /** The needed rise as a share: x1.033 (+3.3%). */
 const shareText = (ratio: number) => `+${pctText(ratio - 1)}`;
 
@@ -580,7 +581,7 @@ const HIT_LEVERS: { label: string; apply: (s: StatSources, x: number) => void; c
     label: "CRIT DMG",
     apply: (s, x) => (s.enhance.critDamage += x),
     cap: () => null,
-    describe: (x) => `+${pctText(x)} CRIT DMG (about ${Math.ceil(x / 0.01).toLocaleString("en")} CRIT DMG levels)`,
+    describe: (x) => `+${pctText(x)} CRIT DMG (about ${formatNumber(Math.ceil(x / 0.01))} CRIT DMG levels)`,
   },
   {
     label: "CRIT chance",

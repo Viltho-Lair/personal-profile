@@ -13,6 +13,7 @@ import { EquippedBadge } from "./profile-controls";
 import { SideDialog } from "./side-dialog";
 import { Sprite } from "./sprite";
 import { ELEMENT_TEXT, TIER_BORDER, TIER_TEXT } from "./tiers";
+import { formatNumber } from "@/lib/number-format";
 
 const GROUP_LABEL: Record<FamiliarGroup, string> = {
   weapon: "Weapon",
@@ -20,7 +21,7 @@ const GROUP_LABEL: Record<FamiliarGroup, string> = {
   battle: "Battle",
 };
 
-const pct = (value: number) => `${(value * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+const pct = (value: number) => `${formatNumber(value * 100, 2)}%`;
 
 /** The art for a star count; unowned familiars show their first art. */
 function artFor(familiar: Familiar, stars: number | null) {
@@ -308,7 +309,7 @@ function FamiliarDialog({
                 {familiar.element && stat.label === "Damage" ? ` (${familiar.element})` : ""}
               </dt>
               <dd className="text-ink tabular-nums">
-                {value === null ? "—" : stat.percent ? pct(value) : value.toLocaleString("en")}
+                {value === null ? "—" : stat.percent ? pct(value) : formatNumber(value)}
               </dd>
             </div>
           );

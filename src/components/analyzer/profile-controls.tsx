@@ -146,7 +146,33 @@ function ConfirmDialog({ confirm, onClose }: { confirm: Confirm | null; onClose:
   );
 }
 
-/** Settings: slayer progress, and saving, loading or resetting the profile. */
+/** A switch for writing numbers the game's way: 1,000 as 1.00A, 1,000,000 as 1.00B. */
+function AbbreviateSwitch() {
+  const { profile, setAbbreviateNumbers } = useProfile();
+  const on = profile.abbreviateNumbers;
+  return (
+    <label className="flex items-center justify-between gap-3">
+      <span className="flex flex-col">
+        <span className={LABEL}>Abbreviate numbers</span>
+        <span className="font-mono text-[10px] text-dim">1,000 = 1.00A · 1,000,000 = 1.00B</span>
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label="Abbreviate numbers"
+        onClick={() => setAbbreviateNumbers(!on)}
+        className={`relative h-5 w-9 shrink-0 rounded-full border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+          on ? "border-ink bg-ink" : "border-ink/30 bg-transparent"
+        }`}
+      >
+        <span className={`absolute top-0.5 size-3.5 rounded-full transition-[left] ${on ? "left-[1.1rem] bg-ground" : "left-0.5 bg-ink/60"}`} />
+      </button>
+    </label>
+  );
+}
+
+/** Settings: slayer progress, how numbers are written, and saving, loading or resetting the profile. */
 export function SettingsPanel() {
   const { profile, resetProfile, replaceProfile } = useProfile();
   const [confirm, setConfirm] = useState<Confirm | null>(null);
@@ -183,6 +209,7 @@ export function SettingsPanel() {
           Settings
         </h2>
         <SlayerProgress />
+        <AbbreviateSwitch />
       </div>
       <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
         <button type="button" onClick={exportProfile} className={ACTION}>

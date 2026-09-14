@@ -17,6 +17,7 @@ import { SkillMastery } from "./skill-mastery";
 import { SkillSettings } from "./skill-settings";
 import { SkillStoneSettings } from "./skill-stones";
 import { SkillTiles } from "./skill-tiles";
+import { formatNumber } from "@/lib/number-format";
 
 type Section = "core" | "familiars" | "proficiency" | "mastery" | "immortals" | "seasonal";
 
@@ -35,7 +36,7 @@ const SKILL_SECTIONS: Record<"core" | "immortals" | "seasonal", Skill[]> = {
 };
 
 const percent = (fraction: number) =>
-  `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+  `${formatNumber(fraction * 100, 2)}%`;
 
 function SkillWorkspace({ skills }: { skills: Skill[] }) {
   const {

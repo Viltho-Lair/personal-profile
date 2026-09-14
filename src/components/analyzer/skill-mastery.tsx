@@ -8,6 +8,7 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { MASTERY_PAGES, type MasteryNode, type MasteryPage } from "./data";
 import { LevelInput } from "./level-input";
 import { SideDialog } from "./side-dialog";
+import { formatNumber } from "@/lib/number-format";
 
 const NODE_W = 5;
 const NODE_H = 4;
@@ -15,7 +16,7 @@ const LINE_ON = "var(--element-water)";
 
 /** Every node on every page, for completing or clearing Skill Mastery in one go. */
 
-const pct = (value: number) => `${(value * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+const pct = (value: number) => `${formatNumber(value * 100, 2)}%`;
 
 /** "ACC M4" -> "Accessory Mythic 4", as the game labels the required gear. */
 function gearName(value: string | null) {
@@ -218,7 +219,7 @@ function NodeDetail({
         {cost !== null ? (
           <div className="flex justify-between gap-3">
             <dt className="text-dim">{node.kind === "level" ? "Next level costs" : "Costs"}</dt>
-            <dd className="text-ink tabular-nums">{cost.toLocaleString("en")}</dd>
+            <dd className="text-ink tabular-nums">{formatNumber(cost)}</dd>
           </div>
         ) : null}
         {requires ? (

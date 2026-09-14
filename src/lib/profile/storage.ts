@@ -461,6 +461,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     mainSpirits: mainSpirits(data.mainSpirits),
     includeSkills: data.includeSkills === true,
     bossMonster: data.bossMonster !== false,
+    abbreviateNumbers: data.abbreviateNumbers === true,
     enemyElement: (["Fire", "Water", "Wind", "Earth"] as const).find((e) => e === data.enemyElement) ?? null,
     stageFarming: {
       on: isRecord(data.stageFarming) && data.stageFarming.on === true,

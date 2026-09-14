@@ -628,6 +628,10 @@ export function setBossMonster(profile: ProfileV1, bossMonster: boolean): Profil
   return { ...profile, bossMonster };
 }
 
+export function setAbbreviateNumbers(profile: ProfileV1, abbreviateNumbers: boolean): ProfileV1 {
+  return { ...profile, abbreviateNumbers };
+}
+
 export function setEnemyElement(profile: ProfileV1, enemyElement: ProfileV1["enemyElement"]): ProfileV1 {
   return { ...profile, enemyElement };
 }

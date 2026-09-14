@@ -34,6 +34,7 @@ import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./dat
 import { ConstellationTab } from "./constellation-tab";
 import { InlineLevel } from "./level-input";
 import { MemoryTreeTab } from "./memory-tree-tab";
+import { formatNumber } from "@/lib/number-format";
 
 type Icon = { icon?: string | null; iconSize?: number | null };
 
@@ -63,7 +64,7 @@ const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const SELECT =
   "rounded-md border border-ink/20 bg-ground px-1.5 py-1 font-mono text-[11px] text-ink outline-none focus-visible:border-ink";
 const pct = (fraction: number | null) =>
-  fraction === null ? "—" : `${(fraction * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
+  fraction === null ? "—" : `${formatNumber(fraction * 100, 2)}%`;
 
 function Tabs<T extends string>({
   tabs,
@@ -307,7 +308,7 @@ function LatentPower() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[11px] leading-snug text-dim">
-        Latent Power adds to growth once the slayer is past level 250 (Slayer level {character.slayerLevel.toLocaleString("en")},
+        Latent Power adds to growth once the slayer is past level 250 (Slayer level {formatNumber(character.slayerLevel)},
         set in the overview). Enter each slot&apos;s rolled value.
       </p>
       <div className="overflow-x-auto">

@@ -7,6 +7,7 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { formatPercent, formatValue, RELICS, type Relic } from "./data";
 import { InlineLevel, LevelInput } from "./level-input";
 import { Sprite } from "./sprite";
+import { formatNumber } from "@/lib/number-format";
 
 const MAX_RELIC_LEVEL = Math.max(...RELICS.map((relic) => relic.maxLevel));
 
@@ -68,8 +69,8 @@ function RelicRow({
               <dt>Lv {bandLabel(band)}</dt>
               <dd className="text-ink">
                 {relic.percent
-                  ? `${(band.factor * 100).toLocaleString("en", { maximumFractionDigits: 2 })}%`
-                  : band.factor.toLocaleString("en", { maximumFractionDigits: 2 })}
+                  ? `${formatNumber(band.factor * 100, 2)}%`
+                  : formatNumber(band.factor, 2)}
               </dd>
             </div>
           ))}

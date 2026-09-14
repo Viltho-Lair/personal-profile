@@ -12,6 +12,7 @@ import weaponsData from "@/data/optimizer/weapons.json";
 import type { AltarLevel } from "@/lib/game/familiars";
 import type { Band } from "@/lib/game/formulas";
 import type { FamiliarGroup, KnownNames } from "@/lib/profile/types";
+import { formatNumber } from "@/lib/number-format";
 
 export const GRADE_ORDER = ["Common", "Great", "Rare", "Epic", "Legendary", "Mythic", "Immortal"] as const;
 export const ELEMENTS = ["Fire", "Water", "Wind", "Earth"] as const;
@@ -198,10 +199,10 @@ export const KNOWN_NAMES: KnownNames = {
   familiars: FAMILIARS.map((familiar) => familiar.name),
 };
 
-/** Full numbers with thousands separators; no compact notation for now. */
+/** A number as the page shows it: full with thousands separators, or abbreviated (1.00A) when the setting is on. */
 export function formatValue(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
-  return value.toLocaleString("en", { maximumFractionDigits: 2 });
+  return formatNumber(value);
 }
 
 export function formatPercent(value: number | null): string {
