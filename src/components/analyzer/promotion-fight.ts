@@ -656,7 +656,15 @@ function solveHitLever(
  * Against a boss monster it's the chosen promotion's boss. Otherwise it's the stages: the highest stage
  * whose boss the fight beats (HP-based skills read that boss), and the next stage's boss as the target.
  */
-export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null, promotionIndex: number, duration: number, manual: string[] = []) {
+export function promotionFight(
+  profile: ProfileV1,
+  factors: SpiritFactors | null,
+  promotionIndex: number,
+  duration: number,
+  manual: string[] = [],
+  /** The stages analysis against one stage's boss, without searching how far the fight reaches (for planning). */
+  options: { stage?: number } = {},
+) {
   // Skill buffs play out in the fight itself, so the stats come without them.
   const sources = collectSources(profile, factors, false);
   const preset = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
@@ -707,15 +715,15 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
 
   const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits, enemyElement });
   const clears = (stage: number) => fight(sources, skills, duration, undefined, manual, against(stage)).total >= bossHpAt(stage);
-  let reached = 0;
-  let high = BOSS_HP.length;
+  let reached = options.stage !== undefined ? Math.max(0, options.stage - 1) : 0;
+  let high = options.stage !== undefined ? reached : BOSS_HP.length;
   while (reached < high) {
     const mid = Math.ceil((reached + high) / 2);
     if (clears(mid)) reached = mid;
     else high = mid - 1;
   }
   const next = reached < BOSS_HP.length ? reached + 1 : null;
-  const target = against(Math.max(1, reached));
+  const target = options.stage !== undefined ? against(options.stage) : against(Math.max(1, reached));
   const boss = next
     ? { name: `Stage ${next}`, stage: next, minStage: next, maxStage: next, hp: bossHpAt(next), minHp: bossHpAt(next), maxHp: bossHpAt(next) }
     : null;
