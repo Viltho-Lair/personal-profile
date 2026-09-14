@@ -127,6 +127,8 @@ export type FightResult = {
   /** Cumulative damage after each hit, by fight-clock time. */
   points: { t: number; damage: number }[];
   casts: { name: string; t: number }[];
+  /** Each time Rave unleashed its stored damage: when, and how much it dealt. */
+  releases: { t: number; damage: number; amount: number }[];
   total: number;
   basic: number;
   bySkill: Record<string, number>;
@@ -288,6 +290,7 @@ export function createFight(input: FightInput): Fight {
   const bySkill: Record<string, number> = {};
   const points = [{ t: 0, damage: 0 }];
   const casts: { name: string; t: number }[] = [];
+  const releases: FightResult["releases"] = [];
 
   const isOn = (l: Live) => l.skill.trigger === "always" || (action >= l.activeFrom && action < l.activeUntil);
 
@@ -392,6 +395,7 @@ export function createFight(input: FightInput): Fight {
         // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored
         // hits already had their multipliers. The cooldown starts now.
         record(raveStored * e.power, s.name, false);
+        releases.push({ t: clock, damage: total, amount: raveStored * e.power });
         raveStored = 0;
         l.charged = false;
         l.holding = false;
@@ -541,6 +545,7 @@ export function createFight(input: FightInput): Fight {
       return {
         points,
         casts,
+        releases,
         total,
         basic,
         bySkill,
@@ -583,8 +588,8 @@ export function simulateFight(input: FightInput): FightResult {
   const fight = createFight(input);
   // Stopped time adds real seconds past the fight's length; the loop ends on the fight clock.
   fight.advance(Number.MAX_SAFE_INTEGER);
-  const { points, casts, total, basic, bySkill } = fight.state();
-  return { points, casts, total, basic, bySkill };
+  const { points, casts, releases, total, basic, bySkill } = fight.state();
+  return { points, casts, releases, total, basic, bySkill };
 }
 
 export type SkillStone = { grade: "A" | "B"; element: Element };

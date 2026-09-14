@@ -254,6 +254,8 @@ describe("simulateFight", () => {
     const result = simulateFight({ ...base, duration: 20, bossDamage: 8.5, skills: [rave] });
     // Five basic attacks of 100 x 9.5 are stored, and 110% of that comes back.
     expect(result.bySkill.Rave).toBeCloseTo(5 * 950 * 1.1, -2);
+    expect(result.releases).toHaveLength(1);
+    expect(result.releases[0].amount).toBeCloseTo(result.bySkill.Rave ?? 0);
   });
 
   it("applies skill stones only to their element", () => {

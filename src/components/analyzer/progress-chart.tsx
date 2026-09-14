@@ -204,6 +204,14 @@ export function ProgressChart() {
             Press Render to play the {duration}s fight
           </text>
         )}
+        {snap?.releases.map((release) => (
+          <g key={`${release.t}-${release.damage}`}>
+            <circle cx={scaleX(release.t)} cy={scaleY(release.damage)} r="3.5" className="fill-fuchsia-500 stroke-ground" vectorEffect="non-scaling-stroke" />
+            <text x={scaleX(release.t) + 5} y={scaleY(release.damage) + 10} className="fill-fuchsia-400 font-mono" fontSize="9">
+              Rave
+            </text>
+          </g>
+        ))}
         {last ? (
           <rect x={scaleX(last.t) - 3} y={scaleY(last.damage) - 3} width="6" height="6" transform={`rotate(45 ${scaleX(last.t)} ${scaleY(last.damage)})`} className="fill-ground stroke-ink" vectorEffect="non-scaling-stroke" />
         ) : null}
@@ -303,6 +311,32 @@ function Bar({ label, value, max, tone, text, note }: { label: string; value: nu
   );
 }
 
+/**
+ * Rave's stored damage as it builds up and while it waits to be unleashed (what the release will
+ * deal, 110% at level 5), then what the last release dealt.
+ */
+function RaveReadout({ snap }: { snap: FightState | null }) {
+  const rave = snap?.skills.find((s) => s.name === "Rave");
+  if (!rave) return null;
+  const last = snap?.releases[snap.releases.length - 1];
+  const [label, value, tone] =
+    rave.stored > 0
+      ? rave.charged
+        ? [rave.manual ? "Rave ready · tap" : "Rave releasing", rave.stored, "text-fuchsia-400"]
+        : ["Rave storing", rave.stored, "text-fuchsia-300"]
+      : last
+        ? [`Rave dealt at ${last.t.toFixed(1)}s`, last.amount, "text-ink"]
+        : ["Rave", null, "text-dim"];
+  return (
+    <>
+      <dt className="text-dim">{label}</dt>
+      <dd className={`truncate text-right tabular-nums ${tone}`} title={value === null ? undefined : formatValue(value)}>
+        {value === null ? "not used yet" : formatValue(value)}
+      </dd>
+    </>
+  );
+}
+
 /** Time, damage so far, attack speed, life as a share of max HP, and mana as points. */
 function LiveReadout({ snap, input, duration }: { snap: FightState | null; input: FightInput; duration: number }) {
   const maxHp = snap?.maxHp || input.maxHp || 0;
@@ -325,6 +359,7 @@ function LiveReadout({ snap, input, duration }: { snap: FightState | null; input
         </dd>
         <dt className="text-dim">Attacks / s</dt>
         <dd className="text-right tabular-nums">{formatValue(Math.round((snap?.attacksPerSecond ?? 0) * 100) / 100)}</dd>
+        <RaveReadout snap={snap} />
       </dl>
       <div className="flex flex-col justify-center gap-1">
         <Bar
@@ -386,7 +421,7 @@ function SkillGrid({
 
   return (
     <div className="flex shrink-0 flex-col gap-1">
-      <div className="mx-auto grid w-3/4 grid-cols-5 gap-1">
+      <div className="mx-auto grid w-3/4 max-w-72 grid-cols-5 gap-1">
         {slots.map((name, i) => {
           if (!name) return <div key={i} className="aspect-square rounded-md border border-dashed border-ink/15" />;
           const data = SKILL_BY_NAME.get(name);
@@ -405,7 +440,7 @@ function SkillGrid({
             : !fightSkill
               ? `${name}: ${reason ?? "counted through the skills it boosts"}`
               : castable
-                ? `${name}: ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}`
+                ? `${name}: ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}${status?.stored ? ` · stored ${formatValue(status.stored)}` : ""}`
                 : `${name}: passive`;
           return (
             <button

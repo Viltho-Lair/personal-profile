@@ -54,13 +54,13 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
       {/* Every tab fills the page beside the ad and Settings, which stay on screen for all of them. */}
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       <div className="flex min-h-0 flex-1 flex-col">
       {ANALYZER_TABS.map((tab) => (
         <TabsContent
           key={tab.id}
           value={tab.id}
-          className={tab.id === "analysis" ? "flex min-h-0 flex-1 flex-col md:pb-14" : "min-h-0 flex-1 overflow-auto md:pb-20"}
+          className={tab.id === "analysis" ? "min-h-0 flex-1 overflow-auto md:pb-14 xl:flex xl:flex-col xl:overflow-hidden" : "min-h-0 flex-1 overflow-auto md:pb-20"}
         >
           {tab.id === "char" ? (
             <CharacterPanel />
@@ -78,15 +78,15 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
       </div>
       <aside
         aria-label="Advertisement and settings"
-        className="flex shrink-0 flex-col border-t border-ink/15 pb-20 md:w-72 md:min-h-0 md:overflow-auto md:border-t-0 md:border-l md:pb-14 lg:w-80"
+        className="flex shrink-0 flex-col border-t border-ink/15 pb-20 md:flex-row lg:w-72 lg:min-h-0 lg:flex-col lg:overflow-auto lg:border-t-0 lg:border-l lg:pb-14 xl:w-80"
       >
         <div
           aria-label="Advertisement"
-          className="flex min-h-24 items-center justify-center overflow-hidden border-b border-ink/15 p-2 md:min-h-0 md:flex-1"
+          className="flex min-h-24 items-center justify-center overflow-hidden border-b border-ink/15 p-2 md:flex-1 md:border-r md:border-b-0 lg:min-h-0 lg:border-r-0 lg:border-b"
         >
           <AdSlot slot={ANALYZER_AD_SLOT} />
         </div>
-        <div className="flex flex-col p-3 md:flex-1">
+        <div className="flex flex-col p-3 md:flex-1 md:pb-16 lg:pb-3">
           <SettingsPanel />
         </div>
       </aside>
@@ -132,14 +132,14 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
   );
 }
 
-/** Analysis, the whole page: the fight chart and the Stats Summary with the presets, side by side on wide screens. */
+/** Analysis: the fight chart and the Stats Summary with the presets, side by side on wide screens and stacked below that. */
 function AnalysisPanel() {
   return (
-    <section aria-label="Analysis" className="flex flex-col md:grid md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="flex min-h-[32rem] flex-col border-b border-ink/15 md:min-h-0 md:border-r md:border-b-0">
+    <section aria-label="Analysis" className="flex flex-col xl:grid xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="flex min-h-[32rem] flex-col border-b border-ink/15 xl:min-h-0 xl:border-r xl:border-b-0">
         <ProgressChart />
       </div>
-      <div className="flex min-h-0 flex-col border-b border-ink/15 md:border-b-0">
+      <div className="flex min-h-0 flex-col border-b border-ink/15 xl:border-b-0">
         <StatsSummary />
       </div>
     </section>
