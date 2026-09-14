@@ -290,6 +290,26 @@ describe("simulateFight", () => {
     expect(casts([water, passive, meditation], "Passive")).toHaveLength(0);
   });
 
+  it("uses the familiar once a battle unless it allows more, and a beast's buff once", () => {
+    const familiar = skill({ name: "Familiar", every: 30, familiar: true, maxUses: 1, effect: { type: "damage", power: 1, hits: 1 } });
+    const ku = { ...familiar, every: 20, maxUses: 2 };
+    const wolf = skill({ name: "Gray Wolf", kind: "passive", trigger: "attackCasts", every: 1, duration: 10, uncharged: true, maxUses: 1, effect: { type: "atk", power: 0 } });
+    const slash = skill({ name: "Slash", every: 5, effect: { type: "damage", power: 0, hits: 1 } });
+    const uses = (skills: FightSkill[], name: string) => simulateFight({ ...base, duration: 120, skills }).casts.filter((c) => c.name === name).map((c) => c.t);
+    expect(uses([familiar], "Familiar")).toEqual([0]);
+    const kuUses = uses([ku], "Familiar");
+    expect(kuUses).toHaveLength(2);
+    expect(kuUses[1]).toBeCloseTo(20, 0);
+    // Slash goes every 5 seconds, but the wolf's buff comes only after the first.
+    expect(uses([slash, wolf], "Gray Wolf")).toHaveLength(1);
+    // Spent, it can't be cast by hand either.
+    const fight = createFight({ ...base, duration: 120, skills: [familiar], manual: ["Familiar"] });
+    expect(fight.cast("Familiar")).toBe(true);
+    fight.advance(60);
+    expect(fight.cast("Familiar")).toBe(false);
+    expect(fight.state().skills[0].complete).toBe(true);
+  });
+
   it("uses the familiar for its hits and damage, and readies its specials with each use", () => {
     const familiar = skill({ name: "Familiar", element: "Fire", every: 30, familiar: true, effect: { type: "damage", power: 4, hits: 3 } });
     const rion = skill({ name: "Rion", kind: "passive", trigger: "familiarCasts", every: 1, duration: 10, uncharged: true, effect: { type: "speed", power: 1 } });

@@ -787,6 +787,7 @@ function BeastTile({ beast, snap }: { beast: ReturnType<typeof promotionFight>["
         <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} />
       ) : null}
       {beast.note ? <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-dim">RIFT</span> : null}
+      {status?.complete && !status.active ? <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-dim">USED</span> : null}
       {status?.active ? <span className="absolute inset-x-0 bottom-0 bg-amber-400/80 text-center font-mono text-[6px] leading-tight text-black">ON</span> : null}
     </div>
   );
@@ -824,10 +825,12 @@ function FamiliarTile({
   const ready = status ? status.ready : 1;
   const blinking = Boolean(status && snap && status.lastCast >= 0 && snap.real - status.lastCast < BLINK_SECONDS);
   const effect = familiar.skill.effect.type === "damage" ? familiar.skill.effect : null;
-  const canPress = running ? !auto && ready >= 1 && !status?.queued : true;
+  const spent = Boolean(status?.complete);
+  const canPress = running ? !auto && !spent && ready >= 1 && !status?.queued : true;
+  const uses = familiar.skill.maxUses ?? 1;
   const title = `Familiar (${weapon.familiar.name} + ${attribute.familiar.name} + ${battle.familiar.name}): ${effect?.hits ?? 1} hits of ${formatValue(Math.round((effect?.power ?? 0) * 10000) / 100)}% ATK${
     familiar.skill.element ? ` as ${familiar.skill.element}` : ""
-  }, range ${familiar.range}, every ${formatValue(familiar.skill.every)}s · ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}`;
+  }, range ${familiar.range}, ${uses > 1 ? `${uses} uses a battle, ${formatValue(familiar.skill.every)}s apart` : "once a battle"} · ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}`;
   return (
     <button
       type="button"
@@ -843,10 +846,10 @@ function FamiliarTile({
       <span className="absolute inset-0 flex items-center justify-center">
         <FamiliarArt familiar={weapon.familiar} stars={weapon.stars} size={40} />
       </span>
-      {status && ready < 1 ? <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} /> : null}
-      {auto ? <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-60" /> : null}
-      {!auto && running && ready >= 1 ? <span className="absolute inset-0 animate-pulse bg-white/15" /> : null}
-      <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-white">FAMILIAR</span>
+      {spent ? <span className="absolute inset-0 bg-black/60" /> : status && ready < 1 ? <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} /> : null}
+      {auto && !spent ? <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-60" /> : null}
+      {!auto && running && !spent && ready >= 1 ? <span className="absolute inset-0 animate-pulse bg-white/15" /> : null}
+      <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-white">{spent ? "USED" : "FAMILIAR"}</span>
     </button>
   );
 }

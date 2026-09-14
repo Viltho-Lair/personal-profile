@@ -130,7 +130,8 @@ const LIFE: Record<FightEvent["kind"], number> = {
 /** Styles that rain strikes one after another take longer on screen. */
 const STRIKE_STYLES = new Set<Style>(["meteor", "shards", "bolt"]);
 const lifeOf = (event: FightEvent) =>
-  event.seconds ?? (event.kind === "sweep" && STRIKE_STYLES.has(styleOf(event)) && event.count > 1 ? 0.9 : LIFE[event.kind]);
+  event.seconds ??
+  (event.kind === "familiar" ? familiarSeconds(event.count) : event.kind === "sweep" && STRIKE_STYLES.has(styleOf(event)) && event.count > 1 ? 0.9 : LIFE[event.kind]);
 
 function Monster({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy; flash: boolean }) {
   const s = UNIT * 0.42;
@@ -480,28 +481,48 @@ function Strikes({ style, targets, t, colour, ground, hits }: { style: Style; ta
   );
 }
 
+/** Seconds between the familiar's hits on screen, how long a shot flies, and how long its splash lingers. */
+const FAMILIAR_HIT_GAP = 0.12;
+const FAMILIAR_FLIGHT = 0.16;
+const FAMILIAR_SPLASH = 0.2;
+/** Every hit plays its own attack, one after another, so a use shows for as long as its hits take. */
+const familiarSeconds = (hits: number) => (Math.max(1, hits) - 1) * FAMILIAR_HIT_GAP + FAMILIAR_FLIGHT + FAMILIAR_SPLASH;
+
 /**
- * The familiar's hits: a shot from where it hovers to the nearest monster in its range, each splashing over
- * the whole range, since every hit reaches every monster within it.
+ * The familiar's hits, each its own attack: a shot from where it hovers to the nearest monster in its range,
+ * splashing over the whole range, since every hit reaches every monster within it. A counter over the
+ * target shows how many have landed.
  */
-function FamiliarShots({ origin, from, to, targets, t, colour, chest, ground, count }: {
-  origin: { x: number; y: number }; from: number; to: number; targets: number[]; t: number; colour: string; chest: number; ground: number; count: number;
+function FamiliarShots({ origin, from, to, targets, age, colour, chest, ground, count }: {
+  origin: { x: number; y: number }; from: number; to: number; targets: number[]; age: number; colour: string; chest: number; ground: number; count: number;
 }) {
-  const shots = Math.min(10, Math.max(1, count));
+  const hits = Math.max(1, count);
   const tx = targets[0] ?? from + UNIT;
+  const landed = Math.min(hits, Math.max(0, Math.floor((age - FAMILIAR_FLIGHT) / FAMILIAR_HIT_GAP) + 1));
   return (
     <g>
-      {Array.from({ length: shots }, (_, i) => {
-        const lead = Math.min(1.6, t * 2.6 - (i / shots) * 1.2);
-        if (lead <= 0) return null;
-        if (lead < 1) {
+      {Array.from({ length: hits }, (_, i) => {
+        const local = age - i * FAMILIAR_HIT_GAP;
+        if (local <= 0 || local >= FAMILIAR_FLIGHT + FAMILIAR_SPLASH) return null;
+        if (local < FAMILIAR_FLIGHT) {
+          const lead = local / FAMILIAR_FLIGHT;
           const px = origin.x + (tx - origin.x) * lead;
           const py = origin.y + (chest - origin.y) * lead - Math.sin(lead * Math.PI) * UNIT * 0.6;
           return <circle key={i} cx={px} cy={py} r={2.4} fill={colour} stroke={INK} strokeWidth="0.6" />;
         }
-        const after = (lead - 1) / 0.6;
-        return <rect key={i} x={from} y={ground - UNIT * 0.9} width={Math.max(1, to - from)} height={UNIT * 0.9} rx={UNIT * 0.3} fill={colour} fillOpacity={0.28 * (1 - after)} />;
+        const after = (local - FAMILIAR_FLIGHT) / FAMILIAR_SPLASH;
+        return (
+          <g key={i}>
+            <rect x={from} y={ground - UNIT * 0.9} width={Math.max(1, to - from)} height={UNIT * 0.9} rx={UNIT * 0.3} fill={colour} fillOpacity={0.3 * (1 - after)} />
+            <circle cx={tx} cy={chest} r={UNIT * (0.2 + after * 0.5)} fill="none" stroke={colour} strokeWidth={2 * (1 - after)} />
+          </g>
+        );
       })}
+      {landed > 0 ? (
+        <text x={tx} y={chest - UNIT * 1.6} textAnchor="middle" fontSize="8" fontWeight="700" fill={colour} stroke="#0b0d12" strokeWidth="2" paintOrder="stroke" className="font-mono">
+          {landed} / {hits}
+        </text>
+      ) : null}
     </g>
   );
 }
@@ -574,7 +595,7 @@ function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot }: {
           {event.kind === "familiar" ? (
             <>
               <FamiliarBody x={slayerX - UNIT * 0.7} y={chest - UNIT * 1.1} colour={colour} time={time} />
-              <FamiliarShots origin={{ x: slayerX - UNIT * 0.7, y: chest - UNIT * 1.1 }} from={from} to={to} targets={targets} t={t} colour={colour} chest={chest} ground={y} count={event.count} />
+              <FamiliarShots origin={{ x: slayerX - UNIT * 0.7, y: chest - UNIT * 1.1 }} from={from} to={to} targets={targets} age={age} colour={colour} chest={chest} ground={y} count={event.count} />
             </>
           ) : (
             <Styled style={styleOf(event)} from={from} to={to} targets={targets} t={t} colour={colour} chest={chest} ground={y} hits={event.count} />

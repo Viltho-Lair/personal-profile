@@ -280,16 +280,17 @@ export function presetFightSkills(profile: ProfileV1) {
 /** The enemy: boss or normal monster, its HP, and the accompanying spirits' skills. */
 export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits" | "enemyElement">;
 
-/** Seconds between familiar uses, before Ku's own 20-second cooldown or Pe's 10% shorter cycle. */
+/** Seconds between familiar uses when a familiar allows more than one (Ku: 2 uses, 20 seconds apart). */
 export const FAMILIAR_COOLDOWN = 30;
 export const FAMILIAR_SKILL = "Familiar";
 
 type FamiliarPart = { familiar: Familiar; stars: number; values: Record<string, number | null> };
 
 /**
- * The equipped familiars' combined use: the weapon familiar's range and damage, times the attribute
- * familiar's damage and element, hitting the battle familiar's number of times (Ku and Sha: Hits, Pe:
- * Seconds, Po: Hits). Specials that play in a fight come with it; the rest are listed as not modelled.
+ * The equipped familiars' combined use, once a battle unless a familiar says otherwise (Ku: 2 uses): the
+ * weapon familiar's range and damage, times the attribute familiar's damage and element, hitting the battle
+ * familiar's number of times (Ku and Sha: Hits, Pe: Seconds, Po: Hits). Specials that play in a fight come
+ * with it; the rest are listed as not modelled.
  */
 export function familiarFightSkills(profile: ProfileV1, duration: number) {
   const equipped = activeFamiliars(profile);
@@ -310,6 +311,7 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
   const element = (ELEMENTS as readonly string[]).includes(attribute.familiar.element ?? "") ? (attribute.familiar.element as Element) : null;
   let every = FAMILIAR_COOLDOWN;
   let bonus = 0;
+  let maxUses = 1;
   const skill: FightSkill = {
     name: FAMILIAR_SKILL,
     element,
@@ -360,10 +362,8 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
         break;
       case "Ku":
         bonus += 0.1;
+        maxUses = 2;
         every = 20;
-        break;
-      case "Pe":
-        every *= 0.9;
         break;
       case "Po":
         // 15 extra attacks 2 seconds before the end: a one-off that starts ready then.
@@ -373,15 +373,15 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
         if (familiar.special) notes.push(`${familiar.name}: ${familiar.special}`);
     }
   }
-  return { skill: { ...skill, every, bonus }, specials, parts: { weapon, attribute, battle }, notes, range: weapon.values.Range ?? 0 };
+  return { skill: { ...skill, every, bonus, maxUses }, specials, parts: { weapon, attribute, battle }, notes, range: weapon.values.Range ?? 0 };
 }
 
 /** A knockback has a 50% chance every 10 seconds, so a boar's knockbacks come one every 20 seconds on average. */
 export const KNOCKBACK_SECONDS = 10 / 0.5;
 
 /**
- * The equipped beast's skill (equipping it is enough; mounting only adds the ride bonuses), or why it
- * doesn't go: wolves after X strike skills (ATK +Y% 10s), boars after X knockbacks (ATK +Y% 30s),
+ * The equipped beast's skill, once a battle (equipping it is enough; mounting only adds the ride bonuses),
+ * or why it doesn't go: wolves after X strike skills (ATK +Y% 10s), boars after X knockbacks (ATK +Y% 30s),
  * bats after X kills (MSPD +Y% 30s), dracos once their stacking skill maxes (boss DMG +Y% 60s).
  * Golems only work in the Rift.
  */
@@ -390,7 +390,7 @@ export function beastFightSkill(profile: ProfileV1): { skill: FightSkill | null;
   const awaken = beast ? profile.beasts[beast.name]?.awaken : null;
   if (!beast || awaken === null || awaken === undefined) return { skill: null, beast: null, note: null };
   const power = (beast.skill.values[awaken] ?? 0) / 100;
-  const base = { name: beast.name, element: null, kind: "passive" as const, delay: 0, startAt: 0, freezes: false, bonus: 0, uncharged: true };
+  const base = { name: beast.name, element: null, kind: "passive" as const, delay: 0, startAt: 0, freezes: false, bonus: 0, uncharged: true, maxUses: 1 };
   const x = typeof beast.skill.x === "number" ? beast.skill.x : 0;
   switch (beast.family) {
     case "Wolf":

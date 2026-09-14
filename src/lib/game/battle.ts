@@ -28,6 +28,8 @@
  *   from there); Fulgurous charges even with nothing in reach. Meteors and
  *   lightning strikes land on random range tiles, hitting what stands there,
  *   and some skills hit only so many enemies.
+ * - The familiar goes once a battle (Ku twice, 20 seconds apart), and a beast's
+ *   buff once; spent, they don't ready again.
  * - Meditation charges every skill that goes on a cooldown or a strike count:
  *   attacks, buffs and passives, stacking ones (Burning Sword, Curved Blade,
  *   Earth's Will, Speed Sword) included until their stages are complete.
@@ -181,6 +183,8 @@ export type FightSkill = {
   hpCost?: number;
   /** Stages a stacking passive completes; it stops once they're all done. */
   maxStacks?: number | null;
+  /** Times it can go in a battle (the familiar once, Ku twice; a beast's buff once); unlimited when not set. */
+  maxUses?: number;
   /** Seconds its cast animation lasts, per hit for stopped-time attacks (0.3 when not set). */
   animation?: number;
 };
@@ -323,7 +327,9 @@ type Live = {
 
 const isStack = (skill: FightSkill) =>
   skill.effect.type === "atkStack" || skill.effect.type === "speedStack" || skill.effect.type === "elementStack";
-const complete = (l: Live) => isStack(l.skill) && l.skill.maxStacks != null && l.stacks >= l.skill.maxStacks;
+/** Done for the battle: every stage stacked, or every use it gets spent. */
+const complete = (l: Live) =>
+  (l.skill.maxUses != null && l.uses >= l.skill.maxUses) || (isStack(l.skill) && l.skill.maxStacks != null && l.stacks >= l.skill.maxStacks);
 const castable = (skill: FightSkill) => skill.kind !== "passive";
 /** What readies a skill next: its first cooldown before it has gone, its usual one after. */
 const target = (l: Live) => (l.uses === 0 && l.skill.firstEvery != null ? l.skill.firstEvery : l.skill.every);
@@ -687,7 +693,7 @@ export function createFight(input: FightInput): Fight {
         showSpirit("Wind Force");
         for (const l of live) {
           const s = l.skill;
-          if (s.trigger !== "seconds" || isStack(s) || s.uncharged || l.queued || l.holding || (s.startsOnCooldown && l.uses === 0)) continue;
+          if (s.trigger !== "seconds" || isStack(s) || s.uncharged || l.queued || l.holding || complete(l) || (s.startsOnCooldown && l.uses === 0)) continue;
           l.progress = Math.min(target(l), l.progress + spirits.cooldownRecovery.share * s.every);
         }
       }
@@ -810,7 +816,7 @@ export function createFight(input: FightInput): Fight {
     cast: (name) => {
       const l = live.find((x) => x.skill.name === name);
       if (!l || !l.manual || l.queued || !l.started || done()) return false;
-      if (l.holding ? !l.charged : l.progress < l.skill.every) return false;
+      if (complete(l) || (l.holding ? !l.charged : l.progress < l.skill.every)) return false;
       enqueue(l);
       return true;
     },
