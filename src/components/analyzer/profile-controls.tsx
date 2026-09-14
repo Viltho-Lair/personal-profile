@@ -1,10 +1,8 @@
 "use client";
 
-import { Eye } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { parseProfile } from "@/lib/profile/storage";
 import { useProfile } from "@/lib/profile/use-profile";
-import { isNewVisit, VISIT_COUNTED_KEY } from "@/lib/visitors";
 
 export function OwnedToggle({
   owned,
@@ -100,42 +98,6 @@ function SlayerProgress() {
   );
 }
 
-/** Visits so far, counted once a day per browser; hidden until the count can be read. */
-function VisitorCounter() {
-  const [count, setCount] = useState<number | null>(null);
-  useEffect(() => {
-    let active = true;
-    const today = new Date().toISOString().slice(0, 10);
-    let last: string | null = null;
-    try {
-      last = window.localStorage.getItem(VISIT_COUNTED_KEY);
-    } catch {}
-    const counting = isNewVisit(last, today);
-    fetch("/api/visitors", { method: counting ? "POST" : "GET", cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : { count: null }))
-      .then(({ count }: { count: number | null }) => {
-        if (!active || typeof count !== "number") return;
-        setCount(count);
-        if (counting) {
-          try {
-            window.localStorage.setItem(VISIT_COUNTED_KEY, today);
-          } catch {}
-        }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
-  if (count === null) return null;
-  return (
-    <span className={`flex items-center gap-1.5 ${LABEL}`} title="Visits, each browser counted once a day">
-      <Eye aria-hidden className="size-3.5" />
-      Visitors <span className="text-ink tabular-nums">{count.toLocaleString("en")}</span>
-    </span>
-  );
-}
-
 type Confirm = { title: string; body: string; action: string; onConfirm: (() => void) | null };
 
 /** A modal asking before something that can't be undone; with no `onConfirm` it only informs. */
@@ -184,7 +146,7 @@ function ConfirmDialog({ confirm, onClose }: { confirm: Confirm | null; onClose:
   );
 }
 
-/** Settings in the overview: slayer progress, the visitor count, and saving, loading or resetting the profile. */
+/** Settings: slayer progress, and saving, loading or resetting the profile. */
 export function SettingsPanel() {
   const { profile, resetProfile, replaceProfile } = useProfile();
   const [confirm, setConfirm] = useState<Confirm | null>(null);
@@ -217,12 +179,9 @@ export function SettingsPanel() {
   return (
     <section aria-labelledby="settings-title" className="flex h-full flex-col justify-between gap-3">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <h2 id="settings-title" className="text-sm font-semibold">
-            Settings
-          </h2>
-          <VisitorCounter />
-        </div>
+        <h2 id="settings-title" className="text-sm font-semibold">
+          Settings
+        </h2>
         <SlayerProgress />
       </div>
       <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">

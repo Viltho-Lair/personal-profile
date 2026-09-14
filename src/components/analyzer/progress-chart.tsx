@@ -163,7 +163,7 @@ export function ProgressChart() {
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full shrink-0" preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full shrink-0 md:h-[34svh]" preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
         {stagesMode ? (
           <>
             {cleared > 0 ? (

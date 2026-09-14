@@ -1,5 +1,6 @@
 "use client";
 
+import { ChartLine } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
@@ -52,34 +53,12 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
       }}
       className="flex min-h-0 flex-1 flex-col gap-0"
     >
-      {/* Top half is a 3 x 2 grid: the progress chart and the Stats Summary
-          fill the left two columns, the ad sits top right, Settings below it. */}
-      <section
-        aria-label="Overview"
-        className="flex shrink-0 flex-col border-b border-ink/15 md:grid md:h-1/2 md:grid-cols-3 md:grid-rows-2"
-      >
-        <div className="flex flex-col md:col-span-2 md:row-span-2 md:grid md:min-h-0 md:grid-cols-2 md:border-r md:border-ink/15">
-          <div className="flex min-h-80 flex-col border-b border-ink/15 md:min-h-0 md:border-r md:border-b-0">
-            <ProgressChart />
-          </div>
-          <StatsSummary />
-        </div>
-        <aside
-          aria-label="Advertisement"
-          className="flex min-h-24 items-center justify-center overflow-hidden border-y border-ink/15 p-2 md:col-start-3 md:row-start-1 md:min-h-0 md:border-t-0"
-        >
-          <AdSlot slot={ANALYZER_AD_SLOT} />
-        </aside>
-        <div className="flex flex-col p-3 md:col-start-3 md:row-start-2">
-          <SettingsPanel />
-        </div>
-      </section>
-
+      {/* Every tab fills the page above the bottom bar. */}
       {ANALYZER_TABS.map((tab) => (
         <TabsContent
           key={tab.id}
           value={tab.id}
-          className="min-h-0 flex-1 overflow-auto pb-20"
+          className={tab.id === "analysis" ? "flex min-h-0 flex-1 flex-col pb-14" : "min-h-0 flex-1 overflow-auto pb-20"}
         >
           {tab.id === "char" ? (
             <CharacterPanel />
@@ -87,8 +66,10 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
             <SkillPanel />
           ) : tab.id === "equips" ? (
             <EquipmentPanel />
-          ) : (
+          ) : tab.id === "companion" ? (
             <CompanionPanel />
+          ) : (
+            <AnalysisPanel />
           )}
         </TabsContent>
       ))}
@@ -111,7 +92,9 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
               title={tab.name}
               className="h-12 w-12 flex-none rounded-lg border border-ink/25 bg-ground! px-1 text-[10px] leading-tight font-medium whitespace-normal [overflow-wrap:anywhere] text-dim data-active:border-ink! data-active:bg-ink! data-active:text-ground! sm:h-14 sm:w-14 sm:text-[11px]"
             >
-              {TAB_ICONS[tab.id] ? (
+              {tab.id === "analysis" ? (
+                <ChartLine aria-hidden strokeWidth={1.75} className="size-7 sm:size-8" />
+              ) : TAB_ICONS[tab.id] ? (
                 <Image
                   src={TAB_ICONS[tab.id]!.icon}
                   alt=""
@@ -128,5 +111,36 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
         </TabsList>
       </div>
     </Tabs>
+  );
+}
+
+/**
+ * Analysis, the whole page: the fight chart, the Stats Summary with the presets, and the ad above
+ * Settings, as three columns on wide screens and stacked on narrow ones.
+ */
+function AnalysisPanel() {
+  return (
+    <section
+      aria-label="Analysis"
+      className="flex flex-col md:grid md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,3fr)]"
+    >
+      <div className="flex min-h-[32rem] flex-col border-b border-ink/15 md:min-h-0 md:border-r md:border-b-0">
+        <ProgressChart />
+      </div>
+      <div className="flex min-h-0 flex-col border-b border-ink/15 md:border-r md:border-b-0">
+        <StatsSummary />
+      </div>
+      <div className="flex min-h-0 flex-col">
+        <aside
+          aria-label="Advertisement"
+          className="flex min-h-24 items-center justify-center overflow-hidden border-b border-ink/15 p-2 md:min-h-0 md:flex-1"
+        >
+          <AdSlot slot={ANALYZER_AD_SLOT} />
+        </aside>
+        <div className="flex flex-col p-3 md:flex-1">
+          <SettingsPanel />
+        </div>
+      </div>
+    </section>
   );
 }

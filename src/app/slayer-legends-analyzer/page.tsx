@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnalyzerShell } from "@/components/analyzer/analyzer-shell";
 import { DEFAULT_TAB, isTabId } from "@/components/analyzer/tabs";
+import { VisitorCounter } from "@/components/analyzer/visitor-counter";
 
 export default async function SlayerLegendsAnalyzerPage({
   searchParams,
@@ -25,7 +26,8 @@ export default async function SlayerLegendsAnalyzerPage({
           stat source added up. Your profile is saved only in this browser.
         </p>
         <nav aria-label="Site" className="ml-auto font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
-          <ul className="flex gap-4">
+          <ul className="flex items-center gap-4">
+            <VisitorCounter />
             <li><Link href="/guides" className="hover:text-ink">Guides</Link></li>
             <li><Link href="/about" className="hover:text-ink">About</Link></li>
             <li><Link href="/privacy" className="hover:text-ink">Privacy</Link></li>
