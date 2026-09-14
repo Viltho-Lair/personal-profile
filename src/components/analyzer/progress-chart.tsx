@@ -473,7 +473,7 @@ function SkillGrid({
                 </span>
               ) : null}
               {castable && auto ? (
-                <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-35" />
+                <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-60" />
               ) : null}
               {castable && !auto && running && ready >= 1 ? (
                 <span className="absolute inset-0 animate-pulse bg-white/15" />
