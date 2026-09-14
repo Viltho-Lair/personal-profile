@@ -1,7 +1,14 @@
 /** Facts about the site that more than one page repeats. */
 export const SITE_URL = "https://viltho.dev";
 
-export const OWNER = "Abdullah Abu Hamad";
+export const OWNER = "Viltho";
+
+/** Who the owner is, in one sentence: the site's default description and the person in its structured data. */
+export const OWNER_DESCRIPTION =
+  "Viltho is a full-stack developer, data scientist, engineering manager and gamer, and the owner of nompany.com.";
+
+/** The company the owner runs. */
+export const COMPANY = { name: "Nompany", domain: "nompany.com", url: "https://nompany.com" } as const;
 
 export const GITHUB_URL = "https://github.com/Viltho-Lair";
 

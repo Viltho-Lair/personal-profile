@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageFrame, PageTitle, Prose } from "@/components/site-chrome";
-import { GITHUB_URL, OWNER } from "@/lib/site";
+import { COMPANY, GITHUB_URL, OWNER } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About",
-  description: `${OWNER} is a full-stack developer, data scientist and engineering manager with a background in operations management.`,
+  description: `${OWNER} is a full-stack developer, data scientist, engineering manager and gamer with a background in operations management, and the owner of ${COMPANY.domain}.`,
   alternates: { canonical: "/about" },
 };
 
@@ -15,7 +15,7 @@ export default function AboutPage() {
       <PageTitle
         eyebrow="About"
         title="Software, data, and the teams that run them"
-        lede={`I'm ${OWNER}: a full-stack developer, data scientist and engineering manager with experience in operations management.`}
+        lede={`I'm ${OWNER}: a full-stack developer, data scientist and engineering manager with experience in operations management, the owner of ${COMPANY.domain}, and a gamer.`}
       />
       <Prose>
         <p>
@@ -48,6 +48,17 @@ export default function AboutPage() {
           remove friction instead of adding it, and measuring outcomes rather than activity.
           Operations experience keeps me honest about what software has to do once it leaves the
           editor and meets real users, real volume and real deadlines.
+        </p>
+
+        <h2>Company</h2>
+        <p>
+          I own <a href={COMPANY.url}>{COMPANY.domain}</a>.
+        </p>
+
+        <h2>Games</h2>
+        <p>
+          I&rsquo;m a gamer too. Games are full of systems worth taking apart, and when a game makes
+          me wonder how its numbers really work, I tend to build a tool to find out.
         </p>
 
         <h2>What&rsquo;s on this site</h2>

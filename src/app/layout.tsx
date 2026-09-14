@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Instrument_Sans, Unbounded } from "next/font/google";
 import { ADSENSE_CLIENT, ADSENSE_SCRIPT_URL } from "@/lib/adsense";
-import { OWNER, SITE_URL } from "@/lib/site";
+import { OWNER, OWNER_DESCRIPTION, SITE_URL } from "@/lib/site";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -24,20 +24,39 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono-face",
 });
 
-const DESCRIPTION =
-  "Abdullah Abu Hamad: full-stack developer, data scientist and engineering manager. Home of the Slayer Legends Analyzer and its guides.";
+const DESCRIPTION = `${OWNER_DESCRIPTION} Home of the free Slayer Legends Analyzer build planner and its guides.`;
+const DEFAULT_TITLE = `${OWNER}: developer, data scientist and gamer`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: OWNER, template: `%s | ${OWNER}` },
+  title: { default: DEFAULT_TITLE, template: `%s | ${OWNER}` },
   description: DESCRIPTION,
+  applicationName: OWNER,
+  authors: [{ name: OWNER, url: SITE_URL }],
+  creator: OWNER,
+  publisher: OWNER,
+  keywords: [
+    OWNER,
+    "full-stack developer",
+    "data scientist",
+    "engineering manager",
+    "gamer",
+    "Nompany",
+    "Slayer Legends",
+    "Slayer Legends Analyzer",
+    "Slayer Legends build planner",
+    "Slayer Legends guides",
+  ],
   icons: { icon: "/logo.svg" },
   openGraph: {
     siteName: OWNER,
     type: "website",
-    title: OWNER,
+    locale: "en_US",
+    title: DEFAULT_TITLE,
     description: DESCRIPTION,
   },
+  twitter: { card: "summary_large_image", title: DEFAULT_TITLE, description: DESCRIPTION },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
   // AdSense site verification looks for this tag in the page head.
   other: { "google-adsense-account": ADSENSE_CLIENT },
 };

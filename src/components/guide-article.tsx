@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { GUIDES, type GuideSlug } from "@/content/guides";
 import { PageFrame, PageTitle, Prose } from "@/components/site-chrome";
-import { OWNER } from "@/lib/site";
+import { JsonLd, PERSON, PERSON_REF } from "@/components/json-ld";
+import { OWNER, SITE_URL } from "@/lib/site";
 
 function guideBySlug(slug: GuideSlug) {
   return GUIDES.find((guide) => guide.slug === slug)!;
@@ -15,7 +16,8 @@ export function guideMetadata(slug: GuideSlug): Metadata {
     title: guide.title,
     description: guide.description,
     alternates: { canonical: `/guides/${slug}` },
-    openGraph: { type: "article", title: guide.title, description: guide.description },
+    openGraph: { type: "article", url: `${SITE_URL}/guides/${slug}`, title: guide.title, description: guide.description, modifiedTime: guide.updated, authors: [OWNER] },
+    twitter: { card: "summary_large_image", title: guide.title, description: guide.description },
   };
 }
 
@@ -28,6 +30,32 @@ export function GuideArticle({ slug, children }: { slug: GuideSlug; children: Re
 
   return (
     <PageFrame>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            PERSON,
+            {
+              "@type": "Article",
+              headline: guide.title,
+              description: guide.description,
+              url: `${SITE_URL}/guides/${slug}`,
+              dateModified: guide.updated,
+              author: PERSON_REF,
+              publisher: PERSON_REF,
+              about: { "@type": "VideoGame", name: "Slayer Legends" },
+              inLanguage: "en",
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Slayer Legends guides", item: `${SITE_URL}/guides` },
+                { "@type": "ListItem", position: 2, name: guide.title, item: `${SITE_URL}/guides/${slug}` },
+              ],
+            },
+          ],
+        }}
+      />
       <article>
         <nav aria-label="Breadcrumb" className="mb-6 font-mono text-xs tracking-[0.08em] text-dim uppercase">
           <Link href="/guides" className="hover:text-ink">

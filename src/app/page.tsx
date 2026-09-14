@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { GUIDES } from "@/content/guides";
@@ -5,7 +6,13 @@ import { EntrySequence } from "@/components/entry-sequence";
 import { HeroMark } from "@/components/hero-mark";
 import { IsoGrid } from "@/components/iso-grid";
 import { LogoPiece } from "@/components/logo-mark";
+import { JsonLd, PERSON, PERSON_REF } from "@/components/json-ld";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { COMPANY, OWNER, SITE_URL } from "@/lib/site";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 /** The three pieces of the mark are the three kinds of work. */
 const DISCIPLINES = [
@@ -37,6 +44,15 @@ export default function Home() {
     <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-16 p-5 sm:gap-24 sm:p-8 lg:p-12">
       <EntrySequence />
       <IsoGrid />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            PERSON,
+            { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: OWNER, author: PERSON_REF, publisher: PERSON_REF, inLanguage: "en" },
+          ],
+        }}
+      />
 
       <div className="reveal" style={{ "--i": 0 } as CSSProperties}>
         <SiteHeader />
@@ -47,10 +63,7 @@ export default function Home() {
           <div className="flex items-end gap-[0.18em] font-display text-[clamp(3rem,11vw,9.5rem)] leading-[0.92] font-semibold tracking-[-0.045em]">
             <h1 id="intro" className="m-0">
               <span className="reveal block" style={{ "--i": 1 } as CSSProperties}>
-                Abdullah
-              </span>
-              <span className="reveal block" style={{ "--i": 2 } as CSSProperties}>
-                Abu Hamad
+                {OWNER}
               </span>
             </h1>
             <HeroMark className="mb-[0.08em] h-[0.78em] w-[calc(0.78em*519/599)] shrink-0 overflow-visible max-sm:hidden" />
@@ -59,10 +72,11 @@ export default function Home() {
             className="reveal mt-8 max-w-[38ch] text-[clamp(1.15rem,1.9vw,1.6rem)] leading-snug text-pretty"
             style={{ "--i": 3 } as CSSProperties}
           >
-            Full-stack developer, data scientist and engineering manager.{" "}
+            Full-stack developer, data scientist, engineering manager and gamer.{" "}
             <span className="text-dim">
-              I build software, find out what the data is saying, and run the
-              teams and operations that keep both going.
+              I build software, find out what the data is saying, run the teams
+              and operations that keep both going, and play the games I end up
+              building tools for.
             </span>
           </p>
         </section>
@@ -89,6 +103,20 @@ export default function Home() {
           </ul>
         </section>
 
+        <section aria-labelledby="company" className="flex flex-wrap items-end justify-between gap-6 border-y border-ink/15 py-8">
+          <div>
+            <h2 id="company" className="mb-4 font-mono text-xs tracking-[0.08em] text-dim uppercase">
+              Company
+            </h2>
+            <p className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] leading-[1.05] font-semibold tracking-[-0.03em]">
+              Owner of {COMPANY.domain}
+            </p>
+          </div>
+          <a href={COMPANY.url} className={`${cta} border-ink/25 hover:border-ink`}>
+            Visit {COMPANY.domain} <span aria-hidden>&rarr;</span>
+          </a>
+        </section>
+
         <section aria-labelledby="project" className="grid gap-10 md:grid-cols-[1.1fr_1fr]">
           <div>
             <h2 id="project" className="mb-6 font-mono text-xs tracking-[0.08em] text-dim uppercase">
@@ -99,7 +127,7 @@ export default function Home() {
             </p>
             <div className="mt-5 flex max-w-[40rem] flex-col gap-4 leading-relaxed text-dim">
               <p>
-                A free build planner for the mobile idle RPG Slayer Legends. Enter your
+                A free build planner for the mobile idle RPG Slayer Legends, made by a player. Enter your
                 character, skills, equipment and companions, and the analyzer adds up every
                 stat source the way the game does, so you can see which upgrade moves your
                 power the most before you spend a single resource.
