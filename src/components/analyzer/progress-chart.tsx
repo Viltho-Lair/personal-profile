@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFight, type Fight, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME } from "./data";
-import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions } from "./promotion-fight";
+import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
 
@@ -17,7 +17,7 @@ const BUTTON =
   "rounded-md border px-3 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40";
 
 const W = 400;
-const H = 160;
+const H = 220;
 const LEFT = 8;
 const BOTTOM = 16;
 /** Frames are ~30 a second; a throttled background tab still catches up to real time, a second at most per frame. */
@@ -28,9 +28,10 @@ const BLINK_SECONDS = 0.45;
 type Phase = "idle" | "running" | "done";
 
 /**
- * The promotion fight, rendered in real time: damage over the fight against
- * the chosen promotion boss's HP, the skill preset as a 5 x 2 grid that lights
- * up as skills go, and the verdict once the fight's over.
+ * The fight, rendered in real time: damage over the fight against the chosen
+ * promotion boss's HP (Boss monster ticked) or through the stages' boss HP, the
+ * skill preset as a 5 x 2 grid that lights up as skills go, and the verdict
+ * once the fight's over.
  */
 export function ProgressChart() {
   const { profile, setPromotionTarget } = useProfile();
@@ -47,6 +48,7 @@ export function ProgressChart() {
   const duration = FIGHT_SECONDS;
   const setup = useMemo(() => promotionFight(profile, factors, index, duration, manual), [profile, factors, index, duration, manual]);
   const { boss } = setup;
+  const stagesMode = setup.mode === "stages";
   // A changed profile, promotion or auto setting makes the last render stale.
   const phase: Phase = run && run.for === setup ? run.phase : "idle";
   const snap = run && run.for === setup ? run.snap : null;
@@ -102,7 +104,11 @@ export function ProgressChart() {
   };
 
   const total = snap?.total ?? 0;
-  const top = Math.max(total, boss?.maxHp ?? 0, 1) * 1.08;
+  // Stages: the chart follows the next stage's boss as the damage passes each one.
+  const cleared = stagesMode ? (snap ? stagesCleared(total) : 0) : 0;
+  const nextStage = stagesMode ? (snap ? (cleared < STAGE_COUNT ? cleared + 1 : null) : (boss?.stage ?? null)) : null;
+  const nextHp = nextStage ? stageBossHp(nextStage) : 0;
+  const top = Math.max(total, stagesMode ? nextHp : (boss?.maxHp ?? 0), 1) * 1.08;
   const scaleY = (value: number) => {
     const ratio = logScale ? Math.log10(1 + Math.max(0, value)) / Math.log10(1 + top) : value / top;
     return H - BOTTOM - ratio * (H - BOTTOM - 8);
@@ -112,21 +118,23 @@ export function ProgressChart() {
   const last = snap?.points[snap.points.length - 1];
 
   return (
-    <section aria-label="Promotion chart" className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
+    <section aria-label={stagesMode ? "Stages chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <h2 className="text-sm font-semibold">Promotion</h2>
-        <select
-          aria-label="Desired promotion"
-          value={index}
-          onChange={(event) => setPromotionTarget({ promotion: Number(event.target.value) })}
-          className={SELECT}
-        >
-          {PROMOTION_STAGES.map((promotion, i) => (
-            <option key={promotion.name} value={i}>
-              {i + 1}. {promotion.name} · stage {Math.max(1, promotion.stage)}
-            </option>
-          ))}
-        </select>
+        <h2 className="text-sm font-semibold">{stagesMode ? "Stages" : "Promotion"}</h2>
+        {stagesMode ? null : (
+          <select
+            aria-label="Desired promotion"
+            value={index}
+            onChange={(event) => setPromotionTarget({ promotion: Number(event.target.value) })}
+            className={SELECT}
+          >
+            {PROMOTION_STAGES.map((promotion, i) => (
+              <option key={promotion.name} value={i}>
+                {i + 1}. {promotion.name} · stage {Math.max(1, promotion.stage)}
+              </option>
+            ))}
+          </select>
+        )}
         <label className={`flex items-center gap-1 ${LABEL}`}>
           <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
           Log scale
@@ -147,7 +155,7 @@ export function ProgressChart() {
           <button
             type="button"
             onClick={render}
-            disabled={phase === "running" || !boss}
+            disabled={phase === "running" || (!stagesMode && !boss)}
             className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}
           >
             {phase === "done" ? "Render again" : "Render"}
@@ -155,8 +163,27 @@ export function ProgressChart() {
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-40 w-full shrink-0" preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
-        {boss ? (
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full shrink-0" preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
+        {stagesMode ? (
+          <>
+            {cleared > 0 ? (
+              <>
+                <line x1={LEFT} x2={W - 8} y1={scaleY(stageBossHp(cleared))} y2={scaleY(stageBossHp(cleared))} className="stroke-emerald-500" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+                <text x={LEFT + 4} y={scaleY(stageBossHp(cleared)) - 3} className="fill-emerald-500 font-mono" fontSize="9">
+                  Stage {cleared} cleared
+                </text>
+              </>
+            ) : null}
+            {nextStage ? (
+              <>
+                <line x1={LEFT} x2={W - 8} y1={scaleY(nextHp)} y2={scaleY(nextHp)} className="stroke-red-500" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+                <text x={W - 10} y={scaleY(nextHp) - 3} textAnchor="end" className="fill-red-500 font-mono" fontSize="9">
+                  Stage {nextStage} boss HP
+                </text>
+              </>
+            ) : null}
+          </>
+        ) : boss ? (
           <>
             <rect x={LEFT} y={scaleY(boss.maxHp)} width={W - LEFT - 8} height={Math.max(0, scaleY(boss.minHp) - scaleY(boss.maxHp))} className="fill-red-500/10" />
             <line x1={LEFT} x2={W - 8} y1={scaleY(boss.hp)} y2={scaleY(boss.hp)} className="stroke-red-500" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
@@ -187,6 +214,28 @@ export function ProgressChart() {
         ))}
       </svg>
 
+      <dl className="-mt-1 grid shrink-0 grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px] text-dim">
+        {stagesMode ? (
+          <>
+            <dt>{snap ? "Stages cleared" : "Stages this fight clears"}</dt>
+            <dd className="text-right text-ink tabular-nums">{formatValue(snap ? cleared : (setup.stages?.reached ?? 0))}</dd>
+            <dt>{nextStage ? `Stage ${nextStage} boss HP` : "Every stage cleared"}</dt>
+            <dd className="truncate text-right text-ink tabular-nums" title={nextStage ? formatValue(nextHp) : undefined}>
+              {nextStage ? formatValue(nextHp) : ""}
+            </dd>
+          </>
+        ) : boss ? (
+          <>
+            <dt>
+              {boss.name} boss HP · stage {boss.stage}
+            </dt>
+            <dd className="truncate text-right text-ink tabular-nums" title={formatValue(boss.hp)}>
+              {formatValue(boss.hp)}
+            </dd>
+          </>
+        ) : null}
+      </dl>
+
       <LiveReadout snap={snap} input={setup.input} duration={duration} />
 
       <SkillGrid
@@ -207,7 +256,13 @@ export function ProgressChart() {
         {setup.spirits.unknown.length ? ` · no value for ${setup.spirits.unknown.join(", ")}` : ""}.
       </p>
 
-      {phase === "done" && snap && boss ? <Results setup={setup} total={snap.total} duration={duration} manual={manual} /> : null}
+      {phase === "done" && snap ? (
+        stagesMode ? (
+          <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} />
+        ) : boss ? (
+          <Results setup={setup} total={snap.total} duration={duration} manual={manual} />
+        ) : null
+      ) : null}
     </section>
   );
 }
@@ -311,7 +366,7 @@ function SkillGrid({
 
   return (
     <div className="flex shrink-0 flex-col gap-1">
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="mx-auto grid w-1/2 grid-cols-5 gap-1">
         {slots.map((name, i) => {
           if (!name) return <div key={i} className="aspect-square rounded-md border border-dashed border-ink/15" />;
           const data = SKILL_BY_NAME.get(name);
@@ -348,14 +403,14 @@ function SkillGrid({
               {data?.icon && data.iconSize ? (
                 <Image src={data.icon} alt="" width={data.iconSize} height={data.iconSize} className="size-full object-cover" draggable={false} />
               ) : (
-                <span className="p-1 font-mono text-[9px] text-dim">{name}</span>
+                <span className="p-0.5 font-mono text-[7px] leading-none text-dim">{name}</span>
               )}
               {status && ready < 1 && !status.complete ? (
                 <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} />
               ) : null}
               {castable && fightSkill?.mpCost ? (
                 <span
-                  className={`absolute top-0.5 left-0.5 rounded-sm px-0.5 font-mono text-[8px] tabular-nums ${
+                  className={`absolute top-0 left-0 rounded-sm px-px font-mono text-[6px] leading-tight tabular-nums ${
                     status?.waitingForMana ? "bg-sky-500 text-white" : "bg-black/60 text-sky-300"
                   }`}
                 >
@@ -363,23 +418,23 @@ function SkillGrid({
                 </span>
               ) : null}
               {castable && auto ? (
-                <Settings aria-hidden className="absolute top-0.5 right-0.5 size-3.5 animate-[spin_4s_linear_infinite] text-white opacity-35" />
+                <Settings aria-hidden className="absolute top-0 right-0 size-2 animate-[spin_4s_linear_infinite] text-white opacity-35" />
               ) : null}
               {castable && !auto && running && ready >= 1 ? (
                 <span className="absolute inset-0 animate-pulse bg-white/15" />
               ) : null}
               {status?.waitingForMana ? (
-                <span className="absolute right-0 bottom-0 left-0 bg-sky-600/90 text-center font-mono text-[8px] text-white">NO MP</span>
+                <span className="absolute right-0 bottom-0 left-0 bg-sky-600/90 text-center font-mono text-[6px] leading-tight text-white">NO MP</span>
               ) : status?.charged || (status && status.stored > 0) ? (
-                <span className="absolute right-0 bottom-0 left-0 bg-fuchsia-500/85 text-center font-mono text-[8px] text-white">
+                <span className="absolute right-0 bottom-0 left-0 bg-fuchsia-500/85 text-center font-mono text-[6px] leading-tight text-white">
                   {status.charged ? (auto ? "RELEASE" : "TAP") : "STORING"}
                 </span>
               ) : stages ? (
-                <span className="absolute right-0 bottom-0 left-0 bg-black/70 text-center font-mono text-[8px] text-white tabular-nums">
+                <span className="absolute right-0 bottom-0 left-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-white tabular-nums">
                   {status?.complete ? "MAX" : `${status?.stacks ?? 0}/${stages}`}
                 </span>
               ) : status && status.active ? (
-                <span className="absolute right-0 bottom-0 left-0 bg-amber-400/80 text-center font-mono text-[8px] text-black">ON</span>
+                <span className="absolute right-0 bottom-0 left-0 bg-amber-400/80 text-center font-mono text-[6px] leading-tight text-black">ON</span>
               ) : null}
             </button>
           );
@@ -469,6 +524,79 @@ function Results({
         cast as soon as they&apos;re ready when there&apos;s mana, casts pause basic attacks, Demon Hunt stops the clock,
         and Rave stores its duration&apos;s damage, unleashed on its reuse, which starts its cooldown. Life and mana refill by HP and Mana Recovery each second. Boss HP is estimated from the promotion&apos;s
         recommended stage.
+      </p>
+    </div>
+  );
+}
+
+/** What stage the presets reach, once a stages fight is over. */
+function StageResults({
+  setup,
+  total,
+  duration,
+  manual,
+}: {
+  setup: ReturnType<typeof promotionFight>;
+  total: number;
+  duration: number;
+  manual: string[];
+}) {
+  const { profile } = useProfile();
+  const cleared = stagesCleared(total);
+  const next = cleared < STAGE_COUNT ? cleared + 1 : null;
+  const nextHp = next ? stageBossHp(next) : 0;
+  const highest = profile.character.highestStage;
+  const [analysis, setAnalysis] = useState<ReturnType<typeof promotionSuggestions> | null>(null);
+
+  useEffect(() => {
+    if (!setup.boss) return;
+    const id = window.setTimeout(() => setAnalysis(promotionSuggestions(profile, setup, total, duration, manual)), 30);
+    return () => window.clearTimeout(id);
+  }, [profile, setup, total, duration, manual]);
+
+  return (
+    <div className="flex shrink-0 flex-col gap-1 border-t border-ink/10 pt-2 text-[11px] leading-snug">
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px]">
+        <dt className="text-dim">Your damage in {duration}s</dt>
+        <dd className="truncate text-right text-ink tabular-nums" title={formatValue(total)}>{formatValue(total)}</dd>
+        <dt className="text-dim">Stages cleared</dt>
+        <dd className="text-right text-ink tabular-nums">{formatValue(cleared)}</dd>
+        {cleared > 0 ? (
+          <>
+            <dt className="text-dim">Stage {cleared} boss HP</dt>
+            <dd className="truncate text-right text-ink tabular-nums">{formatValue(stageBossHp(cleared))}</dd>
+          </>
+        ) : null}
+        {next ? (
+          <>
+            <dt className="text-dim">Stage {next} boss HP</dt>
+            <dd className="truncate text-right text-ink tabular-nums">{formatValue(nextHp)}</dd>
+          </>
+        ) : null}
+      </dl>
+      <p className={`font-medium ${cleared >= highest ? "text-emerald-500" : "text-amber-500"}`}>
+        {cleared === 0
+          ? "Not even stage 1's boss falls in this fight yet."
+          : `With these presets you can reach stage ${formatValue(cleared)}${
+              highest > 0 ? ` (${cleared >= highest ? `${formatValue(cleared - highest)} past` : `${formatValue(highest - cleared)} short of`} your highest, stage ${formatValue(highest)})` : ""
+            }.`}
+      </p>
+      {next ? <p className="text-dim">Stage {next} needs about {formatValue(nextHp / Math.max(total, 1e-300))}× this damage.</p> : null}
+      {analysis?.suggestions.length ? (
+        <div>
+          <p className="text-dim">Each of these alone would clear stage {next}:</p>
+          <ul className="list-disc pl-4">
+            {analysis.suggestions.map((s) => (
+              <li key={s.label}>
+                <span className="font-medium">{s.label}:</span> {s.detail}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <p className="text-[10px] text-dim">
+        Against normal monsters: each stage&apos;s boss HP is passed as the damage builds up. Skills that read the enemy&apos;s HP
+        (Breath of Fire, Judge&apos;s Torpedo, Thief Wind, Leveling) read stage {formatValue(Math.max(1, setup.stages?.reached ?? 1))}&apos;s boss.
       </p>
     </div>
   );

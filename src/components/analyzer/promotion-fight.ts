@@ -20,6 +20,20 @@ const ENHANCE = characterData.enhance as unknown as EnhanceStat[];
 export const FIGHT_SECONDS = 60;
 
 const bossHpAt = (stage: number) => BOSS_HP[Math.min(BOSS_HP.length, Math.max(1, Math.round(stage))) - 1] ?? 0;
+export const STAGE_COUNT = BOSS_HP.length;
+export const stageBossHp = bossHpAt;
+
+/** The highest stage whose boss HP this much damage covers (0 when not even stage 1's). */
+export function stagesCleared(damage: number): number {
+  let low = 0;
+  let high = BOSS_HP.length;
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if ((BOSS_HP[mid - 1] ?? Infinity) <= damage) low = mid;
+    else high = mid - 1;
+  }
+  return low;
+}
 
 /** A promotion's boss, estimated as its recommended stage's boss, with the stages either side of the range. */
 export function promotionBoss(index: number) {
@@ -388,16 +402,49 @@ function solveHitLever(
   return high;
 }
 
-/** Everything a fight needs before it's played: the boss, the preset's fight skills and the input. */
+/**
+ * Everything a fight needs before it's played: the preset's fight skills, the input and what it's against.
+ * Against a boss monster it's the chosen promotion's boss. Otherwise it's the stages: the highest stage
+ * whose boss the fight beats (HP-based skills read that boss), and the next stage's boss as the target.
+ */
 export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null, promotionIndex: number, duration: number, manual: string[] = []) {
-  const boss = promotionBoss(promotionIndex);
   // Skill buffs play out in the fight itself, so the stats come without them.
   const sources = collectSources(profile, factors, false);
   const { skills, skipped } = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
   // The accompanying spirits' skills are on whenever they are, Include Skills or not.
   const spirits = activeSpiritSkills(profile);
-  const target: FightTarget = { bossMonster: profile.bossMonster, enemyHp: boss?.hp ?? 0, spirits };
-  return { boss, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
+
+  if (profile.bossMonster) {
+    const boss = promotionBoss(promotionIndex);
+    const target: FightTarget = { bossMonster: true, enemyHp: boss?.hp ?? 0, spirits };
+    return { mode: "promotion" as const, boss, stages: null, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
+  }
+
+  const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits });
+  const clears = (stage: number) => fight(sources, skills, duration, undefined, manual, against(stage)).total >= bossHpAt(stage);
+  let reached = 0;
+  let high = BOSS_HP.length;
+  while (reached < high) {
+    const mid = Math.ceil((reached + high) / 2);
+    if (clears(mid)) reached = mid;
+    else high = mid - 1;
+  }
+  const next = reached < BOSS_HP.length ? reached + 1 : null;
+  const target = against(Math.max(1, reached));
+  const boss = next
+    ? { name: `Stage ${next}`, stage: next, minStage: next, maxStage: next, hp: bossHpAt(next), minHp: bossHpAt(next), maxHp: bossHpAt(next) }
+    : null;
+  return {
+    mode: "stages" as const,
+    boss,
+    stages: { reached, next },
+    sources,
+    skills,
+    skipped,
+    spirits,
+    target,
+    input: fightInput(sources, skills, duration, manual, undefined, target),
+  };
 }
 
 /** After a fight falls short: what alone would close the gap, and the same with skills when they were left out. */

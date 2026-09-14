@@ -13,9 +13,12 @@
  *   percent of life missing and stops HP recovery while it lasts.
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
- * - Rave stores the damage dealt for its duration (5 seconds) while the fight
- *   carries on. It can then be used again to unleash its share of that damage,
- *   played out in stopped time, and only then does its cooldown start.
+ * - Rave stores the damage skills and basic attacks deal for its duration (5
+ *   seconds) while the fight carries on. It can then be used again to unleash
+ *   its share of that damage (110% at level 5) as it is, with no multipliers on
+ *   top, played out in stopped time, and only then does its cooldown start.
+ * - Meditation charges every skill with a cooldown, attacks and buffs alike;
+ *   skills that go on a condition (strikes, skill uses) aren't charged.
  * - Demon Hunt plays its hits in stopped time. While the clock is stopped,
  *   cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
@@ -311,11 +314,12 @@ export function createFight(input: FightInput): Fight {
   };
 
   const boss = 1 + (input.bossDamage ?? 0);
-  const record = (amount: number, source: string | null) => {
+  /** Adds damage; only skills' and basic attacks' damage is `stored` by a storing Rave. */
+  const record = (amount: number, source: string | null, stored = true) => {
     total += amount;
     if (source) bySkill[source] = (bySkill[source] ?? 0) + amount;
     else basic += amount;
-    if (action < raveUntil) raveStored += amount;
+    if (stored && action < raveUntil) raveStored += amount;
     points.push({ t: clock, damage: total });
   };
   /** A hit with the enemy multipliers; `raw` damage (a share of the enemy's HP) skips them. */
@@ -326,17 +330,17 @@ export function createFight(input: FightInput): Fight {
       if (spirits?.lastFight && clock >= input.duration - spirits.lastFight.seconds) amount *= spirits.lastFight.multiplier;
       if (spirits?.highHpDamage && enemyHp > 0 && total < enemyHp * (1 - HIGH_HP_THRESHOLD)) amount *= 1 + spirits.highHpDamage;
     }
-    record(amount, source);
+    record(amount, source, !raw);
     if (bossMonster || !spirits || enemyHp <= 0) return;
     // Thief Wind: the first hit on a normal monster takes a share of its HP.
     if (spirits.firstStrike && !struck) {
       struck = true;
-      record(enemyHp * spirits.firstStrike, "Thief Wind");
+      record(enemyHp * spirits.firstStrike, "Thief Wind", false);
     }
     // Judge's Torpedo: a normal monster below its share of HP dies at once.
     if (spirits.execute && !executed && total < enemyHp && enemyHp - total <= enemyHp * spirits.execute) {
       executed = true;
-      record(enemyHp - total, "Judge's Torpedo");
+      record(enemyHp - total, "Judge's Torpedo", false);
     }
   };
 
@@ -381,8 +385,9 @@ export function createFight(input: FightInput): Fight {
       for (const other of live) if (other !== l && other.skill.trigger === "attackCasts" && other.started) other.progress += 1;
     } else if (e.type === "rave") {
       if (release) {
-        // The reuse unleashes Rave's share of the stored damage in stopped time; the cooldown starts now.
-        deal(raveStored * e.power, s.name);
+        // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored
+        // hits already had their multipliers. The cooldown starts now.
+        record(raveStored * e.power, s.name, false);
         raveStored = 0;
         l.charged = false;
         l.holding = false;
@@ -399,12 +404,13 @@ export function createFight(input: FightInput): Fight {
     } else if (e.type === "nextSkill") {
       if (s.element) nextSkillBonus[s.element] = e.power;
     } else if (e.type === "chargeCooldowns") {
-      // Meditation charges cooldowns and required strikes alike.
+      // Meditation charges every cooldown, attacks and buffs alike; conditional skills (strikes, skill uses) aren't charged.
       for (const other of live) {
-        const t = other.skill.trigger;
         // A skill that starts on its cooldown (Wrath of Gods) isn't charged until it has gone once.
         if (other.skill.startsOnCooldown && other.uses === 0) continue;
-        if (other !== l && (t === "seconds" || t === "hits") && !isStack(other.skill)) other.progress += e.power * other.skill.every;
+        if (other !== l && other.skill.trigger === "seconds" && !isStack(other.skill) && !other.holding) {
+          other.progress = Math.min(target(other), other.progress + e.power * other.skill.every);
+        }
       }
     } else if (isStack(s)) {
       l.stacks += 1;

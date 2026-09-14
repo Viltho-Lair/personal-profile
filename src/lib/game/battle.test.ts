@@ -227,11 +227,25 @@ describe("simulateFight", () => {
     expect(fight.cast("Slash")).toBe(false);
   });
 
-  it("charges required strikes with Meditation too", () => {
+  it("charges every cooldown with Meditation, attacks and buffs alike, but not skills that wait for strikes", () => {
     const strike = skill({ name: "Strike", trigger: "hits", every: 20, effect: { type: "damage", power: 1, hits: 1 } });
-    const meditation = skill({ name: "Meditation", element: "Water", kind: "buff", every: 100, effect: { type: "chargeCooldowns", power: 0.5 } });
-    const first = (skills: FightSkill[]) => simulateFight({ ...base, duration: 30, skills }).casts.find((c) => c.name === "Strike")?.t ?? 99;
-    expect(first([strike, meditation])).toBeLessThan(first([strike]) - 5);
+    const slash = skill({ name: "Slash", every: 20, startsOnCooldown: false, effect: { type: "damage", power: 1, hits: 1 } });
+    const buff = skill({ name: "Buff", kind: "buff", every: 20, duration: 1, effect: { type: "atk", power: 0 } });
+    const meditation = skill({ name: "Meditation", element: "Water", kind: "buff", every: 100, startAt: 2, effect: { type: "chargeCooldowns", power: 0.5 } });
+    const casts = (skills: FightSkill[], name: string) =>
+      simulateFight({ ...base, duration: 30, skills }).casts.filter((c) => c.name === name).map((c) => c.t);
+    // Slash and Buff go at 0; Meditation at 2s charges half of their next cooldown.
+    expect(casts([slash, meditation], "Slash")[1]).toBeLessThan(casts([slash], "Slash")[1] - 5);
+    expect(casts([buff, meditation], "Buff")[1]).toBeLessThan(casts([buff], "Buff")[1] - 5);
+    // Strike still waits for its 20 hits (only Meditation's cast animation holds a basic attack back).
+    expect(casts([strike, meditation], "Strike")[0]).toBeGreaterThanOrEqual(casts([strike], "Strike")[0]);
+  });
+
+  it("releases Rave's stored damage as it is, without the boss damage again", () => {
+    const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1.1 } });
+    const result = simulateFight({ ...base, duration: 20, bossDamage: 8.5, skills: [rave] });
+    // Five basic attacks of 100 x 9.5 are stored, and 110% of that comes back.
+    expect(result.bySkill.Rave).toBeCloseTo(5 * 950 * 1.1, -2);
   });
 
   it("applies skill stones only to their element", () => {
