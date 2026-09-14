@@ -396,7 +396,14 @@ export function listUpgrades(profile: ProfileV1): Upgrade[] {
       apply: (p, level) => {
         const weapon = SOUL_WEAPONS[level - 1];
         if (!weapon) return p;
-        return { ...p, equippedSoulWeapon: weapon.name, soulWeapons: { ...p.soulWeapons, [weapon.name]: { owned: true } } };
+        // A new soul weapon gets engraved like the one it replaces, so its completion effect carries over.
+        const engraved = p.equippedSoulWeapon ? p.soulEngraving.completed[p.equippedSoulWeapon] === true : false;
+        return {
+          ...p,
+          equippedSoulWeapon: weapon.name,
+          soulWeapons: { ...p.soulWeapons, [weapon.name]: { owned: true } },
+          soulEngraving: { ...p.soulEngraving, completed: { ...p.soulEngraving.completed, [weapon.name]: engraved } },
+        };
       },
       cost: (from, to) => {
         const resources: Partial<Record<ResourceKey, number>> = {};

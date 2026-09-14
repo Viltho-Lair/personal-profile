@@ -19,6 +19,8 @@ export const PROMOTION_STAGES = promotionBossData.promotions as PromotionStage[]
 const BOSS_HP = promotionBossData.bossHp as number[];
 
 export const FIGHT_SECONDS = 60;
+/** A promotion boss fight runs about 75 seconds in the game. */
+export const PROMOTION_SECONDS = 75;
 /** A farming run ends when the box breaks, or after this long. */
 export const FARM_SECONDS = 180;
 export const FARM_STAGES = stagesData.stages as FarmStage[];
@@ -535,7 +537,8 @@ export function promotionFight(
     return { mode: "promotion" as const, boss, stages: null, farm: null, beast, familiar, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
   }
 
-  const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits, enemyElement });
+  // A stage's boss is a boss monster: Loar's boss skill damage and the Black Orb's boss amp work on it.
+  const against = (stage: number): FightTarget => ({ bossMonster: true, enemyHp: bossHpAt(stage), spirits, enemyElement });
   const clears = (stage: number) => fight(sources, skills, duration, undefined, manual, against(stage)).total >= bossHpAt(stage);
   let reached = options.stage !== undefined ? Math.max(0, options.stage - 1) : 0;
   let high = options.stage !== undefined ? reached : BOSS_HP.length;

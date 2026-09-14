@@ -16,7 +16,7 @@ import { BattleRender, type SingleEnemy } from "./farm-render";
 import { DamageChart, type ChartLevel } from "./damage-chart";
 import { rarityGroup } from "@/lib/game/formulas";
 import { spiritState } from "@/lib/profile/rules";
-import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
+import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
 import { castInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
@@ -47,7 +47,9 @@ export function ProgressChart() {
 
   const current = profile.character.promotion;
   const index = profile.promotionTarget.promotion ?? Math.min(current, PROMOTION_STAGES.length - 1);
-  const next = useMemo(() => promotionFight(profile, factors, index, FIGHT_SECONDS, manual), [profile, factors, index, manual]);
+  // A promotion boss fight lasts longer than a stage's.
+  const seconds = profile.bossMonster && !profile.stageFarming.on ? PROMOTION_SECONDS : FIGHT_SECONDS;
+  const next = useMemo(() => promotionFight(profile, factors, index, seconds, manual), [profile, factors, index, seconds, manual]);
   // The Analysis and Render views both show the rendered fight, as it was set up when it started, until a new
   // render or a reload; before any render they show what a render would play now. Picking another enemy (fight
   // type, promotion or farming stage) clears it, so a result never shows under an enemy it wasn't fought against.
@@ -743,7 +745,7 @@ function StageResults({
       {next ? <p className="text-dim">Stage {next} needs about {formatValue(nextHp / Math.max(total, 1e-300))}× this damage.</p> : null}
       {target ? <UpgradePlans title={`How to clear stage ${formatValue(target.stage)}`} target={target} factors={factors} /> : null}
       <p className="text-[10px] text-dim">
-        Against normal monsters: each stage&apos;s boss HP is passed as the damage builds up. Skills that read the enemy&apos;s HP
+        Against each stage&apos;s boss, a boss monster: its HP is passed as the damage builds up. Skills that read the enemy&apos;s HP
         (Breath of Fire, Judge&apos;s Torpedo, Thief Wind, Leveling) read stage {formatValue(Math.max(1, setup.stages?.reached ?? 1))}&apos;s boss.
       </p>
     </div>
