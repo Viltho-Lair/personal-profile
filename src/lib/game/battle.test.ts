@@ -79,35 +79,42 @@ describe("simulateFight", () => {
     fight.advance(30);
     expect(fight.state().skills[0].charged).toBe(true);
     const stored = fight.state().skills[0].stored!;
+    const clock = fight.state().clock;
     expect(fight.cast("Rave")).toBe(true);
     // The pillar rises after the cast and deals what was stored over 2 seconds.
-    fight.advance(1);
+    fight.advance(1.3);
     state = fight.state();
-    expect(state.bySkill.Rave).toBeGreaterThan(stored * 0.3);
+    expect(state.bySkill.Rave).toBeGreaterThan(stored * 0.4);
     expect(state.bySkill.Rave).toBeLessThan(stored * 0.6);
+    expect(state.raveStopping).toBe(true);
     expect(state.skills[0]).toMatchObject({ charged: false });
-    expect(state.skills[0].ready).toBeLessThan(0.1);
+    expect(state.skills[0].ready).toBe(0);
     expect(fight.cast("Rave")).toBe(false);
-    fight.advance(1.5);
-    expect(fight.state().bySkill.Rave).toBeCloseTo(stored, 0);
+    fight.advance(1.1);
+    state = fight.state();
+    expect(state.bySkill.Rave).toBeCloseTo(stored, 0);
+    // Everything held while it dealt: the battle timer and the cooldown barely moved.
+    expect(state.clock - clock).toBeLessThan(0.2);
+    expect(state.raveStopping).toBe(false);
   });
 
-  it("stops time and skill cooldowns for the five seconds Rave stores", () => {
+  it("runs the fight while Rave stores, and stops everything only while its pillar deals the damage", () => {
     const rave = skill({ name: "Rave", element: null, every: 60, duration: 5, effect: { type: "rave", power: 1 } });
     const slash = skill({ name: "Slash", every: 4, effect: { type: "damage", power: 0, hits: 1 } });
     const result = simulateFight({ ...base, skills: [rave, slash] });
     const raves = result.casts.filter((c) => c.name === "Rave");
-    // Used at the start and unleashed after five real seconds, with the battle timer still at 0.
+    // Used at the start and unleashed once its 5 seconds are up, the battle timer running all along.
     expect(raves[0].t).toBeCloseTo(0, 1);
-    expect(raves[1].t).toBeCloseTo(0, 1);
+    expect(raves[1].t).toBeCloseTo(5, 0);
     expect(raves[1].real).toBeCloseTo(5, 0);
     expect(result.bySkill.Rave).toBeGreaterThan(400);
     expect(result.bySkill.Rave).toBeLessThan(600);
-    // Basic attacks kept landing for the stopped five seconds on top of the fight's ten.
-    expect(result.basic).toBeGreaterThanOrEqual(1400);
-    // Slash's 4-second cooldown held while time stood still: its second use waits for 4 seconds of the timer.
+    // The release's 2.3 stopped seconds add no basic attacks: still the fight's 10 seconds of them.
+    expect(result.basic).toBeLessThanOrEqual(1000);
+    // Slash's cooldown ran while Rave stored (again at 4 seconds) and held through the pillar (8 seconds of timer is 10.3 real).
     const slashes = result.casts.filter((c) => c.name === "Slash");
-    expect(slashes[1].real).toBeGreaterThan(8.5);
+    expect(slashes[1].real).toBeCloseTo(4, 0);
+    expect(slashes[2].real).toBeGreaterThan(10);
   });
 
   it("keeps Rave's share proportional to what it stored", () => {

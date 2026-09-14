@@ -532,7 +532,7 @@ function SkillNames({ x, y, casts, time }: { x: number; y: number; casts: { name
   );
 }
 
-/** While Rave stores, time stands still: the field dims to violet and a clock ring turns around the slayer. */
+/** While Rave's pillar deals its damage, time stands still: the field dims to violet and a clock ring turns around the slayer. */
 function TimeStop({ x, y, time }: { x: number; y: number; time: number }) {
   const hand = (time * 90) % 360;
   return (

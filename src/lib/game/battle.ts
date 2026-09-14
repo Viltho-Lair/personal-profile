@@ -17,16 +17,17 @@
  * - Passives run on their own: always on, stacking over time or hits up to
  *   their stages (then they're complete), skill uses, or starting later.
  * - Rave stores all the damage done to the enemy for its duration (5 seconds):
- *   skills, basic attacks and spirit skills alike. It stops time while it
- *   stores: the battle timer and skill cooldowns hold while attacks keep landing.
- *   Its reuse raises a pillar that deals the stored share over 2 seconds.
+ *   skills, basic attacks and spirit skills alike, while the fight runs as usual.
+ *   It can then be used again to unleash its share of that damage (110% at
+ *   level 5) as it is, with no multipliers on top: a pillar deals it over 2
+ *   seconds, and everything stops while it does (the battle timer, cooldowns,
+ *   buffs, basic attacks, movement, spirit skills and recovery). Its cooldown
+ *   starts with the release.
  * - Farming, charges move the slayer: each batch charges up to its range and
  *   stops at the first monster it didn't kill (Supersonic's 6 batches go on
  *   from there); Fulgurous charges even with nothing in reach. Meteors and
  *   lightning strikes land on random range tiles, hitting what stands there,
- *   and some skills hit only so many enemies. It can then be used again to unleash
- *   its share of that damage (110% at level 5) as it is, with no multipliers on
- *   top, played out in stopped time, and only then does its cooldown start.
+ *   and some skills hit only so many enemies.
  * - Meditation charges every attack and buff, their cooldowns and strike
  *   counts alike, and passives with a cooldown; passives that go on a
  *   condition (strikes, skill uses, stacks) aren't charged.
@@ -273,7 +274,7 @@ export type FightState = FightResult & {
   /** Range walked a second right now, and the MSPD bonus on it. */
   moveSpeed: number;
   mspdBonus: number;
-  /** Rave is storing, so time and skill cooldowns stand still. */
+  /** Rave's pillar is dealing its stored damage, so everything else stands still. */
   raveStopping: boolean;
   attacksPerSecond: number;
   /** Total ATK and ATK SPD the buffs, stacks and Rage add right now, as fractions. */
@@ -394,6 +395,8 @@ export function createFight(input: FightInput): Fight {
   /** Rave's pillar: what it still has to deal, how fast, and hits of skills that come one a second. */
   let raveLeft = 0;
   let raveRate = 0;
+  /** Real time the pillar starts dealing, once the cast's animation is over. */
+  let raveFrom = -1;
   const later: { at: number; amount: number; source: string; range: number; max?: number }[] = [];
   /** Spirit skills show their spirit once when they kick in. */
   const spiritShown = new Set<string>();
@@ -594,17 +597,18 @@ export function createFight(input: FightInput): Fight {
       for (const other of live) if (other !== l && other.skill.trigger === counts && other.started) other.progress += 1;
     } else if (e.type === "rave") {
       if (release) {
-        // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored
-        // hits already had their multipliers. The cooldown starts now.
-        // A pillar rises and deals the stored share over 2 seconds.
+        // The reuse unleashes Rave's share of the stored damage as it is: the stored hits already had their
+        // multipliers. After the cast, a pillar deals it over 2 seconds and everything stops while it does.
+        // The cooldown starts now.
         raveLeft += raveStored * e.power;
         raveRate = raveLeft / RAVE_RELEASE_SECONDS;
-        log({ kind: "rave", name: s.name, element: null, from: at(), to: field?.front()?.position ?? at() + BASIC_RANGE, count: 1, seconds: RAVE_RELEASE_SECONDS });
+        raveFrom = real + ANIMATION_SECONDS;
+        frozenUntil = Math.max(frozenUntil, raveFrom + RAVE_RELEASE_SECONDS);
+        log({ kind: "rave", name: s.name, element: null, from: at(), to: field?.front()?.position ?? at() + BASIC_RANGE, count: 1, seconds: RAVE_RELEASE_SECONDS, real: raveFrom });
         releases.push({ t: clock, damage: total, amount: raveStored * e.power });
         raveStored = 0;
         l.charged = false;
         l.holding = false;
-        frozenUntil = Math.max(frozenUntil, real + ANIMATION_SECONDS);
       } else {
         // Storing runs with the fight: everything keeps going for the duration.
         raveUntil = action + s.duration;
@@ -687,7 +691,8 @@ export function createFight(input: FightInput): Fight {
       }
     }
 
-    if (!frozen && raveLeft > 0) {
+    // The pillar is the one thing that acts while Rave's release holds everything else.
+    if (raveLeft > 0 && real >= raveFrom) {
       const chunk = Math.min(raveLeft, raveRate * step);
       raveLeft -= chunk;
       record(field ? field.hit(chunk, BASIC_RANGE, true) : chunk, "Rave", false);
@@ -723,8 +728,7 @@ export function createFight(input: FightInput): Fight {
         continue;
       }
       if (!l.started || s.trigger === "always" || l.queued || l.holding || complete(l)) continue;
-      // Cooldowns hold while Rave stops time.
-      if (s.trigger === "seconds" && !frozen && !(raveUntil >= 0 && action < raveUntil)) l.progress += step * (1 + now.cooldownRate);
+      if (s.trigger === "seconds" && !frozen) l.progress += step * (1 + now.cooldownRate);
       if (l.progress < target(l)) continue;
       l.progress = Math.min(l.progress, target(l));
       if (s.kind === "passive") go(l, null);
@@ -788,8 +792,7 @@ export function createFight(input: FightInput): Fight {
     real += step;
     if (real >= frozenUntil) {
       action += step;
-      // Time Freeze and a storing Rave hold the battle timer.
-      if (real >= stopUntil && !(raveUntil >= 0 && action < raveUntil)) clock = Math.min(input.duration, clock + step);
+      if (real >= stopUntil) clock = Math.min(input.duration, clock + step);
     }
   };
 
@@ -832,7 +835,7 @@ export function createFight(input: FightInput): Fight {
         clearedAt,
         events,
         moveSpeed: MOVE_SPEED * (input.movementSpeed ?? 1) * (1 + now.mspd),
-        raveStopping: raveUntil >= 0 && action < raveUntil,
+        raveStopping: raveLeft > 0 && real >= raveFrom,
         mspdBonus: now.mspd,
         attacksPerSecond: baseSpeed * (1 + now.speed),
         atkBonus: now.atk,
