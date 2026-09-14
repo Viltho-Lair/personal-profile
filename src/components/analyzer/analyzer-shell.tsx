@@ -95,7 +95,11 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
       {/* Fixed above the panels: the bar never scrolls and nothing scrolls under the tabs.
           The tabs sit astride the rule and hide it behind them. */}
       <div className="fixed inset-x-0 bottom-0 z-50">
-        <div className="h-12 border-t border-ink/25 bg-ground" />
+        <div className="relative h-12 border-t border-ink/25 bg-ground">
+          <p className="absolute inset-x-0 bottom-0.5 px-3 text-center text-[8px] leading-tight text-dim sm:text-[9px] lg:right-3 lg:left-auto lg:bottom-auto lg:top-1/2 lg:max-w-[22rem] lg:-translate-y-1/2 lg:text-right">
+            All data, information and artwork belong to Slayer Legends. This is an analysis tool only, using the Master Optimizer document.
+          </p>
+        </div>
         <TabsList
           variant="line"
           /* `!` overrides: shadcn scopes some defaults to the list variant,

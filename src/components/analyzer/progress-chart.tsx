@@ -10,7 +10,8 @@ import { ELEMENTS } from "@/lib/game/stats";
 import { BeastArt } from "./beast-panel";
 import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
 import { FamiliarArt } from "./skill-familiars";
-import { FAMILIAR_SKILL, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
+import { createField, FARM_WAVES, type FarmStage } from "@/lib/game/farm";
+import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
 
@@ -38,7 +39,7 @@ type Phase = "idle" | "running" | "done";
  * once the fight's over.
  */
 export function ProgressChart() {
-  const { profile, setPromotionTarget, setBossMonster, setEnemyElement } = useProfile();
+  const { profile, setPromotionTarget, setBossMonster, setEnemyElement, setStageFarming } = useProfile();
   const factors = useSpiritFactors();
   const [logScale, setLogScale] = useState(false);
   const [manual, setManual] = useState<string[]>([]);
@@ -49,10 +50,11 @@ export function ProgressChart() {
 
   const current = profile.character.promotion;
   const index = profile.promotionTarget.promotion ?? Math.min(current, PROMOTION_STAGES.length - 1);
-  const duration = FIGHT_SECONDS;
-  const setup = useMemo(() => promotionFight(profile, factors, index, duration, manual), [profile, factors, index, duration, manual]);
+  const setup = useMemo(() => promotionFight(profile, factors, index, FIGHT_SECONDS, manual), [profile, factors, index, manual]);
+  const duration = setup.input.duration;
   const { boss } = setup;
   const stagesMode = setup.mode === "stages";
+  const farmMode = setup.mode === "farm";
   // A changed profile, promotion or auto setting makes the last render stale.
   const phase: Phase = run && run.for === setup ? run.phase : "idle";
   const snap = run && run.for === setup ? run.snap : null;
@@ -122,10 +124,10 @@ export function ProgressChart() {
   const last = snap?.points[snap.points.length - 1];
 
   return (
-    <section aria-label={stagesMode ? "Stages chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
+    <section aria-label={farmMode ? "Stage farming" : stagesMode ? "Stages chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <h2 className="text-sm font-semibold">{stagesMode ? "Stages" : "Promotion"}</h2>
-        {stagesMode ? null : (
+        <h2 className="text-sm font-semibold">{farmMode ? "Stage farming" : stagesMode ? "Stages" : "Promotion"}</h2>
+        {stagesMode || farmMode ? null : (
           <select
             aria-label="Desired promotion"
             value={index}
@@ -139,15 +141,36 @@ export function ProgressChart() {
             ))}
           </select>
         )}
-        <label className={`flex items-center gap-1 ${LABEL}`}>
-          <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
-          Log scale
-        </label>
+        {farmMode ? null : (
+          <label className={`flex items-center gap-1 ${LABEL}`}>
+            <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
+            Log scale
+          </label>
+        )}
         <div className="flex basis-full flex-wrap items-center gap-x-3 gap-y-1">
-          <label className={`flex items-center gap-1 ${LABEL}`} title="Off: a normal monster">
-            <input type="checkbox" checked={profile.bossMonster} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
+          <label className={`flex items-center gap-1 ${LABEL} ${farmMode ? "opacity-40" : ""}`} title={farmMode ? "Stage farming fights normal monsters" : "Off: a normal monster"}>
+            <input type="checkbox" checked={profile.bossMonster && !farmMode} disabled={farmMode} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
             Boss monster
           </label>
+          <label className={`flex items-center gap-1 ${LABEL}`} title="Walk through a stage's 10 waves and its box">
+            <input type="checkbox" checked={profile.stageFarming.on} onChange={(event) => setStageFarming({ on: event.target.checked })} className="accent-ink" />
+            Stage farming
+          </label>
+          {farmMode && setup.farm ? (
+            <label className={`flex items-center gap-1 ${LABEL}`}>
+              Stage
+              <input
+                type="number"
+                min={1}
+                max={FARM_STAGES.length}
+                value={profile.stageFarming.stage}
+                aria-label="Stage to farm"
+                onChange={(event) => setStageFarming({ stage: Math.min(FARM_STAGES.length, Math.max(1, Math.floor(event.target.valueAsNumber || 1))) })}
+                className="w-16 rounded-md border border-ink/20 bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
+              />
+              <span className="normal-case tracking-normal text-ink">{setup.farm.name}</span>
+            </label>
+          ) : null}
           <label className={`flex items-center gap-1 ${LABEL}`} title="x2 from the element that beats it, x0.7 from the one it beats">
             <input
               type="checkbox"
@@ -188,7 +211,7 @@ export function ProgressChart() {
           <button
             type="button"
             onClick={render}
-            disabled={phase === "running" || (!stagesMode && !boss)}
+            disabled={phase === "running" || (!stagesMode && !farmMode && !boss)}
             className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}
           >
             {phase === "done" ? "Render again" : "Render"}
@@ -196,7 +219,8 @@ export function ProgressChart() {
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full shrink-0 md:h-[34svh]" preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
+      {farmMode && setup.farm ? <FarmStrip stage={setup.farm} snap={snap} /> : null}
+      <svg viewBox={`0 0 ${W} ${H}`} className={`h-56 w-full shrink-0 md:h-[34svh] ${farmMode ? "hidden" : ""}`} preserveAspectRatio="none" role="img" aria-label="Damage over the fight against the boss HP">
         {stagesMode ? (
           <>
             {cleared > 0 ? (
@@ -255,7 +279,9 @@ export function ProgressChart() {
         ))}
       </svg>
 
-      {stagesMode ? (
+      {farmMode && setup.farm ? (
+        <FarmHealth stage={setup.farm} snap={snap} />
+      ) : stagesMode ? (
         nextStage ? (
           <HealthBar
             hp={nextHp}
@@ -286,13 +312,15 @@ export function ProgressChart() {
       />
 
       <p className="shrink-0 text-[10px] leading-snug text-dim">
-        {profile.bossMonster ? "Against a boss monster" : "Against a normal monster"} · Spirit skills:{" "}
+        {farmMode ? "Stage farming normal monsters" : profile.bossMonster ? "Against a boss monster" : "Against a normal monster"} · Spirit skills:{" "}
         {setup.spirits.active.length ? setup.spirits.active.join(", ") : "none in the spirit preset"}
         {setup.spirits.unknown.length ? ` · no value for ${setup.spirits.unknown.join(", ")}` : ""}.
       </p>
 
       {phase === "done" && snap ? (
-        stagesMode ? (
+        farmMode && setup.farm ? (
+          <FarmResults stage={setup.farm} snap={snap} duration={duration} />
+        ) : stagesMode ? (
           <StageResults setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
         ) : boss ? (
           <Results setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} />
@@ -813,5 +841,99 @@ function FamiliarTile({
       {!auto && running && ready >= 1 ? <span className="absolute inset-0 animate-pulse bg-white/15" /> : null}
       <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-white">FAMILIAR</span>
     </button>
+  );
+}
+
+/** Range the farming view shows at once, and how far behind the slayer it starts. */
+const FARM_VIEW = 30;
+const FARM_BEHIND = 4;
+
+/**
+ * Stage farming, drawn in place of the graph: the slayer as a circle walking right, the monsters and the
+ * box as white circles a range apart on a black strip, fading as they lose HP and gone once they fall.
+ */
+function FarmStrip({ stage, snap }: { stage: FarmStage; snap: FightState | null }) {
+  const initial = useMemo(() => createField(stage).state(), [stage]);
+  const field = snap?.field ?? initial;
+  const left = field.position - FARM_BEHIND;
+  const unit = (W - 16) / FARM_VIEW;
+  const x = (position: number) => 8 + (position - left) * unit;
+  const ground = H * 0.62;
+  const visible = field.enemies.filter((e) => e.hp > 0 && e.position >= left - 1 && e.position <= left + FARM_VIEW + 1);
+  const waveStarts = field.enemies.filter((e, i, all) => i === 0 || all[i - 1].wave !== e.wave);
+  const front = field.enemies.find((e) => e.hp > 0);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full shrink-0 rounded-md bg-black md:h-[34svh]" role="img" aria-label={`Stage ${stage.stage} farming: ${field.kills} monsters down`}>
+      <line x1={0} x2={W} y1={ground + unit * 0.5} y2={ground + unit * 0.5} stroke="white" strokeOpacity="0.15" />
+      {waveStarts
+        .filter((e) => e.position >= left - 2 && e.position <= left + FARM_VIEW)
+        .map((e) => (
+          <text key={`w${e.wave}`} x={x(e.position)} y={ground - unit * 1.2} fill="white" fillOpacity="0.5" fontSize="9" className="font-mono">
+            {e.box ? "Box" : `Wave ${e.wave}`}
+          </text>
+        ))}
+      {visible.map((e) => (
+        <circle
+          key={e.id}
+          cx={x(e.position)}
+          cy={ground}
+          r={unit * (e.box ? 0.45 : 0.35)}
+          fill="white"
+          fillOpacity={0.25 + 0.75 * (e.hp / Math.max(1e-300, e.maxHp))}
+          stroke="white"
+          strokeWidth={e === front ? 2 : 1}
+        />
+      ))}
+      <circle cx={x(field.position)} cy={ground} r={unit * 0.4} className="fill-sky-400" stroke="white" strokeWidth="1.5" />
+      <text x={8} y={14} fill="white" fillOpacity="0.7" fontSize="10" className="font-mono">
+        Stage {stage.stage} · {field.kills} / {field.enemies.length} down{field.cleared ? " · cleared" : ""}
+      </text>
+    </svg>
+  );
+}
+
+/** The monster in front's HP while farming, with its wave underneath. */
+function FarmHealth({ stage, snap }: { stage: FarmStage; snap: FightState | null }) {
+  const field = snap?.field;
+  const front = field ? field.enemies.find((e) => e.hp > 0) : null;
+  if (field && !front) return <p className="shrink-0 font-mono text-[10px] text-emerald-500">Box broken: stage {stage.stage} cleared</p>;
+  const hp = front?.maxHp ?? stage.enemyHp;
+  const lost = front ? front.maxHp - front.hp : 0;
+  const label = front?.box ? "Box HP" : `Wave ${front?.wave ?? 1} / ${FARM_WAVES} · monster HP`;
+  return <HealthBar hp={hp} damage={lost} label={label} />;
+}
+
+/** How the farming run went: the clear time, kills and damage. */
+function FarmResults({ stage, snap, duration }: { stage: FarmStage; snap: FightState; duration: number }) {
+  const field = snap.field;
+  const cleared = snap.clearedAt !== null;
+  return (
+    <div className="flex shrink-0 flex-col gap-1 border-t border-ink/10 pt-2 text-[11px] leading-snug">
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 font-mono text-[10px]">
+        <dt className="text-dim">Stage</dt>
+        <dd className="text-right text-ink">{stage.stage} · {stage.name}</dd>
+        <dt className="text-dim">Monsters down</dt>
+        <dd className="text-right text-ink tabular-nums">{field ? `${field.kills} / ${field.enemies.length}` : "—"}</dd>
+        <dt className="text-dim">Damage dealt</dt>
+        <dd className="truncate text-right text-ink tabular-nums" title={formatValue(snap.total)}>{formatValue(snap.total)}</dd>
+        {cleared ? (
+          <>
+            <dt className="text-dim">Clears an hour</dt>
+            <dd className="text-right text-ink tabular-nums">{formatValue(Math.floor(3600 / Math.max(0.1, snap.clearedAt ?? 1)))}</dd>
+          </>
+        ) : null}
+      </dl>
+      <p className={`font-medium ${cleared ? "text-emerald-500" : "text-red-500"}`}>
+        {cleared
+          ? `Cleared in ${snap.clearedAt?.toFixed(1)}s.`
+          : `Not cleared in ${duration}s: ${field ? field.enemies.length - field.kills : 0} monsters still standing.`}
+      </p>
+      <DamageBreakdown total={snap.total} breakdown={snap} />
+      <p className="text-[10px] text-dim">
+        {FARM_WAVES} waves of {stage.mobs} monsters ({formatValue(stage.enemyHp)} HP each) and a box with a monster&apos;s HP, a range apart
+        with 10 range between waves. The slayer walks 5 range a second; basic attacks and Rave hit the monster in front, skills and the
+        familiar everything in their range.
+      </p>
+    </div>
   );
 }

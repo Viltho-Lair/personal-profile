@@ -224,6 +224,8 @@ export type ProfileV1 = {
   bossMonster: boolean;
   /** The enemy's element when it's element restricted; null when it isn't. */
   enemyElement: "Fire" | "Water" | "Wind" | "Earth" | null;
+  /** Stage farming instead of one enemy, and the stage to farm. */
+  stageFarming: { on: boolean; stage: number };
   soulEngraving: SoulEngraving;
   /** Refinement lines by attack skill name. */
   skillRefinement: Record<string, RefinementLine[]>;
@@ -285,6 +287,7 @@ export function emptyProfile(): ProfileV1 {
     includeSkills: false,
     bossMonster: true,
     enemyElement: null,
+    stageFarming: { on: false, stage: 1 },
     soulEngraving: emptySoulEngraving(),
     skillRefinement: {},
     sealedShrine: emptyShrineLevels(),

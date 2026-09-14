@@ -143,6 +143,7 @@ export function useProfile() {
     setIncludeSkills: (on: boolean) => update((p) => rules.setIncludeSkills(p, on)),
     setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
+    setStageFarming: (change: Partial<ProfileV1["stageFarming"]>) => update((p) => rules.setStageFarming(p, change)),
     resetProfile: () => update(() => emptyProfile()),
     replaceProfile: (next: ProfileV1) => update(() => next),
   };

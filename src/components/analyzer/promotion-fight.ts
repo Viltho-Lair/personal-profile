@@ -1,5 +1,7 @@
 import characterData from "@/data/optimizer/character.json";
 import promotionBossData from "@/data/optimizer/promotion-bosses.json";
+import stagesData from "@/data/optimizer/stages.json";
+import type { FarmStage } from "@/lib/game/farm";
 import { ANIMATION_SECONDS, simulateFight, withStones, type FightInput, type FightResult, type FightSkill, type SkillEffect } from "@/lib/game/battle";
 import { enhanceStat, type EnhanceStat } from "@/lib/game/character";
 import { skillPower } from "@/lib/game/formulas";
@@ -19,6 +21,9 @@ const BOSS_HP = promotionBossData.bossHp as number[];
 const ENHANCE = characterData.enhance as unknown as EnhanceStat[];
 
 export const FIGHT_SECONDS = 60;
+/** A farming run ends when the box breaks, or after this long. */
+export const FARM_SECONDS = 180;
+export const FARM_STAGES = stagesData.stages as FarmStage[];
 const REFINEMENT_DATA = refinementData as unknown as RefinementData;
 
 const bossHpAt = (stage: number) => BOSS_HP[Math.min(BOSS_HP.length, Math.max(1, Math.round(stage))) - 1] ?? 0;
@@ -155,6 +160,8 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     startAt: num(/after (\d+) seconds into battle/i, text) ?? 0,
     freezes: FREEZING.has(skill.name),
     bonus: 0,
+    // Farming, an attack skill hits every monster within its Range.
+    range: m.type === "attack" ? Math.max(1, skill.range ?? 1) : undefined,
   };
   const make = (effect: SkillEffect, extra: Partial<FightSkill> = {}): FightSkill => ({ ...base, ...extra, effect });
 
@@ -297,6 +304,7 @@ export function familiarFightSkills(profile: ProfileV1, duration: number) {
     freezes: false,
     bonus,
     familiar: true,
+    range: Math.max(1, weapon.values.Range ?? 1),
     effect: { type: "damage", power, hits },
   };
   const special = (name: string, effect: FightSkill["effect"], extra: Partial<FightSkill> = {}): FightSkill => ({
@@ -612,10 +620,30 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
   const spirits = activeSpiritSkills(profile);
   const enemyElement = profile.enemyElement;
 
+  // Stage farming: normal monsters wave after wave, the run ending when the box breaks.
+  if (profile.stageFarming.on) {
+    const farm = FARM_STAGES[Math.min(FARM_STAGES.length, profile.stageFarming.stage) - 1] ?? FARM_STAGES[0];
+    const target: FightTarget = { bossMonster: false, enemyHp: farm.enemyHp, spirits, enemyElement };
+    return {
+      mode: "farm" as const,
+      boss: null,
+      stages: null,
+      farm,
+      beast,
+      familiar,
+      sources,
+      skills,
+      skipped,
+      spirits,
+      target,
+      input: { ...fightInput(sources, skills, FARM_SECONDS, manual, undefined, target), farm },
+    };
+  }
+
   if (profile.bossMonster) {
     const boss = promotionBoss(promotionIndex);
     const target: FightTarget = { bossMonster: true, enemyHp: boss?.hp ?? 0, spirits, enemyElement };
-    return { mode: "promotion" as const, boss, stages: null, beast, familiar, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
+    return { mode: "promotion" as const, boss, stages: null, farm: null, beast, familiar, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
   }
 
   const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits, enemyElement });
@@ -636,6 +664,7 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
     mode: "stages" as const,
     boss,
     stages: { reached, next },
+    farm: null,
     beast,
     familiar,
     sources,

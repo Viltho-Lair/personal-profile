@@ -46,7 +46,7 @@ from optimizer.beasts import extract_beasts  # noqa: E402
 from optimizer.black_orb import extract_black_orb  # noqa: E402
 from optimizer.soul_weapons import extract_soul_weapons  # noqa: E402
 from optimizer.spirits import extract_spirit_factors, extract_spirits  # noqa: E402
-from optimizer.stages import extract_promotion_stages, extract_stage_bosses  # noqa: E402
+from optimizer.stages import extract_promotion_stages, extract_stage_bosses, extract_stage_farms  # noqa: E402
 from optimizer.summary import diff_items, format_diff  # noqa: E402
 from optimizer.workbook import MissingHeader, image_size, slug  # noqa: E402
 
@@ -255,6 +255,7 @@ def main():
         memory_tree, memory_tree_icons = extract_memory_tree(values["Tree Data"])
         constellation, constellation_art = extract_constellation(values["Constellation Data"])
         stage_bosses = extract_stage_bosses(values["Stage Data"])
+        stage_farms = extract_stage_farms(values["Stage Data"])
         shrine, shrine_art = extract_shrine(values["Equipment Data"], formulas["EQUIPMENT"])
         clothing, guild_outfits, appearance_art = extract_appearance(formulas["APPEARANCE"], formulas["CHARACTER"])
         beasts, beast_art = extract_beasts(values["Companions Data"])
@@ -412,6 +413,12 @@ def main():
         "bossHp": stage_bosses,
     }, compact=True)  # boss HP for every stage
     print(f"promotion bosses: {len(promotion_stages)} promotions, boss HP for stages 1-{len(stage_bosses)}")
+
+    write_json(DATA / "stages.json", {
+        "source": {"file": source.name, "sheet": "Stage Data", "extractedOn": today},
+        "stages": stage_farms,
+    }, compact=True)  # monsters per wave and HP for every stage
+    print(f"stages: {len(stage_farms)} with monsters per wave and HP")
 
     published = publish_files("sealed-shrine", shrine_art)
     for statue in shrine:

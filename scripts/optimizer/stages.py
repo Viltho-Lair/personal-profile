@@ -26,6 +26,29 @@ def extract_stage_bosses(stage_sheet):
     return hp
 
 
+def extract_stage_farms(stage_sheet):
+    """[{stage, name, mobs, enemyHp, bossHp}] by stage from Stage Data: the monsters per wave and their HP."""
+    header_row, col = find_header_row(stage_sheet, ["NUMBER", "Full Stage Name", "MOBS", "ENEMY HP", "BOSS HP"])
+    stages = []
+    row = header_row + 1
+    while row <= stage_sheet.max_row:
+        stage = number(stage_sheet.cell(row, col["NUMBER"]).value)
+        if isinstance(stage, int) and stage >= 1:
+            if stage != len(stages) + 1:
+                raise ValueError(f"{stage_sheet.title} row {row}: expected stage {len(stages) + 1}, found {stage}")
+            stages.append({
+                "stage": stage,
+                "name": text(stage_sheet.cell(row, col["Full Stage Name"]).value),
+                "mobs": number(stage_sheet.cell(row, col["MOBS"]).value) or 0,
+                "enemyHp": number(stage_sheet.cell(row, col["ENEMY HP"]).value) or 0,
+                "bossHp": number(stage_sheet.cell(row, col["BOSS HP"]).value) or 0,
+            })
+        row += 1
+    if not stages:
+        raise MissingHeader(f"{stage_sheet.title}: no stages under NUMBER")
+    return stages
+
+
 def extract_promotion_stages(tracker_sheet):
     """[{name, stage, range}] from STAT TRACKER's Promotion Recommended Stages table."""
     title_row, _ = find_cell(tracker_sheet, "Promotion Recommended Stages")

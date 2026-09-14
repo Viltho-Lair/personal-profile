@@ -1,6 +1,6 @@
 import unittest
 
-from optimizer.stages import extract_promotion_stages, extract_stage_bosses
+from optimizer.stages import extract_promotion_stages, extract_stage_bosses, extract_stage_farms
 from optimizer.tests.support import build_sheet
 
 
@@ -11,6 +11,20 @@ class StageBosses(unittest.TestCase):
             "A2": 0, "A3": 1, "R3": 40, "A4": 2, "R4": 300,
         }, title="Stage Data")
         self.assertEqual(extract_stage_bosses(sheet), [40, 300])
+
+
+class StageFarms(unittest.TestCase):
+    def test_monsters_per_wave_and_hp_in_stage_order(self):
+        sheet = build_sheet({
+            "A1": "NUMBER", "E1": "Full Stage Name", "F1": "MOBS", "Q1": "BOSS HP", "S1": "ENEMY HP",
+            "A2": 0, "E2": "-", "F2": "-",
+            "A3": 1, "E3": "Beginning Forest - I", "F3": 1, "Q3": 40, "S3": 2,
+            "A4": 2, "E4": "Beginner's Ground - I", "F4": 4, "Q4": 300, "S4": 30,
+        }, title="Stage Data")
+        self.assertEqual(extract_stage_farms(sheet), [
+            {"stage": 1, "name": "Beginning Forest - I", "mobs": 1, "enemyHp": 2, "bossHp": 40},
+            {"stage": 2, "name": "Beginner's Ground - I", "mobs": 4, "enemyHp": 30, "bossHp": 300},
+        ])
 
 
 class PromotionStages(unittest.TestCase):

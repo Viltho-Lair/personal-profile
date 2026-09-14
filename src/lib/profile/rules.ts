@@ -632,6 +632,11 @@ export function setEnemyElement(profile: ProfileV1, enemyElement: ProfileV1["ene
   return { ...profile, enemyElement };
 }
 
+export function setStageFarming(profile: ProfileV1, change: Partial<ProfileV1["stageFarming"]>): ProfileV1 {
+  const next = { ...profile.stageFarming, ...change };
+  return { ...profile, stageFarming: { on: next.on, stage: Math.max(1, Math.floor(next.stage) || 1) } };
+}
+
 export function gearState(
   profile: ProfileV1,
   kind: GearKind,

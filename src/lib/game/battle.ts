@@ -29,6 +29,10 @@
  *   refreshes it rather than stacking.
  * - An element-restricted enemy takes x2 from the element that beats it, x0.7
  *   from the one it beats, x1 from the rest.
+ * - Stage farming walks through a stage's waves: basic attacks and Rave hit the
+ *   monster in front, attack skills and the familiar every monster in their
+ *   range, skills wait for something in reach, and the slayer walks on when
+ *   nothing is. Kills ready bat beasts; the run ends when the box breaks.
  * - The familiar use hits Y times for Z% of ATK as its attribute familiar's
  *   element, like an attack skill you can put on auto or cast by hand; its
  *   familiars' specials go with each use.
@@ -44,6 +48,7 @@
  */
 
 import { elementMatchup } from "./elements";
+import { BASIC_RANGE, createField, MOVE_SPEED, type FarmStage, type FieldState } from "./farm";
 import { HIGH_HP_THRESHOLD, type SpiritSkillEffects } from "./spirit-skills";
 import type { ByElement, Element } from "./stats";
 
@@ -83,6 +88,8 @@ export type FightSkill = {
   trigger: "seconds" | "hits" | "always" | "elementCasts" | "attackCasts" | "stacksComplete" | "kills" | "familiarCasts";
   /** The familiar use: it doesn't count as a strike skill, and its uses ready "familiarCasts" specials. */
   familiar?: boolean;
+  /** How far ahead an attack reaches when stage farming: it hits every monster within it. */
+  range?: number;
   /** Extra damage while the enemy is at or below this share of its HP (Na: +10% at 60% or less). */
   lowHpBonus?: { below: number; bonus: number };
   /** For "stacksComplete": the stacking skill to watch, or "all" for every stacking skill in the fight. */
@@ -128,6 +135,8 @@ export type FightInput = {
   bossDamage?: number;
   /** The enemy's element when it's element restricted; null or unset hits every element for x1. */
   enemyElement?: Element | null;
+  /** Stage farming: the stage walked through instead of one enemy. */
+  farm?: FarmStage;
   /** A boss monster (the default) or a normal monster. */
   bossMonster?: boolean;
   /** The enemy's HP, read by spirit skills (remaining HP share, execute, first strike, above 70%). */
@@ -193,6 +202,9 @@ export type FightState = FightResult & {
   recovering: boolean;
   /** Time Freeze holds the battle timer right now. */
   timeStopped: boolean;
+  /** Stage farming: where the slayer and the monsters are, and when the box broke. */
+  field: FieldState | null;
+  clearedAt: number | null;
   attacksPerSecond: number;
   /** Total ATK and ATK SPD the buffs, stacks and Rage add right now, as fractions. */
   atkBonus: number;
@@ -305,6 +317,13 @@ export function createFight(input: FightInput): Fight {
   let nextRecovery = spirits?.cooldownRecovery?.every ?? Infinity;
   let struck = false;
   let executed = false;
+  const field = input.farm ? createField(input.farm) : null;
+  const struckIds = new Set<number>();
+  let lastKills = 0;
+  let clearedAt: number | null = null;
+  /** The current enemy's max and remaining HP: the monster in front when farming, else the one enemy. */
+  const targetMax = () => (field ? (field.front()?.maxHp ?? 0) : enemyHp);
+  const targetLeft = () => (field ? (field.front()?.hp ?? 0) : Math.max(0, enemyHp - total));
   /** Fight-clock time Rave's storing ends, -1 when it isn't storing. */
   let raveUntil = -1;
   let raveStored = 0;
@@ -358,13 +377,31 @@ export function createFight(input: FightInput): Fight {
     if (stored && action < raveUntil) raveStored += amount;
     points.push({ t: clock, damage: total });
   };
-  /** A hit with the enemy multipliers; `raw` damage (a share of the enemy's HP) skips them. */
-  const deal = (hit: number, source: string | null, raw = false) => {
+  /**
+   * A hit with the enemy multipliers; `raw` damage (a share of the enemy's HP) skips them. Farming, it lands on
+   * the monster in front (`single`) or every monster within `range`, and counts what they lost.
+   */
+  const deal = (hit: number, source: string | null, raw = false, range = BASIC_RANGE, single = true) => {
     let amount = hit;
     if (!raw) {
       amount *= boss * (bossMonster ? 1 + bonuses().bossDamage : 1);
       if (spirits?.lastFight && clock >= input.duration - spirits.lastFight.seconds) amount *= spirits.lastFight.multiplier;
-      if (spirits?.highHpDamage && enemyHp > 0 && total < enemyHp * (1 - HIGH_HP_THRESHOLD)) amount *= 1 + spirits.highHpDamage;
+      if (spirits?.highHpDamage && targetMax() > 0 && targetLeft() > targetMax() * HIGH_HP_THRESHOLD) amount *= 1 + spirits.highHpDamage;
+    }
+    if (field) {
+      const front = field.front();
+      // Thief Wind takes its share off each normal monster the first time it's hit.
+      if (spirits?.firstStrike && front && field.inRange(range) && !struckIds.has(front.id)) {
+        struckIds.add(front.id);
+        record(field.hit(front.maxHp * spirits.firstStrike, range, true), "Thief Wind");
+      }
+      record(field.hit(amount, range, single), source);
+      const next = field.front();
+      // Judge's Torpedo finishes a normal monster below its share of HP.
+      if (spirits?.execute && next && field.inRange(range) && next.hp <= next.maxHp * spirits.execute) {
+        record(field.hit(next.hp, range, true), "Judge's Torpedo");
+      }
+      return;
     }
     record(amount, source);
     if (bossMonster || !spirits || enemyHp <= 0) return;
@@ -403,7 +440,7 @@ export function createFight(input: FightInput): Fight {
 
     if (e.type === "damage") {
       let bonus = s.bonus + (s.element ? input.extraDamage[s.element] + (now.element[s.element] ?? 0) : 0);
-      if (s.lowHpBonus && enemyHp > 0 && enemyHp - total <= enemyHp * s.lowHpBonus.below) bonus += s.lowHpBonus.bonus;
+      if (s.lowHpBonus && targetMax() > 0 && targetLeft() <= targetMax() * s.lowHpBonus.below) bonus += s.lowHpBonus.bonus;
       if (s.element && nextSkillBonus[s.element]) {
         bonus += nextSkillBonus[s.element] ?? 0;
         delete nextSkillBonus[s.element];
@@ -412,7 +449,7 @@ export function createFight(input: FightInput): Fight {
       const whole = Math.max(1, Math.round(hits));
       const amp = (s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1) * elementMatchup(s.element, input.enemyElement ?? null);
       const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
-      for (let i = 0; i < whole; i += 1) deal(perHit, s.name);
+      for (let i = 0; i < whole; i += 1) deal(perHit, s.name, false, s.range ?? BASIC_RANGE, false);
       if (s.freezes) {
         animation = castSeconds * whole;
         frozenUntil = Math.max(frozenUntil, real + animation);
@@ -426,7 +463,7 @@ export function createFight(input: FightInput): Fight {
       if (release) {
         // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored
         // hits already had their multipliers. The cooldown starts now.
-        record(raveStored * e.power, s.name, false);
+        record(field ? field.hit(raveStored * e.power, BASIC_RANGE, true) : raveStored * e.power, s.name, false);
         releases.push({ t: clock, damage: total, amount: raveStored * e.power });
         raveStored = 0;
         l.charged = false;
@@ -467,7 +504,15 @@ export function createFight(input: FightInput): Fight {
     }
   };
 
-  const done = () => clock >= input.duration;
+  const done = () => clock >= input.duration || (field?.cleared() ?? false);
+  /** Farming, an attack (or Rave's release) waits until something is in its reach. */
+  const inReach = (l: Live) => {
+    if (!field) return true;
+    const e = l.skill.effect;
+    if (e.type === "damage") return field.inRange(l.skill.range ?? BASIC_RANGE);
+    if (e.type === "rave" && l.charged) return field.inRange(BASIC_RANGE);
+    return true;
+  };
 
   const tick = () => {
     const frozen = real < frozenUntil;
@@ -481,7 +526,7 @@ export function createFight(input: FightInput): Fight {
       }
       if (spirits.breath && action >= nextBreath) {
         nextBreath += spirits.breath.every;
-        if (enemyHp > 0) deal(spirits.breath.share * Math.max(0, enemyHp - total), "Breath of Fire", true);
+        if (targetMax() > 0 && (!field || field.inRange(BASIC_RANGE))) deal(spirits.breath.share * targetLeft(), "Breath of Fire", true);
       }
       if (spirits.cooldownRecovery && action >= nextRecovery) {
         nextRecovery += spirits.cooldownRecovery.every;
@@ -538,14 +583,16 @@ export function createFight(input: FightInput): Fight {
         const holder = pools
           ? [...queues.buff, ...queues.attack].filter(short).reduce<Live | null>((first, l) => (!first || l.queuedAt < first.queuedAt ? l : first), null)
           : null;
-        const index = queues[queue].findIndex((l) => l.charged || (!short(l) && (!holder || l.queuedAt < holder.queuedAt)));
+        const index = queues[queue].findIndex((l) => inReach(l) && (l.charged || (!short(l) && (!holder || l.queuedAt < holder.queuedAt))));
         if (index < 0) break;
         go(queues[queue].splice(index, 1)[0]!, queue);
       }
     }
 
     const attacksPerSecond = baseSpeed * (1 + now.speed);
-    if (real >= nextBasic && !blocked) {
+    // Farming, the slayer walks on while nothing is in reach of a basic attack.
+    if (field && !blocked && !field.inRange(BASIC_RANGE)) field.move(MOVE_SPEED * (1 + now.mspd) * step);
+    if (real >= nextBasic && !blocked && (!field || field.inRange(BASIC_RANGE))) {
       deal(expectedHit(input.attack * (1 + now.atk), input), null);
       nextBasic = real + 1 / attacksPerSecond;
       for (const l of live) if (l.skill.trigger === "hits" && l.started && !l.queued && !complete(l)) l.progress += 1;
@@ -562,6 +609,15 @@ export function createFight(input: FightInput): Fight {
         else hp -= drain;
       }
       if (pools) mana = Math.min(maxMana, mana + (input.manaRecovery ?? 0) * (1 + now.manaRate) * step);
+    }
+
+    if (field) {
+      const kills = field.kills();
+      if (kills > lastKills) {
+        for (const l of live) if (l.skill.trigger === "kills" && l.started && !l.queued) l.progress += kills - lastKills;
+        lastKills = kills;
+      }
+      if (clearedAt === null && field.cleared()) clearedAt = clock;
     }
 
     real += step;
@@ -606,6 +662,8 @@ export function createFight(input: FightInput): Fight {
         manaRecovery: (input.manaRecovery ?? 0) * (1 + now.manaRate),
         recovering: !now.rage,
         timeStopped: real < stopUntil,
+        field: field?.state() ?? null,
+        clearedAt,
         attacksPerSecond: baseSpeed * (1 + now.speed),
         atkBonus: now.atk,
         speedBonus: now.speed,

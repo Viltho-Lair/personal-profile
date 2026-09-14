@@ -462,6 +462,10 @@ function parseKnownFields(data: Json): ProfileV1 {
     includeSkills: data.includeSkills === true,
     bossMonster: data.bossMonster !== false,
     enemyElement: (["Fire", "Water", "Wind", "Earth"] as const).find((e) => e === data.enemyElement) ?? null,
+    stageFarming: {
+      on: isRecord(data.stageFarming) && data.stageFarming.on === true,
+      stage: Math.max(1, (isRecord(data.stageFarming) ? wholeLevel(data.stageFarming.stage) : null) ?? 1),
+    },
     soulEngraving: soulEngraving(data.soulEngraving),
     skillRefinement: skillRefinement(data.skillRefinement),
     sealedShrine: sealedShrine(data.sealedShrine),
