@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { FightInput, FightSkill, FightState, SkillStatus } from "@/lib/game/battle";
+import { nextEvery, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME, SPIRITS } from "./data";
 import { ELEMENTS } from "@/lib/game/stats";
@@ -534,7 +534,7 @@ function SkillGrid({
           const blink = status && snap && status.lastCast >= 0 ? Math.max(0, 1 - (snap.real - status.lastCast) / BLINK_SECONDS) : 0;
           const recharging = Boolean(status && status.ready < 1 && !status.complete && !status.active && fightSkill && (fightSkill.trigger === "seconds" || fightSkill.trigger === "hits"));
           // What's left to go: seconds of cooldown, or strikes for skills that go on basic attacks.
-          const left = recharging && fightSkill && status ? (1 - status.ready) * fightSkill.every : 0;
+          const left = recharging && fightSkill && status ? (1 - status.ready) * nextEvery(fightSkill, status.uses) : 0;
           const ready = status ? status.ready : 1;
           const canPress = castable && (running ? !auto && (ready >= 1 || Boolean(status?.charged)) && !status?.queued : true);
           const stages = fightSkill?.maxStacks ?? null;

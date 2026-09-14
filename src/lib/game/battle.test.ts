@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createFight, expectedHit, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
+import { createFight, expectedHit, nextEvery, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
 
 const base: FightInput = {
   attack: 100,
@@ -230,6 +230,12 @@ describe("simulateFight", () => {
     const wrath = skill({ name: "Wrath of Gods", kind: "passive", every: 30, firstEvery: 20, duration: 5, startsOnCooldown: true, effect: { type: "atk", power: 1 } });
     const result = simulateFight({ ...base, duration: 95, skills: [wrath] });
     expect(result.casts.map((c) => Math.round(c.t))).toEqual([20, 50, 80]);
+  });
+
+  it("counts down Wrath of Gods' first 20 seconds, then its 30-second cooldown", () => {
+    const wrath = skill({ name: "Wrath of Gods", kind: "passive", every: 30, firstEvery: 20, duration: 5, startsOnCooldown: true, effect: { type: "atk", power: 1 } });
+    expect(nextEvery(wrath, 0)).toBe(20);
+    expect(nextEvery(wrath, 1)).toBe(30);
   });
 
   it("lets Meditation charge Wrath of Gods only after its first cooldown", () => {

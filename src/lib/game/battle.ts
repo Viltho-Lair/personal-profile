@@ -347,8 +347,9 @@ const chargeable = (l: Live) =>
   !l.skill.uncharged &&
   !l.holding &&
   !(l.skill.startsOnCooldown && l.uses === 0);
-/** What readies a skill next: its first cooldown before it has gone, its usual one after. */
-const target = (l: Live) => (l.uses === 0 && l.skill.firstEvery != null ? l.skill.firstEvery : l.skill.every);
+/** What readies a skill next: its first cooldown before it has gone (Wrath of Gods' 20 seconds), its usual one after. */
+export const nextEvery = (skill: FightSkill, uses: number) => (uses === 0 && skill.firstEvery != null ? skill.firstEvery : skill.every);
+const target = (l: Live) => nextEvery(l.skill, l.uses);
 
 export type Fight = {
   /** Plays the fight forward by this many real seconds (or until it ends). */
