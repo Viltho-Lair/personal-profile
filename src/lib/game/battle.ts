@@ -28,9 +28,11 @@
  *   from there); Fulgurous charges even with nothing in reach. Meteors and
  *   lightning strikes land on random range tiles, hitting what stands there,
  *   and some skills hit only so many enemies.
- * - Meditation charges every attack and buff, their cooldowns and strike
- *   counts alike, and passives with a cooldown; passives that go on a
- *   condition (strikes, skill uses, stacks) aren't charged.
+ * - Meditation charges every skill that goes on a cooldown or a strike count:
+ *   attacks, buffs and passives, stacking ones (Burning Sword, Curved Blade,
+ *   Earth's Will, Speed Sword) included until their stages are complete.
+ *   Skills that go on a condition (skill or element uses, kills, familiar
+ *   uses, other skills' stacks) aren't charged.
  * - Demon Hunt plays its hits in stopped time. While the clock is stopped,
  *   cooldowns, buffs and recovery don't run.
  * - A buff lasts its duration from when it takes effect; casting it again
@@ -621,13 +623,13 @@ export function createFight(input: FightInput): Fight {
     } else if (e.type === "nextSkill") {
       if (s.element) nextSkillBonus[s.element] = e.power;
     } else if (e.type === "chargeCooldowns") {
-      // Meditation charges every attack and buff (cooldown or strike count) and cooldown passives;
-      // conditional passives (strikes, skill uses, stacks) aren't charged.
+      // Meditation charges every skill on a cooldown or strike count, stacking passives too until they're
+      // complete; skills that go on a condition (skill uses, kills, stacks completing) aren't charged.
       for (const other of live) {
         // A skill that starts on its cooldown (Wrath of Gods) isn't charged until it has gone once.
-        if (other === l || isStack(other.skill) || other.skill.uncharged || other.holding || (other.skill.startsOnCooldown && other.uses === 0)) continue;
+        if (other === l || complete(other) || other.skill.uncharged || other.holding || (other.skill.startsOnCooldown && other.uses === 0)) continue;
         const t = other.skill.trigger;
-        if (t === "seconds" || (t === "hits" && castable(other.skill))) {
+        if (t === "seconds" || t === "hits") {
           other.progress = Math.min(target(other), other.progress + e.power * other.skill.every);
         }
       }

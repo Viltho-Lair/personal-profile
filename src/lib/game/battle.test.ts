@@ -268,9 +268,12 @@ describe("simulateFight", () => {
     expect(fight.cast("Slash")).toBe(false);
   });
 
-  it("charges attacks and buffs with Meditation, strike counts too, but not passives that wait for strikes", () => {
+  it("charges attacks, buffs and stacking passives with Meditation, strike counts too, but not skills that wait for skill uses", () => {
     const strike = skill({ name: "Strike", trigger: "hits", every: 20, effect: { type: "damage", power: 1, hits: 1 } });
-    const passive = skill({ name: "Passive", kind: "passive", trigger: "hits", every: 20, effect: { type: "damage", power: 1, hits: 1 } });
+    const passive = skill({ name: "Passive", element: "Water", kind: "passive", trigger: "elementCasts", every: 2, effect: { type: "damage", power: 1, hits: 1 } });
+    const water = skill({ name: "Water", element: "Water", every: 100, effect: { type: "damage", power: 0, hits: 1 } });
+    const burning = skill({ name: "Burning Sword", kind: "passive", every: 5, maxStacks: 10, effect: { type: "atkStack", power: 0 } });
+    const speedSword = skill({ name: "Speed Sword", kind: "passive", trigger: "hits", every: 5, maxStacks: 10, effect: { type: "speedStack", power: 0 } });
     const slash = skill({ name: "Slash", every: 20, startsOnCooldown: false, effect: { type: "damage", power: 1, hits: 1 } });
     const buff = skill({ name: "Buff", kind: "buff", every: 20, duration: 1, effect: { type: "atk", power: 0 } });
     const meditation = skill({ name: "Meditation", element: "Water", kind: "buff", every: 100, startAt: 2, effect: { type: "chargeCooldowns", power: 0.5 } });
@@ -280,8 +283,11 @@ describe("simulateFight", () => {
     expect(casts([slash, meditation], "Slash")[1]).toBeLessThan(casts([slash], "Slash")[1] - 5);
     expect(casts([buff, meditation], "Buff")[1]).toBeLessThan(casts([buff], "Buff")[1] - 5);
     expect(casts([strike, meditation], "Strike")[1]).toBeLessThan(casts([strike], "Strike")[1] - 5);
-    // The passive still waits for its 20 hits (only Meditation's cast animation holds a basic attack back).
-    expect(casts([passive, meditation], "Passive")[0]).toBeGreaterThanOrEqual(casts([passive], "Passive")[0]);
+    // Stacking passives on seconds and on strikes are charged too: their stages come in sooner.
+    expect(casts([burning, meditation], "Burning Sword")[1]).toBeLessThan(casts([burning], "Burning Sword")[1] - 1.5);
+    expect(casts([speedSword, meditation], "Speed Sword")[1]).toBeLessThan(casts([speedSword], "Speed Sword")[1] - 1.5);
+    // A passive waiting for 2 Water skill uses gets only 1 in the fight, and Meditation doesn't make up the other.
+    expect(casts([water, passive, meditation], "Passive")).toHaveLength(0);
   });
 
   it("uses the familiar for its hits and damage, and readies its specials with each use", () => {
