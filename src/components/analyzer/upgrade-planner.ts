@@ -532,13 +532,9 @@ export function affordable(cost: UpgradeCost, owned: ProfileV1["resources"]): { 
 export type PlanStep = { upgrade: Omit<Upgrade, "apply" | "cost">; level: number; cost: UpgradeCost };
 /** A plan: its upgrades from where they are to where they go, their total cost, and the fight's damage after them. */
 export type Plan = { steps: PlanStep[]; cost: UpgradeCost; total: number };
-/** One upgrade maxed on its own: how much it raises the player's own damage (×), the fight's total with it, and its cost. */
-export type Gain = { upgrade: Omit<Upgrade, "apply" | "cost">; level: number; ownGain: number; total: number; cost: UpgradeCost };
 
 export type UpgradePlans = {
   baseline: number;
-  /** The player's own damage, without spirit skills. */
-  own: number;
   hp: number;
   /** When Rave is pressed by hand in every planned fight, or null on auto. */
   rave: RaveTiming | null;
@@ -555,8 +551,6 @@ export type UpgradePlans = {
   maxed: number;
   /** The path's budget, in multiples of what's owned (or what's been spent so far). */
   budget: number;
-  /** The upgrades that raise the player's own damage the most, each maxed on its own. */
-  gains: Gain[];
 };
 
 const strip = (upgrade: Upgrade): Omit<Upgrade, "apply" | "cost"> => {
@@ -668,8 +662,8 @@ function weakestAttack(profile: ProfileV1, bySkill: Record<string, number>, atta
  * How to beat the target. First the gap: how much more of their own damage the player needs, with Rave pressed at its
  * best timing. Then the path: every piece of content that isn't maxed is a curve from its start to its max, and step
  * by step the one whose next stretch (5% of it) lifts the combined damage the most moves, until the fight is won.
- * Alongside it, the end of every curve (everything maxed) and the biggest single boosts. Fights run coarse while
- * searching; the plan's result is confirmed at full precision.
+ * Alongside it, the end of every curve (everything maxed). Fights run coarse while searching; the plan's result is
+ * confirmed at full precision.
  */
 export function planUpgrades(
   profile: ProfileV1,
@@ -706,11 +700,11 @@ export function planUpgrades(
 
   // Every upgrade maxed on its own: which curves raise the player's own damage at all. Spirit skills' damage (Breath
   // of Fire takes a share of the enemy's HP) doesn't grow with upgrades, so it isn't what's compared.
-  const useful: { upgrade: Upgrade; ownGain: number; total: number }[] = [];
+  const useful: { upgrade: Upgrade; ownGain: number }[] = [];
   for (const upgrade of upgrades) {
     const maxed = fight(upgrade.apply(profile, upgrade.max));
     const ownGain = maxed.own / Math.max(coarse.own, 1e-300);
-    if (ownGain > 1 + 1e-9) useful.push({ upgrade, ownGain, total: maxed.total });
+    if (ownGain > 1 + 1e-9) useful.push({ upgrade, ownGain });
   }
   useful.sort((a, b) => b.ownGain - a.ownGain);
   // Skill swaps replace the same skill: only the best of them counts toward everything maxed.
@@ -753,7 +747,6 @@ export function planUpgrades(
 
   return {
     baseline: base.total,
-    own: base.own,
     hp,
     rave,
     needed,
@@ -763,6 +756,5 @@ export function planUpgrades(
     stillNeeded,
     maxed,
     budget: MAX_PATH_SPEND,
-    gains: useful.slice(0, 6).map(({ upgrade, ownGain, total }) => ({ upgrade: strip(upgrade), level: upgrade.max, ownGain, total, cost: upgrade.cost(upgrade.current, upgrade.max) })),
   };
 }

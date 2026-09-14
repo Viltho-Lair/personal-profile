@@ -6,7 +6,7 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { RESOURCES, type ProfileV1 } from "@/lib/profile/types";
 import { formatValue } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
-import { affordable, type Gain, type Plan, type PlanStep, type PlanTarget, type UpgradeCost, type UpgradePlans } from "./upgrade-planner";
+import { affordable, type Plan, type PlanStep, type PlanTarget, type UpgradeCost, type UpgradePlans } from "./upgrade-planner";
 
 const LABEL = "font-mono text-[9px] tracking-[0.08em] text-dim uppercase";
 const pct = (damage: number, hp: number) => `${formatValue(Math.floor((damage / Math.max(1, hp)) * 1000) / 10)}%`;
@@ -68,7 +68,7 @@ function levelText(upgrade: PlanStep["upgrade"], level: number): string {
 }
 
 /** One upgrade: its picture, what it is, the levels, and the cost. */
-function UpgradeCard({ step, owned, note }: { step: Pick<PlanStep, "upgrade" | "level" | "cost">; owned: ProfileV1["resources"]; note?: string }) {
+function UpgradeCard({ step, owned }: { step: Pick<PlanStep, "upgrade" | "level" | "cost">; owned: ProfileV1["resources"] }) {
   const { upgrade, level, cost } = step;
   return (
     <li className="flex min-w-0 gap-2 rounded-md border border-ink/15 bg-ink/[0.03] p-2">
@@ -86,7 +86,6 @@ function UpgradeCard({ step, owned, note }: { step: Pick<PlanStep, "upgrade" | "
           {levelText(upgrade, level)}
           {level >= upgrade.max && upgrade.unit !== "swap" ? <span className="text-dim"> (max)</span> : null}
         </span>
-        {note ? <span className="font-mono text-[10px] text-sky-400">{note}</span> : null}
         <CostChips cost={cost} owned={owned} />
       </span>
     </li>
@@ -119,24 +118,10 @@ function PlanBlock({ plan, hp, owned }: { plan: Plan; hp: number; owned: Profile
   );
 }
 
-function GainList({ intro, gains, owned }: { intro: string; gains: Gain[]; owned: ProfileV1["resources"] }) {
-  if (!gains.length) return null;
-  return (
-    <div className="flex flex-col gap-1.5">
-      <p className="text-[11px] text-dim">{intro}</p>
-      <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-        {gains.map((gain) => (
-          <UpgradeCard key={gain.upgrade.id} step={{ upgrade: gain.upgrade, level: gain.level, cost: gain.cost }} owned={owned} note={`${times(gain.ownGain)} your damage`} />
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 /**
  * How to beat the fight's enemy. The gap first (how much more of your own damage it takes), then the plan up the
- * steepest curves of the content that isn't maxed, then the biggest boosts of any single upgrade. Upgrades are compared
- * by your own damage; spirit skills (Breath of Fire) still count toward beating the HP.
+ * steepest curves of the content that isn't maxed. Upgrades are compared by your own damage; spirit skills (Breath of
+ * Fire) still count toward beating the HP.
  */
 export function UpgradePlans({ title, target, factors }: { title: string; target: PlanTarget; factors: SpiritFactors | null }) {
   const { profile } = useProfile();
@@ -202,8 +187,6 @@ export function UpgradePlans({ title, target, factors }: { title: string; target
               </p>
             )}
           </div>
-
-          <GainList intro={`The biggest boosts to your own damage (${formatValue(result.own)} now, spirit skills aside), each maxed on its own:`} gains={result.gains} owned={owned} />
         </>
       )}
     </section>
