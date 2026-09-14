@@ -7,9 +7,9 @@ import refinementData from "@/data/optimizer/skill-refinement.json";
 import { openRefinementLines, refinementEffects, type RefinementData } from "@/lib/game/refinement";
 import { shrineEffects } from "@/lib/game/shrine";
 import { computeStats, ELEMENTS, type Element, type StatSources } from "@/lib/game/stats";
-import { activeSkillStones, awakening, effectiveSkillLevel, equippedKey, gearState, masteryLevel, presetBeast } from "@/lib/profile/rules";
+import { activeFamiliars, activeSkillStones, awakening, effectiveSkillLevel, equippedKey, familiarStars, gearState, masteryLevel, presetBeast } from "@/lib/profile/rules";
 import type { ProfileV1 } from "@/lib/profile/types";
-import { AWAKENING, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Skill } from "./data";
+import { AWAKENING, FAMILIARS, MASTERY_PAGES, MAX_AWAKENING, SKILL_BY_NAME, WEAPONS, type Familiar, type Skill } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
 import { activeSpiritSkills, BEASTS, classLevelCap, classTotals, collectSources, companionSkill, gearTotals, SHRINE } from "./stat-sources";
 
@@ -254,6 +254,101 @@ export function presetFightSkills(profile: ProfileV1) {
 
 /** The enemy: boss or normal monster, its HP, and the accompanying spirits' skills. */
 export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits" | "enemyElement">;
+
+/** Seconds between familiar uses, before Ku's own 20-second cooldown or Pe's 10% shorter cycle. */
+export const FAMILIAR_COOLDOWN = 30;
+export const FAMILIAR_SKILL = "Familiar";
+
+type FamiliarPart = { familiar: Familiar; stars: number; values: Record<string, number | null> };
+
+/**
+ * The equipped familiars' combined use: the weapon familiar's range and damage, times the attribute
+ * familiar's damage and element, hitting the battle familiar's number of times (Ku and Sha: Hits, Pe:
+ * Seconds, Po: Hits). Specials that play in a fight come with it; the rest are listed as not modelled.
+ */
+export function familiarFightSkills(profile: ProfileV1, duration: number) {
+  const equipped = activeFamiliars(profile);
+  const part = (name: string | null): FamiliarPart | null => {
+    const familiar = name ? FAMILIARS.find((f) => f.name === name) : undefined;
+    const stars = familiar ? familiarStars(profile, familiar.name) : null;
+    if (!familiar || stars === null) return null;
+    return { familiar, stars, values: familiar.stars.find((s) => s.star === stars)?.values ?? {} };
+  };
+  const weapon = part(equipped.weapon);
+  const attribute = part(equipped.attribute);
+  const battle = part(equipped.battle);
+  const notes: string[] = [];
+  if (!weapon || !attribute || !battle) return { skill: null, specials: [] as FightSkill[], parts: { weapon, attribute, battle }, notes, range: 0 };
+
+  const hits = Math.max(1, Math.round(battle.familiar.name === "Pe" ? (battle.values.Seconds ?? 1) : (battle.values.Hits ?? 1)));
+  const power = (weapon.values.Damage ?? 0) * (attribute.values.Damage ?? 0);
+  const element = (ELEMENTS as readonly string[]).includes(attribute.familiar.element ?? "") ? (attribute.familiar.element as Element) : null;
+  let every = FAMILIAR_COOLDOWN;
+  let bonus = 0;
+  const skill: FightSkill = {
+    name: FAMILIAR_SKILL,
+    element,
+    kind: "attack",
+    trigger: "seconds",
+    every,
+    duration: 0,
+    delay: 0,
+    startAt: 0,
+    freezes: false,
+    bonus,
+    familiar: true,
+    effect: { type: "damage", power, hits },
+  };
+  const special = (name: string, effect: FightSkill["effect"], extra: Partial<FightSkill> = {}): FightSkill => ({
+    name,
+    element: null,
+    kind: "passive",
+    trigger: "familiarCasts",
+    every: 1,
+    duration: 0,
+    delay: 0,
+    startAt: 0,
+    freezes: false,
+    bonus: 0,
+    uncharged: true,
+    effect,
+    ...extra,
+  });
+  const specials: FightSkill[] = [];
+  for (const { familiar } of [weapon, attribute, battle]) {
+    switch (familiar.name) {
+      case "Na":
+        skill.lowHpBonus = { below: 0.6, bonus: 0.1 };
+        break;
+      case "Rion":
+        specials.push(special("Rion", { type: "speed", power: 2 }, { duration: 10 }));
+        break;
+      case "Ru":
+        specials.push(special("Ru", { type: "atk", power: 1.5 }, { duration: 5 }));
+        break;
+      case "A":
+        specials.push(special("A", { type: "chargeCooldowns", power: 0.15 }));
+        break;
+      case "Je":
+        specials.push(special("Je", { type: "mspd", power: 0.25 }, { duration: 10 }));
+        break;
+      case "Ku":
+        bonus += 0.1;
+        every = 20;
+        break;
+      case "Pe":
+        every *= 0.9;
+        break;
+      case "Po":
+        // 15 extra attacks 2 seconds before the end: a one-off that starts ready then.
+        specials.push(special("Po", { type: "damage", power: 1, hits: 15 }, { trigger: "seconds", every: duration * 10, startAt: Math.max(0, duration - 2), familiar: true }));
+        break;
+      default:
+        if (familiar.special) notes.push(`${familiar.name}: ${familiar.special}`);
+    }
+  }
+  return { skill: { ...skill, every, bonus }, specials, parts: { weapon, attribute, battle }, notes, range: weapon.values.Range ?? 0 };
+}
 
 /** A knockback has a 50% chance every 10 seconds, so a boar's knockbacks come one every 20 seconds on average. */
 export const KNOCKBACK_SECONDS = 10 / 0.5;
@@ -510,15 +605,17 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
   const preset = profile.includeSkills ? presetFightSkills(profile) : { skills: [], skipped: [] };
   // The equipped beast's skill always runs, like the accompanying spirits' skills.
   const beast = beastFightSkill(profile);
-  const skills = beast.skill ? [...preset.skills, beast.skill] : preset.skills;
-  const skipped = beast.note ? [...preset.skipped, beast.note] : preset.skipped;
+  // The familiar use and its specials, always there like the beast.
+  const familiar = familiarFightSkills(profile, duration);
+  const skills = [...preset.skills, ...(beast.skill ? [beast.skill] : []), ...(familiar.skill ? [familiar.skill, ...familiar.specials] : [])];
+  const skipped = [...preset.skipped, ...(beast.note ? [beast.note] : []), ...familiar.notes];
   const spirits = activeSpiritSkills(profile);
   const enemyElement = profile.enemyElement;
 
   if (profile.bossMonster) {
     const boss = promotionBoss(promotionIndex);
     const target: FightTarget = { bossMonster: true, enemyHp: boss?.hp ?? 0, spirits, enemyElement };
-    return { mode: "promotion" as const, boss, stages: null, beast, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
+    return { mode: "promotion" as const, boss, stages: null, beast, familiar, sources, skills, skipped, spirits, target, input: fightInput(sources, skills, duration, manual, undefined, target) };
   }
 
   const against = (stage: number): FightTarget => ({ bossMonster: false, enemyHp: bossHpAt(stage), spirits, enemyElement });
@@ -540,6 +637,7 @@ export function promotionFight(profile: ProfileV1, factors: SpiritFactors | null
     boss,
     stages: { reached, next },
     beast,
+    familiar,
     sources,
     skills,
     skipped,
@@ -576,6 +674,6 @@ export function promotionSuggestions(
     .slice(0, 4)
     .map(({ label, detail }) => ({ label, detail }));
   spread = Math.pow(ratio, 1 / 5);
-  if (!profile.includeSkills) withSkills = fight(sources, [...presetFightSkills(profile).skills, ...fightSetup.skills.filter((s) => s.uncharged)], duration, undefined, [], target).total;
+  if (!profile.includeSkills) withSkills = fight(sources, [...presetFightSkills(profile).skills, ...fightSetup.skills.filter((s) => s.uncharged || s.familiar)], duration, undefined, [], target).total;
   return { suggestions, spread, withSkills };
 }

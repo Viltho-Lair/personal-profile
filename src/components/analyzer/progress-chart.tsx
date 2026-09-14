@@ -8,8 +8,9 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME } from "./data";
 import { ELEMENTS } from "@/lib/game/stats";
 import { BeastArt } from "./beast-panel";
-import { ELEMENT_TEXT } from "./tiers";
-import { FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
+import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
+import { FamiliarArt } from "./skill-familiars";
+import { FAMILIAR_SKILL, FIGHT_SECONDS, promotionFight, PROMOTION_STAGES, promotionSuggestions, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { publishLiveFight } from "./live-fight";
 import { useSpiritFactors } from "./spirit-stats";
 
@@ -272,6 +273,7 @@ export function ProgressChart() {
 
       <SkillGrid
         beast={setup.beast}
+        familiar={setup.familiar}
         profileSlots={profile.skillPresets[profile.activeSkillPreset] ?? []}
         fightSkills={setup.skills}
         skipped={setup.skipped}
@@ -430,6 +432,7 @@ const SLOTS = 10;
  */
 function SkillGrid({
   beast,
+  familiar,
   profileSlots,
   fightSkills,
   skipped,
@@ -441,6 +444,7 @@ function SkillGrid({
   onCast,
 }: {
   beast: ReturnType<typeof promotionFight>["beast"];
+  familiar: ReturnType<typeof promotionFight>["familiar"];
   profileSlots: (string | null)[];
   fightSkills: FightSkill[];
   skipped: string[];
@@ -532,6 +536,14 @@ function SkillGrid({
           );
         })}
       </div>
+      <FamiliarTile
+        familiar={familiar}
+        snap={snap}
+        auto={!manual.includes(FAMILIAR_SKILL)}
+        running={phase === "running"}
+        onToggleAuto={() => onToggleAuto(FAMILIAR_SKILL)}
+        onCast={() => onCast(FAMILIAR_SKILL)}
+      />
       </div>
       <p className="text-[10px] leading-snug text-dim">
         {!includeSkills
@@ -742,5 +754,64 @@ function BeastTile({ beast, snap }: { beast: ReturnType<typeof promotionFight>["
       {beast.note ? <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-dim">RIFT</span> : null}
       {status?.active ? <span className="absolute inset-x-0 bottom-0 bg-amber-400/80 text-center font-mono text-[6px] leading-tight text-black">ON</span> : null}
     </div>
+  );
+}
+
+/**
+ * The familiar use, right of the skills: its three familiars' combined attack. Like a skill it's on auto
+ * (turning gear) by default; tap it before a render to cast it by hand, then tap it when it's ready.
+ */
+function FamiliarTile({
+  familiar,
+  snap,
+  auto,
+  running,
+  onToggleAuto,
+  onCast,
+}: {
+  familiar: ReturnType<typeof promotionFight>["familiar"];
+  snap: FightState | null;
+  auto: boolean;
+  running: boolean;
+  onToggleAuto: () => void;
+  onCast: () => void;
+}) {
+  const size = "w-[calc(3/4*18rem/5)] max-w-[3.4rem]";
+  const { weapon, attribute, battle } = familiar.parts;
+  if (!familiar.skill || !weapon || !attribute || !battle) {
+    return (
+      <div title="Familiar: equip a weapon, attribute and battle familiar" className={`${size} flex aspect-square shrink-0 items-center justify-center rounded-md border border-dashed border-ink/15 font-mono text-[7px] text-dim`}>
+        FAMILIAR
+      </div>
+    );
+  }
+  const status = snap?.skills.find((s) => s.name === FAMILIAR_SKILL);
+  const ready = status ? status.ready : 1;
+  const blinking = Boolean(status && snap && status.lastCast >= 0 && snap.real - status.lastCast < BLINK_SECONDS);
+  const effect = familiar.skill.effect.type === "damage" ? familiar.skill.effect : null;
+  const canPress = running ? !auto && ready >= 1 && !status?.queued : true;
+  const title = `Familiar (${weapon.familiar.name} + ${attribute.familiar.name} + ${battle.familiar.name}): ${effect?.hits ?? 1} hits of ${formatValue(Math.round((effect?.power ?? 0) * 10000) / 100)}% ATK${
+    familiar.skill.element ? ` as ${familiar.skill.element}` : ""
+  }, range ${familiar.range}, every ${formatValue(familiar.skill.every)}s · ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}`;
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      aria-pressed={auto}
+      disabled={!canPress}
+      onClick={() => (running ? onCast() : onToggleAuto())}
+      className={`relative ${size} aspect-square shrink-0 overflow-hidden rounded-md border bg-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default ${
+        blinking ? "border-amber-300 shadow-[0_0_0_2px_rgba(252,211,77,0.9)] brightness-150" : familiar.skill.element ? (ELEMENT_BORDER[familiar.skill.element] ?? "border-ink/25") : "border-ink/25"
+      }`}
+    >
+      <span className="absolute inset-0 flex items-center justify-center">
+        <FamiliarArt familiar={weapon.familiar} stars={weapon.stars} size={40} />
+      </span>
+      {status && ready < 1 ? <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} /> : null}
+      {auto ? <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-60" /> : null}
+      {!auto && running && ready >= 1 ? <span className="absolute inset-0 animate-pulse bg-white/15" /> : null}
+      <span className="absolute inset-x-0 bottom-0 bg-black/70 text-center font-mono text-[6px] leading-tight text-white">FAMILIAR</span>
+    </button>
   );
 }

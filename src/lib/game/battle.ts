@@ -29,6 +29,9 @@
  *   refreshes it rather than stacking.
  * - An element-restricted enemy takes x2 from the element that beats it, x0.7
  *   from the one it beats, x1 from the rest.
+ * - The familiar use hits Y times for Z% of ATK as its attribute familiar's
+ *   element, like an attack skill you can put on auto or cast by hand; its
+ *   familiars' specials go with each use.
  * - The equipped beast's skill runs on its own: wolves after strike skills,
  *   boars after knockbacks (a 50% chance every 10 seconds), dracos once a
  *   stacking skill maxes out, bats after kills.
@@ -77,7 +80,11 @@ export type FightSkill = {
   element: Element | null;
   kind: "attack" | "buff" | "passive";
   /** What readies it: seconds of cooldown, basic-attack hits, always on, uses of skills of its element, or attack skill casts. */
-  trigger: "seconds" | "hits" | "always" | "elementCasts" | "attackCasts" | "stacksComplete" | "kills";
+  trigger: "seconds" | "hits" | "always" | "elementCasts" | "attackCasts" | "stacksComplete" | "kills" | "familiarCasts";
+  /** The familiar use: it doesn't count as a strike skill, and its uses ready "familiarCasts" specials. */
+  familiar?: boolean;
+  /** Extra damage while the enemy is at or below this share of its HP (Na: +10% at 60% or less). */
+  lowHpBonus?: { below: number; bonus: number };
   /** For "stacksComplete": the stacking skill to watch, or "all" for every stacking skill in the fight. */
   watch?: string;
   /** Goes on its own condition, so Meditation, Wind Force and cooldown charges leave it alone (beasts). */
@@ -396,6 +403,7 @@ export function createFight(input: FightInput): Fight {
 
     if (e.type === "damage") {
       let bonus = s.bonus + (s.element ? input.extraDamage[s.element] + (now.element[s.element] ?? 0) : 0);
+      if (s.lowHpBonus && enemyHp > 0 && enemyHp - total <= enemyHp * s.lowHpBonus.below) bonus += s.lowHpBonus.bonus;
       if (s.element && nextSkillBonus[s.element]) {
         bonus += nextSkillBonus[s.element] ?? 0;
         delete nextSkillBonus[s.element];
@@ -403,15 +411,17 @@ export function createFight(input: FightInput): Fight {
       const hits = e.growsTo ? Math.min(e.growsTo, Math.round(e.hits) + l.uses - 1) : e.hits;
       const whole = Math.max(1, Math.round(hits));
       const amp = (s.element ? 1 + (input.elementAmp?.[s.element] ?? 0) : 1) * elementMatchup(s.element, input.enemyElement ?? null);
-      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * skillAmp * hits) / whole;
+      const perHit = (expectedHit(input.attack * (1 + now.atk), input) * e.power * (1 + bonus) * amp * (s.familiar ? 1 : skillAmp) * hits) / whole;
       for (let i = 0; i < whole; i += 1) deal(perHit, s.name);
       if (s.freezes) {
         animation = castSeconds * whole;
         frozenUntil = Math.max(frozenUntil, real + animation);
       }
       if (s.element && queue) countElementUse(s.element, l);
-      // Every attack skill cast counts toward "after X strike skills used", passives included.
-      for (const other of live) if (other !== l && other.skill.trigger === "attackCasts" && other.started) other.progress += 1;
+      // Every attack skill cast counts toward "after X strike skills used", passives included; a familiar use
+      // readies its familiars' specials instead.
+      const counts = s.familiar ? "familiarCasts" : "attackCasts";
+      for (const other of live) if (other !== l && other.skill.trigger === counts && other.started) other.progress += 1;
     } else if (e.type === "rave") {
       if (release) {
         // The reuse unleashes Rave's share of the stored damage in stopped time, as it is: the stored

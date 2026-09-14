@@ -267,6 +267,21 @@ describe("simulateFight", () => {
     expect(casts([passive, meditation], "Passive")[0]).toBeGreaterThanOrEqual(casts([passive], "Passive")[0]);
   });
 
+  it("uses the familiar for its hits and damage, and readies its specials with each use", () => {
+    const familiar = skill({ name: "Familiar", element: "Fire", every: 30, familiar: true, effect: { type: "damage", power: 4, hits: 3 } });
+    const rion = skill({ name: "Rion", kind: "passive", trigger: "familiarCasts", every: 1, duration: 10, uncharged: true, effect: { type: "speed", power: 1 } });
+    const result = simulateFight({ ...base, skills: [familiar, rion], enemyElement: "Earth" });
+    // Used at 0s: 3 hits of 4x ATK, x2 on Earth.
+    expect(result.bySkill.Familiar).toBeCloseTo(100 * 4 * 3 * 2);
+    expect(result.casts.filter((c) => c.name === "Rion")).toHaveLength(1);
+    // Rion's ATK SPD doubles the basic attacks for its 10 seconds.
+    expect(result.basic).toBeGreaterThan(1000);
+    const manual = createFight({ ...base, skills: [familiar], manual: ["Familiar"] });
+    manual.advance(5);
+    expect(manual.state().bySkill.Familiar).toBeUndefined();
+    expect(manual.cast("Familiar")).toBe(true);
+  });
+
   it("hits an element-restricted enemy x2, x0.7 or x1 by element", () => {
     const fire = skill({ name: "Fire", every: 100, effect: { type: "damage", power: 1, hits: 1 } });
     const hit = (enemyElement: "Earth" | "Water" | "Wind" | null) => simulateFight({ ...base, skills: [fire], enemyElement }).bySkill.Fire;
