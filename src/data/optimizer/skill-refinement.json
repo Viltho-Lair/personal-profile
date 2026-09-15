@@ -246,11 +246,11 @@
         "stat": "Dodge",
         "values": [
           0.0,
-          0.1,
-          0.2,
-          0.3
+          10.0,
+          20.0,
+          30.0
         ],
-        "percent": true
+        "percent": false
       }
     },
     {
@@ -302,11 +302,11 @@
         "stat": "Dodge",
         "values": [
           0.0,
-          0.2,
-          0.4,
-          0.6
+          20.0,
+          40.0,
+          60.0
         ],
-        "percent": true
+        "percent": false
       }
     },
     {
@@ -414,11 +414,11 @@
         "stat": "Dodge",
         "values": [
           0.0,
-          0.3,
-          0.6,
-          0.9
+          30.0,
+          60.0,
+          90.0
         ],
-        "percent": true
+        "percent": false
       }
     },
     {

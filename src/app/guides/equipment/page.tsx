@@ -76,7 +76,8 @@ export default function Guide() {
       <p>
         Awakening is set once for all weapons (Orr) and once for all accessories (Orb), from 0 to
         30. It raises the max level of every grade: 200 at awakening 0, plus 50 per awakening, up
-        to 1,700 at awakening 30.
+        to 1,700 at awakening 30. At 24 stars of awakening Immortal weapons and accessories count
+        as Ancient, and at 30 they reach the dark blue tier above it.
       </p>
       <p>
         The Immortal grade also gains an awakened multiplier on top: ×1.18 at the first awakening,

@@ -37,7 +37,7 @@ function SkillTile({
       className="group flex min-w-0 flex-col items-center gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span
-        className={`relative block aspect-square w-full max-w-20 rounded-md border bg-ink/[0.04] transition-all group-hover:brightness-125 ${
+        className={`relative block aspect-square w-full max-w-20 rounded-md border-[3px] bg-ink/[0.04] transition-all group-hover:brightness-125 ${
           slot === null ? (TIER_BORDER[skill.grade] ?? "border-ink/20") : "border-ink ring-1 ring-ink"
         }`}
       >

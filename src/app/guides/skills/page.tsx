@@ -143,7 +143,8 @@ export default function Guide() {
         whether or not the skill is equipped. It starts once a skill has three Aqua lines among its
         open lines and grows at four and five. Fire Slash with three Aqua lines gives +2% character
         HP; Demon Hunt with five gives +30% character ATK; Pillar of Fire gives up to +600% crit
-        damage.
+        damage. Accuracy and Dodge owned effects are flat: Power Strike gives Dodge +20, +40 and
+        +60.
       </p>
 
       <h2>Skill Proficiency</h2>

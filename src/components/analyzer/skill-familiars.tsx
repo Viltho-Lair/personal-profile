@@ -64,7 +64,7 @@ function FamiliarTile({
       className="group flex min-w-0 flex-col items-center gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span
-        className={`relative flex aspect-square w-full max-w-20 items-center justify-center overflow-hidden rounded-md border bg-ink/[0.04] group-hover:brightness-125 ${
+        className={`relative flex aspect-square w-full max-w-20 items-center justify-center overflow-hidden rounded-md border-[3px] bg-ink/[0.04] group-hover:brightness-125 ${
           rarity ? (TIER_BORDER[rarity] ?? "border-ink/20") : "border-ink/20"
         }`}
       >

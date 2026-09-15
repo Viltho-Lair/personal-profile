@@ -35,6 +35,8 @@
   --color-tier-legendary: var(--tier-legendary);
   --color-tier-mythic: var(--tier-mythic);
   --color-tier-immortal: var(--tier-immortal);
+  --color-tier-ancient: var(--tier-ancient);
+  --color-tier-star30: var(--tier-star30);
 
   --font-display: var(--font-display-face);
   --font-body: var(--font-body-face);
@@ -82,7 +84,7 @@
   --element-wind: #5b46c4;
   --element-earth: #8a5a00;
 
-  /* In-game order: grey, green, orange, purple, red, cyan, yellow */
+  /* In-game order: grey, green, orange, purple, red, cyan, yellow, teal (Ancient), dark blue (30★) */
   --tier-common: #6b7280;
   --tier-great: #2f7d4f;
   --tier-rare: #b35a00;
@@ -90,6 +92,8 @@
   --tier-legendary: #c21f2b;
   --tier-mythic: #0b7f95;
   --tier-immortal: #8a6a12;
+  --tier-ancient: #0f7a63;
+  --tier-star30: #1f3fae;
 
   /* shadcn semantics, tuned to the palette above */
   --background: var(--ground);
@@ -135,6 +139,8 @@
     --tier-legendary: #ff5a5f;
     --tier-mythic: #3fdcf0;
     --tier-immortal: #ffd75e;
+    --tier-ancient: #5eefcc;
+    --tier-star30: #4f78ff;
   }
 }
 

@@ -43,8 +43,12 @@ def _dropdowns(sheet):
     return found
 
 
-def _owned_values(items):
-    percent = all(item.endswith("%") for item in items)
+# Owned stats the game adds flat, though the workbook's dropdown writes them with "%" (Power Strike: Dodge +20/40/60).
+FLAT_STATS = {"Accuracy", "Dodge"}
+
+
+def _owned_values(items, stat):
+    percent = stat not in FLAT_STATS and all(item.endswith("%") for item in items)
     values = [float(item.rstrip("%")) for item in items]
     return ([round(v / 100, 6) for v in values] if percent else values), percent
 
@@ -73,7 +77,7 @@ def extract_refinement(sheet, skills_by_name):
             items = dropdowns.get(f"{get_column_letter(col + 2)}{owned_row + 1}")
             if not items:
                 raise MissingHeader(f"{sheet.title}: no owned effect values for {name}")
-            values, percent = _owned_values(items)
+            values, percent = _owned_values(items, stat)
             skills.append({
                 "name": name,
                 "lines": LINES.get(skills_by_name[name]["grade"], DEFAULT_LINES),

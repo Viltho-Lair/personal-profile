@@ -19,7 +19,7 @@ import {
 import { InlineLevel, SetAllLevels } from "./level-input";
 import { EquipButton, EquippedBadge } from "./profile-controls";
 import { Sprite } from "./sprite";
-import { TIER_BORDER, TIER_TEXT } from "./tiers";
+import { gearRarity, TIER_BORDER, TIER_TEXT } from "./tiers";
 
 const SECONDARY_LABELS: Record<string, string> = {
   critHitAt0: "Crit hit at Lv 0",
@@ -82,7 +82,9 @@ function AwakeningControl({ kind }: { kind: GearKind }) {
 
   return (
     <div className="flex h-full flex-wrap items-center gap-3 rounded-lg border border-ink/15 p-2">
-      <span className="relative flex size-12 shrink-0 items-center justify-center rounded-md border border-tier-immortal/50 bg-ink/[0.04]">
+      <span
+        className={`relative flex size-12 shrink-0 items-center justify-center rounded-md border-[3px] bg-ink/[0.04] ${TIER_BORDER[gearRarity("Immortal", count)]}`}
+      >
         <Sprite src={art.icon} native={art.iconSize} size={32} className="size-10" />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -138,6 +140,7 @@ function GearTile({
   level,
   equipped,
   selected,
+  rarity,
   stars,
   onSelect,
   onOwnedChange,
@@ -147,6 +150,8 @@ function GearTile({
   level: number;
   equipped: boolean;
   selected: boolean;
+  /** The colour tier it shows: its grade's, or Ancient / 30★ for an awakened Immortal. */
+  rarity: string;
   stars: number | null;
   onSelect: () => void;
   onOwnedChange: (owned: boolean) => void;
@@ -158,10 +163,10 @@ function GearTile({
         onClick={onSelect}
         aria-pressed={selected}
         aria-label={`${gear.grade}${owned ? `, level ${level}` : ", not owned"}${equipped ? ", equipped" : ""}`}
-        className={`relative block aspect-square w-full rounded-md border bg-ink/[0.04] transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        className={`relative block aspect-square w-full rounded-md border-[3px] bg-ink/[0.04] transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           selected
             ? "border-ink ring-1 ring-ink"
-            : `${TIER_BORDER[gear.tier] ?? "border-ink/20"} hover:brightness-125`
+            : `${TIER_BORDER[rarity] ?? "border-ink/20"} hover:brightness-125`
         }`}
       >
         {gear.icon && gear.iconSize ? (
@@ -250,6 +255,7 @@ function GearDetail({
   const immortal = gear.tier === "Immortal" ? immortalStats(kind, row, state.level) : null;
   const effects = gearEffects(gear.multiplier, GEAR_LEVEL_FACTORS, state.level, immortal?.multiplier ?? 1);
   const secondary = immortal ? { ...gear.secondary, ...immortal.secondary } : gear.secondary;
+  const rarity = gearRarity(gear.tier, row.awakening);
 
   return (
     <div className="flex flex-col gap-4 px-6 sm:flex-row sm:items-start">
@@ -260,12 +266,12 @@ function GearDetail({
             src={gear.icon}
             native={gear.iconSize}
             size={128}
-            className={`rounded-md border ${TIER_BORDER[gear.tier] ?? "border-ink/20"}`}
+            className={`rounded-md border-[3px] ${TIER_BORDER[rarity] ?? "border-ink/20"}`}
           />
         ) : null}
         <div>
-          <p className={`font-mono text-[10px] tracking-[0.08em] uppercase ${TIER_TEXT[gear.tier] ?? "text-dim"}`}>
-            {gear.tier} · {position}
+          <p className={`font-mono text-[10px] tracking-[0.08em] uppercase ${TIER_TEXT[rarity] ?? "text-dim"}`}>
+            {rarity} · {position}
           </p>
           <h3 className="text-base leading-tight font-medium">{gear.grade}</h3>
         </div>
@@ -340,8 +346,8 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
         </div>
         {tiers.map(([tier, row]) => (
           <section key={tier} className="flex flex-col gap-2">
-            <h3 className={`font-mono text-[10px] tracking-[0.12em] uppercase ${TIER_TEXT[tier] ?? "text-dim"}`}>
-              {tier}
+            <h3 className={`font-mono text-[10px] tracking-[0.12em] uppercase ${TIER_TEXT[gearRarity(tier, count)] ?? "text-dim"}`}>
+              {gearRarity(tier, count)}
             </h3>
             <div className="grid grid-cols-4 gap-2">
               {row.map((gear) => {
@@ -354,6 +360,7 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
                     level={state.level}
                     equipped={equipped === gear.grade}
                     selected={selected === gear.grade}
+                    rarity={gearRarity(gear.tier, count)}
                     stars={gear.tier === "Immortal" ? awakeningStage(count).stars : null}
                     onSelect={() => setSelected(selected === gear.grade ? null : gear.grade)}
                     onOwnedChange={(owned) => setOwned(kind, gear.grade, owned)}
