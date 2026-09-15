@@ -73,6 +73,8 @@ export function useProfile() {
       update((p) => rules.setSkillLevel(p, name, level, maxLevel)),
     setGearLevel: (kind: GearKind, grade: string, level: number, maxLevel: number) =>
       update((p) => rules.setGearLevel(p, kind, grade, level, maxLevel)),
+    setGearLevels: (kind: GearKind, grades: readonly string[], level: number, maxLevel: number) =>
+      update((p) => rules.setGearLevels(p, kind, grades, level, maxLevel)),
     setOwned: (kind: OwnableKind, key: string, owned: boolean) =>
       update((p) => rules.setOwned(p, kind, key, owned)),
     equip: (kind: EquippableKind, key: string | null) =>

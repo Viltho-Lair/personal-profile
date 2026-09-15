@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 function clampTo(min: number, max: number) {
   return (level: number) =>
     Number.isNaN(level) ? min : Math.min(max, Math.max(min, level));
@@ -52,6 +54,50 @@ export function LevelInput({
       <span className="font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
         Max {max}
       </span>
+    </div>
+  );
+}
+
+/**
+ * One level for every item in a list: type it, then press Set all (or Enter). Nothing changes while you type, so a
+ * half-typed number never overwrites your levels.
+ */
+export function SetAllLevels({ max, name, onApply }: { max: number; name: string; onApply: (level: number) => void }) {
+  const [draft, setDraft] = useState("");
+  const level = Math.floor(Number(draft));
+  const valid = draft.trim() !== "" && Number.isFinite(level) && level >= 0;
+  const apply = () => {
+    if (!valid) return;
+    onApply(Math.min(max, level));
+    setDraft("");
+  };
+  return (
+    <div className="flex w-fit items-center gap-2 rounded-lg border border-ink/15 px-3 py-1.5 font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
+      <label className="flex items-center gap-2 whitespace-nowrap">
+        Set all levels
+        <input
+          type="number"
+          inputMode="numeric"
+          value={draft}
+          min={0}
+          max={max}
+          placeholder={String(max)}
+          aria-label={`Level for every ${name}`}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") apply();
+          }}
+          className="w-16 rounded border border-ink/20 bg-transparent px-1 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
+        />
+      </label>
+      <button
+        type="button"
+        onClick={apply}
+        disabled={!valid}
+        className="whitespace-nowrap rounded border border-ink/25 px-2 py-0.5 text-ink hover:border-ink disabled:opacity-40"
+      >
+        Set all
+      </button>
     </div>
   );
 }

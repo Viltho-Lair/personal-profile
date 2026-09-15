@@ -47,6 +47,7 @@ import {
   setFountainEffect,
   fountainGrade,
   setGearLevel,
+  setGearLevels,
   setMasteryLevel,
   setMasteryPage,
   setOwned,
@@ -115,6 +116,17 @@ describe("rule 1: equipping marks an item owned", () => {
   it("equipping null unequips", () => {
     const p = equip(equip(emptyProfile(), "weapons", "Common 4"), "weapons", null);
     expect(equippedKey(p, "weapons")).toBeNull();
+  });
+});
+
+describe("setting every gear level at once", () => {
+  it("levels each grade to the max it allows and marks it owned, keeping ownership at 0", () => {
+    let p = setGearLevels(emptyProfile(), "weapons", ["Common 4", "Epic 1"], 5000, 1700);
+    expect(gearState(p, "weapons", "Common 4", 1700)).toEqual({ owned: true, level: 1700 });
+    expect(gearState(p, "weapons", "Epic 1", 1700)).toEqual({ owned: true, level: 1700 });
+    p = setGearLevels(p, "weapons", ["Common 4", "Great 1"], 0, 1700);
+    expect(gearState(p, "weapons", "Common 4", 1700)).toEqual({ owned: true, level: 0 });
+    expect(gearState(p, "weapons", "Great 1", 1700)).toEqual({ owned: false, level: 0 });
   });
 });
 

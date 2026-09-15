@@ -16,7 +16,7 @@ import {
   type AwakeningRow,
   type Gear,
 } from "./data";
-import { InlineLevel } from "./level-input";
+import { InlineLevel, SetAllLevels } from "./level-input";
 import { EquipButton, EquippedBadge } from "./profile-controls";
 import { Sprite } from "./sprite";
 import { TIER_BORDER, TIER_TEXT } from "./tiers";
@@ -305,7 +305,7 @@ function GearDetail({
 }
 
 export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Gear[] }) {
-  const { profile, setOwned } = useProfile();
+  const { profile, setOwned, setGearLevels } = useProfile();
   const [selected, setSelected] = useState<string | null>(null);
   const equipped = equippedKey(profile, kind);
   const count = awakening(profile, kind, MAX_AWAKENING);
@@ -320,16 +320,24 @@ export function GearGrid({ kind, items: baseItems }: { kind: GearKind; items: Ge
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
       <div className="flex w-full min-w-0 flex-col gap-4 sm:max-w-md">
-        <label className="flex w-fit items-center gap-2 rounded-lg border border-ink/15 px-3 py-2 font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
-          <input
-            type="checkbox"
-            checked={allOwned}
-            onChange={(event) => items.forEach((gear) => setOwned(kind, gear.grade, event.target.checked))}
-            aria-label={`Mark every ${kind === "weapons" ? "weapon" : "accessory"} as owned`}
-            className="size-3.5 accent-ink"
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex w-fit items-center gap-2 rounded-lg border border-ink/15 px-3 py-2 font-mono text-[10px] tracking-[0.08em] text-dim uppercase">
+            <input
+              type="checkbox"
+              checked={allOwned}
+              onChange={(event) => items.forEach((gear) => setOwned(kind, gear.grade, event.target.checked))}
+              aria-label={`Mark every ${kind === "weapons" ? "weapon" : "accessory"} as owned`}
+              className="size-3.5 accent-ink"
+            />
+            Mark all as owned
+          </label>
+          {/* Every grade shares the awakening's max level. */}
+          <SetAllLevels
+            max={awakeningRow.maxLevel}
+            name={kind === "weapons" ? "weapon" : "accessory"}
+            onApply={(level) => setGearLevels(kind, items.map((gear) => gear.grade), level, awakeningRow.maxLevel)}
           />
-          Mark all as owned
-        </label>
+        </div>
         {tiers.map(([tier, row]) => (
           <section key={tier} className="flex flex-col gap-2">
             <h3 className={`font-mono text-[10px] tracking-[0.12em] uppercase ${TIER_TEXT[tier] ?? "text-dim"}`}>

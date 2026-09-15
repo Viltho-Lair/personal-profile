@@ -113,6 +113,17 @@ export function setGearLevel(
   });
 }
 
+/** One level for several grades at once, each following rule 3. */
+export function setGearLevels(
+  profile: ProfileV1,
+  kind: GearKind,
+  grades: readonly string[],
+  level: number,
+  maxLevel: number,
+): ProfileV1 {
+  return grades.reduce((p, grade) => setGearLevel(p, kind, grade, level, maxLevel), profile);
+}
+
 /** Rule 2: removing ownership unequips the item but keeps its level. */
 export function setOwned(
   profile: ProfileV1,

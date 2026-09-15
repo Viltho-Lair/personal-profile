@@ -32,7 +32,7 @@ import { sweatsuitMultiplier } from "@/lib/game/appearance";
 import { useProfile } from "@/lib/profile/use-profile";
 import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./data";
 import { ConstellationTab } from "./constellation-tab";
-import { InlineLevel } from "./level-input";
+import { InlineLevel, SetAllLevels } from "./level-input";
 import { MemoryTreeTab } from "./memory-tree-tab";
 import { formatNumber } from "@/lib/number-format";
 
@@ -494,6 +494,21 @@ function ClassesTab() {
         ...Object.fromEntries(shown.map((cls) => [cls.name, { ...(c.classes[cls.name] ?? { owned: false, level: 0 }), owned }])),
       },
     }));
+  // A level above 0 marks a class owned, as typing it on one class does.
+  const setAllLevels = (level: number) =>
+    set((c) => ({
+      ...c,
+      classes: {
+        ...c.classes,
+        ...Object.fromEntries(
+          shown.map((cls) => {
+            const current = c.classes[cls.name] ?? { owned: false, level: 0 };
+            const clamped = clampLevel(level, max);
+            return [cls.name, { owned: current.owned || clamped > 0, level: clamped }];
+          }),
+        ),
+      },
+    }));
 
   return (
     <div className="flex flex-col gap-3">
@@ -501,16 +516,19 @@ function ClassesTab() {
         <p className={LABEL}>
           All classes: max level {max} (200 + 50 per Blast awakening + {constellationCap} from Constellation)
         </p>
-        <label className={`flex items-center gap-1.5 ${LABEL}`}>
-          <input
-            type="checkbox"
-            checked={allOwned}
-            onChange={(event) => setAllOwned(event.target.checked)}
-            aria-label="Own every class"
-            className="size-3.5 accent-ink"
-          />
-          Own all
-        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className={`flex items-center gap-1.5 ${LABEL}`}>
+            <input
+              type="checkbox"
+              checked={allOwned}
+              onChange={(event) => setAllOwned(event.target.checked)}
+              aria-label="Own every class"
+              className="size-3.5 accent-ink"
+            />
+            Own all
+          </label>
+          <SetAllLevels max={max} name="class" onApply={setAllLevels} />
+        </div>
       </div>
       <ul className="flex flex-col gap-1">
         {CLASSES.map((cls, index) => {
