@@ -60,10 +60,10 @@ const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const TIER_COLOUR: Record<string, string> = {
   White: "text-ink",
   Green: "text-tier-great",
-  Orange: "text-tier-legendary",
+  Orange: "text-tier-rare",
   Purple: "text-tier-epic",
-  Red: "text-element-fire",
-  Aqua: "text-element-water",
+  Red: "text-tier-legendary",
+  Aqua: "text-tier-mythic",
 };
 
 const cost = ([stones, emeralds]: readonly [number, number]) =>

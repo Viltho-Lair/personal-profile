@@ -32,10 +32,10 @@ const ELEMENT_HEX: Record<Element, string> = { Fire: "#ff5b5e", Water: "#48c9ec"
 const TIER_HEX: Record<string, string> = {
   Common: "#9aa3af",
   Great: "#4ec27f",
-  Rare: "#5aa9f0",
+  Rare: "#ff9a3c",
   Epic: "#b98cf0",
-  Legendary: "#ffb547",
-  Mythic: "#ff6b7d",
+  Legendary: "#ff5a5f",
+  Mythic: "#3fdcf0",
   Immortal: "#ffd75e",
 };
 

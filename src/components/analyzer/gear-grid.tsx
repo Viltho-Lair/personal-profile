@@ -67,7 +67,7 @@ function immortalStats(kind: GearKind, row: AwakeningRow, level: number) {
 
 function Stars({ count }: { count: number }) {
   return (
-    <span aria-hidden className="font-mono text-[9px] leading-none text-tier-legendary">
+    <span aria-hidden className="font-mono text-[9px] leading-none text-tier-immortal">
       {"★".repeat(count)}
       <span className="text-ink/20">{"★".repeat(5 - count)}</span>
     </span>

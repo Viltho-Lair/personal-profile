@@ -116,16 +116,16 @@ export default function Guide() {
       </p>
       <p>
         You start with 100 skill points, gain 3 for every slayer level after the first, and gain 100
-        more for every Training Diary level. The diary unlocks its first level at slayer level 500
-        and one more every 100 levels. A slayer at level 2,800 with diary level 24 has 8,397 + 100 +
-        2,400 = <strong>10,897</strong> points.
+        more for every Training Diary level. The diary unlocks its first level at slayer level 400
+        and one more every 100 levels, so level 25 unlocks at 2,800. A slayer at level 2,800 with
+        diary level 24 has 8,397 + 100 + 2,400 = <strong>10,897</strong> points.
       </p>
       <p>
         Max levels also grow with the diary: STR, HP, VIT and LUK start at 1,000 and gain 50 per
         diary level; CRI, ACC and DODGE start at 200 and gain 10. Each diary level also grants 20
         Over Points. On the large stats, 5 Over Points buy +25 max level; on the small ones, 1 point
-        buys +5. Each stat takes up to 48 of these upgrades. STR at diary 22 with all 48 bought caps
-        at 1,000 + 1,100 + 1,200 = 3,300.
+        buys +5. Each diary level lets a stat take 2 more of these upgrades. STR at diary 24 with
+        all 48 bought caps at 1,000 + 1,200 + 1,200 = 3,400.
       </p>
 
       <h3>Latent Power</h3>

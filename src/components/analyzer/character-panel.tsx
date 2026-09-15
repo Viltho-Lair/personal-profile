@@ -11,7 +11,7 @@ import {
   diaryMaxLevel,
   growthCapOf,
   growthMaxLevel,
-  MAX_DIARY_UPGRADES,
+  maxDiaryUpgrades,
   overPoints,
   diaryUnlockLevel,
   skillPoints,
@@ -228,6 +228,7 @@ function TrainingDiary() {
   const level = Math.min(character.trainingDiary, max);
   const next = level + 1;
   const op = overPoints(level, character.diaryUpgrades);
+  const upgradeCap = maxDiaryUpgrades(level);
 
   return (
     <div className="flex flex-col gap-3">
@@ -244,7 +245,7 @@ function TrainingDiary() {
       </label>
       <p className="text-[11px] leading-snug text-dim">
         Each Training Diary level adds 100 growth skill points. Level 1 unlocks at slayer level {formatValue(diaryUnlockLevel(1))},
-        and each level after it needs 100 more slayer levels (level 24 at {formatValue(diaryUnlockLevel(24))}).
+        and each level after it needs 100 more slayer levels (level 25 at {formatValue(diaryUnlockLevel(25))}).
       </p>
       <p className="font-mono text-[10px] text-dim uppercase">
         {max === 0
@@ -260,14 +261,15 @@ function TrainingDiary() {
           </span>
         </div>
         <p className="text-[11px] leading-snug text-dim">
-          Each Training Diary level gives 20 OP, spent on raising a stat&apos;s max level, up to {MAX_DIARY_UPGRADES} times per stat.
+          Each Training Diary level gives 20 OP, spent on raising a stat&apos;s max level, and lets each stat take 2 more
+          upgrades: {upgradeCap} per stat at diary level {level}.
         </p>
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-1.5">
           {GROWTH.map((stat) => {
             const cap = growthCapOf(stat.key);
-            const bought = Math.min(MAX_DIARY_UPGRADES, character.diaryUpgrades[stat.key] ?? 0);
+            const bought = Math.min(upgradeCap, character.diaryUpgrades[stat.key] ?? 0);
             // More upgrades need OP left over: at most what the remaining OP buys.
-            const affordable = Math.min(MAX_DIARY_UPGRADES, bought + Math.max(0, Math.floor(op.left / cap.upgradeCost)));
+            const affordable = Math.min(upgradeCap, bought + Math.max(0, Math.floor(op.left / cap.upgradeCost)));
             return (
               <li key={stat.key} className="flex flex-col items-center gap-1 rounded-md border border-ink/15 p-2 text-center">
                 <Art item={stat} className="size-9" />
@@ -286,8 +288,8 @@ function TrainingDiary() {
                     set((c) => ({ ...c, diaryUpgrades: { ...c.diaryUpgrades, [stat.key]: clampLevel(value, affordable) } }))
                   }
                 />
-                <span className={`font-mono text-[10px] tabular-nums ${bought >= MAX_DIARY_UPGRADES ? "text-element-water" : "text-dim"}`}>
-                  {bought}/{MAX_DIARY_UPGRADES}
+                <span className={`font-mono text-[10px] tabular-nums ${upgradeCap > 0 && bought >= upgradeCap ? "text-element-water" : "text-dim"}`}>
+                  {bought}/{upgradeCap}
                 </span>
                 <span className="font-mono text-[9px] text-dim tabular-nums">
                   Max Lv {formatValue(growthMaxLevel(stat.key, level, bought))}
@@ -589,7 +591,7 @@ function ClassesTab() {
                       ))}
                     </select>
                   </label>
-                  <span aria-hidden className="font-mono text-[11px] leading-none text-tier-legendary">
+                  <span aria-hidden className="font-mono text-[11px] leading-none text-tier-immortal">
                     {"★".repeat(awakeningStage(character.classAwakening).stars)}
                     <span className="text-ink/20">{"★".repeat(5 - awakeningStage(character.classAwakening).stars)}</span>
                   </span>

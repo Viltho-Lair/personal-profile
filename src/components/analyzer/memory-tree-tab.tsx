@@ -234,7 +234,7 @@ export function MemoryTreeTab() {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/15 p-3">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-lg font-semibold text-tier-legendary tabular-nums">{current.grade}</span>
+          <span className="font-mono text-lg font-semibold text-tier-immortal tabular-nums">{current.grade}</span>
           <span className={LABEL}>grade</span>
         </div>
         <div className="flex min-w-40 flex-1 flex-col gap-1">

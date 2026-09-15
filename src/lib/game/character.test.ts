@@ -8,6 +8,7 @@ import {
   skillPoints,
   growthMaxLevel,
   overPoints,
+  maxDiaryUpgrades,
   enhanceMax,
   enhanceStat,
   latentMultiplier,
@@ -63,25 +64,28 @@ describe("classes and abilities", () => {
   });
 
   it("counts growth skill points from slayer level and unlocked Training Diary levels", () => {
-    expect(diaryMaxLevel(499)).toBe(0);
-    expect(diaryMaxLevel(500)).toBe(1);
-    expect(diaryMaxLevel(2799)).toBe(23);
-    expect(diaryMaxLevel(2800)).toBe(24);
-    expect(skillPoints(2794, 23)).toEqual({ starting: 100, fromLevel: 8379, fromDiary: 2300, diary: 23, total: 10779 });
+    expect(diaryMaxLevel(399)).toBe(0);
+    expect(diaryMaxLevel(400)).toBe(1);
+    expect(diaryMaxLevel(2799)).toBe(24);
+    expect(diaryMaxLevel(2800)).toBe(25);
+    expect(skillPoints(2794, 24)).toEqual({ starting: 100, fromLevel: 8379, fromDiary: 2400, diary: 24, total: 10879 });
     // The game's total at slayer level 2,800 with diary 24.
     expect(skillPoints(2800, 24).total).toBe(10897);
     expect(skillPoints(1, 0).total).toBe(100);
     // A diary level the slayer hasn't unlocked yet doesn't count.
-    expect(skillPoints(2794, 24).diary).toBe(23);
+    expect(skillPoints(2794, 25).diary).toBe(24);
   });
 
   it("raises growth max levels with the Training Diary and Over Point upgrades", () => {
     expect(growthMaxLevel("STR", 0, 0)).toBe(1000);
     expect(growthMaxLevel("CRI", 0, 0)).toBe(200);
-    // Diary 22 with all 48 upgrades: 1,000 + 1,100 + 1,200 = 3,300, as in the game.
-    expect(growthMaxLevel("STR", 22, 48)).toBe(3300);
-    expect(growthMaxLevel("DODGE", 22, 99)).toBe(200 + 220 + 240);
-    expect(overPoints(22, { STR: 48, CRI: 48, LUK: 38 })).toEqual({ total: 440, spent: 240 + 48 + 190, left: 440 - 478 });
+    // Each diary level opens 2 upgrades per stat: diary 24 takes 48, 1,000 + 1,200 + 1,200 = 3,400.
+    expect(maxDiaryUpgrades(24)).toBe(48);
+    expect(growthMaxLevel("STR", 24, 48)).toBe(3400);
+    // Diary 22 opens only 44.
+    expect(growthMaxLevel("STR", 22, 48)).toBe(1000 + 1100 + 1100);
+    expect(growthMaxLevel("DODGE", 22, 99)).toBe(200 + 220 + 220);
+    expect(overPoints(22, { STR: 48, CRI: 44, LUK: 38 })).toEqual({ total: 440, spent: 220 + 44 + 190, left: 440 - 454 });
     expect([0, 6, 12, 18].map(awakenedClassName)).toEqual(["Blast", "Tera", "Seed", "Nova"]);
   });
 
