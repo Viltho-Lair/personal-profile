@@ -105,8 +105,9 @@ export default function Guide() {
           attack-speed buffs.
         </li>
         <li>
-          <strong>Every skill you can cast starts ready.</strong> After that, cooldown skills wait
-          their cooldown and strike skills count your basic attacks.
+          <strong>Every skill you can cast starts ready</strong>, except Meditation, which counts
+          down 2 seconds first. After that, cooldown skills wait their cooldown and strike skills
+          count your basic attacks.
         </li>
         <li>
           <strong>Ready skills cast without waiting for each other.</strong> Each cast pauses your
@@ -129,9 +130,9 @@ export default function Guide() {
       <h2>Skills with special rules</h2>
       <ul>
         <li>
-          <strong>Wrath of Gods</strong> first goes off 20 seconds in, then every 30 seconds.
-          Meditation and cooldown stones only shorten the later cooldowns, not the first 20
-          seconds.
+          <strong>Wrath of Gods</strong> first goes off 20 seconds in, then every 30 seconds, and{" "}
+          <strong>Strong Current</strong> 2 seconds in, then every 50. Meditation and cooldown
+          stones only shorten the later cooldowns, not that first countdown.
         </li>
         <li>
           <strong>Rave</strong> stores all the damage dealt over 5 seconds while the fight carries

@@ -844,7 +844,7 @@ export function createFight(input: FightInput): Fight {
     cast: (name) => {
       const l = live.find((x) => x.skill.name === name);
       if (!l || !l.manual || l.queued || !l.started || done()) return false;
-      if (complete(l) || (l.holding ? !l.charged : l.progress < l.skill.every)) return false;
+      if (complete(l) || (l.holding ? !l.charged : l.progress < target(l))) return false;
       enqueue(l);
       return true;
     },

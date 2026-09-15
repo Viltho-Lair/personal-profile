@@ -213,7 +213,8 @@ export default function Guide() {
       <h2>How skills play in a fight</h2>
       <p>
         Attacks and buffs start the fight ready, so their first use comes before their
-        first cooldown or strike count. Skills on auto cast as soon as they’re ready and there’s
+        first cooldown or strike count. Meditation is the exception: it counts down 2 seconds before
+        its first use. Skills on auto cast as soon as they’re ready and there’s
         mana; skills you set to manual wait for you to press them. A few skills have rules of their
         own:
       </p>
@@ -230,7 +231,7 @@ export default function Guide() {
         </li>
         <li>
           <strong>Wrath of Gods</strong> first goes off 20 seconds into battle, then every 30
-          seconds.
+          seconds. <strong>Strong Current</strong> works the same way: 2 seconds in, then every 50.
         </li>
         <li>
           <strong>Rage</strong> stops HP recovery and drains 0.5% of max HP a second while it lasts,

@@ -179,7 +179,10 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     every: m.every ?? 10,
     duration: m.duration || num(/for (\d+) ?sec/i, text) || 0,
     delay: 0,
-    startAt: num(/after (\d+) seconds into battle/i, text) ?? 0,
+    startAt: 0,
+    // Delayed skills (Wrath of Gods, Strong Current) count down their "after N seconds into battle" first, then go
+    // every cooldown.
+    ...(m.passive === "delayed" ? { startsOnCooldown: true, firstEvery: num(/after (\d+) seconds into battle/i, text) ?? 0 } : {}),
     freezes: FREEZING.has(skill.name),
     bonus: 0,
     // Farming, an attack skill hits every monster within the range its text gives (the workbook's Range otherwise),
@@ -195,7 +198,7 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
   if (skill.name === "Mantra") return "Mantra (already in the stats)";
   if (skill.name === "Heart of Fire") return "";
   if (skill.name === "Rave") return make({ type: "rave", power }, { kind: "attack", trigger: "seconds", duration: num(/for (\d+) seconds/i, text) ?? 5 });
-  if (skill.name === "Meditation") return make({ type: "chargeCooldowns", power }, { kind: "buff" });
+  if (skill.name === "Meditation") return make({ type: "chargeCooldowns", power }, { kind: "buff", startsOnCooldown: true, firstEvery: MEDITATION_FIRST_SECONDS });
   // Breath of Waves recovers 50% of current HP as it speeds cooldowns up.
   if (skill.name === "Breath of Waves")
     return make({ type: "cooldownRate", power }, { kind: "buff", hpCost: -((num(/Recover (\d+)% of current HP/i, text) ?? 50) / 100) });
@@ -204,12 +207,6 @@ function toFightSkill(profile: ProfileV1, skill: SkillWithMechanics, preset: Ski
     return make({ type: "atk", power }, { kind: "buff", hpCost: (num(/Consume (\d+)% HP of current HP/i, text) ?? 50) / 100 });
   if (skill.name === "Ignition") return make({ type: "nextSkill", power }, { kind: "buff" });
   if (skill.name === "Full Moon") return make({ type: "atk", power }, { kind: "buff", delay: num(/for (\d+) seconds/i, text) ?? 3 });
-  // Wrath of Gods first goes 20 seconds in, then every cooldown (30s), restarting it straight away.
-  if (skill.name === "Wrath of Gods")
-    return make(
-      { type: "atk", power },
-      { kind: "passive", trigger: "seconds", startAt: 0, startsOnCooldown: true, firstEvery: num(/after (\d+) seconds into battle/i, text) ?? 20 },
-    );
   if (skill.name === "Heaven's Punishment") return make({ type: "damage", power, hits: 1 }, { kind: "attack", startAt: 6 });
   if (skill.name === "Sea Judgment")
     return make({ type: "damage", power, hits: 1, growsTo: 7 }, { kind: "passive", trigger: "elementCasts", every: m.additional[0] || 3 });
@@ -294,6 +291,8 @@ export type FightTarget = Pick<FightInput, "bossMonster" | "enemyHp" | "spirits"
 
 /** Seconds between familiar uses when a familiar allows more than one (Ku: 2 uses, 20 seconds apart). */
 export const FAMILIAR_COOLDOWN = 30;
+/** Meditation counts down 2 seconds before its first use. */
+export const MEDITATION_FIRST_SECONDS = 2;
 export const FAMILIAR_SKILL = "Familiar";
 /** Seconds between Pe's repeated attacks (its stat is labelled Seconds: one repeat a second). */
 export const PE_REPEAT_SECONDS = 1;
