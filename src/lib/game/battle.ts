@@ -353,15 +353,41 @@ const chargeable = (l: Live) =>
 export const nextEvery = (skill: FightSkill, uses: number) => (uses === 0 && skill.firstEvery != null ? skill.firstEvery : skill.every);
 const target = (l: Live) => nextEvery(l.skill, l.uses);
 
+/** The stats a fight reads, which equipping gear or a class mid-fight changes. */
+export type FightStats = Pick<
+  FightInput,
+  | "attack"
+  | "critChance"
+  | "critDamage"
+  | "deathStrikeChance"
+  | "deathStrikeDamage"
+  | "extraDamage"
+  | "elementAmp"
+  | "bossDamage"
+  | "attackSpeed"
+  | "movementSpeed"
+  | "maxHp"
+  | "hpRecovery"
+  | "maxMana"
+  | "manaRecovery"
+>;
+
 export type Fight = {
   /** Plays the fight forward by this many real seconds (or until it ends). */
   advance: (seconds: number) => void;
   /** Queues a ready skill whose auto is off; false when it isn't ready. */
   cast: (name: string) => boolean;
+  /**
+   * Swaps in new stats from here on (equipping better gear mid-fight). A bigger life or mana pool grows by the
+   * difference without refilling what's missing; a smaller one keeps what fits.
+   */
+  retune: (stats: FightStats) => void;
   state: () => FightState;
 };
 
-export function createFight(input: FightInput): Fight {
+export function createFight(initial: FightInput): Fight {
+  // A copy, so retune can change the stats without touching the caller's input.
+  const input: FightInput = { ...initial };
   const step = input.step ?? DEFAULT_STEP;
   const manual = new Set(input.manual ?? []);
   // Cooldown skills, and every attack or buff you can press (strike-count ones too), are ready at the
@@ -391,12 +417,12 @@ export function createFight(input: FightInput): Fight {
     queues[l.skill.kind === "attack" ? "attack" : "buff"].push(l);
   };
 
-  const maxHp = input.maxHp ?? 0;
-  const maxMana = input.maxMana ?? 0;
+  let maxHp = input.maxHp ?? 0;
+  let maxMana = input.maxMana ?? 0;
   const pools = maxMana > 0;
   let hp = maxHp;
   let mana = maxMana;
-  const baseSpeed = input.attackSpeed ?? 1;
+  let baseSpeed = input.attackSpeed ?? 1;
 
   const spirits = input.spirits;
   const bossMonster = input.bossMonster !== false;
@@ -506,7 +532,7 @@ export function createFight(input: FightInput): Fight {
     return { atk, speed, cooldownRate, element, rage, manaRate, bossDamage, mspd };
   };
 
-  const boss = 1 + (input.bossDamage ?? 0);
+  let boss = 1 + (input.bossDamage ?? 0);
   /** Adds damage to the enemy; a storing Rave stores all of it except its own release (`stored` false). */
   const record = (amount: number, source: string | null, stored = true) => {
     total += amount;
@@ -847,6 +873,18 @@ export function createFight(input: FightInput): Fight {
       if (complete(l) || (l.holding ? !l.charged : l.progress < target(l))) return false;
       enqueue(l);
       return true;
+    },
+    retune: (stats) => {
+      Object.assign(input, stats);
+      const nextHp = input.maxHp ?? 0;
+      const nextMana = input.maxMana ?? 0;
+      // The pool expands: what's missing stays missing.
+      hp = nextHp >= maxHp ? hp + (nextHp - maxHp) : Math.min(hp, nextHp);
+      mana = nextMana >= maxMana ? mana + (nextMana - maxMana) : Math.min(mana, nextMana);
+      maxHp = nextHp;
+      maxMana = nextMana;
+      baseSpeed = input.attackSpeed ?? 1;
+      boss = 1 + (input.bossDamage ?? 0);
     },
     state: () => {
       const now = bonuses();

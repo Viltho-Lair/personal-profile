@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { createFight, type Fight, type FightState } from "@/lib/game/battle";
+import { createFight, type Fight, type FightState, type FightStats } from "@/lib/game/battle";
 import { publishLiveFight } from "./live-fight";
 import type { promotionFight } from "./promotion-fight";
 
@@ -56,15 +56,17 @@ export function startFightRun(setup: FightSetup) {
     current.advance(Math.min(MAX_FRAME_SECONDS, (now - last) / 1000));
     last = now;
     const state = current.state();
+    // Gear equipped mid-fight updates the setup's stats, so keep the latest one.
+    const latest = run?.setup ?? setup;
     if (state.done) {
       timer = null;
       fight = null;
       publishLiveFight(null);
-      run = { setup, phase: "done", snap: state };
+      run = { setup: latest, phase: "done", snap: state };
     } else {
       // The Stats Summary shows Attack with the buffs that are on as the fight plays.
       publishLiveFight({ atkBonus: state.atkBonus, speedBonus: state.speedBonus });
-      run = { setup, phase: "running", snap: state };
+      run = { setup: latest, phase: "running", snap: state };
       timer = window.setTimeout(frame, FRAME_MS);
     }
     emit();
@@ -75,6 +77,14 @@ export function startFightRun(setup: FightSetup) {
 /** Casts a skill with auto off in the fight playing. */
 export function castInFightRun(name: string) {
   fight?.cast(name);
+}
+
+/** Swaps new stats into the fight playing (better gear or a class equipped from the render). */
+export function retuneFightRun(stats: FightStats) {
+  if (!fight || !run) return;
+  fight.retune(stats);
+  run = { ...run, setup: { ...run.setup, input: { ...run.setup.input, ...stats } } as FightSetup, snap: fight.state() };
+  emit();
 }
 
 /** The rendered fight, the same for every view, or null before the first render. */

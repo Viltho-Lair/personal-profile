@@ -323,6 +323,23 @@ describe("simulateFight", () => {
     expect(fight.state().skills[0].complete).toBe(true);
   });
 
+  it("takes new stats mid-fight, expanding the life pool without refilling what's missing", () => {
+    const burn = skill({ name: "Burn", kind: "buff", every: 100, duration: 5, hpCost: 0.5, effect: { type: "atk", power: 0 } });
+    const input = { ...base, maxHp: 1000, hpRecovery: 0, skills: [burn] };
+    const fight = createFight(input);
+    fight.advance(0.1);
+    expect(fight.state().hp).toBeCloseTo(500);
+    fight.retune({ ...input, attack: 200, maxHp: 1500 });
+    expect(fight.state()).toMatchObject({ hp: 1000, maxHp: 1500 });
+    // The first basic attack, after the cast, lands with the new attack.
+    fight.advance(0.5);
+    expect(fight.state().basic).toBeCloseTo(200);
+    expect(input.attack).toBe(100);
+    // A smaller pool keeps what fits.
+    fight.retune({ ...input, maxHp: 800 });
+    expect(fight.state()).toMatchObject({ hp: 800, maxHp: 800 });
+  });
+
   it("repeats Pe's familiar attack one hit after another instead of all at once", () => {
     const pe = skill({ name: "Familiar", every: 30, familiar: true, maxUses: 1, hitEvery: 1, effect: { type: "damage", power: 1, hits: 5 } });
     const fight = createFight({ ...base, duration: 30, skills: [pe] });

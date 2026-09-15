@@ -140,6 +140,12 @@ export default function Guide() {
           resets only when you render again or reload.
         </li>
         <li>
+          <strong>Better Weapon, Better Accessories and Better Class</strong> cards show on the
+          right of the render when you own something stronger than what&apos;s equipped. Tapping
+          Equip equips it and, while the fight plays, applies it at once: extra life grows your
+          life pool without refilling what&apos;s missing. The cards below move up as one goes.
+        </li>
+        <li>
           <strong>Skills below the fight</strong> switch between auto and manual when you tap them
           before rendering. Manual skills light up when ready and wait for you to tap them, so you
           can play your real rotation, such as pressing Rave as Wrath of Gods starts. Which skills

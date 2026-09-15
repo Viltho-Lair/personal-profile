@@ -18,6 +18,7 @@ import { rarityGroup } from "@/lib/game/formulas";
 import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
+import { EquipSuggestions } from "./equip-suggestions";
 import { castInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
 
@@ -232,14 +233,17 @@ export function ProgressChart() {
       </div>
 
       {view === "render" ? (
-        <BattleRender
-          stage={farmMode ? setup.farm : null}
-          enemy={enemy}
-          snap={snap}
-          element={mainElement(setup.skills)}
-          baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)}
-          spiritArt={spiritArt}
-        />
+        <div className="relative shrink-0">
+          <BattleRender
+            stage={farmMode ? setup.farm : null}
+            enemy={enemy}
+            snap={snap}
+            element={mainElement(setup.skills)}
+            baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)}
+            spiritArt={spiritArt}
+          />
+          <EquipSuggestions target={setup.target} />
+        </div>
       ) : (
         <DamageChart
           points={snap ? snap.points : null}
