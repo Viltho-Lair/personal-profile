@@ -154,10 +154,10 @@ function Awakening({
           type="button"
           onClick={() => onAwaken(false)}
           disabled={!next || next.mythicG1 > mythicG1 || next.shards > shards}
-          title={next ? `Awaken to ${formatValue(from + 1)}★ for ${cost(next)}` : "Fully awakened"}
+          title={next ? `One more star, ${formatValue(from)}★ to ${formatValue(from + 1)}★, for ${cost(next)}` : "Fully awakened"}
           className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}
         >
-          Awaken 1★{next ? ` · ${cost(next)}` : ""}
+          Awaken +1★{next ? ` · ${cost(next)}` : ""}
         </button>
         <button
           type="button"

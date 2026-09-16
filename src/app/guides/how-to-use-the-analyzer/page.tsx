@@ -163,7 +163,7 @@ export default function Guide() {
           and shards are saved with your profile.
         </li>
         <li>
-          <strong>Awakening from the panel</strong>: <strong>Awaken 1★</strong> spends the Mythic
+          <strong>Awakening from the panel</strong>: <strong>Awaken +1★</strong> spends the Mythic
           Grade 1 in your pile, and the shards where a star needs them, to take the weapon or
           accessory one star; <strong>Awaken to N★</strong> goes as far as what you have summoned
           allows. This is the estimate&apos;s own gear — your profile&apos;s awakening and equipment
