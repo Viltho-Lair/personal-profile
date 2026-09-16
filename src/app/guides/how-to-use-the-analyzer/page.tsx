@@ -150,6 +150,17 @@ export default function Guide() {
           drop you to the weakest you own in one tap, and the cards put the best back.
         </li>
         <li>
+          <strong>Summon</strong> (the market button) draws weapons or accessories the way the game
+          does. Set your summon level, how many you have summoned at that level and your light
+          shards, then summon 33 at a time: each one rolls a rarity by that level&apos;s chances and
+          a grade inside it (Grade 4 40%, Grade 3 30%, Grade 2 20%, Grade 1 10%). Summons count
+          toward the level, and passing a milestone hands over Ellie&apos;s Summon Gift Box:
+          Mythic Grade 1 at levels 5 and 6, two at 7, three half way through 7 and four at 8. A
+          level you start at counts as already collected. Your level, progress and shards are saved
+          with your profile, and <strong>Mark as owned</strong> puts what you summoned into your
+          gear.
+        </li>
+        <li>
           <strong>Skills below the fight</strong> switch between auto and manual when you tap them
           before rendering. Manual skills light up when ready and wait for you to tap them, so you
           can play your real rotation, such as pressing Rave as Wrath of Gods starts. Which skills

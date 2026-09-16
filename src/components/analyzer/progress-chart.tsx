@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Settings } from "lucide-react";
+import { Settings, Store } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { fightStatsOf, nextEvery, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
@@ -19,6 +19,7 @@ import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
 import { EquipSuggestions, LowestEquip } from "./equip-suggestions";
+import { SummonPanel } from "./summon-panel";
 import { castInFightRun, retuneFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
 
@@ -42,7 +43,7 @@ export function ProgressChart() {
   const { profile, setPromotionTarget, setBossMonster, setNormalMonster, setEnemyElement, setStageFarming, toggleManualSkill } = useProfile();
   const factors = useSpiritFactors();
   const [logScale, setLogScale] = useState(false);
-  const [view, setView] = useState<"analysis" | "render">("render");
+  const [view, setView] = useState<"analysis" | "render" | "summon">("render");
   // Which skills are on auto is saved with the skill preset.
   const manual = profile.skillPresetManual[profile.activeSkillPreset] ?? NO_MANUAL;
 
@@ -77,6 +78,7 @@ export function ProgressChart() {
   const nextFarm = next.mode === "farm";
   const nextStages = next.mode === "stages";
 
+  const summonView = view === "summon";
   const render = () => startFightRun(next);
   const toggleAuto = (name: string) => toggleManualSkill(name);
   const castByHand = (name: string) => castInFightRun(name);
@@ -126,25 +128,32 @@ export function ProgressChart() {
   );
 
   return (
-    <section aria-label={farmMode ? "Stage farming" : stagesMode ? "Stages chart" : monsterMode ? "Monster chart" : "Promotion chart"} className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
+    <section
+      aria-label={summonView ? "Summon" : farmMode ? "Stage farming" : stagesMode ? "Stages chart" : monsterMode ? "Monster chart" : "Promotion chart"}
+      className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3"
+    >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <h2 className="text-sm font-semibold">{nextFarm ? "Stage farming" : nextStages ? "Stages" : next.mode === "monster" ? "Normal monster" : "Promotion"}</h2>
+        <h2 className="text-sm font-semibold">
+          {summonView ? "Summon" : nextFarm ? "Stage farming" : nextStages ? "Stages" : next.mode === "monster" ? "Normal monster" : "Promotion"}
+        </h2>
         <div className="flex gap-1" role="group" aria-label="Fight view">
-          {(["analysis", "render"] as const).map((id) => (
+          {(["analysis", "render", "summon"] as const).map((id) => (
             <button
               key={id}
               type="button"
               aria-pressed={view === id}
               onClick={() => setView(id)}
-              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              title={id === "summon" ? "Summon weapons and accessories" : undefined}
+              className={`flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 view === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink hover:text-ink"
               }`}
             >
-              {id === "analysis" ? "Analysis" : "Render"}
+              {id === "summon" ? <Store aria-hidden className="size-3" /> : null}
+              {id === "analysis" ? "Analysis" : id === "render" ? "Render" : "Summon"}
             </button>
           ))}
         </div>
-        {nextStages || nextFarm ? null : (
+        {summonView || nextStages || nextFarm ? null : (
           <select
             aria-label="Desired promotion"
             value={index}
@@ -158,13 +167,13 @@ export function ProgressChart() {
             ))}
           </select>
         )}
-        {view === "render" ? null : (
+        {view === "analysis" ? (
           <label className={`flex items-center gap-1 ${LABEL}`}>
             <input type="checkbox" checked={logScale} onChange={(event) => setLogScale(event.target.checked)} className="accent-ink" />
             Log scale
           </label>
-        )}
-        <div className="flex basis-full flex-wrap items-center gap-x-3 gap-y-1">
+        ) : null}
+        <div className={`flex basis-full flex-wrap items-center gap-x-3 gap-y-1 ${summonView ? "hidden" : ""}`}>
           <label className={`flex items-center gap-1 ${LABEL} ${nextFarm ? "opacity-40" : ""}`} title={nextFarm ? "Stage farming fights normal monsters" : "The promotion's boss; with neither ticked, the stages analysis"}>
             <input type="checkbox" checked={profile.bossMonster && !nextFarm} disabled={nextFarm} onChange={(event) => setBossMonster(event.target.checked)} className="accent-ink" />
             Boss monster
@@ -216,7 +225,7 @@ export function ProgressChart() {
             </select>
           ) : null}
         </div>
-        <span className="ml-auto flex items-center gap-1.5">
+        <span className={`ml-auto flex items-center gap-1.5 ${summonView ? "hidden" : ""}`}>
           {phase === "running" ? (
             <button
               type="button"
@@ -237,6 +246,8 @@ export function ProgressChart() {
         </span>
       </div>
 
+      {summonView ? <SummonPanel /> : (
+        <>
       {view === "render" ? (
         <div className="relative shrink-0">
           <BattleRender
@@ -313,6 +324,8 @@ export function ProgressChart() {
           <Results setup={setup} total={snap.total} duration={duration} manual={manual} breakdown={snap} factors={factors} />
         ) : null
       ) : null}
+        </>
+      )}
     </section>
   );
 }

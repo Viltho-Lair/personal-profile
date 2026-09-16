@@ -1,3 +1,4 @@
+import { MAX_SUMMON_LEVEL, MIN_SUMMON_LEVEL } from "@/lib/game/summon";
 import type { SkillStone } from "@/lib/game/battle";
 import { emptyShrineLevels, SHRINE_KEYS } from "@/lib/game/shrine";
 import { emptyBlackOrb } from "@/lib/game/black-orb";
@@ -283,6 +284,18 @@ function skillStoneSet(value: unknown): Presets["skillStones"][number] {
   return { cooldown: skillStone(stored.cooldown), time: skillStone(stored.time), heat: skillStone(stored.heat) };
 }
 
+/** The summon screen's state; profiles from before it start at summon level 1 with nothing spent. */
+function summon(value: unknown): ProfileV1["summon"] {
+  const stored = isRecord(value) ? value : {};
+  const level = wholeLevel(stored.level) ?? MIN_SUMMON_LEVEL;
+  return {
+    kind: stored.kind === "accessories" ? "accessories" : "weapons",
+    level: Math.min(MAX_SUMMON_LEVEL, Math.max(MIN_SUMMON_LEVEL, level)),
+    progress: wholeLevel(stored.progress) ?? 0,
+    shards: wholeLevel(stored.shards) ?? 0,
+  };
+}
+
 function promotionTarget(value: unknown): ProfileV1["promotionTarget"] {
   const stored = isRecord(value) ? value : {};
   const duration = wholeLevel(stored.duration);
@@ -492,6 +505,7 @@ function parseKnownFields(data: Json): ProfileV1 {
       on: isRecord(data.stageFarming) && data.stageFarming.on === true,
       stage: Math.max(1, (isRecord(data.stageFarming) ? wholeLevel(data.stageFarming.stage) : null) ?? 1),
     },
+    summon: summon(data.summon),
     soulEngraving: soulEngraving(data.soulEngraving),
     skillRefinement: skillRefinement(data.skillRefinement),
     sealedShrine: sealedShrine(data.sealedShrine),

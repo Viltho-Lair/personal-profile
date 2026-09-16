@@ -160,6 +160,7 @@ export function useProfile() {
     setResource: (key: Parameters<typeof rules.setResource>[1], amount: number) => update((p) => rules.setResource(p, key, amount)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
     setStageFarming: (change: Partial<ProfileV1["stageFarming"]>) => update((p) => rules.setStageFarming(p, change)),
+    setSummon: (change: Partial<ProfileV1["summon"]>) => update((p) => rules.setSummon(p, change)),
     resetProfile: () => update(() => emptyProfile()),
     replaceProfile: (next: ProfileV1) => update(() => next),
   };

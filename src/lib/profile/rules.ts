@@ -1,3 +1,4 @@
+import { clampSummonLevel } from "@/lib/game/summon";
 import { FOREST_LEVELS_PER_GRADE, SPIRIT_LEVEL_CAP } from "./types";
 import type { ResourceKey } from "./types";
 import type { OrbAccessory, OrbLine } from "@/lib/game/black-orb";
@@ -675,6 +676,20 @@ export function setEnemyElement(profile: ProfileV1, enemyElement: ProfileV1["ene
 export function setStageFarming(profile: ProfileV1, change: Partial<ProfileV1["stageFarming"]>): ProfileV1 {
   const next = { ...profile.stageFarming, ...change };
   return { ...profile, stageFarming: { on: next.on, stage: Math.max(1, Math.floor(next.stage) || 1) } };
+}
+
+/** The summon screen's state: the level stays in range and nothing counts below zero. */
+export function setSummon(profile: ProfileV1, change: Partial<ProfileV1["summon"]>): ProfileV1 {
+  const next = { ...profile.summon, ...change };
+  return {
+    ...profile,
+    summon: {
+      kind: next.kind === "accessories" ? "accessories" : "weapons",
+      level: clampSummonLevel(next.level),
+      progress: clampLevel(next.progress, null),
+      shards: clampLevel(next.shards, null),
+    },
+  };
 }
 
 export function gearState(

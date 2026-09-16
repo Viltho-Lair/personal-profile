@@ -242,6 +242,8 @@ export type ProfileV1 = {
   enemyElement: "Fire" | "Water" | "Wind" | "Earth" | null;
   /** Stage farming instead of one enemy, and the stage to farm. */
   stageFarming: { on: boolean; stage: number };
+  /** The summon screen: which gear is summoned, the summon level reached, its progress and the light shards left. */
+  summon: { kind: GearKind; level: number; progress: number; shards: number };
   soulEngraving: SoulEngraving;
   /** Refinement lines by attack skill name. */
   skillRefinement: Record<string, RefinementLine[]>;
@@ -332,6 +334,7 @@ export function emptyProfile(): ProfileV1 {
     resources: emptyResources(),
     enemyElement: null,
     stageFarming: { on: false, stage: 1 },
+    summon: { kind: "weapons", level: 1, progress: 0, shards: 0 },
     soulEngraving: emptySoulEngraving(),
     skillRefinement: {},
     sealedShrine: emptyShrineLevels(),
