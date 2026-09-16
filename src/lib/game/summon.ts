@@ -37,8 +37,6 @@ export const MIN_SUMMON_LEVEL = 1;
 export const MAX_SUMMON_LEVEL = 10;
 /** The game summons this many at a time. */
 export const SUMMON_BATCH = 33;
-/** Light shards one summon costs. */
-export const SHARDS_PER_SUMMON = 1;
 
 /** Summons a level takes before the next one; the last level doesn't go anywhere. */
 export const SUMMONS_TO_NEXT: Record<number, number | null> = {
@@ -73,8 +71,6 @@ export type SummonState = {
   level: number;
   /** Summons made at this level, toward the next one. */
   progress: number;
-  /** Light shards left to spend. */
-  shards: number;
 };
 
 /** What a summon produced: its rarity, grade and the gear grade's name ("Epic 3"). */
@@ -84,12 +80,10 @@ export type SummonRun = {
   state: SummonState;
   /** How many of each grade name came out, rewards included. */
   drawn: Record<string, number>;
-  /** Summons actually made (short of what was asked when the shards ran out). */
+  /** Summons made. */
   summons: number;
   /** Milestones passed, and the Mythic Grade 1 items they gave. */
   rewards: { at: number; mythicG1: number }[];
-  /** Why it stopped short: no shards left. */
-  stopped: "shards" | null;
 };
 
 export const summonsToNext = (level: number): number | null => SUMMONS_TO_NEXT[clampSummonLevel(level)] ?? null;
@@ -137,24 +131,17 @@ export function drawSummon(level: number, random: () => number): SummonDraw {
 }
 
 /**
- * Summons `count` times from this state, as far as the light shards go. Every summon raises the level's progress,
- * and each milestone passed adds its Mythic Grade 1 items to what came out.
+ * Summons `count` times from this state. Every summon raises the level's progress, and each milestone passed adds
+ * its Mythic Grade 1 items to what came out.
  */
 export function summon(state: SummonState, count: number, random: () => number = Math.random): SummonRun {
   let level = clampSummonLevel(state.level);
   let progress = Math.max(0, Math.floor(state.progress));
-  let shards = Math.max(0, Math.floor(state.shards));
   const from = summonPosition(level, progress);
   const drawn: Record<string, number> = {};
   let summons = 0;
-  let stopped: "shards" | null = null;
 
   for (let i = 0; i < count; i += 1) {
-    if (shards < SHARDS_PER_SUMMON) {
-      stopped = "shards";
-      break;
-    }
-    shards -= SHARDS_PER_SUMMON;
     summons += 1;
     const draw = drawSummon(level, random);
     drawn[draw.name] = (drawn[draw.name] ?? 0) + 1;
@@ -170,7 +157,69 @@ export function summon(state: SummonState, count: number, random: () => number =
   const gifts = rewards.reduce((sum, reward) => sum + reward.mythicG1, 0);
   if (gifts) drawn[MYTHIC_G1] = (drawn[MYTHIC_G1] ?? 0) + gifts;
 
-  return { state: { level, progress, shards }, drawn, summons, rewards, stopped };
+  return { state: { level, progress }, drawn, summons, rewards };
+}
+
+/* ------------------------------------------------------------ Awakening */
+
+/**
+ * What Mythic Grade 1 weapons and accessories are for: awakening the Immortal one, star by star to 30. Most stars
+ * take one, the three stars that change its look take four, and the last stars take light shards, which come from
+ * breaking Mythic Grade 1 gear.
+ */
+export const MAX_AWAKENING_STAR = 30;
+/** Stars whose look changes, each taking four Mythic Grade 1. */
+export const LOOK_CHANGE_STARS = [6, 12, 18];
+const LOOK_CHANGE_MYTHIC = 4;
+/** Stars paid for in light shards alone. */
+const SHARD_ONLY_STARS: Record<number, number> = { 24: 10_000, 30: 10_000 };
+/** Stars taking a Mythic Grade 1 and light shards together. */
+const SHARDS_WITH_MYTHIC = { from: 25, to: 29, shards: 1_000 };
+
+export type AwakeningCost = { mythicG1: number; shards: number };
+
+/** What the step to this star costs (star 1 is the first awakening, 30 the last). */
+export function awakeningStepCost(star: number): AwakeningCost {
+  const whole = Math.floor(star);
+  if (whole < 1 || whole > MAX_AWAKENING_STAR) return { mythicG1: 0, shards: 0 };
+  if (SHARD_ONLY_STARS[whole]) return { mythicG1: 0, shards: SHARD_ONLY_STARS[whole] };
+  if (whole >= SHARDS_WITH_MYTHIC.from && whole <= SHARDS_WITH_MYTHIC.to) return { mythicG1: 1, shards: SHARDS_WITH_MYTHIC.shards };
+  return { mythicG1: LOOK_CHANGE_STARS.includes(whole) ? LOOK_CHANGE_MYTHIC : 1, shards: 0 };
+}
+
+/** Everything the stars from one awakening to another take together. */
+export function awakeningCost(from: number, to: number): AwakeningCost {
+  const cost = { mythicG1: 0, shards: 0 };
+  for (let star = Math.max(0, Math.floor(from)) + 1; star <= Math.min(MAX_AWAKENING_STAR, Math.floor(to)); star += 1) {
+    const step = awakeningStepCost(star);
+    cost.mythicG1 += step.mythicG1;
+    cost.shards += step.shards;
+  }
+  return cost;
+}
+
+/** How far the Mythic Grade 1 gear and light shards in hand awaken it, and what the next star still needs. */
+export function awakeningReach(from: number, mythicG1: number, shards: number) {
+  let star = Math.max(0, Math.min(MAX_AWAKENING_STAR, Math.floor(from)));
+  let mythicLeft = Math.max(0, Math.floor(mythicG1));
+  let shardsLeft = Math.max(0, Math.floor(shards));
+  while (star < MAX_AWAKENING_STAR) {
+    const step = awakeningStepCost(star + 1);
+    if (step.mythicG1 > mythicLeft || step.shards > shardsLeft) break;
+    mythicLeft -= step.mythicG1;
+    shardsLeft -= step.shards;
+    star += 1;
+  }
+  const next = star < MAX_AWAKENING_STAR ? awakeningStepCost(star + 1) : null;
+  return {
+    star,
+    stars: star - Math.max(0, Math.floor(from)),
+    mythicLeft,
+    shardsLeft,
+    next,
+    /** What the next star is still short of. */
+    short: next ? { mythicG1: Math.max(0, next.mythicG1 - mythicLeft), shards: Math.max(0, next.shards - shardsLeft) } : null,
+  };
 }
 
 /** Every grade name a summon can give, best first: "Mythic 1" down to "Common 4". */

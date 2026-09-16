@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import {
+  awakeningCost,
+  awakeningReach,
+  MAX_AWAKENING_STAR,
   MAX_SUMMON_LEVEL,
   MIN_SUMMON_LEVEL,
-  SHARDS_PER_SUMMON,
+  MYTHIC_G1,
   SUMMON_BATCH,
   SUMMON_CHANCES,
   SUMMON_RARITIES,
@@ -52,6 +55,43 @@ function Drawn({ name, gear, count }: { name: string; gear: Gear | undefined; co
 }
 
 /**
+ * What the Mythic Grade 1 gear summoned so far, and the light shards held, awaken the Immortal weapon or accessory
+ * to: most stars take one Mythic Grade 1, the three that change its look take four, and the last stars take light
+ * shards, which come from breaking Mythic Grade 1 gear.
+ */
+function Awakening({ kind, mythicG1, shards }: { kind: GearKind; mythicG1: number; shards: number }) {
+  const { profile } = useProfile();
+  const from = Math.min(MAX_AWAKENING_STAR, kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening);
+  const reach = awakeningReach(from, mythicG1, shards);
+  const toMax = awakeningCost(from, MAX_AWAKENING_STAR);
+  const cost = (value: { mythicG1: number; shards: number }) =>
+    [value.mythicG1 ? `${formatValue(value.mythicG1)} Mythic G1` : "", value.shards ? `${formatValue(value.shards)} shards` : ""]
+      .filter(Boolean)
+      .join(" + ") || "nothing";
+
+  return (
+    <div className="flex flex-col gap-1 rounded-md border border-ink/15 p-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className={LABEL}>Awakening this {kind === "weapons" ? "weapon" : "accessory"}</h3>
+        <span className="font-mono text-[11px] text-ink tabular-nums">
+          {formatValue(from)}★{reach.stars > 0 ? ` → ${formatValue(reach.star)}★` : ""}{" "}
+          <span className="text-[10px] text-dim">of {MAX_AWAKENING_STAR}★</span>
+        </span>
+      </div>
+      <p className="font-mono text-[10px] text-dim">
+        {formatValue(mythicG1)} Mythic Grade 1 summoned · {formatValue(shards)} light shards ·{" "}
+        {reach.stars > 0 ? `${formatValue(reach.stars)} more star${reach.stars === 1 ? "" : "s"}` : "not enough for the next star"}
+      </p>
+      <p className="font-mono text-[10px] text-dim">
+        {reach.next ? `Star ${formatValue(reach.star + 1)} takes ${cost(reach.next)}` : "Fully awakened"}
+        {reach.short && (reach.short.mythicG1 || reach.short.shards) ? ` · short of ${cost(reach.short)}` : ""}
+        {from < MAX_AWAKENING_STAR ? ` · ${formatValue(from)}★ to ${MAX_AWAKENING_STAR}★ takes ${cost(toMax)}` : ""}
+      </p>
+    </div>
+  );
+}
+
+/**
  * The summon screen: set the summon level, how far into it you are and the light shards you hold, then summon
  * {@link SUMMON_BATCH} at a time. Every summon draws a rarity by the level's chances and a grade inside it, counts
  * toward the level, and each milestone passed hands over Ellie's Summon Gift Box.
@@ -71,8 +111,8 @@ export function SummonPanel() {
   const item = kind === "weapons" ? "weapon" : "accessory";
 
   const run = (count: number) => {
-    const result = summon(state, count);
-    setSummon({ level: result.state.level, progress: result.state.progress, shards: result.state.shards });
+    const result = summon({ level: state.level, progress: state.progress }, count);
+    setSummon({ level: result.state.level, progress: result.state.progress });
     setLast(result);
     setSummons((n) => n + result.summons);
     setGifts((n) => n + result.rewards.reduce((sum, reward) => sum + reward.mythicG1, 0));
@@ -159,12 +199,7 @@ export function SummonPanel() {
               Clear
             </button>
           ) : null}
-          <button
-            type="button"
-            onClick={() => run(SUMMON_BATCH)}
-            disabled={state.shards < SHARDS_PER_SUMMON}
-            className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}
-          >
+          <button type="button" onClick={() => run(SUMMON_BATCH)} className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}>
             Summon {SUMMON_BATCH}
           </button>
         </span>
@@ -198,11 +233,7 @@ export function SummonPanel() {
           {last.rewards.map((reward) => `level ${reward.at} gave ${reward.mythicG1} Mythic Grade 1`).join(" · ")}
         </p>
       ) : null}
-      {last?.stopped === "shards" ? (
-        <p className="font-mono text-[10px] text-amber-500">
-          The light shards ran out after {formatValue(last.summons)} of {SUMMON_BATCH}.
-        </p>
-      ) : null}
+      <Awakening kind={kind} mythicG1={totals[MYTHIC_G1] ?? 0} shards={state.shards} />
 
       <div className="grid min-h-0 gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
         <div className="flex min-w-0 flex-col gap-3">
@@ -222,7 +253,7 @@ export function SummonPanel() {
           ) : (
             <p className="font-mono text-[10px] text-dim">
               Set your summon level, how far into it you are and your light shards, then summon {SUMMON_BATCH} {item}s at a
-              time. One summon costs {SHARDS_PER_SUMMON} light shard.
+              time.
             </p>
           )}
 

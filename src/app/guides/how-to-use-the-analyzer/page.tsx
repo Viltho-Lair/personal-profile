@@ -156,9 +156,17 @@ export default function Guide() {
           a grade inside it (Grade 4 40%, Grade 3 30%, Grade 2 20%, Grade 1 10%). Summons count
           toward the level, and passing a milestone hands over Ellie&apos;s Summon Gift Box:
           Mythic Grade 1 at levels 5 and 6, two at 7, three half way through 7 and four at 8. A
-          level you start at counts as already collected. Your level, progress and shards are saved
-          with your profile, and <strong>Mark as owned</strong> puts what you summoned into your
-          gear.
+          level you start at counts as already collected. Summoning costs no light shards. Your
+          level, progress and shards are saved with your profile, and <strong>Mark as owned</strong>{" "}
+          puts what you summoned into your gear.
+        </li>
+        <li>
+          <strong>Awakening</strong> is what the Mythic Grade 1 gear is for. Each star of your
+          Immortal weapon or accessory takes one, except the three that change its look (6★, 12★ and
+          18★), which take four. The last stars take light shards, which come from breaking Mythic
+          Grade 1 gear: 10,000 for 24★, one Mythic Grade 1 and 1,000 shards for each of 25★ to 29★,
+          and 10,000 for 30★. All the way from 0★ to 30★ is 37 Mythic Grade 1 and 25,000 shards.
+          The Summon view shows how far what you have summoned takes your awakening.
         </li>
         <li>
           <strong>Skills below the fight</strong> switch between auto and manual when you tap them
