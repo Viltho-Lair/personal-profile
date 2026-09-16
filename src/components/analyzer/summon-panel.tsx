@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   awakeningCost,
   awakeningReach,
+  awakeningStepCost,
+  DIAMONDS_PER_SUMMON,
   BREAK_SHARDS,
   breakMythic,
   EXPECTED_BREAK_SHARDS,
@@ -102,26 +104,32 @@ function Pile({ tally, grades }: { tally: Record<string, number>; grades: Map<st
  */
 function Awakening({
   kind,
+  from,
+  profileStar,
   mythicG1,
   shards,
   level,
   progress,
   broken,
   onBreak,
+  onAwaken,
 }: {
   kind: GearKind;
+  /** The star this run has reached: the profile's to start with, then whatever the summoned gear has awakened. */
+  from: number;
+  profileStar: number;
   mythicG1: number;
   shards: number;
   level: number;
   progress: number;
   broken: { count: number; shards: number; last: number | null };
   onBreak: () => void;
+  onAwaken: (all: boolean) => void;
 }) {
-  const { profile } = useProfile();
-  const from = Math.min(MAX_AWAKENING_STAR, kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening);
   const [goal, setGoal] = useState(Math.min(MAX_AWAKENING_STAR, from + 1));
   const target = Math.min(MAX_AWAKENING_STAR, Math.max(from, goal));
   const reach = awakeningReach(from, mythicG1, shards);
+  const next = reach.next;
   const toMax = awakeningCost(from, MAX_AWAKENING_STAR);
   const plan = planSummons({ fromStar: from, toStar: target, level, progress, shards, mythicG1 });
   const cost = (value: { mythicG1: number; shards: number }) =>
@@ -135,8 +143,32 @@ function Awakening({
         <h3 className={LABEL}>Awakening this {kind === "weapons" ? "weapon" : "accessory"}</h3>
         <span className="font-mono text-[11px] text-ink tabular-nums">
           {formatValue(from)}★{reach.stars > 0 ? ` → ${formatValue(reach.star)}★` : ""}{" "}
-          <span className="text-[10px] text-dim">of {MAX_AWAKENING_STAR}★</span>
+          <span className="text-[10px] text-dim">
+            of {MAX_AWAKENING_STAR}★{from !== profileStar ? ` · ${formatValue(profileStar)}★ in your profile` : ""}
+          </span>
         </span>
+      </div>
+      {/* Spending what's been summoned, for the estimate only: your profile's own awakening and gear stay as they are. */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => onAwaken(false)}
+          disabled={!next || next.mythicG1 > mythicG1 || next.shards > shards}
+          title={next ? `Awaken to ${formatValue(from + 1)}★ for ${cost(next)}` : "Fully awakened"}
+          className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}
+        >
+          Awaken 1★{next ? ` · ${cost(next)}` : ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => onAwaken(true)}
+          disabled={reach.stars < 1}
+          title="Awaken as far as the gear summoned and the shards go"
+          className={`${BUTTON} border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink`}
+        >
+          Awaken to {formatValue(reach.star)}★
+        </button>
+        <span className="font-mono text-[9px] text-dim">Estimation only: it spends what you summoned here, not your profile.</span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <p className="font-mono text-[10px] text-dim">
@@ -169,7 +201,7 @@ function Awakening({
         A break gives {BREAK_SHARDS.map((row) => `${formatValue(row.shards)} at ${row.chance}%`).join(", ")}.
       </p>
       <p className="font-mono text-[10px] text-dim">
-        {reach.next ? `Star ${formatValue(reach.star + 1)} takes ${cost(reach.next)}` : "Fully awakened"}
+        {reach.next ? `The star after that takes ${cost(reach.next)}` : "Fully awakened"}
         {reach.short && (reach.short.mythicG1 || reach.short.shards) ? ` · short of ${cost(reach.short)}` : ""}
         {from < MAX_AWAKENING_STAR ? ` · ${formatValue(from)}★ to ${MAX_AWAKENING_STAR}★ takes ${cost(toMax)}` : ""}
       </p>
@@ -217,7 +249,7 @@ function Awakening({
  * toward the level, and each milestone passed hands over Ellie's Summon Gift Box.
  */
 export function SummonPanel() {
-  const { profile, setSummon, setOwned } = useProfile();
+  const { profile, setSummon } = useProfile();
   const state = profile.summon;
   const kind = state.kind;
   const [last, setLast] = useState<SummonRun | null>(null);
@@ -225,6 +257,9 @@ export function SummonPanel() {
   const [summons, setSummons] = useState(0);
   const [gifts, setGifts] = useState(0);
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
+  // Diamonds this run has spent summoning, and the stars it has awakened to (null: still the profile's own).
+  const [spent, setSpent] = useState(0);
+  const [stars, setStars] = useState<Record<GearKind, number | null>>({ weapons: null, accessories: null });
   // Mythic Grade 1 is only broken by hand, one at a time: what's been broken, the shards they gave and the last one.
   const [broken, setBroken] = useState<{ count: number; shards: number; last: number | null }>({ count: 0, shards: 0, last: null });
 
@@ -232,12 +267,18 @@ export function SummonPanel() {
   const chances = SUMMON_CHANCES[state.level]!;
   const grades = gearByGrade(kind);
   const item = kind === "weapons" ? "weapon" : "accessory";
+  // Mythic Grade 1 in the pile right now: merging and breaking only happen when they're pressed.
+  const mythicG1 = totals[MYTHIC_G1] ?? 0;
+  // The star this run has awakened to, starting from the profile's own.
+  const profileStar = Math.min(MAX_AWAKENING_STAR, kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening);
+  const star = stars[kind] ?? profileStar;
 
   const run = (count: number) => {
     const result = summon({ level: state.level, progress: state.progress }, count);
     setSummon({ level: result.state.level, progress: result.state.progress });
     setLast(result);
     setSummons((n) => n + result.summons);
+    setSpent((n) => n + Math.round(result.summons * DIAMONDS_PER_SUMMON));
     setGifts((n) => n + result.rewards.reduce((sum, reward) => sum + reward.mythicG1, 0));
     setTotals((current) => {
       const next = { ...current };
@@ -263,7 +304,33 @@ export function SummonPanel() {
     setTotals({});
     setSummons(0);
     setGifts(0);
+    setSpent(0);
+    setStars({ weapons: null, accessories: null });
     setBroken({ count: 0, shards: 0, last: null });
+  };
+
+  /**
+   * Awakens a star, or as far as what's been summoned goes, spending the Mythic Grade 1 in the pile and the light
+   * shards. It's the estimate's own gear: the profile's awakening and equipment aren't touched.
+   */
+  const awaken = (all: boolean) => {
+    let current = star;
+    let mythic = mythicG1;
+    let left = state.shards;
+    let any = false;
+    while (current < MAX_AWAKENING_STAR) {
+      const cost = awakeningStepCost(current + 1);
+      if (cost.mythicG1 > mythic || cost.shards > left) break;
+      mythic -= cost.mythicG1;
+      left -= cost.shards;
+      current += 1;
+      any = true;
+      if (!all) break;
+    }
+    if (!any) return;
+    setTotals((pile) => ({ ...pile, [MYTHIC_G1]: mythic }));
+    setSummon({ shards: left });
+    setStars((reached) => ({ ...reached, [kind]: current }));
   };
 
   /** Merges the pile as far as it goes, five of a grade into one of the next. Nothing merges until this is pressed. */
@@ -278,12 +345,6 @@ export function SummonPanel() {
     setSummon({ shards: state.shards + shards });
   };
 
-  const ownAll = () => {
-    for (const name of Object.keys(totals)) if (grades.has(name)) setOwned(kind, name, true);
-  };
-
-  // Mythic Grade 1 in the pile right now: merging and breaking only happen when they're pressed.
-  const mythicG1 = totals[MYTHIC_G1] ?? 0;
   // What pressing Merge would leave, so the button can say what it gives and go dim when nothing would change.
   const merged = mergeUp(totals);
   const mergeGives = Math.max(0, (merged[MYTHIC_G1] ?? 0) - mythicG1);
@@ -405,6 +466,11 @@ export function SummonPanel() {
           {state.level === 7 ? <span aria-hidden className="absolute inset-y-0 left-1/2 w-px bg-ink/50" /> : null}
         </div>
         <p className={LABEL}>
+          {summons > 0 ? (
+            <>
+              <span className="text-tier-immortal">{formatValue(spent)} diamonds spent</span> · {formatValue(summons)} summons ·{" "}
+            </>
+          ) : null}
           Level {state.level}
           {toNext
             ? ` · ${formatValue(state.progress)} / ${formatValue(toNext)} ${item}s · ${formatValue(Math.max(0, toNext - state.progress))} to level ${state.level + 1}`
@@ -421,6 +487,9 @@ export function SummonPanel() {
       ) : null}
       <Awakening
         kind={kind}
+        from={star}
+        profileStar={profileStar}
+        onAwaken={awaken}
         mythicG1={mythicG1}
         shards={state.shards}
         level={state.level}
@@ -455,7 +524,8 @@ export function SummonPanel() {
             <div className="flex flex-col gap-1">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className={LABEL}>
-                  Everything summoned · {formatValue(summons)} summons{gifts ? ` · ${formatValue(gifts)} from gift boxes` : ""}
+                  Everything summoned · {formatValue(summons)} summons{gifts ? ` · ${formatValue(gifts)} from gift boxes` : ""} ·{" "}
+                  <span className="text-tier-immortal">{formatValue(spent)} diamonds spent</span>
                 </h3>
                 <span className="flex items-center gap-1.5">
                   <button
@@ -470,9 +540,6 @@ export function SummonPanel() {
                     className={`${BUTTON} border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink`}
                   >
                     Merge 5 → 1{mergeGives ? ` (+${formatValue(mergeGives)} Mythic 1)` : ""}
-                  </button>
-                  <button type="button" onClick={ownAll} className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}>
-                    Mark as owned
                   </button>
                 </span>
               </div>

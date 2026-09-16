@@ -158,9 +158,17 @@ export default function Guide() {
           grade inside it (Grade 4 40%, Grade 3 30%, Grade 2 20%, Grade 1 10%). Summons count toward
           the level, and passing a milestone hands over Ellie&apos;s Summon Gift Box: Mythic Grade 1
           at levels 5 and 6, two at 7, three half way through 7 and four at 8. A level you start at
-          counts as already collected. Summoning costs no light shards. Your level, progress and
-          shards are saved with your profile, and <strong>Mark as owned</strong> puts what you
-          summoned into your gear.
+          counts as already collected. Summoning costs no light shards, and the panel keeps a running
+          count of the diamonds it has spent: 500 for 11, 1,500 for 33. Your summon level, progress
+          and shards are saved with your profile.
+        </li>
+        <li>
+          <strong>Awakening from the panel</strong>: <strong>Awaken 1★</strong> spends the Mythic
+          Grade 1 in your pile, and the shards where a star needs them, to take the weapon or
+          accessory one star; <strong>Awaken to N★</strong> goes as far as what you have summoned
+          allows. This is the estimate&apos;s own gear — your profile&apos;s awakening and equipment
+          are left alone — so you can summon, merge, break and awaken to see what a star really
+          costs. <strong>Clear</strong> puts it all back.
         </li>
         <li>
           <strong>Merging</strong> runs all the way up: five of a grade make one of the next, from
