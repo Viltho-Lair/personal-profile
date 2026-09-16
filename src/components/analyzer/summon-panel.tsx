@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   awakeningCost,
   awakeningReach,
+  BREAK_SHARDS,
   breakMythic,
   EXPECTED_BREAK_SHARDS,
   MAX_AWAKENING_STAR,
@@ -64,6 +65,36 @@ function Drawn({ name, gear, count }: { name: string; gear: Gear | undefined; co
   );
 }
 
+/** Grades within a rarity, as the equipment tab lays them out: Grade 4 first, Grade 1 last. */
+const GRADES = [4, 3, 2, 1] as const;
+
+/**
+ * The pile, laid out like the Equipment tab: a row of four per rarity, Common Grade 4 at the top left through to
+ * Mythic Grade 1. A grade with none of it left sits empty.
+ */
+function Pile({ tally, grades }: { tally: Record<string, number>; grades: Map<string, Gear> }) {
+  return (
+    <div className="flex w-full flex-col gap-2 sm:max-w-md">
+      {SUMMON_RARITIES.map((rarity) => (
+        <section key={rarity} className="flex flex-col gap-1">
+          <h4 className={`font-mono text-[10px] tracking-[0.12em] uppercase ${TIER_TEXT[rarity] ?? "text-dim"}`}>{rarity}</h4>
+          <div className="grid grid-cols-4 gap-1 sm:gap-2">
+            {GRADES.map((grade) => {
+              const name = `${rarity} ${grade}`;
+              const count = tally[name] ?? 0;
+              return (
+                <span key={name} className={count > 0 ? "" : "opacity-35"}>
+                  <Drawn name={name} gear={grades.get(name)} count={count} />
+                </span>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 /**
  * What the Mythic Grade 1 gear summoned so far, and the light shards held, awaken the Immortal weapon or accessory
  * to: most stars take one Mythic Grade 1, the three that change its look take four, and the last stars take light
@@ -83,7 +114,7 @@ function Awakening({
   shards: number;
   level: number;
   progress: number;
-  broken: { count: number; shards: number };
+  broken: { count: number; shards: number; last: number | null };
   onBreak: () => void;
 }) {
   const { profile } = useProfile();
@@ -124,11 +155,19 @@ function Awakening({
       </div>
       {broken.count > 0 ? (
         <p className="font-mono text-[10px] text-dim">
-          Broken {formatValue(broken.count)} · {formatValue(broken.shards)} shards · your average{" "}
+          {broken.last !== null ? (
+            <>
+              That break gave <span className="text-tier-mythic">+{formatValue(broken.last)}</span> light shards ·{" "}
+            </>
+          ) : null}
+          broken {formatValue(broken.count)} for {formatValue(broken.shards)} · your average{" "}
           <span className="text-ink">{formatValue(Math.round(broken.shards / broken.count))}</span> against{" "}
           {formatValue(Math.round(EXPECTED_BREAK_SHARDS * 10) / 10)} expected
         </p>
       ) : null}
+      <p className="font-mono text-[9px] text-dim">
+        A break gives {BREAK_SHARDS.map((row) => `${formatValue(row.shards)} at ${row.chance}%`).join(", ")}.
+      </p>
       <p className="font-mono text-[10px] text-dim">
         {reach.next ? `Star ${formatValue(reach.star + 1)} takes ${cost(reach.next)}` : "Fully awakened"}
         {reach.short && (reach.short.mythicG1 || reach.short.shards) ? ` · short of ${cost(reach.short)}` : ""}
@@ -186,8 +225,8 @@ export function SummonPanel() {
   const [summons, setSummons] = useState(0);
   const [gifts, setGifts] = useState(0);
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
-  // Mythic Grade 1 is only broken by hand, one at a time: what's been broken, and the shards they gave.
-  const [broken, setBroken] = useState({ count: 0, shards: 0 });
+  // Mythic Grade 1 is only broken by hand, one at a time: what's been broken, the shards they gave and the last one.
+  const [broken, setBroken] = useState<{ count: number; shards: number; last: number | null }>({ count: 0, shards: 0, last: null });
 
   const toNext = summonsToNext(state.level);
   const chances = SUMMON_CHANCES[state.level]!;
@@ -224,13 +263,18 @@ export function SummonPanel() {
     setTotals({});
     setSummons(0);
     setGifts(0);
-    setBroken({ count: 0, shards: 0 });
+    setBroken({ count: 0, shards: 0, last: null });
   };
+
+  /** Merges the pile as far as it goes, five of a grade into one of the next. Nothing merges until this is pressed. */
+  const mergeAll = () => setTotals((current) => mergeUp(current));
 
   /** Breaks one Mythic Grade 1 for light shards, as the game has you do them one at a time. */
   const breakOne = () => {
+    if ((totals[MYTHIC_G1] ?? 0) < 1) return;
     const shards = breakMythic(Math.random());
-    setBroken((current) => ({ count: current.count + 1, shards: current.shards + shards }));
+    setTotals((current) => ({ ...current, [MYTHIC_G1]: (current[MYTHIC_G1] ?? 0) - 1 }));
+    setBroken((current) => ({ count: current.count + 1, shards: current.shards + shards, last: shards }));
     setSummon({ shards: state.shards + shards });
   };
 
@@ -238,12 +282,12 @@ export function SummonPanel() {
     for (const name of Object.keys(totals)) if (grades.has(name)) setOwned(kind, name, true);
   };
 
-  const sorted = Object.entries(totals).sort((a, b) => GEAR[kind].findIndex((g) => g.grade === b[0]) - GEAR[kind].findIndex((g) => g.grade === a[0]));
-  // Five of a grade merge into one of the next, so what's summoned is worth more than the Mythic Grade 1 it drew.
+  // Mythic Grade 1 in the pile right now: merging and breaking only happen when they're pressed.
+  const mythicG1 = totals[MYTHIC_G1] ?? 0;
+  // What pressing Merge would leave, so the button can say what it gives and go dim when nothing would change.
   const merged = mergeUp(totals);
-  const mergedSorted = Object.entries(merged).sort((a, b) => MERGE_LADDER.indexOf(b[0]) - MERGE_LADDER.indexOf(a[0]));
-  // What's left to awaken or break: the Mythic Grade 1 merged out of the pile, less the ones already broken.
-  const mythicG1 = Math.max(0, (merged[MYTHIC_G1] ?? 0) - broken.count);
+  const mergeGives = Math.max(0, (merged[MYTHIC_G1] ?? 0) - mythicG1);
+  const canMerge = MERGE_LADDER.some((name) => (totals[name] ?? 0) !== (merged[name] ?? 0));
 
   return (
     <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
@@ -409,31 +453,30 @@ export function SummonPanel() {
 
           {summons > 0 ? (
             <div className="flex flex-col gap-1">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className={LABEL}>
                   Everything summoned · {formatValue(summons)} summons{gifts ? ` · ${formatValue(gifts)} from gift boxes` : ""}
                 </h3>
-                <button type="button" onClick={ownAll} className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}>
-                  Mark as owned
-                </button>
+                <span className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={mergeAll}
+                    disabled={!canMerge}
+                    title={
+                      canMerge
+                        ? `Merge five of a grade into one of the next, as far as it goes${mergeGives ? `: ${formatValue(mergeGives)} more Mythic Grade 1` : ""}`
+                        : "Nothing left to merge"
+                    }
+                    className={`${BUTTON} border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink`}
+                  >
+                    Merge 5 → 1{mergeGives ? ` (+${formatValue(mergeGives)} Mythic 1)` : ""}
+                  </button>
+                  <button type="button" onClick={ownAll} className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}>
+                    Mark as owned
+                  </button>
+                </span>
               </div>
-              <p className="font-mono text-[10px] text-dim">
-                Merged 5 to 1:{" "}
-                {mergedSorted.length
-                  ? mergedSorted
-                      .slice(0, 6)
-                      .map(([name, count]) => `${formatValue(count)} × ${name}`)
-                      .join(" · ")
-                  : "nothing yet"}
-              </p>
-              <dl className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-x-3 font-mono text-[10px]">
-                {sorted.map(([name, count]) => (
-                  <div key={name} className="flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5">
-                    <dt className={TIER_TEXT[rarityOf(name)] ?? "text-dim"}>{name}</dt>
-                    <dd className="text-ink tabular-nums">{formatValue(count)}</dd>
-                  </div>
-                ))}
-              </dl>
+              <Pile tally={totals} grades={grades} />
             </div>
           ) : null}
         </div>

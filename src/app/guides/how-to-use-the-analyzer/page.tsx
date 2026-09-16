@@ -164,11 +164,13 @@ export default function Guide() {
         </li>
         <li>
           <strong>Merging</strong> runs all the way up: five of a grade make one of the next, from
-          Common Grade 4 to Mythic Grade 1. The panel shows your pile merged as far as it goes, so
-          what you summon is worth more than the Mythic Grade 1 it drew outright, and the diamond
-          estimate counts it. <strong>Break 1</strong> breaks a single Mythic Grade 1 for light
-          shards, as the game has you do them one at a time, and keeps your own average beside the
-          expected one.
+          Common Grade 4 to Mythic Grade 1. Nothing merges on its own — press{" "}
+          <strong>Merge 5 → 1</strong> and your pile merges as far as it goes, laid out like the
+          Equipment tab, four grades to a row from Common Grade 4. The diamond estimate assumes you
+          will merge, so a summon counts for what it becomes rather than only the Mythic Grade 1 it
+          draws. <strong>Break 1</strong> breaks a single Mythic Grade 1 for light shards, as the
+          game has you do them one at a time, and says what that break gave alongside your average
+          and the expected 1,670.
         </li>
         <li>
           <strong>Awakening</strong> is what the Mythic Grade 1 gear is for. Each star of your
