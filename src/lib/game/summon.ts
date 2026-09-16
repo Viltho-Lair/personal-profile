@@ -205,6 +205,48 @@ export function awakeningCost(from: number, to: number): AwakeningCost {
   return cost;
 }
 
+/* -------------------------------------------------------------- Merging */
+
+/** Grades weakest first: five of one merge into one of the next, from Common Grade 4 up to Mythic Grade 1. */
+export const MERGE_LADDER: readonly string[] = SUMMON_RARITIES.flatMap((rarity) =>
+  [...GRADE_CHANCES].map((entry) => entry.grade).sort((a, b) => b - a).map((grade) => `${rarity} ${grade}`),
+);
+export const MERGE_COUNT = 5;
+
+/** What one of this grade is worth in Mythic Grade 1 once it's all merged up: a fifth of the grade above it. */
+export function mythicG1Value(name: string): number {
+  const index = MERGE_LADDER.indexOf(name);
+  return index < 0 ? 0 : MERGE_COUNT ** -(MERGE_LADDER.length - 1 - index);
+}
+
+/** Merges a pile as far as it goes, five to one up the ladder, and gives what's left at each grade. */
+export function mergeUp(tally: Record<string, number>): Record<string, number> {
+  const merged: Record<string, number> = {};
+  let carry = 0;
+  MERGE_LADDER.forEach((name, index) => {
+    const count = (tally[name] ?? 0) + carry;
+    const last = index === MERGE_LADDER.length - 1;
+    carry = last ? 0 : Math.floor(count / MERGE_COUNT);
+    const left = last ? count : count % MERGE_COUNT;
+    if (left > 0) merged[name] = left;
+  });
+  return merged;
+}
+
+/** Mythic Grade 1 one summon is worth at this level, everything merged up. */
+export function expectedMythicG1PerSummon(level: number): number {
+  const chances = SUMMON_CHANCES[clampSummonLevel(level)];
+  return SUMMON_RARITIES.reduce(
+    (total, rarity) =>
+      total +
+      GRADE_CHANCES.reduce(
+        (sum, entry) => sum + (chances[rarity] / 100) * (entry.chance / 100) * mythicG1Value(`${rarity} ${entry.grade}`),
+        0,
+      ),
+    0,
+  );
+}
+
 /** Breaking a Mythic Grade 1 weapon or accessory gives light shards, how many by chance (percent). */
 export const BREAK_SHARDS: readonly { chance: number; shards: number }[] = [
   { chance: 25, shards: 1280 },
@@ -267,8 +309,9 @@ const PLAN_STEPS = 64;
 
 /**
  * How much summoning a star goal takes, on average: the Mythic Grade 1 gear the stars need, the extra gear broken
- * for the light shards they need, and the summons that many takes at the summon levels passed on the way (each
- * level's Mythic Grade 1 chance, with Ellie's Summon Gift Box counted as it goes).
+ * for the light shards they need, and the summons that many takes at the summon levels passed on the way. Every
+ * summon counts for what it merges into, not only the Mythic Grade 1 it draws, and Ellie's Summon Gift Box counts
+ * as it goes.
  */
 export function planSummons(goal: SummonGoal): SummonPlan {
   const need = awakeningCost(goal.fromStar, goal.toStar);
@@ -284,7 +327,8 @@ export function planSummons(goal: SummonGoal): SummonPlan {
   let gifts = 0;
 
   for (let step = 0; step < PLAN_STEPS && have < mythicG1Short; step += 1) {
-    const chance = mythicG1Chance(level);
+    // Everything summoned merges upward, so a summon is worth more than its own Mythic Grade 1 chance.
+    const chance = expectedMythicG1PerSummon(level);
     const toNext = summonsToNext(level);
     const left = mythicG1Short - have;
     // Summons this level would take to finish the goal, on average.

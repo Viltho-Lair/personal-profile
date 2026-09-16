@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   awakeningCost,
   awakeningReach,
+  breakMythic,
   EXPECTED_BREAK_SHARDS,
   MAX_AWAKENING_STAR,
+  MERGE_LADDER,
+  mergeUp,
   MAX_SUMMON_LEVEL,
   MIN_SUMMON_LEVEL,
   MYTHIC_G1,
@@ -29,6 +32,10 @@ const FIELD =
   "w-24 rounded-md border border-ink/20 bg-transparent px-1.5 py-1 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink";
 const BUTTON =
   "rounded-md border px-3 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40";
+
+/** Auto summoning: this many batches every tick, so it moves without freezing the page. */
+const AUTO_BATCHES = 10;
+const AUTO_INTERVAL_MS = 200;
 
 const GEAR: Record<GearKind, readonly Gear[]> = { weapons: WEAPONS, accessories: ACCESSORIES };
 const gearByGrade = (kind: GearKind) => new Map(GEAR[kind].map((gear) => [gear.grade, gear]));
@@ -68,12 +75,16 @@ function Awakening({
   shards,
   level,
   progress,
+  broken,
+  onBreak,
 }: {
   kind: GearKind;
   mythicG1: number;
   shards: number;
   level: number;
   progress: number;
+  broken: { count: number; shards: number };
+  onBreak: () => void;
 }) {
   const { profile } = useProfile();
   const from = Math.min(MAX_AWAKENING_STAR, kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening);
@@ -96,10 +107,28 @@ function Awakening({
           <span className="text-[10px] text-dim">of {MAX_AWAKENING_STAR}★</span>
         </span>
       </div>
-      <p className="font-mono text-[10px] text-dim">
-        {formatValue(mythicG1)} Mythic Grade 1 summoned · {formatValue(shards)} light shards ·{" "}
-        {reach.stars > 0 ? `${formatValue(reach.stars)} more star${reach.stars === 1 ? "" : "s"}` : "not enough for the next star"}
-      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="font-mono text-[10px] text-dim">
+          {formatValue(mythicG1)} Mythic Grade 1 in hand · {formatValue(shards)} light shards ·{" "}
+          {reach.stars > 0 ? `${formatValue(reach.stars)} more star${reach.stars === 1 ? "" : "s"}` : "not enough for the next star"}
+        </p>
+        <button
+          type="button"
+          onClick={onBreak}
+          disabled={mythicG1 < 1}
+          title={`Break one Mythic Grade 1 for light shards (${formatValue(Math.round(EXPECTED_BREAK_SHARDS))} on average)`}
+          className={`${BUTTON} ml-auto border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink`}
+        >
+          Break 1
+        </button>
+      </div>
+      {broken.count > 0 ? (
+        <p className="font-mono text-[10px] text-dim">
+          Broken {formatValue(broken.count)} · {formatValue(broken.shards)} shards · your average{" "}
+          <span className="text-ink">{formatValue(Math.round(broken.shards / broken.count))}</span> against{" "}
+          {formatValue(Math.round(EXPECTED_BREAK_SHARDS * 10) / 10)} expected
+        </p>
+      ) : null}
       <p className="font-mono text-[10px] text-dim">
         {reach.next ? `Star ${formatValue(reach.star + 1)} takes ${cost(reach.next)}` : "Fully awakened"}
         {reach.short && (reach.short.mythicG1 || reach.short.shards) ? ` · short of ${cost(reach.short)}` : ""}
@@ -156,6 +185,9 @@ export function SummonPanel() {
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [summons, setSummons] = useState(0);
   const [gifts, setGifts] = useState(0);
+  const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
+  // Mythic Grade 1 is only broken by hand, one at a time: what's been broken, and the shards they gave.
+  const [broken, setBroken] = useState({ count: 0, shards: 0 });
 
   const toNext = summonsToNext(state.level);
   const chances = SUMMON_CHANCES[state.level]!;
@@ -175,11 +207,31 @@ export function SummonPanel() {
     });
   };
 
+  // Auto summoning keeps going in batches until it's paused or stopped; the ref keeps the timer on the latest state.
+  const runRef = useRef(run);
+  useEffect(() => {
+    runRef.current = run;
+  });
+  useEffect(() => {
+    if (auto !== "running") return;
+    const timer = window.setInterval(() => runRef.current(SUMMON_BATCH * AUTO_BATCHES), AUTO_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [auto]);
+
   const clear = () => {
+    setAuto("off");
     setLast(null);
     setTotals({});
     setSummons(0);
     setGifts(0);
+    setBroken({ count: 0, shards: 0 });
+  };
+
+  /** Breaks one Mythic Grade 1 for light shards, as the game has you do them one at a time. */
+  const breakOne = () => {
+    const shards = breakMythic(Math.random());
+    setBroken((current) => ({ count: current.count + 1, shards: current.shards + shards }));
+    setSummon({ shards: state.shards + shards });
   };
 
   const ownAll = () => {
@@ -187,6 +239,11 @@ export function SummonPanel() {
   };
 
   const sorted = Object.entries(totals).sort((a, b) => GEAR[kind].findIndex((g) => g.grade === b[0]) - GEAR[kind].findIndex((g) => g.grade === a[0]));
+  // Five of a grade merge into one of the next, so what's summoned is worth more than the Mythic Grade 1 it drew.
+  const merged = mergeUp(totals);
+  const mergedSorted = Object.entries(merged).sort((a, b) => MERGE_LADDER.indexOf(b[0]) - MERGE_LADDER.indexOf(a[0]));
+  // What's left to awaken or break: the Mythic Grade 1 merged out of the pile, less the ones already broken.
+  const mythicG1 = Math.max(0, (merged[MYTHIC_G1] ?? 0) - broken.count);
 
   return (
     <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
@@ -251,6 +308,29 @@ export function SummonPanel() {
               Clear
             </button>
           ) : null}
+          {auto === "off" ? (
+            <button
+              type="button"
+              onClick={() => setAuto("running")}
+              title={`Summon ${formatValue(SUMMON_BATCH * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms until you pause or stop`}
+              className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}
+            >
+              Auto
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setAuto(auto === "running" ? "paused" : "running")}
+                className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}
+              >
+                {auto === "running" ? "Pause" : "Resume"}
+              </button>
+              <button type="button" onClick={() => setAuto("off")} className={`${BUTTON} border-ink/25 text-dim hover:border-ink/60 hover:text-ink`}>
+                Stop
+              </button>
+            </>
+          )}
           {SUMMON_COSTS.map((batch) => (
             <button
               key={batch.summons}
@@ -295,7 +375,15 @@ export function SummonPanel() {
           {last.rewards.map((reward) => `level ${reward.at} gave ${reward.mythicG1} Mythic Grade 1`).join(" · ")}
         </p>
       ) : null}
-      <Awakening kind={kind} mythicG1={totals[MYTHIC_G1] ?? 0} shards={state.shards} level={state.level} progress={state.progress} />
+      <Awakening
+        kind={kind}
+        mythicG1={mythicG1}
+        shards={state.shards}
+        level={state.level}
+        progress={state.progress}
+        broken={broken}
+        onBreak={breakOne}
+      />
 
       <div className="grid min-h-0 gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
         <div className="flex min-w-0 flex-col gap-3">
@@ -329,6 +417,15 @@ export function SummonPanel() {
                   Mark as owned
                 </button>
               </div>
+              <p className="font-mono text-[10px] text-dim">
+                Merged 5 to 1:{" "}
+                {mergedSorted.length
+                  ? mergedSorted
+                      .slice(0, 6)
+                      .map(([name, count]) => `${formatValue(count)} × ${name}`)
+                      .join(" · ")
+                  : "nothing yet"}
+              </p>
               <dl className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-x-3 font-mono text-[10px]">
                 {sorted.map(([name, count]) => (
                   <div key={name} className="flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5">

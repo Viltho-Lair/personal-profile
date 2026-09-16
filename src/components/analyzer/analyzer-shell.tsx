@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartLine } from "lucide-react";
+import { ChartLine, Store } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ANALYZER_AD_SLOT } from "@/lib/adsense";
@@ -17,6 +17,7 @@ import { SettingsPanel } from "./profile-controls";
 import { ProgressChart } from "./progress-chart";
 import { SkillPanel } from "./skill-panel";
 import { StatsSummary } from "./stats-summary";
+import { SummonPanel } from "./summon-panel";
 import { ANALYZER_TABS, type TabId } from "./tabs";
 
 const TAB_ICONS: Record<string, { icon: string; iconSize: number } | undefined> = navigationData.icons;
@@ -70,6 +71,10 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
             <EquipmentPanel />
           ) : tab.id === "companion" ? (
             <CompanionPanel />
+          ) : tab.id === "summon" ? (
+            <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col p-3">
+              <SummonPanel />
+            </section>
           ) : (
             <AnalysisPanel />
           )}
@@ -116,6 +121,8 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
             >
               {tab.id === "analysis" ? (
                 <ChartLine aria-hidden strokeWidth={1.75} className="size-7 sm:size-8" />
+              ) : tab.id === "summon" ? (
+                <Store aria-hidden strokeWidth={1.75} className="size-7 sm:size-8" />
               ) : TAB_ICONS[tab.id] ? (
                 <Image
                   src={TAB_ICONS[tab.id]!.icon}

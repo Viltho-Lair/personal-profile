@@ -8,7 +8,11 @@ import {
   DIAMONDS_PER_SUMMON,
   drawSummon,
   EXPECTED_BREAK_SHARDS,
+  expectedMythicG1PerSummon,
+  MERGE_LADDER,
+  mergeUp,
   mythicG1Chance,
+  mythicG1Value,
   planSummons,
   GRADE_CHANCES,
   rewardsBetween,
@@ -87,6 +91,38 @@ describe("summon", () => {
   });
 });
 
+describe("merging", () => {
+  it("runs Common 4 up to Mythic 1, five to one", () => {
+    expect(MERGE_LADDER[0]).toBe("Common 4");
+    expect(MERGE_LADDER[3]).toBe("Common 1");
+    expect(MERGE_LADDER[4]).toBe("Great 4");
+    expect(MERGE_LADDER.at(-1)).toBe("Mythic 1");
+    expect(MERGE_LADDER).toHaveLength(24);
+    expect(mythicG1Value("Mythic 1")).toBe(1);
+    expect(mythicG1Value("Mythic 2")).toBeCloseTo(1 / 5, 9);
+    expect(mythicG1Value("Common 4")).toBeCloseTo(5 ** -23, 30);
+  });
+
+  it("merges a pile as far as it goes and keeps the rest", () => {
+    expect(mergeUp({ "Mythic 2": 5 })).toEqual({ "Mythic 1": 1 });
+    expect(mergeUp({ "Mythic 2": 7 })).toEqual({ "Mythic 1": 1, "Mythic 2": 2 });
+    // 25 Mythic 3 make 5 Mythic 2, which make 1 Mythic 1.
+    expect(mergeUp({ "Mythic 3": 25 })).toEqual({ "Mythic 1": 1 });
+    // Five Common 1 carry into a Great 4.
+    expect(mergeUp({ "Common 1": 5, "Great 4": 1 })).toEqual({ "Great 4": 2 });
+    expect(mergeUp({ "Epic 4": 4 })).toEqual({ "Epic 4": 4 });
+  });
+
+  it("counts a summon for what it merges into, not only the Mythic Grade 1 it draws", () => {
+    // Level 10: the Mythic grades alone are 0.015% + 0.03%/5 ... which beats the 0.015% Grade 1 chance.
+    expect(expectedMythicG1PerSummon(10)).toBeGreaterThan(mythicG1Chance(10));
+    expect(expectedMythicG1PerSummon(10)).toBeCloseTo(0.00025, 5);
+    // Reaching a star takes fewer summons once merging counts.
+    const merged = planSummons({ fromStar: 0, toStar: 1, level: 10, progress: 0, shards: 0, mythicG1: 0 });
+    expect(merged.summons).toBeLessThan(Math.ceil(1 / mythicG1Chance(10)));
+  });
+});
+
 describe("breaking and diamonds", () => {
   it("gives the shards of the band the roll lands in, 1,670.4 on average", () => {
     expect(BREAK_SHARDS.reduce((sum, row) => sum + row.chance, 0)).toBe(100);
@@ -106,9 +142,9 @@ describe("breaking and diamonds", () => {
     // Level 10 gives a Mythic Grade 1 in 0.15% x 10% of summons: 1 in 6,667.
     expect(mythicG1Chance(10)).toBeCloseTo(0.00015, 9);
     const plan = planSummons({ fromStar: 0, toStar: 1, level: 10, progress: 0, shards: 0, mythicG1: 0 });
-    // One Mythic Grade 1, no shards: about 6,667 summons at 45.45 diamonds each.
+    // One Mythic Grade 1, no shards: the summons it takes once everything merges up, at 45.45 diamonds each.
     expect(plan.need).toEqual({ mythicG1: 1, shards: 0 });
-    expect(plan.summons).toBe(Math.ceil(1 / 0.00015));
+    expect(plan.summons).toBe(Math.ceil(1 / expectedMythicG1PerSummon(10)));
     expect(plan.diamonds).toBe(Math.ceil(plan.summons * DIAMONDS_PER_SUMMON));
     expect(plan.batches).toBe(Math.ceil(plan.summons / 33));
     // What's already held counts: with the gear in hand there's nothing left to summon.

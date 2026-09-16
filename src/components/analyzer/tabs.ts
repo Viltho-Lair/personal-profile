@@ -6,6 +6,7 @@ export const ANALYZER_TABS = [
   { id: "equips", label: "Equips", name: "Equipment" },
   { id: "companion", label: "Companion", name: "Companion" },
   { id: "analysis", label: "Analysis", name: "Analysis" },
+  { id: "summon", label: "Summon", name: "Summon" },
 ] as const;
 
 export type TabId = (typeof ANALYZER_TABS)[number]["id"];

@@ -150,15 +150,25 @@ export default function Guide() {
           drop you to the weakest you own in one tap, and the cards put the best back.
         </li>
         <li>
-          <strong>Summon</strong> (the market button) draws weapons or accessories the way the game
-          does. Set your summon level, how many you have summoned at that level and your light
-          shards, then summon 33 at a time: each one rolls a rarity by that level&apos;s chances and
-          a grade inside it (Grade 4 40%, Grade 3 30%, Grade 2 20%, Grade 1 10%). Summons count
-          toward the level, and passing a milestone hands over Ellie&apos;s Summon Gift Box:
-          Mythic Grade 1 at levels 5 and 6, two at 7, three half way through 7 and four at 8. A
-          level you start at counts as already collected. Summoning costs no light shards. Your
-          level, progress and shards are saved with your profile, and <strong>Mark as owned</strong>{" "}
-          puts what you summoned into your gear.
+          <strong>Summon</strong>, the market tab at the end of the bar, draws weapons or
+          accessories the way the game does. Set your summon level, how many you have summoned at
+          that level and your light shards, then summon 11 or 33 at a time, or press{" "}
+          <strong>Auto</strong> to keep summoning and <strong>Pause</strong> or <strong>Stop</strong>{" "}
+          when you have seen enough. Each summon rolls a rarity by that level&apos;s chances and a
+          grade inside it (Grade 4 40%, Grade 3 30%, Grade 2 20%, Grade 1 10%). Summons count toward
+          the level, and passing a milestone hands over Ellie&apos;s Summon Gift Box: Mythic Grade 1
+          at levels 5 and 6, two at 7, three half way through 7 and four at 8. A level you start at
+          counts as already collected. Summoning costs no light shards. Your level, progress and
+          shards are saved with your profile, and <strong>Mark as owned</strong> puts what you
+          summoned into your gear.
+        </li>
+        <li>
+          <strong>Merging</strong> runs all the way up: five of a grade make one of the next, from
+          Common Grade 4 to Mythic Grade 1. The panel shows your pile merged as far as it goes, so
+          what you summon is worth more than the Mythic Grade 1 it drew outright, and the diamond
+          estimate counts it. <strong>Break 1</strong> breaks a single Mythic Grade 1 for light
+          shards, as the game has you do them one at a time, and keeps your own average beside the
+          expected one.
         </li>
         <li>
           <strong>Awakening</strong> is what the Mythic Grade 1 gear is for. Each star of your
