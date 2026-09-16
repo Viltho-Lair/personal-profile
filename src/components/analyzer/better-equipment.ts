@@ -31,19 +31,26 @@ export type BetterEquipment = {
 /** Better Weapon, Better Accessories, Better Class: the game's order, top to bottom. */
 export const EQUIP_KINDS: readonly EquipKind[] = ["weapons", "accessories", "class"];
 
-function betterGear(profile: ProfileV1, kind: GearKind, list: readonly Gear[]): BetterEquipment | null {
+type Choose = "best" | "lowest";
+
+/** Whether the effect wins the search: the strongest owned, or the weakest (what Rage wants). */
+const wins = (pick: Choose, best: BetterEquipment | null, effect: number) =>
+  !best || (pick === "best" ? effect > best.equip : effect < best.equip);
+
+/** The owned weapon or accessory with the highest (or lowest) equip effect. */
+export function pickGear(profile: ProfileV1, kind: GearKind, list: readonly Gear[], pick: Choose): BetterEquipment | null {
   const count = awakening(profile, kind, MAX_AWAKENING);
   const row = AWAKENING[count];
-  let best: BetterEquipment | null = null;
+  let found: BetterEquipment | null = null;
   for (const gear of list) {
     const state = gearState(profile, kind, gear.grade, gear.maxLevel);
     if (!state.owned) continue;
     const awakened = gear.tier === "Immortal" && row ? (kind === "weapons" ? row.weaponMultiplier : row.accessoryMultiplier) : 1;
     const { equip: effect } = gearEffects(gear.multiplier, GEAR_LEVEL_FACTORS, state.level, awakened);
-    if (best && effect <= best.equip) continue;
+    if (!wins(pick, found, effect)) continue;
     const rarity = gearRarity(gear.tier, count);
     const art = gear.tier === "Immortal" ? [...IMMORTAL_ART[kind]].reverse().find((entry) => count >= entry.from) : null;
-    best = {
+    found = {
       kind,
       key: gear.grade,
       label: gear.tier === "Immortal" ? rarity : gear.grade,
@@ -53,30 +60,46 @@ function betterGear(profile: ProfileV1, kind: GearKind, list: readonly Gear[]): 
       equip: effect,
     };
   }
-  return best && best.equip > gearTotals(profile, kind, list).equip ? best : null;
+  return found;
 }
 
-function betterClass(profile: ProfileV1): BetterEquipment | null {
+/** The owned class with the highest (or lowest) equip effect. */
+export function pickClass(profile: ProfileV1, pick: Choose): BetterEquipment | null {
   const c = profile.character;
   const max = classLevelCap(c);
-  let best: BetterEquipment | null = null;
+  let found: BetterEquipment | null = null;
   CLASSES.forEach((cls, index) => {
     const state = c.classes[cls.name];
     if (!state?.owned || HIDDEN_CLASSES.has(cls.name)) return;
     const isLast = index === CLASSES.length - 1;
     const multiplier = isLast ? (AWAKENING[c.classAwakening]?.blastMultiplier ?? 1) : 1;
     const { equip: effect } = gearEffects(cls.multiplier, GEAR_LEVEL_FACTORS, clampLevel(state.level, max), multiplier);
-    if (best && effect <= best.equip) return;
+    if (!wins(pick, found, effect)) return;
     const art = isLast ? (CLASS_BY_NAME.get(awakenedClassName(c.classAwakening)) ?? cls) : cls;
-    best = { kind: "class", key: cls.name, label: `${index + 1} grade`, rarity: null, icon: art.icon, iconSize: art.iconSize, equip: effect };
+    found = { kind: "class", key: cls.name, label: `${index + 1} grade`, rarity: null, icon: art.icon, iconSize: art.iconSize, equip: effect };
   });
-  const found = best as BetterEquipment | null;
-  return found && found.equip > classTotals(c).equip ? found : null;
+  return found as BetterEquipment | null;
 }
 
 /** What could be equipped for more: the best owned weapon, accessory and class, where each beats the equipped one. */
 export function betterEquipment(profile: ProfileV1): BetterEquipment[] {
-  return [betterGear(profile, "weapons", WEAPONS), betterGear(profile, "accessories", ACCESSORIES), betterClass(profile)].filter(
-    (item): item is BetterEquipment => item !== null,
-  );
+  const better = (item: BetterEquipment | null, equipped: number) => (item && item.equip > equipped ? item : null);
+  return [
+    better(pickGear(profile, "weapons", WEAPONS, "best"), gearTotals(profile, "weapons", WEAPONS).equip),
+    better(pickGear(profile, "accessories", ACCESSORIES, "best"), gearTotals(profile, "accessories", ACCESSORIES).equip),
+    better(pickClass(profile, "best"), classTotals(profile.character).equip),
+  ].filter((item): item is BetterEquipment => item !== null);
+}
+
+/**
+ * The weakest owned weapon and class, to drop to before Rage: each is null when nothing is owned or the weakest is
+ * already equipped.
+ */
+export function lowestEquipment(profile: ProfileV1) {
+  const weapon = pickGear(profile, "weapons", WEAPONS, "lowest");
+  const cls = pickClass(profile, "lowest");
+  return {
+    weapon: weapon && weapon.key !== profile.equippedWeapon ? weapon : null,
+    class: cls && cls.key !== profile.character.equippedClass ? cls : null,
+  };
 }

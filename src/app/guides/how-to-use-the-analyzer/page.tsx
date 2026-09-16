@@ -146,6 +146,8 @@ export default function Guide() {
           fight plays changes it from that moment on. The life you have stays where it is and only
           the pool moves, so a bigger pool leaves that much more life missing, which is what Rage
           reads: dropping your HP gear early for Rage and putting it back plays out as in the game.
+          Right of the familiar, <strong>Lowest weapon</strong> and <strong>Lowest class</strong>{" "}
+          drop you to the weakest you own in one tap, and the cards put the best back.
         </li>
         <li>
           <strong>Skills below the fight</strong> switch between auto and manual when you tap them

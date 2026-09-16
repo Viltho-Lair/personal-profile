@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useProfile } from "@/lib/profile/use-profile";
-import { betterEquipment, type BetterEquipment, type EquipKind } from "./better-equipment";
+import { betterEquipment, lowestEquipment, type BetterEquipment, type EquipKind } from "./better-equipment";
 import { Sprite } from "./sprite";
 import { TIER_BORDER } from "./tiers";
 
@@ -52,5 +52,52 @@ export function EquipSuggestions() {
         );
       })}
     </ul>
+  );
+}
+
+/** One button: equip the weakest owned weapon or class, or a dim one when there's nothing to drop to. */
+function LowestButton({ item, what, onEquip }: { item: BetterEquipment | null; what: string; onEquip: () => void }) {
+  const title = item
+    ? `Equip ${item.label}, the lowest ${what.toLowerCase()} owned: a smaller life pool leaves more life missing for Rage`
+    : `No lower ${what.toLowerCase()} to equip`;
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      disabled={!item}
+      onClick={onEquip}
+      className="flex h-full min-h-0 flex-1 items-center gap-1 overflow-hidden rounded-md border border-ink/25 bg-zinc-900 px-1 text-left outline-none hover:border-ink/60 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35"
+    >
+      {item?.icon && item.iconSize ? (
+        <Sprite src={item.icon} native={item.iconSize} size={item.iconSize / 4} className="size-5" />
+      ) : (
+        <span aria-hidden className="size-5 shrink-0" />
+      )}
+      <span className="min-w-0 font-mono text-[7px] leading-tight tracking-[0.06em] text-white uppercase">
+        Lowest
+        <br />
+        {what}
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Right of the familiar: drop to the weakest owned weapon, and under it the weakest owned class. It's what players
+ * do before Rage, and in a fight that's playing the pool shrinks around the life left at once.
+ */
+export function LowestEquip() {
+  const { profile, equip, updateCharacter } = useProfile();
+  const lowest = useMemo(() => lowestEquipment(profile), [profile]);
+  return (
+    <div className="flex w-[4.25rem] shrink-0 flex-col gap-1 self-stretch">
+      <LowestButton item={lowest.weapon} what="Weapon" onEquip={() => lowest.weapon && equip("weapons", lowest.weapon.key)} />
+      <LowestButton
+        item={lowest.class}
+        what="Class"
+        onEquip={() => lowest.class && updateCharacter((c) => ({ ...c, equippedClass: lowest.class?.key ?? c.equippedClass }))}
+      />
+    </div>
   );
 }
