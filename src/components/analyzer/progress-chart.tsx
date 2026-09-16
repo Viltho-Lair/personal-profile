@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { nextEvery, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
+import { fightStatsOf, nextEvery, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
 import { formatValue, SKILL_BY_NAME, SPIRITS } from "./data";
 import { ELEMENTS } from "@/lib/game/stats";
@@ -19,7 +19,7 @@ import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
 import { EquipSuggestions } from "./equip-suggestions";
-import { castInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
+import { castInFightRun, retuneFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -59,6 +59,11 @@ export function ProgressChart() {
   useEffect(() => {
     if (rendered && !sameEnemy) stopFightRun(true);
   }, [rendered, sameEnemy]);
+  // Equipping or unequipping while the fight plays changes it from there on: the life pool grows or shrinks around
+  // the life already in it, so dropping HP gear for Rage and putting it back plays out as it does in the game.
+  useEffect(() => {
+    retuneFightRun(fightStatsOf(next.input));
+  }, [next.input]);
   const run = sameEnemy ? rendered : null;
   const setup = run?.setup ?? next;
   const phase: Phase = run?.phase ?? "idle";
@@ -242,7 +247,7 @@ export function ProgressChart() {
             baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)}
             spiritArt={spiritArt}
           />
-          <EquipSuggestions target={setup.target} />
+          <EquipSuggestions />
         </div>
       ) : (
         <DamageChart

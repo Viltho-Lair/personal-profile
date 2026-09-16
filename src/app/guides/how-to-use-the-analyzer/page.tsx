@@ -142,8 +142,10 @@ export default function Guide() {
         <li>
           <strong>Better Weapon, Better Accessories and Better Class</strong> cards show on the
           right of the render when you own something stronger than what&apos;s equipped. Tapping
-          Equip equips it and, while the fight plays, applies it at once: extra life grows your
-          life pool without refilling what&apos;s missing. The cards below move up as one goes.
+          Equip equips it and the cards below move up. Equipping or unequipping anything while the
+          fight plays changes it from that moment on. The life you have stays where it is and only
+          the pool moves, so a bigger pool leaves that much more life missing, which is what Rage
+          reads: dropping your HP gear early for Rage and putting it back plays out as in the game.
         </li>
         <li>
           <strong>Skills below the fight</strong> switch between auto and manual when you tap them

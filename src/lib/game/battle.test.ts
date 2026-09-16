@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createFight, expectedHit, nextEvery, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
+import { createFight, expectedHit, fightStatsOf, nextEvery, sameFightStats, simulateFight, withStones, type FightInput, type FightSkill } from "./battle";
 
 const base: FightInput = {
   attack: 100,
@@ -323,21 +323,36 @@ describe("simulateFight", () => {
     expect(fight.state().skills[0].complete).toBe(true);
   });
 
-  it("takes new stats mid-fight, expanding the life pool without refilling what's missing", () => {
+  it("takes new stats mid-fight, moving the life pool around the life already in it", () => {
     const burn = skill({ name: "Burn", kind: "buff", every: 100, duration: 5, hpCost: 0.5, effect: { type: "atk", power: 0 } });
     const input = { ...base, maxHp: 1000, hpRecovery: 0, skills: [burn] };
     const fight = createFight(input);
     fight.advance(0.1);
     expect(fight.state().hp).toBeCloseTo(500);
-    fight.retune({ ...input, attack: 200, maxHp: 1500 });
-    expect(fight.state()).toMatchObject({ hp: 1000, maxHp: 1500 });
+    // A bigger pool leaves the life where it is, so that much more is missing (what Rage reads).
+    fight.retune({ ...fightStatsOf(input), attack: 200, maxHp: 1500 });
+    expect(fight.state()).toMatchObject({ hp: 500, maxHp: 1500 });
     // The first basic attack, after the cast, lands with the new attack.
     fight.advance(0.5);
     expect(fight.state().basic).toBeCloseTo(200);
     expect(input.attack).toBe(100);
-    // A smaller pool keeps what fits.
-    fight.retune({ ...input, maxHp: 800 });
-    expect(fight.state()).toMatchObject({ hp: 800, maxHp: 800 });
+    // A smaller pool keeps only what fits.
+    fight.retune({ ...fightStatsOf(input), maxHp: 400 });
+    expect(fight.state()).toMatchObject({ hp: 400, maxHp: 400 });
+  });
+
+  it("gives Rage the life missing from the pool as it is right then", () => {
+    const rage = skill({ name: "Rage", kind: "buff", every: 100, duration: 60, effect: { type: "rage", power: 0.01 } });
+    const input = { ...base, maxHp: 1000, hpRecovery: 0, duration: 4, skills: [rage] };
+    // Half the pool gone: +1% ATK for each of the 50 percent missing.
+    const fight = createFight(input);
+    fight.retune({ ...fightStatsOf(input), maxHp: 2000 });
+    expect(fight.state()).toMatchObject({ hp: 1000, maxHp: 2000 });
+    fight.advance(1.5);
+    expect(fight.state().atkBonus).toBeCloseTo(0.5);
+    // Unequipping shrinks the pool around the life left, so nothing is missing and Rage adds nothing.
+    fight.retune({ ...fightStatsOf(input), maxHp: 1000 });
+    expect(fight.state().atkBonus).toBeCloseTo(0);
   });
 
   it("repeats Pe's familiar attack one hit after another instead of all at once", () => {
@@ -404,5 +419,16 @@ describe("simulateFight", () => {
     expect(stoned.every).toBeCloseTo(18.6);
     expect(stoned.duration).toBeCloseTo(10.4);
     expect(withStones({ ...s, element: "Fire" }, stones).every).toBe(20);
+  });
+});
+
+describe("fight stats", () => {
+  it("picks the stats out of an input and spots when they haven't changed", () => {
+    const stats = fightStatsOf(base);
+    expect(stats.attack).toBe(100);
+    expect("skills" in stats).toBe(false);
+    expect(sameFightStats(stats, fightStatsOf({ ...base, duration: 99 }))).toBe(true);
+    expect(sameFightStats(stats, { ...stats, attack: 101 })).toBe(false);
+    expect(sameFightStats(stats, { ...stats, extraDamage: { Fire: 1, Water: 0, Wind: 0, Earth: 0 } })).toBe(false);
   });
 });

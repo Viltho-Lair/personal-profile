@@ -372,14 +372,47 @@ export type FightStats = Pick<
   | "manaRecovery"
 >;
 
+const ELEMENT_KEYS: readonly Element[] = ["Fire", "Water", "Wind", "Earth"];
+
+const STAT_KEYS = [
+  "attack",
+  "critChance",
+  "critDamage",
+  "deathStrikeChance",
+  "deathStrikeDamage",
+  "extraDamage",
+  "elementAmp",
+  "bossDamage",
+  "attackSpeed",
+  "movementSpeed",
+  "maxHp",
+  "hpRecovery",
+  "maxMana",
+  "manaRecovery",
+] as const satisfies readonly (keyof FightStats)[];
+
+/** Just the stats out of a fight's input, to hand to `retune`. */
+export function fightStatsOf(input: FightInput): FightStats {
+  return Object.fromEntries(STAT_KEYS.map((key) => [key, input[key]])) as FightStats;
+}
+
+/** Whether two sets of stats are the same, so nothing needs retuning. */
+export function sameFightStats(a: FightStats, b: FightStats): boolean {
+  const byElement = (x: ByElement | undefined, y: ByElement | undefined) =>
+    x === y || (x !== undefined && y !== undefined && ELEMENT_KEYS.every((element) => x[element] === y[element]));
+  return STAT_KEYS.every((key) =>
+    key === "extraDamage" || key === "elementAmp" ? byElement(a[key], b[key]) : a[key] === b[key],
+  );
+}
+
 export type Fight = {
   /** Plays the fight forward by this many real seconds (or until it ends). */
   advance: (seconds: number) => void;
   /** Queues a ready skill whose auto is off; false when it isn't ready. */
   cast: (name: string) => boolean;
   /**
-   * Swaps in new stats from here on (equipping better gear mid-fight). A bigger life or mana pool grows by the
-   * difference without refilling what's missing; a smaller one keeps what fits.
+   * Swaps in new stats from here on (equipping or unequipping gear mid-fight). The life and mana already in the
+   * pools stay as they are: a bigger pool leaves that much more missing, a smaller one keeps only what fits.
    */
   retune: (stats: FightStats) => void;
   state: () => FightState;
@@ -876,13 +909,12 @@ export function createFight(initial: FightInput): Fight {
     },
     retune: (stats) => {
       Object.assign(input, stats);
-      const nextHp = input.maxHp ?? 0;
-      const nextMana = input.maxMana ?? 0;
-      // The pool expands: what's missing stays missing.
-      hp = nextHp >= maxHp ? hp + (nextHp - maxHp) : Math.min(hp, nextHp);
-      mana = nextMana >= maxMana ? mana + (nextMana - maxMana) : Math.min(mana, nextMana);
-      maxHp = nextHp;
-      maxMana = nextMana;
+      // Only the pools move: the life and mana in them stay where they are, so a bigger pool reads as that much
+      // more missing (what Rage wants) and a smaller one keeps only what still fits.
+      maxHp = input.maxHp ?? 0;
+      maxMana = input.maxMana ?? 0;
+      hp = Math.min(hp, maxHp);
+      mana = Math.min(mana, maxMana);
       baseSpeed = input.attackSpeed ?? 1;
       boss = 1 + (input.bossDamage ?? 0);
     },

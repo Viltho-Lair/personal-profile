@@ -1,7 +1,7 @@
 import characterData from "@/data/optimizer/character.json";
 import { awakenedClassName } from "@/lib/game/character";
 import { gearEffects } from "@/lib/game/formulas";
-import { awakening, clampLevel, equip, gearState, updateCharacter } from "@/lib/profile/rules";
+import { awakening, clampLevel, gearState } from "@/lib/profile/rules";
 import type { GearKind, ProfileV1 } from "@/lib/profile/types";
 import { ACCESSORIES, AWAKENING, GEAR_LEVEL_FACTORS, IMMORTAL_ART, MAX_AWAKENING, WEAPONS, type Gear } from "./data";
 import { classLevelCap, classTotals, gearTotals } from "./stat-sources";
@@ -79,9 +79,4 @@ export function betterEquipment(profile: ProfileV1): BetterEquipment[] {
   return [betterGear(profile, "weapons", WEAPONS), betterGear(profile, "accessories", ACCESSORIES), betterClass(profile)].filter(
     (item): item is BetterEquipment => item !== null,
   );
-}
-
-/** The profile with that item equipped. */
-export function equipBetter(profile: ProfileV1, item: BetterEquipment): ProfileV1 {
-  return item.kind === "class" ? updateCharacter(profile, (c) => ({ ...c, equippedClass: item.key })) : equip(profile, item.kind, item.key);
 }

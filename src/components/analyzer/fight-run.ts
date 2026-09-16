@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { createFight, type Fight, type FightState, type FightStats } from "@/lib/game/battle";
+import { createFight, fightStatsOf, sameFightStats, type Fight, type FightState, type FightStats } from "@/lib/game/battle";
 import { publishLiveFight } from "./live-fight";
 import type { promotionFight } from "./promotion-fight";
 
@@ -79,9 +79,9 @@ export function castInFightRun(name: string) {
   fight?.cast(name);
 }
 
-/** Swaps new stats into the fight playing (better gear or a class equipped from the render). */
+/** Swaps new stats into the fight playing, as gear or a class is equipped or unequipped while it runs. */
 export function retuneFightRun(stats: FightStats) {
-  if (!fight || !run) return;
+  if (!fight || !run || sameFightStats(fightStatsOf(run.setup.input), stats)) return;
   fight.retune(stats);
   run = { ...run, setup: { ...run.setup, input: { ...run.setup.input, ...stats } } as FightSetup, snap: fight.state() };
   emit();
