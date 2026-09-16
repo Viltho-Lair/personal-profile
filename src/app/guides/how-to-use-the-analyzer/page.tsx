@@ -169,6 +169,16 @@ export default function Guide() {
           The Summon view shows how far what you have summoned takes your awakening.
         </li>
         <li>
+          <strong>Diamonds to reach a star</strong>: pick the awakening you want and the Summon view
+          works out roughly what it costs. Breaking a Mythic Grade 1 gives 1,280 shards a quarter of
+          the time, 1,600 half, 2,080 a fifth, 2,560 4% and 3,200 1% — 1,670 on average — so the
+          shards a star needs become Mythic Grade 1 gear to break. Summoning costs 500 diamonds for
+          11 and 1,500 for 33, the same 45.45 a summon, and the Mythic Grade 1 chance is the
+          level&apos;s Mythic chance times 10% for Grade 1 (at summon level 10 that is one in 6,667
+          summons). The estimate follows your summon level as it rises and counts the gift boxes on
+          the way.
+        </li>
+        <li>
           <strong>Skills below the fight</strong> switch between auto and manual when you tap them
           before rendering. Manual skills light up when ready and wait for you to tap them, so you
           can play your real rotation, such as pressing Rave as Wrath of Gods starts. Which skills

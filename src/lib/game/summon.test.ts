@@ -3,7 +3,13 @@ import {
   awakeningCost,
   awakeningReach,
   awakeningStepCost,
+  BREAK_SHARDS,
+  breakMythic,
+  DIAMONDS_PER_SUMMON,
   drawSummon,
+  EXPECTED_BREAK_SHARDS,
+  mythicG1Chance,
+  planSummons,
   GRADE_CHANCES,
   rewardsBetween,
   SUMMON_CHANCES,
@@ -78,6 +84,44 @@ describe("summon", () => {
     expect(first.summons).toBe(33);
     expect(first.state).toMatchObject({ level: 3, progress: 33 });
     expect(summon(first.state, 33, rolls()).state).toMatchObject({ progress: 66 });
+  });
+});
+
+describe("breaking and diamonds", () => {
+  it("gives the shards of the band the roll lands in, 1,670.4 on average", () => {
+    expect(BREAK_SHARDS.reduce((sum, row) => sum + row.chance, 0)).toBe(100);
+    expect(EXPECTED_BREAK_SHARDS).toBeCloseTo(1670.4, 6);
+    expect(breakMythic(0)).toBe(1280);
+    expect(breakMythic(0.5)).toBe(1600);
+    expect(breakMythic(0.8)).toBe(2080);
+    expect(breakMythic(0.999)).toBe(3200);
+  });
+
+  it("costs the same a summon either way: 500 for 11, 1,500 for 33", () => {
+    expect(DIAMONDS_PER_SUMMON).toBeCloseTo(1500 / 33, 9);
+    expect(DIAMONDS_PER_SUMMON).toBeCloseTo(500 / 11, 9);
+  });
+
+  it("counts the summons and diamonds a star goal takes", () => {
+    // Level 10 gives a Mythic Grade 1 in 0.15% x 10% of summons: 1 in 6,667.
+    expect(mythicG1Chance(10)).toBeCloseTo(0.00015, 9);
+    const plan = planSummons({ fromStar: 0, toStar: 1, level: 10, progress: 0, shards: 0, mythicG1: 0 });
+    // One Mythic Grade 1, no shards: about 6,667 summons at 45.45 diamonds each.
+    expect(plan.need).toEqual({ mythicG1: 1, shards: 0 });
+    expect(plan.summons).toBe(Math.ceil(1 / 0.00015));
+    expect(plan.diamonds).toBe(Math.ceil(plan.summons * DIAMONDS_PER_SUMMON));
+    expect(plan.batches).toBe(Math.ceil(plan.summons / 33));
+    // What's already held counts: with the gear in hand there's nothing left to summon.
+    expect(planSummons({ fromStar: 0, toStar: 1, level: 10, progress: 0, shards: 0, mythicG1: 1 })).toMatchObject({
+      mythicG1Short: 0,
+      summons: 0,
+      diamonds: 0,
+    });
+    // 23 to 24 stars is 10,000 shards: about 6 Mythic Grade 1 broken.
+    const shardGoal = planSummons({ fromStar: 23, toStar: 24, level: 10, progress: 0, shards: 0, mythicG1: 0 });
+    expect(shardGoal.need).toEqual({ mythicG1: 0, shards: 10_000 });
+    expect(shardGoal.breaks).toBe(Math.ceil(10_000 / EXPECTED_BREAK_SHARDS));
+    expect(shardGoal.mythicG1).toBe(shardGoal.breaks);
   });
 });
 

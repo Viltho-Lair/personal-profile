@@ -38,6 +38,13 @@ export const MAX_SUMMON_LEVEL = 10;
 /** The game summons this many at a time. */
 export const SUMMON_BATCH = 33;
 
+/** What summoning costs in diamonds: 500 for 11, 1,500 for 33, which is the same 45.45 a summon. */
+export const SUMMON_COSTS: readonly { summons: number; diamonds: number }[] = [
+  { summons: 11, diamonds: 500 },
+  { summons: 33, diamonds: 1500 },
+];
+export const DIAMONDS_PER_SUMMON = SUMMON_COSTS[0].diamonds / SUMMON_COSTS[0].summons;
+
 /** Summons a level takes before the next one; the last level doesn't go anywhere. */
 export const SUMMONS_TO_NEXT: Record<number, number | null> = {
   1: 100,
@@ -196,6 +203,124 @@ export function awakeningCost(from: number, to: number): AwakeningCost {
     cost.shards += step.shards;
   }
   return cost;
+}
+
+/** Breaking a Mythic Grade 1 weapon or accessory gives light shards, how many by chance (percent). */
+export const BREAK_SHARDS: readonly { chance: number; shards: number }[] = [
+  { chance: 25, shards: 1280 },
+  { chance: 50, shards: 1600 },
+  { chance: 20, shards: 2080 },
+  { chance: 4, shards: 2560 },
+  { chance: 1, shards: 3200 },
+];
+
+/** Light shards one break gives on average: 1,670.4. */
+export const EXPECTED_BREAK_SHARDS = BREAK_SHARDS.reduce((sum, row) => sum + (row.chance / 100) * row.shards, 0);
+
+/** One break, for a roll of 0-1. */
+export const breakMythic = (roll: number): number =>
+  pickBy(
+    BREAK_SHARDS.map((row) => ({ value: row.shards, chance: row.chance })),
+    roll,
+  );
+
+/** The chance one summon at this level gives a Mythic Grade 1, as a fraction. */
+export function mythicG1Chance(level: number): number {
+  const chances = SUMMON_CHANCES[clampSummonLevel(level)];
+  const grade1 = GRADE_CHANCES.find((entry) => entry.grade === 1)?.chance ?? 0;
+  return (chances.Mythic / 100) * (grade1 / 100);
+}
+
+export type SummonGoal = {
+  /** Awakening stars now and wanted. */
+  fromStar: number;
+  toStar: number;
+  /** Where the summon level stands. */
+  level: number;
+  progress: number;
+  /** Light shards and Mythic Grade 1 gear already held. */
+  shards: number;
+  mythicG1: number;
+};
+
+export type SummonPlan = {
+  /** What the stars take. */
+  need: AwakeningCost;
+  /** Light shards still missing, and the Mythic Grade 1 gear broken to cover them (1,670.4 a break on average). */
+  shardsShort: number;
+  breaks: number;
+  /** Mythic Grade 1 gear the goal takes in all, and how many still have to be summoned. */
+  mythicG1: number;
+  mythicG1Short: number;
+  /** Summons that takes on average, the gift boxes they pass, and where the summon level ends up. */
+  summons: number;
+  gifts: number;
+  endLevel: number;
+  endProgress: number;
+  /** Diamonds those summons cost, and the batches of 33 they come in. */
+  diamonds: number;
+  batches: number;
+};
+
+/** Levels to walk through at most, so a goal that can't be reached still stops. */
+const PLAN_STEPS = 64;
+
+/**
+ * How much summoning a star goal takes, on average: the Mythic Grade 1 gear the stars need, the extra gear broken
+ * for the light shards they need, and the summons that many takes at the summon levels passed on the way (each
+ * level's Mythic Grade 1 chance, with Ellie's Summon Gift Box counted as it goes).
+ */
+export function planSummons(goal: SummonGoal): SummonPlan {
+  const need = awakeningCost(goal.fromStar, goal.toStar);
+  const shardsShort = Math.max(0, need.shards - Math.max(0, goal.shards));
+  const breaks = Math.ceil(shardsShort / EXPECTED_BREAK_SHARDS);
+  const mythicG1 = need.mythicG1 + breaks;
+  const mythicG1Short = Math.max(0, mythicG1 - Math.max(0, goal.mythicG1));
+
+  let level = clampSummonLevel(goal.level);
+  let progress = Math.max(0, goal.progress);
+  let have = 0;
+  let summons = 0;
+  let gifts = 0;
+
+  for (let step = 0; step < PLAN_STEPS && have < mythicG1Short; step += 1) {
+    const chance = mythicG1Chance(level);
+    const toNext = summonsToNext(level);
+    const left = mythicG1Short - have;
+    // Summons this level would take to finish the goal, on average.
+    const here = chance > 0 ? left / chance : Infinity;
+    const room = toNext === null ? Infinity : toNext - progress;
+    if (here <= room) {
+      summons += here;
+      progress += here;
+      have = mythicG1Short;
+      break;
+    }
+    // The rest of this level, then the next one, with the gift boxes passed on the way.
+    const before = summonPosition(level, progress);
+    summons += room;
+    have += room * chance;
+    progress = 0;
+    level += 1;
+    const gift = rewardsBetween(before, summonPosition(level, progress)).reduce((sum, reward) => sum + reward.mythicG1, 0);
+    gifts += gift;
+    have += gift;
+  }
+
+  const whole = Math.ceil(summons);
+  return {
+    need,
+    shardsShort,
+    breaks,
+    mythicG1,
+    mythicG1Short,
+    summons: whole,
+    gifts,
+    endLevel: level,
+    endProgress: Math.round(progress),
+    diamonds: Math.ceil(whole * DIAMONDS_PER_SUMMON),
+    batches: Math.ceil(whole / SUMMON_BATCH),
+  };
 }
 
 /** How far the Mythic Grade 1 gear and light shards in hand awaken it, and what the next star still needs. */

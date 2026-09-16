@@ -4,11 +4,14 @@ import { useState } from "react";
 import {
   awakeningCost,
   awakeningReach,
+  EXPECTED_BREAK_SHARDS,
   MAX_AWAKENING_STAR,
   MAX_SUMMON_LEVEL,
   MIN_SUMMON_LEVEL,
   MYTHIC_G1,
+  planSummons,
   SUMMON_BATCH,
+  SUMMON_COSTS,
   SUMMON_CHANCES,
   SUMMON_RARITIES,
   summon,
@@ -59,11 +62,26 @@ function Drawn({ name, gear, count }: { name: string; gear: Gear | undefined; co
  * to: most stars take one Mythic Grade 1, the three that change its look take four, and the last stars take light
  * shards, which come from breaking Mythic Grade 1 gear.
  */
-function Awakening({ kind, mythicG1, shards }: { kind: GearKind; mythicG1: number; shards: number }) {
+function Awakening({
+  kind,
+  mythicG1,
+  shards,
+  level,
+  progress,
+}: {
+  kind: GearKind;
+  mythicG1: number;
+  shards: number;
+  level: number;
+  progress: number;
+}) {
   const { profile } = useProfile();
   const from = Math.min(MAX_AWAKENING_STAR, kind === "weapons" ? profile.weaponAwakening : profile.accessoryAwakening);
+  const [goal, setGoal] = useState(Math.min(MAX_AWAKENING_STAR, from + 1));
+  const target = Math.min(MAX_AWAKENING_STAR, Math.max(from, goal));
   const reach = awakeningReach(from, mythicG1, shards);
   const toMax = awakeningCost(from, MAX_AWAKENING_STAR);
+  const plan = planSummons({ fromStar: from, toStar: target, level, progress, shards, mythicG1 });
   const cost = (value: { mythicG1: number; shards: number }) =>
     [value.mythicG1 ? `${formatValue(value.mythicG1)} Mythic G1` : "", value.shards ? `${formatValue(value.shards)} shards` : ""]
       .filter(Boolean)
@@ -87,6 +105,40 @@ function Awakening({ kind, mythicG1, shards }: { kind: GearKind; mythicG1: numbe
         {reach.short && (reach.short.mythicG1 || reach.short.shards) ? ` · short of ${cost(reach.short)}` : ""}
         {from < MAX_AWAKENING_STAR ? ` · ${formatValue(from)}★ to ${MAX_AWAKENING_STAR}★ takes ${cost(toMax)}` : ""}
       </p>
+
+      {from < MAX_AWAKENING_STAR ? (
+        <div className="flex flex-col gap-1 border-t border-ink/10 pt-1.5">
+          <label className="flex flex-wrap items-center gap-1.5">
+            <span className={LABEL}>Diamonds to reach</span>
+            <input
+              type="number"
+              min={from + 1}
+              max={MAX_AWAKENING_STAR}
+              value={goal}
+              aria-label="Awakening stars to reach"
+              onChange={(event) => setGoal(Math.max(from, Math.min(MAX_AWAKENING_STAR, Math.floor(event.target.valueAsNumber || from))))}
+              className="w-16 rounded-md border border-ink/20 bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
+            />
+            <span className={LABEL}>★ from {formatValue(from)}★</span>
+            <span className="ml-auto font-mono text-sm text-tier-immortal tabular-nums">
+              {formatValue(plan.diamonds)} <span className="text-[10px] text-dim">diamonds</span>
+            </span>
+          </label>
+          <p className="font-mono text-[10px] text-dim">
+            {formatValue(target)}★ takes {cost(plan.need)}
+            {plan.breaks > 0
+              ? ` · ${formatValue(plan.shardsShort)} shards short, about ${formatValue(plan.breaks)} Mythic G1 broken (${formatValue(Math.round(EXPECTED_BREAK_SHARDS))} shards each on average)`
+              : ""}
+            {` · ${formatValue(plan.mythicG1)} Mythic G1 in all, ${formatValue(plan.mythicG1Short)} still to summon`}
+          </p>
+          <p className="font-mono text-[10px] text-dim">
+            About {formatValue(plan.summons)} summons ({formatValue(plan.batches)} × {SUMMON_BATCH}), reaching summon level{" "}
+            {formatValue(plan.endLevel)}
+            {plan.gifts ? ` with ${formatValue(plan.gifts)} from gift boxes` : ""} · {formatValue(SUMMON_COSTS[0].diamonds)} diamonds for{" "}
+            {SUMMON_COSTS[0].summons}, {formatValue(SUMMON_COSTS[1].diamonds)} for {SUMMON_COSTS[1].summons}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -199,9 +251,19 @@ export function SummonPanel() {
               Clear
             </button>
           ) : null}
-          <button type="button" onClick={() => run(SUMMON_BATCH)} className={`${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`}>
-            Summon {SUMMON_BATCH}
-          </button>
+          {SUMMON_COSTS.map((batch) => (
+            <button
+              key={batch.summons}
+              type="button"
+              onClick={() => run(batch.summons)}
+              title={`${formatValue(batch.diamonds)} diamonds`}
+              className={`${BUTTON} ${
+                batch.summons === SUMMON_BATCH ? "border-ink bg-ink text-ground enabled:hover:brightness-110" : "border-ink/25 text-dim hover:border-ink/60 hover:text-ink"
+              }`}
+            >
+              Summon {batch.summons}
+            </button>
+          ))}
         </span>
       </div>
 
@@ -233,7 +295,7 @@ export function SummonPanel() {
           {last.rewards.map((reward) => `level ${reward.at} gave ${reward.mythicG1} Mythic Grade 1`).join(" · ")}
         </p>
       ) : null}
-      <Awakening kind={kind} mythicG1={totals[MYTHIC_G1] ?? 0} shards={state.shards} />
+      <Awakening kind={kind} mythicG1={totals[MYTHIC_G1] ?? 0} shards={state.shards} level={state.level} progress={state.progress} />
 
       <div className="grid min-h-0 gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
         <div className="flex min-w-0 flex-col gap-3">
