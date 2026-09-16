@@ -156,6 +156,7 @@ export function useProfile() {
     setBossMonster: (on: boolean) => update((p) => rules.setBossMonster(p, on)),
     setNormalMonster: (on: boolean) => update((p) => rules.setNormalMonster(p, on)),
     toggleManualSkill: (name: string) => update((p) => rules.toggleManualSkill(p, name)),
+    setManualSkills: (names: string[]) => update((p) => rules.setManualSkills(p, names)),
     setAbbreviateNumbers: (on: boolean) => update((p) => rules.setAbbreviateNumbers(p, on)),
     setResource: (key: Parameters<typeof rules.setResource>[1], amount: number) => update((p) => rules.setResource(p, key, amount)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),

@@ -323,6 +323,27 @@ describe("simulateFight", () => {
     expect(fight.state().skills[0].complete).toBe(true);
   });
 
+  it("turns auto off and back on while the fight plays", () => {
+    const slash = skill({ name: "Slash", every: 2, effect: { type: "damage", power: 1, hits: 1 } });
+    const fight = createFight({ ...base, duration: 60, skills: [slash] });
+    fight.advance(3);
+    expect(fight.state().casts.length).toBeGreaterThan(0);
+    // Auto off: whatever was queued still goes, then nothing casts itself.
+    fight.setManual(["Slash"]);
+    fight.advance(0.5);
+    const quiet = fight.state().casts.length;
+    fight.advance(8);
+    expect(fight.state().casts.length).toBe(quiet);
+    // It can be pressed, though.
+    expect(fight.cast("Slash")).toBe(true);
+    fight.advance(0.5);
+    expect(fight.state().casts.length).toBe(quiet + 1);
+    // Auto back on: it casts itself again.
+    fight.setManual([]);
+    fight.advance(8);
+    expect(fight.state().casts.length).toBeGreaterThan(quiet + 1);
+  });
+
   it("takes new stats mid-fight, moving the life pool around the life already in it", () => {
     const burn = skill({ name: "Burn", kind: "buff", every: 100, duration: 5, hpCost: 0.5, effect: { type: "atk", power: 0 } });
     const input = { ...base, maxHp: 1000, hpRecovery: 0, skills: [burn] };

@@ -79,6 +79,14 @@ export function castInFightRun(name: string) {
   fight?.cast(name);
 }
 
+/** Turns auto off or back on while the fight plays: the skills listed wait for a manual cast. */
+export function setManualInFightRun(names: string[]) {
+  if (!fight || !run) return;
+  fight.setManual(names);
+  run = { ...run, snap: fight.state() };
+  emit();
+}
+
 /** Swaps new stats into the fight playing, as gear or a class is equipped or unequipped while it runs. */
 export function retuneFightRun(stats: FightStats) {
   if (!fight || !run || sameFightStats(fightStatsOf(run.setup.input), stats)) return;

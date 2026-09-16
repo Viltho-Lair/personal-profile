@@ -655,6 +655,13 @@ export function toggleManualSkill(profile: ProfileV1, name: string): ProfileV1 {
   return { ...profile, skillPresetManual: profile.skillPresetManual.map((list, i) => (i === preset ? next : list)) };
 }
 
+/** Sets the whole manual list of the active skill preset: everything listed waits for a press, the rest is on auto. */
+export function setManualSkills(profile: ProfileV1, names: string[]): ProfileV1 {
+  const preset = profile.activeSkillPreset;
+  const next = [...new Set(names)];
+  return { ...profile, skillPresetManual: profile.skillPresetManual.map((list, i) => (i === preset ? next : list)) };
+}
+
 /** The Fountain of Circulation's grade: one more every 30 Forest of Circulation levels (240 is grade 9); 0 when not set. */
 export function fountainGrade(forestLevel: number): number {
   return forestLevel > 0 ? Math.floor(forestLevel / FOREST_LEVELS_PER_GRADE) + 1 : 0;

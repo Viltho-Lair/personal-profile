@@ -19,7 +19,7 @@ import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
 import { EquipSuggestions, LowestEquip } from "./equip-suggestions";
-import { castInFightRun, retuneFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
+import { castInFightRun, retuneFightRun, setManualInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
@@ -39,7 +39,7 @@ type Phase = "idle" | "running" | "done";
  * once the fight's over.
  */
 export function ProgressChart() {
-  const { profile, setPromotionTarget, setBossMonster, setNormalMonster, setEnemyElement, setStageFarming, toggleManualSkill } = useProfile();
+  const { profile, setPromotionTarget, setBossMonster, setNormalMonster, setEnemyElement, setStageFarming, toggleManualSkill, setManualSkills } = useProfile();
   const factors = useSpiritFactors();
   const [logScale, setLogScale] = useState(false);
   const [view, setView] = useState<"analysis" | "render">("render");
@@ -76,6 +76,18 @@ export function ProgressChart() {
   // What the controls set up for the next render.
   const nextFarm = next.mode === "farm";
   const nextStages = next.mode === "stages";
+
+  // Every skill that can be pressed, and whether auto is off for all of them: the Auto button switches the lot,
+  // during a fight as well as before it.
+  const castableNames = useMemo(
+    () => [...setup.skills.filter((skill) => skill.kind !== "passive").map((skill) => skill.name), ...(setup.familiar.skill ? [FAMILIAR_SKILL] : [])],
+    [setup],
+  );
+  const autoOff = castableNames.length > 0 && castableNames.every((name) => manual.includes(name));
+  // Turning auto off or on reaches the fight that's playing, so its skills stop or start casting themselves.
+  useEffect(() => {
+    setManualInFightRun(manual);
+  }, [manual]);
 
   const render = () => startFightRun(next);
   const toggleAuto = (name: string) => toggleManualSkill(name);
@@ -222,6 +234,20 @@ export function ProgressChart() {
           ) : null}
         </div>
         <span className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setManualSkills(autoOff ? [] : castableNames)}
+            disabled={!castableNames.length}
+            aria-pressed={!autoOff}
+            title={
+              autoOff
+                ? "Auto is off: every skill waits for a press. Turn it back on."
+                : "Auto is on: skills cast themselves. Turn it off to press them yourself."
+            }
+            className={`${BUTTON} ${autoOff ? "border-ink/25 text-dim hover:border-ink/60 hover:text-ink" : "border-ink text-ink hover:brightness-110"}`}
+          >
+            Auto {autoOff ? "off" : "on"}
+          </button>
           {phase === "running" ? (
             <button
               type="button"

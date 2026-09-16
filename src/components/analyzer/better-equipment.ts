@@ -92,14 +92,14 @@ export function betterEquipment(profile: ProfileV1): BetterEquipment[] {
 }
 
 /**
- * The weakest owned weapon and class, to drop to before Rage: each is null when nothing is owned or the weakest is
- * already equipped.
+ * The weakest owned accessory and class, the life gear to drop before Rage: each is null when nothing is owned or
+ * the weakest is already equipped.
  */
 export function lowestEquipment(profile: ProfileV1) {
-  const weapon = pickGear(profile, "weapons", WEAPONS, "lowest");
+  const accessory = pickGear(profile, "accessories", ACCESSORIES, "lowest");
   const cls = pickClass(profile, "lowest");
   return {
-    weapon: weapon && weapon.key !== profile.equippedWeapon ? weapon : null,
+    accessory: accessory && accessory.key !== profile.equippedAccessory ? accessory : null,
     class: cls && cls.key !== profile.character.equippedClass ? cls : null,
   };
 }

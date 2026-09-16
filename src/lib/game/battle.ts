@@ -410,6 +410,8 @@ export type Fight = {
   advance: (seconds: number) => void;
   /** Queues a ready skill whose auto is off; false when it isn't ready. */
   cast: (name: string) => boolean;
+  /** Switches which skills wait for a manual cast, while the fight plays. Skills already queued still go. */
+  setManual: (names: string[]) => void;
   /**
    * Swaps in new stats from here on (equipping or unequipping gear mid-fight). The life and mana already in the
    * pools stay as they are: a bigger pool leaves that much more missing, a smaller one keeps only what fits.
@@ -906,6 +908,10 @@ export function createFight(initial: FightInput): Fight {
       if (complete(l) || (l.holding ? !l.charged : l.progress < target(l))) return false;
       enqueue(l);
       return true;
+    },
+    setManual: (names) => {
+      const wanted = new Set(names);
+      for (const l of live) l.manual = castable(l.skill) && wanted.has(l.skill.name);
     },
     retune: (stats) => {
       Object.assign(input, stats);

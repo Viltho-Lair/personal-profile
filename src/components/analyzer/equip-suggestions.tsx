@@ -55,7 +55,7 @@ export function EquipSuggestions() {
   );
 }
 
-/** One button: equip the weakest owned weapon or class, or a dim one when there's nothing to drop to. */
+/** One button: equip the weakest owned accessory or class, or a dim one when there's nothing to drop to. */
 function LowestButton({ item, what, onEquip }: { item: BetterEquipment | null; what: string; onEquip: () => void }) {
   const title = item
     ? `Equip ${item.label}, the lowest ${what.toLowerCase()} owned: a smaller life pool leaves more life missing for Rage`
@@ -84,15 +84,16 @@ function LowestButton({ item, what, onEquip }: { item: BetterEquipment | null; w
 }
 
 /**
- * Right of the familiar: drop to the weakest owned weapon, and under it the weakest owned class. It's what players
- * do before Rage, and in a fight that's playing the pool shrinks around the life left at once.
+ * Right of the familiar: drop to the weakest owned accessory, and under it the weakest owned class, the gear that
+ * carries the life pool. It's what players do before Rage, and in a fight that's playing the pool shrinks around
+ * the life left at once.
  */
 export function LowestEquip() {
   const { profile, equip, updateCharacter } = useProfile();
   const lowest = useMemo(() => lowestEquipment(profile), [profile]);
   return (
     <div className="flex w-[4.25rem] shrink-0 flex-col gap-1 self-stretch">
-      <LowestButton item={lowest.weapon} what="Weapon" onEquip={() => lowest.weapon && equip("weapons", lowest.weapon.key)} />
+      <LowestButton item={lowest.accessory} what="Accessory" onEquip={() => lowest.accessory && equip("accessories", lowest.accessory.key)} />
       <LowestButton
         item={lowest.class}
         what="Class"
