@@ -32,9 +32,10 @@ export default function Guide() {
 
       <h2>The layout</h2>
       <p>
-        Five tabs sit along the bottom of the screen: <strong>Char</strong>, <strong>Skill</strong>,{" "}
-        <strong>Equips</strong>, <strong>Companion</strong> and <strong>Analysis</strong> (the chart
-        icon). The <strong>Settings</strong> panel stays on the side whichever tab is open:
+        Six tabs sit along the bottom of the screen: <strong>Char</strong>, <strong>Skill</strong>,{" "}
+        <strong>Equips</strong>, <strong>Companion</strong>, <strong>Analysis</strong> (the chart
+        icon) and <strong>Summon</strong> (the market icon). The <strong>Settings</strong> panel
+        stays on the side whichever tab is open:
       </p>
       <ul>
         <li>
@@ -54,9 +55,10 @@ export default function Guide() {
           thousand: 1,000 is 1.00A and 1,000,000 is 1.00B.
         </li>
         <li>
-          <strong>Owned resources</strong>: gold, cubes, Mana Crystals, stones, emeralds and souls.
-          Upgrade plans show in green what you can pay for and in red what you’re short of. You can
-          type amounts in full, like 4.71e17, or with the game’s letters, like 471F.
+          <strong>Event buffs</strong>: Gold Acquisition, Exp Acquisition, Character Attack,
+          Character Health, Normal Monster Damage and Boss Monster Damage, in percent as the event
+          shows them. Each multiplies the stat it names on its own, so the Stats Summary and every
+          fight take them in; leave them at 0 when no event is on.
         </li>
       </ul>
 
@@ -116,7 +118,8 @@ export default function Guide() {
       <h2>Analysis tab</h2>
       <p>
         Analysis puts the fight next to the <strong>Stats Summary</strong> (Attack, HP, crit,
-        death strike, mana, accuracy, dodge, gold, EXP and extra damage for each element) and your{" "}
+        death strike, mana, accuracy, dodge, gold, EXP, boss and normal monster damage, and extra
+        damage for each element) and your{" "}
         <strong>Presets</strong>.
       </p>
       <ul>
@@ -233,7 +236,7 @@ export default function Guide() {
         <li>Enter slayer level, promotion, equipped weapon and accessory, and enhance levels first. They move ATK and HP the most.</li>
         <li>Add spirits, classes, companions, familiars and your soul weapon. Your Stats Summary should now be close to the game’s.</li>
         <li>Build the skill preset you actually use, set the skills you press by hand to manual, and render your next promotion.</li>
-        <li>Enter what you own under Settings, then follow the upgrade plan, starting with what shows in green.</li>
+        <li>Enter any event buffs that are on under Settings, then follow the upgrade plan, steepest first.</li>
         <li>Render again after upgrading in the game to see how close you are.</li>
       </ol>
 

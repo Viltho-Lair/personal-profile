@@ -38,6 +38,8 @@ export function StatsSummary() {
     ["CC Resist", formatValue(stats.ccResist)],
     ["Extra Gold", pct(stats.extraGold)],
     ["Extra EXP", pct(stats.extraExp)],
+    ["Boss Monster Damage", pct(stats.bossDamage)],
+    ["Normal Monster Damage", pct(stats.monsterDamage)],
     ...ELEMENTS.map((element): [string, string] => [`Extra ${element} Damage`, pct(stats.extraDamage[element])]),
   ];
 

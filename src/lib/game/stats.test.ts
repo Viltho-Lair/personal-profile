@@ -36,6 +36,26 @@ describe("computeStats", () => {
     expect(computeStats(s).extraGold).toBeCloseTo(1.5 * 1.2 * 1.1 - 1, 2);
   });
 
+  it("multiplies each stat by its event buff on its own", () => {
+    const s = sample();
+    s.relics.gold = 0.5;
+    s.blackOrb.boss = 0.2;
+    const before = computeStats(s);
+    s.event = { atk: 1, hp: 0.5, gold: 1, exp: 1, boss: 0.5, monster: 0.3 };
+    const after = computeStats(s);
+    expect(after.attack / before.attack).toBeCloseTo(2);
+    expect(after.hp / before.hp).toBeCloseTo(1.5);
+    // Gold x2 on top of the 50% already there: 1.5 x 2 = 3, so +200%.
+    expect(after.extraGold).toBeCloseTo(2);
+    expect(after.extraExp).toBeCloseTo(1);
+    // Boss damage: the Black Orb's 20% times the event's 50%.
+    expect(after.bossDamage).toBeCloseTo(1.2 * 1.5 - 1);
+    expect(after.monsterDamage).toBeCloseTo(0.3);
+    // HP Recovery and crit don't move.
+    expect(after.hpRecovery).toBeCloseTo(before.hpRecovery);
+    expect(after.critDamage).toBe(before.critDamage);
+  });
+
   it("scales base ATK and HP by soul gem stats, but not the soul weapon's own ATK", () => {
     const s = sample();
     s.soulWeapon.atk = 1;

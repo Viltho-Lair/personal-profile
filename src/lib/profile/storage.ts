@@ -22,9 +22,9 @@ import {
   PRESET_KINDS,
   PROMOTION_EFFECTS,
   PROMOTION_SLOTS,
-  emptyResources,
-  RESOURCES,
-  type OwnedResources,
+  emptyEventBuffs,
+  EVENT_BUFFS,
+  type EventBuffs,
   SKILL_PRESET_COUNT,
   SPIRIT_PRESET_SLOTS,
   type AbilityRoll,
@@ -181,15 +181,15 @@ const ownedEntry = (entry: Json) =>
 
 const name = (value: unknown) => (typeof value === "string" ? value : null);
 
-/** Always 5 presets of 10 slots; anything that isn't a skill name reads as empty. */
-function resources(value: unknown): OwnedResources {
+/** Event buffs in percent; profiles from before them, and anything that isn't a number, read as none. */
+function eventBuffs(value: unknown): EventBuffs {
   const stored = isRecord(value) ? value : {};
-  const owned = emptyResources();
-  for (const { key } of RESOURCES) {
+  const buffs = emptyEventBuffs();
+  for (const { key } of EVENT_BUFFS) {
     const amount = stored[key];
-    if (typeof amount === "number" && Number.isFinite(amount) && amount > 0) owned[key] = amount;
+    if (typeof amount === "number" && Number.isFinite(amount) && amount > 0) buffs[key] = amount;
   }
-  return owned;
+  return buffs;
 }
 
 function skillPresetManual(value: unknown): string[][] {
@@ -499,7 +499,7 @@ function parseKnownFields(data: Json): ProfileV1 {
     bossMonster: data.bossMonster !== false,
     normalMonster: data.bossMonster === false && data.normalMonster === true,
     abbreviateNumbers: data.abbreviateNumbers === true,
-    resources: resources(data.resources),
+    eventBuffs: eventBuffs(data.eventBuffs),
     enemyElement: (["Fire", "Water", "Wind", "Earth"] as const).find((e) => e === data.enemyElement) ?? null,
     stageFarming: {
       on: isRecord(data.stageFarming) && data.stageFarming.on === true,

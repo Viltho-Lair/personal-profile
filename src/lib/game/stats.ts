@@ -71,6 +71,8 @@ export type StatSources = {
   skillProficiency: number;
   /** Buffs from the active skill preset, zero unless skills are included. */
   skills: { atk: number; manaRecovery: number };
+  /** Event buffs (Settings), as fractions: each multiplies the stat it names on its own. */
+  event: { atk: number; hp: number; gold: number; exp: number; boss: number; monster: number };
 };
 
 export type Stats = {
@@ -132,7 +134,8 @@ export function computeStats(s: StatSources): Stats {
     (1 + s.beasts.combat) *
     (1 + s.beasts.mountedAtk) *
     (1 + s.blackOrb.atk) *
-    (1 + s.skills.atk);
+    (1 + s.skills.atk) *
+    (1 + s.event.atk);
 
   const hp =
     mantra *
@@ -148,7 +151,8 @@ export function computeStats(s: StatSources): Stats {
     familiarHp *
     (1 + s.beasts.combat) *
     (1 + s.blackOrb.hp) *
-    (1 + s.spiritSkills.hp);
+    (1 + s.spiritSkills.hp) *
+    (1 + s.event.hp);
 
   const hpRecovery =
     mantra *
@@ -175,7 +179,8 @@ export function computeStats(s: StatSources): Stats {
       (down(s.gearSecondary.gold + s.appearance.gold + s.relics.gold + s.growth.gold + s.engraving.gold + s.mastery.gold + s.companionPromotion.gold + s.slayerPromotion.gold, 3) + 1) *
         (1 + s.companions.goldRush + s.companions.goldRush2 + s.memoryTree.goldAll + s.constellation.goldAll) *
         (1 + s.memoryTree.goldStage + s.constellation.goldStage) *
-        (1 + down(s.spirits.gold, 3)),
+        (1 + down(s.spirits.gold, 3)) *
+        (1 + s.event.gold),
       2,
     ) - 1;
 
@@ -184,7 +189,8 @@ export function computeStats(s: StatSources): Stats {
       (down(s.gearSecondary.exp + s.appearance.exp + s.mastery.exp + s.companionPromotion.exp + s.slayerPromotion.exp, 3) + 1) *
         (1 + s.companions.hymn + s.memoryTree.expAll + s.constellation.expAll) *
         (1 + s.memoryTree.expStage + s.constellation.expStage) *
-        (1 + down(s.spirits.exp, 3)),
+        (1 + down(s.spirits.exp, 3)) *
+        (1 + s.event.exp),
       2,
     ) - 1;
 
@@ -225,8 +231,9 @@ export function computeStats(s: StatSources): Stats {
     extraDamage,
     elementDamage,
     elementAmp,
-    bossDamage: s.blackOrb.boss,
-    monsterDamage: s.blackOrb.monster,
+    // The Black Orb's boss and monster damage, times the event's.
+    bossDamage: (1 + s.blackOrb.boss) * (1 + s.event.boss) - 1,
+    monsterDamage: (1 + s.blackOrb.monster) * (1 + s.event.monster) - 1,
   };
 }
 
@@ -264,5 +271,6 @@ export function emptySources(): StatSources {
     familiarProficiency: { atk: 0, hp: 0, slayer: 0, attribute: 0 },
     skillProficiency: 0,
     skills: { atk: 0, manaRecovery: 0 },
+    event: { atk: 0, hp: 0, gold: 0, exp: 0, boss: 0, monster: 0 },
   };
 }

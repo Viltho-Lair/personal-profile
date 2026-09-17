@@ -29,6 +29,16 @@ describe("loadProfile", () => {
     expect(data.size).toBe(0);
   });
 
+  it("reads event buffs, dropping broken ones, and carries the old owned resources along unread", () => {
+    const raw = JSON.stringify({ version: 1, eventBuffs: { gold: 100, atk: 50.5, hp: -5, exp: "lots" }, resources: { gold: 5 } });
+    const profile = parseProfile(raw);
+    expect(profile?.eventBuffs).toEqual({ gold: 100, exp: 0, atk: 50.5, hp: 0, monster: 0, boss: 0 });
+    // Like any field this build doesn't know, it rides along so saving doesn't drop it; nothing reads it any more.
+    expect((profile as unknown as { resources?: unknown })?.resources).toEqual({ gold: 5 });
+    // Profiles from before event buffs read none.
+    expect(parseProfile(JSON.stringify({ version: 1 }))?.eventBuffs).toEqual(emptyProfile().eventBuffs);
+  });
+
   it("reads back a saved profile", () => {
     const { storage } = memoryStorage();
     const profile = { ...emptyProfile(), skills: { "Fire Slash": { level: 12 } }, equippedWeapon: "Epic 1" };

@@ -312,6 +312,9 @@ export function collectSources(profile: ProfileV1, factors: SpiritFactors | null
   s.beasts = { combat: beasts.combat, mountedAtk: beasts.mountedAtk, mountedMspd: mountedBeast(profile) !== null ? beasts.mspd : 0 };
   const orb = blackOrbEffects(BLACK_ORB, profile.blackOrb);
   s.blackOrb = { amp: orb.amp, element: orb.element, atk: orb.atk, hp: orb.hp, boss: orb.boss, monster: orb.monster };
+  // Event buffs are entered in percent.
+  const event = profile.eventBuffs;
+  s.event = { atk: event.atk / 100, hp: event.hp / 100, gold: event.gold / 100, exp: event.exp / 100, boss: event.boss / 100, monster: event.monster / 100 };
   s.shrine = { soulWeaponAtk: shrine.soulWeaponAtk, atk: shrine.atk, hp: shrine.hp, element: shrine.element };
   const growthLevel = (key: string) => (c.growth[key] ?? 0) * (GROWTH.find((g) => g.key === key)?.perLevel ?? 0);
   s.growth = {

@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { parseProfile } from "@/lib/profile/storage";
 import { useProfile } from "@/lib/profile/use-profile";
-import { formatNumber, parseAmount } from "@/lib/number-format";
 import { fountainGrade } from "@/lib/profile/rules";
-import { RESOURCES } from "@/lib/profile/types";
+import { EVENT_BUFFS } from "@/lib/profile/types";
 
 export function OwnedToggle({
   owned,
@@ -180,50 +179,40 @@ function AbbreviateSwitch() {
   );
 }
 
-/** An amount of a resource, typed in full, in scientific notation or with the game's letters (471F). */
-function ResourceField({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
-  const [draft, setDraft] = useState<string | null>(null);
-  const invalid = draft !== null && draft.trim() !== "" && parseAmount(draft) === null;
-  const commit = () => {
-    if (draft === null) return;
-    const amount = draft.trim() === "" ? 0 : parseAmount(draft);
-    if (amount !== null) onChange(amount);
-    setDraft(null);
-  };
+/** One event buff, in percent as the game shows it. */
+function EventBuffField({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
   return (
     <label className="flex items-center justify-between gap-3">
       <span className={LABEL}>{label}</span>
-      <input
-        type="text"
-        inputMode="decimal"
-        value={draft ?? (value ? formatNumber(value) : "")}
-        placeholder="0"
-        aria-label={`Owned ${label}`}
-        aria-invalid={invalid}
-        title="A number, 4.71e17, or the game's letters like 471F"
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={commit}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") commit();
-        }}
-        className={`w-28 rounded-md border bg-transparent px-2 py-1 text-right font-mono text-xs text-ink tabular-nums outline-none focus-visible:border-ink ${
-          invalid ? "border-red-500" : "border-ink/20"
-        }`}
-      />
+      <span className="flex items-center gap-1">
+        <input
+          type="number"
+          min={0}
+          step="any"
+          value={value || ""}
+          placeholder="0"
+          aria-label={`${label} event buff, percent`}
+          onChange={(event) => onChange(event.target.valueAsNumber || 0)}
+          className="w-20 rounded-md border border-ink/20 bg-transparent px-2 py-1 text-right font-mono text-xs text-ink tabular-nums outline-none focus-visible:border-ink"
+        />
+        <span className="font-mono text-[10px] text-dim">%</span>
+      </span>
     </label>
   );
 }
 
-/** What the player has to spend, for upgrade plans that only use what's there. */
-function OwnedResourcesFields() {
-  const { profile, setResource } = useProfile();
+/** Event buffs on right now: each multiplies the stat it names, and the Stats Summary and fights take them in. */
+function EventBuffFields() {
+  const { profile, setEventBuff } = useProfile();
+  const on = EVENT_BUFFS.filter((buff) => profile.eventBuffs[buff.key] > 0).length;
   return (
     <details className="flex flex-col gap-1.5">
-      <summary className={`${LABEL} cursor-pointer select-none`}>Owned resources</summary>
+      <summary className={`${LABEL} cursor-pointer select-none`}>Event buffs{on ? ` · ${on} on` : ""}</summary>
       <div className="mt-1.5 flex flex-col gap-1.5">
-        {RESOURCES.map((resource) => (
-          <ResourceField key={resource.key} label={resource.label} value={profile.resources[resource.key]} onChange={(amount) => setResource(resource.key, amount)} />
+        {EVENT_BUFFS.map((buff) => (
+          <EventBuffField key={buff.key} label={buff.label} value={profile.eventBuffs[buff.key]} onChange={(percent) => setEventBuff(buff.key, percent)} />
         ))}
+        <p className="text-[10px] leading-snug text-dim">Each is its own multiplier on the stat it names, in the Stats Summary and in fights.</p>
       </div>
     </details>
   );
@@ -267,7 +256,7 @@ export function SettingsPanel() {
         </h2>
         <SlayerProgress />
         <AbbreviateSwitch />
-        <OwnedResourcesFields />
+        <EventBuffFields />
       </div>
       <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
         <button type="button" onClick={exportProfile} className={ACTION}>

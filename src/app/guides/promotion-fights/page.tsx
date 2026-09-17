@@ -239,9 +239,8 @@ export default function Guide() {
       </p>
       <p>
         Upgrades that cost resources are held to their price. A stretch counts as big as its price
-        measured against what you own when that’s more, or against what you’ve already spent on
-        these upgrades if you haven’t entered what you own. The plan spends at most three times
-        that. A spirit whose next levels cost more crystals than you’ve ever earned loses to cheaper
+        measured against what you’ve already spent on these upgrades, and the plan spends at most
+        three times that. A spirit whose next levels cost more crystals than you’ve ever earned loses to cheaper
         upgrades that add less. Each card shows its levels and cost, and the plan ends with what the
         fight deals after all of it.
       </p>

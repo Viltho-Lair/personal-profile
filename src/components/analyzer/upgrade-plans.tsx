@@ -6,7 +6,7 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { RESOURCES, type ProfileV1 } from "@/lib/profile/types";
 import { formatValue } from "./data";
 import type { SpiritFactors } from "./spirit-stats";
-import { affordable, type Plan, type PlanStep, type PlanTarget, type UpgradeCost, type UpgradePlans } from "./upgrade-planner";
+import { type Plan, type PlanStep, type PlanTarget, type UpgradeCost, type UpgradePlans } from "./upgrade-planner";
 
 const LABEL = "font-mono text-[9px] tracking-[0.08em] text-dim uppercase";
 const pct = (damage: number, hp: number) => `${formatValue(Math.floor((damage / Math.max(1, hp)) * 1000) / 10)}%`;
@@ -30,25 +30,17 @@ function usePlans(profile: ProfileV1, factors: SpiritFactors | null, target: Pla
   return state.key === key ? state : { key, progress: 0, result: null };
 }
 
-/** A cost as chips: each resource green when it's owned, red with what's missing; unnamed units grey. */
-function CostChips({ cost, owned }: { cost: UpgradeCost; owned: ProfileV1["resources"] }) {
-  const { short } = affordable(cost, owned);
+/** A cost as chips, one per resource; units the workbook doesn't name are grey. */
+function CostChips({ cost }: { cost: UpgradeCost }) {
   const resources = RESOURCES.filter((r) => (cost.resources[r.key] ?? 0) > 0);
   if (cost.unpriced && !resources.length && !cost.other.length) return <span className="font-mono text-[9px] text-dim">Cost not in the workbook</span>;
   return (
     <span className="flex flex-wrap gap-1">
-      {resources.map((r) => {
-        const missing = short[r.key];
-        return (
-          <span
-            key={r.key}
-            title={missing ? `${formatValue(missing)} ${r.label} short of what you own` : `You own enough ${r.label}`}
-            className={`rounded-sm border px-1 font-mono text-[9px] tabular-nums ${missing ? "border-red-500/40 text-red-400" : "border-emerald-500/40 text-emerald-400"}`}
-          >
-            {formatValue(cost.resources[r.key] ?? 0)} {r.label}
-          </span>
-        );
-      })}
+      {resources.map((r) => (
+        <span key={r.key} className="rounded-sm border border-ink/25 px-1 font-mono text-[9px] text-ink tabular-nums">
+          {formatValue(cost.resources[r.key] ?? 0)} {r.label}
+        </span>
+      ))}
       {cost.other.map((o) => (
         <span key={o.label} title="The workbook prices this without naming its unit" className="rounded-sm border border-ink/20 px-1 font-mono text-[9px] text-dim tabular-nums">
           {formatValue(Math.ceil(o.amount))} {o.label}
@@ -68,7 +60,7 @@ function levelText(upgrade: PlanStep["upgrade"], level: number): string {
 }
 
 /** One upgrade: its picture, what it is, the levels, and the cost. */
-function UpgradeCard({ step, owned }: { step: Pick<PlanStep, "upgrade" | "level" | "cost">; owned: ProfileV1["resources"] }) {
+function UpgradeCard({ step }: { step: Pick<PlanStep, "upgrade" | "level" | "cost"> }) {
   const { upgrade, level, cost } = step;
   return (
     <li className="flex min-w-0 gap-2 rounded-md border border-ink/15 bg-ink/[0.03] p-2">
@@ -86,14 +78,14 @@ function UpgradeCard({ step, owned }: { step: Pick<PlanStep, "upgrade" | "level"
           {levelText(upgrade, level)}
           {level >= upgrade.max && upgrade.unit !== "swap" ? <span className="text-dim"> (max)</span> : null}
         </span>
-        <CostChips cost={cost} owned={owned} />
+        <CostChips cost={cost} />
       </span>
     </li>
   );
 }
 
 /** The plan: its upgrades from where they are to where they go, what they cost together, and how far the fight gets. */
-function PlanBlock({ plan, hp, owned }: { plan: Plan; hp: number; owned: ProfileV1["resources"] }) {
+function PlanBlock({ plan, hp }: { plan: Plan; hp: number }) {
   return (
     <div className="flex flex-col gap-1.5 rounded-lg border border-ink/15 p-2">
       <p className="flex flex-wrap items-baseline justify-between gap-x-2 text-[11px]">
@@ -106,12 +98,12 @@ function PlanBlock({ plan, hp, owned }: { plan: Plan; hp: number; owned: Profile
       </p>
       <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
         {plan.steps.map((step) => (
-          <UpgradeCard key={step.upgrade.id} step={step} owned={owned} />
+          <UpgradeCard key={step.upgrade.id} step={step} />
         ))}
       </ul>
       {plan.steps.length > 1 ? (
         <p className="flex flex-wrap items-center gap-1.5 text-[10px] text-dim">
-          Together: <CostChips cost={plan.cost} owned={owned} />
+          Together: <CostChips cost={plan.cost} />
         </p>
       ) : null}
     </div>
@@ -126,7 +118,6 @@ function PlanBlock({ plan, hp, owned }: { plan: Plan; hp: number; owned: Profile
 export function UpgradePlans({ title, target, factors }: { title: string; target: PlanTarget; factors: SpiritFactors | null }) {
   const { profile } = useProfile();
   const { progress, result } = usePlans(profile, factors, target);
-  const owned = profile.resources;
 
   return (
     <section aria-label={title} className="flex flex-col gap-2 border-t border-ink/10 pt-2">
@@ -175,7 +166,7 @@ export function UpgradePlans({ title, target, factors }: { title: string; target
               the one whose next stretch lifts your damage the most moves. A stretch that costs resources counts as big as its price against what you own
               (or what you&apos;ve already spent on it) when that&apos;s more, and the plan spends at most {formatValue(result.budget)}× that.
             </p>
-            {result.plan ? <PlanBlock plan={result.plan} hp={result.hp} owned={owned} /> : <p className="text-[11px] text-dim">No upgrade adds damage here.</p>}
+            {result.plan ? <PlanBlock plan={result.plan} hp={result.hp} /> : <p className="text-[11px] text-dim">No upgrade adds damage here.</p>}
             {result.won ? (
               <p className="text-[11px] text-emerald-500">That gets there.</p>
             ) : (

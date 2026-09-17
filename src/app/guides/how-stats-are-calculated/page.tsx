@@ -290,8 +290,10 @@ export default function Guide() {
       <p>
         When choosing an upgrade, ask which group it feeds and how full that group already is. The
         analyzer does the maths for you: when a promotion fight on the Analysis tab falls short, it
-        shows how many times your damage has to grow and a plan of upgrades, steepest first, priced
-        against the resources you own. See{" "}
+        shows how many times your damage has to grow and a plan of upgrades, steepest first, each
+        with its price. Event buffs from Settings multiply their stat on top of everything here:
+        Character Attack and Character Health their totals, Gold and Exp Acquisition the extra gold
+        and EXP, and Boss and Normal Monster Damage the Black Orb&apos;s. See{" "}
         <Link href="/guides/promotion-fights">promotion fights</Link> for how that works, and{" "}
         <Link href="/guides/character-progression">Enhance, Growth, Promotion and Classes</Link> for
         how each system’s numbers scale.

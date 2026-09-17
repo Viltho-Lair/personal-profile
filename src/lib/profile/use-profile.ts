@@ -158,7 +158,7 @@ export function useProfile() {
     toggleManualSkill: (name: string) => update((p) => rules.toggleManualSkill(p, name)),
     setManualSkills: (names: string[]) => update((p) => rules.setManualSkills(p, names)),
     setAbbreviateNumbers: (on: boolean) => update((p) => rules.setAbbreviateNumbers(p, on)),
-    setResource: (key: Parameters<typeof rules.setResource>[1], amount: number) => update((p) => rules.setResource(p, key, amount)),
+    setEventBuff: (key: Parameters<typeof rules.setEventBuff>[1], percent: number) => update((p) => rules.setEventBuff(p, key, percent)),
     setEnemyElement: (element: ProfileV1["enemyElement"]) => update((p) => rules.setEnemyElement(p, element)),
     setStageFarming: (change: Partial<ProfileV1["stageFarming"]>) => update((p) => rules.setStageFarming(p, change)),
     setSummon: (change: Partial<ProfileV1["summon"]>) => update((p) => rules.setSummon(p, change)),

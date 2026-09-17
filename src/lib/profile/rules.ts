@@ -1,6 +1,6 @@
 import { clampSummonLevel } from "@/lib/game/summon";
 import { FOREST_LEVELS_PER_GRADE, SPIRIT_LEVEL_CAP } from "./types";
-import type { ResourceKey } from "./types";
+import type { EventBuffKey } from "./types";
 import type { OrbAccessory, OrbLine } from "@/lib/game/black-orb";
 import type { Element } from "@/lib/game/stats";
 import type { BeastState } from "@/lib/game/beasts";
@@ -671,9 +671,9 @@ export function setAbbreviateNumbers(profile: ProfileV1, abbreviateNumbers: bool
   return { ...profile, abbreviateNumbers };
 }
 
-/** Sets how much of a resource the player has; negative or broken amounts count as none. */
-export function setResource(profile: ProfileV1, key: ResourceKey, amount: number): ProfileV1 {
-  return { ...profile, resources: { ...profile.resources, [key]: Number.isFinite(amount) && amount > 0 ? amount : 0 } };
+/** Sets an event buff in percent; negative or broken amounts count as none. */
+export function setEventBuff(profile: ProfileV1, key: EventBuffKey, percent: number): ProfileV1 {
+  return { ...profile, eventBuffs: { ...profile.eventBuffs, [key]: Number.isFinite(percent) && percent > 0 ? percent : 0 } };
 }
 
 export function setEnemyElement(profile: ProfileV1, enemyElement: ProfileV1["enemyElement"]): ProfileV1 {

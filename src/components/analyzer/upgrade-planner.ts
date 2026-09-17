@@ -518,16 +518,6 @@ export function planFight(profile: ProfileV1, factors: SpiritFactors | null, tar
   return { total: result.total, own, hp, bySkill: result.bySkill, setup };
 }
 
-/** Whether a cost fits what the player owns; unnamed units and unpriced upgrades can't be checked. */
-export function affordable(cost: UpgradeCost, owned: ProfileV1["resources"]): { fits: boolean; short: Partial<Record<ResourceKey, number>> } {
-  const short: Partial<Record<ResourceKey, number>> = {};
-  for (const { key } of RESOURCES) {
-    const need = cost.resources[key] ?? 0;
-    if (need > (owned[key] ?? 0)) short[key] = need - (owned[key] ?? 0);
-  }
-  return { fits: Object.keys(short).length === 0 && !cost.unpriced && cost.other.length === 0, short };
-}
-
 /** An upgrade in a plan: the upgrade (without its functions), the level it goes to, and what that costs. */
 export type PlanStep = { upgrade: Omit<Upgrade, "apply" | "cost">; level: number; cost: UpgradeCost };
 /** A plan: its upgrades from where they are to where they go, their total cost, and the fight's damage after them. */
@@ -578,11 +568,8 @@ export function sumCosts(costs: UpgradeCost[]): UpgradeCost {
 /** The part of an upgrade's curve a step covers: its levels over the whole track, from its start to its max. */
 export const curveShare = (upgrade: Pick<Upgrade, "min" | "max">, from: number, to: number) => (to - from) / Math.max(1, upgrade.max - (upgrade.min ?? 0));
 
-/**
- * What a resource's price is measured against: what the player owns of it, or when that isn't entered, what they
- * have already put into these upgrades (every upgrade's cost from nothing to where it is).
- */
-export function resourceScale(upgrades: readonly Upgrade[], owned: ProfileV1["resources"]): Record<ResourceKey, number> {
+/** What a resource's price is measured against: what's already been put into these upgrades (each from nothing to where it is). */
+export function resourceScale(upgrades: readonly Upgrade[]): Record<ResourceKey, number> {
   const invested = Object.fromEntries(RESOURCES.map((r) => [r.key, 0])) as Record<ResourceKey, number>;
   for (const upgrade of upgrades) {
     if (upgrade.current <= 0) continue;
@@ -591,7 +578,7 @@ export function resourceScale(upgrades: readonly Upgrade[], owned: ProfileV1["re
       if (Number.isFinite(amount) && amount > 0) invested[key] += amount;
     }
   }
-  return Object.fromEntries(RESOURCES.map((r) => [r.key, (owned[r.key] ?? 0) > 0 ? owned[r.key] : invested[r.key]])) as Record<ResourceKey, number>;
+  return invested;
 }
 
 /** A price as a share of the player's means, summed over its resources: 0 without one, Infinity when a resource can't be measured. */
@@ -623,9 +610,6 @@ export function profileChecks(profile: ProfileV1): string[] {
   if (unrefined.length) checks.push(`No refinement lines entered for ${unrefined.join(", ")}: their extra damage is left out.`);
   if (!presetBeast(profile)) checks.push("No beast picked in the active beast preset.");
   if (SHRINE.statues.every((statue) => (profile.sealedShrine[statue.key as keyof ProfileV1["sealedShrine"]] ?? 0) === 0)) checks.push("Sealed Shrine statues are all at 0.");
-  if (RESOURCES.every((r) => (profile.resources[r.key] ?? 0) <= 0)) {
-    checks.push("No owned resources entered (Settings → Owned resources): prices are measured against what you've already spent on these upgrades.");
-  }
   return checks;
 }
 
@@ -690,7 +674,7 @@ export function planUpgrades(
   const attacks = base.setup.skills.filter((s) => s.effect.type === "damage").map((s) => s.name);
   const upgrades = listUpgrades(profile, { weakestAttack: weakestAttack(profile, base.bySkill, attacks) });
   const byId = new Map(upgrades.map((u) => [u.id, u]));
-  const scale = resourceScale(upgrades, profile.resources);
+  const scale = resourceScale(upgrades);
   const fight = (p: ProfileV1, step: number | null = 0.1) => {
     tick();
     return planFight(p, factors, target, step, rave);

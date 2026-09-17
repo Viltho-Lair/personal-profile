@@ -236,8 +236,8 @@ export type ProfileV1 = {
   normalMonster: boolean;
   /** Numbers written the game's way, a letter for every thousand (1.00A); off, in full. */
   abbreviateNumbers: boolean;
-  /** Resources the player has, for plans that spend only what's there. */
-  resources: OwnedResources;
+  /** Event buffs on right now, in percent as the game shows them (100 = +100%). */
+  eventBuffs: EventBuffs;
   /** The enemy's element when it's element restricted; null when it isn't. */
   enemyElement: "Fire" | "Water" | "Wind" | "Earth" | null;
   /** Stage farming instead of one enemy, and the stage to farm. */
@@ -291,10 +291,21 @@ export const RESOURCES = [
   { key: "blackMana", label: "Black Mana" },
 ] as const;
 export type ResourceKey = (typeof RESOURCES)[number]["key"];
-export type OwnedResources = Record<ResourceKey, number>;
 
-export function emptyResources(): OwnedResources {
-  return Object.fromEntries(RESOURCES.map((r) => [r.key, 0])) as OwnedResources;
+/** Event buffs the game runs from time to time, each its own multiplier on the stat it names. */
+export const EVENT_BUFFS = [
+  { key: "gold", label: "Gold Acquisition" },
+  { key: "exp", label: "Exp Acquisition" },
+  { key: "atk", label: "Character Attack" },
+  { key: "hp", label: "Character Health" },
+  { key: "monster", label: "Normal Monster Damage" },
+  { key: "boss", label: "Boss Monster Damage" },
+] as const;
+export type EventBuffKey = (typeof EVENT_BUFFS)[number]["key"];
+export type EventBuffs = Record<EventBuffKey, number>;
+
+export function emptyEventBuffs(): EventBuffs {
+  return Object.fromEntries(EVENT_BUFFS.map((buff) => [buff.key, 0])) as EventBuffs;
 }
 
 export function emptySkillPresets(): SkillPreset[] {
@@ -331,7 +342,7 @@ export function emptyProfile(): ProfileV1 {
     bossMonster: true,
     normalMonster: false,
     abbreviateNumbers: false,
-    resources: emptyResources(),
+    eventBuffs: emptyEventBuffs(),
     enemyElement: null,
     stageFarming: { on: false, stage: 1 },
     summon: { kind: "weapons", level: 1, progress: 0, shards: 0 },
