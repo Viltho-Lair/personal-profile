@@ -74,3 +74,18 @@ export function relicBuff(bands: readonly Band[], level: number, percent: boolea
   const value = level * band.factor;
   return percent ? value * 100 : value;
 }
+
+/** Skill Proficiency's All Attribute DMG rises 7% more for every 5 levels. */
+const PROFICIENCY_STEP = 5;
+const PROFICIENCY_GROWTH = 1.07;
+
+/**
+ * Skill Proficiency's All Attribute DMG at a level, as the workbook works it out:
+ * ROUND(level x 5 x 1.07 ^ ROUNDDOWN(level / 5), 0) / 100. Level 1 is 0.05, level 6 is 0.32 (32.1 rounds to 32).
+ */
+export function skillProficiencyBonus(level: number): number {
+  const whole = Math.max(0, Math.floor(level));
+  const raw = whole * 5 * PROFICIENCY_GROWTH ** Math.floor(whole / PROFICIENCY_STEP);
+  // Excel rounds half away from zero; the toFixed guards against a product like 26.749999… rounding down.
+  return Math.round(Number(raw.toFixed(9))) / 100;
+}

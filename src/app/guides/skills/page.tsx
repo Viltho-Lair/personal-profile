@@ -150,10 +150,12 @@ export default function Guide() {
       <h2>Skill Proficiency</h2>
       <p>
         Skill Proficiency runs from level 0 to 328 and adds All Attribute damage, which counts for
-        every element. It accelerates hard: +5% at level 1, +58% at 10, +1,935% at 100, +14,975% at
-        200 and +133,287% at 328. Because element damage feeds skills directly, Proficiency becomes
-        one of the largest skill damage sources in the late game. It also raises your familiars’
-        damage by 0.7% a level.
+        every element. Its value at a level is level × 5, times 1.07 for every 5 full levels,
+        rounded to a whole number and read as a percent: level 6 is 6 × 5 × 1.07 = 32.1, so +32%.
+        It accelerates hard: +5% at level 1, +57% at 10, +1,935% at 100, +14,974% at 200 and
+        +133,287% at 328. Because element damage feeds skills directly, Proficiency becomes one of
+        the largest skill damage sources in the late game. It also raises your familiars’ damage
+        by 0.7% a level.
       </p>
 
       <h2>Skill Stones</h2>

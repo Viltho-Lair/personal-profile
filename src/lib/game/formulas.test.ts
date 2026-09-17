@@ -10,6 +10,7 @@ import {
   rarityGroup,
   relicBuff,
   skillPower,
+  skillProficiencyBonus,
   spiritStat,
 } from "./formulas";
 
@@ -106,5 +107,26 @@ describe("spiritStat", () => {
   it("names the rarity group of a tier", () => {
     expect(rarityGroup("Legendary A3")).toBe("Legendary");
     expect(rarityGroup("Epic")).toBe("Epic");
+  });
+});
+
+describe("skillProficiencyBonus", () => {
+  it("follows the workbook: ROUND(level x 5 x 1.07 ^ ROUNDDOWN(level / 5), 0) / 100", () => {
+    expect(skillProficiencyBonus(0)).toBe(0);
+    expect(skillProficiencyBonus(1)).toBe(0.05);
+    expect(skillProficiencyBonus(4)).toBe(0.2);
+    // 5 x 5 x 1.07 = 26.75, which rounds up to 27.
+    expect(skillProficiencyBonus(5)).toBe(0.27);
+    // 6 x 5 x 1.07 = 32.1, which rounds down to 32.
+    expect(skillProficiencyBonus(6)).toBe(0.32);
+    expect(skillProficiencyBonus(10)).toBe(0.57);
+    expect(skillProficiencyBonus(100)).toBe(19.35);
+    expect(skillProficiencyBonus(200)).toBe(149.74);
+    expect(skillProficiencyBonus(328)).toBe(1332.87);
+  });
+
+  it("reads a level below zero or with a fraction as whole levels", () => {
+    expect(skillProficiencyBonus(-3)).toBe(0);
+    expect(skillProficiencyBonus(6.9)).toBe(0.32);
   });
 });

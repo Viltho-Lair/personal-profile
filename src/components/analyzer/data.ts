@@ -10,7 +10,7 @@ import soulWeaponsData from "@/data/optimizer/soul-weapons.json";
 import spiritsData from "@/data/optimizer/spirits.json";
 import weaponsData from "@/data/optimizer/weapons.json";
 import type { AltarLevel } from "@/lib/game/familiars";
-import type { Band } from "@/lib/game/formulas";
+import { skillProficiencyBonus, type Band } from "@/lib/game/formulas";
 import type { FamiliarGroup, KnownNames } from "@/lib/profile/types";
 import { formatNumber } from "@/lib/number-format";
 
@@ -180,9 +180,10 @@ export const SKILL_BY_NAME = new Map(SKILLS.map((skill) => [skill.name, skill]))
 export const skillsIn = (category: SkillCategory) =>
   SKILLS.filter((skill) => skill.category === category);
 
-/** All Attribute DMG as a fraction (0.05 = 5%); the index is the proficiency level. */
-export const PROFICIENCY_BONUSES: readonly number[] = skillProficiencyData.bonuses;
-export const MAX_PROFICIENCY_LEVEL = PROFICIENCY_BONUSES.length - 1;
+/** The highest proficiency level: the workbook lists levels 0 to 328. */
+export const MAX_PROFICIENCY_LEVEL = skillProficiencyData.bonuses.length - 1;
+/** All Attribute DMG as a fraction (0.05 = 5%) at each proficiency level, from the workbook formula. */
+export const PROFICIENCY_BONUSES: readonly number[] = Array.from({ length: MAX_PROFICIENCY_LEVEL + 1 }, (_, level) => skillProficiencyBonus(level));
 
 export const MASTERY_PAGES = skillMasteryData.pages as unknown as MasteryPage[];
 export const FAMILIARS = familiarsData.familiars as unknown as Familiar[];
