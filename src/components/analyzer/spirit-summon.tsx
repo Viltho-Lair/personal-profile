@@ -9,6 +9,7 @@ import {
   emptySim,
   EPIC,
   estimateSpirits,
+  gateShort,
   goalsReached,
   nextStep,
   rankAtLeast,
@@ -20,6 +21,7 @@ import {
   SPIRIT_RANKS,
   SPIRIT_SUMMON_CHANCES,
   SPIRIT_SUMMON_COSTS,
+  stepGate,
   SUMMON_GRADES,
   SWITCH_COST,
   settleMains,
@@ -93,11 +95,14 @@ function lastText(drawn: Record<string, number[]>): string {
     .join(", ");
 }
 
-/** What a goal's next step takes, in words. */
-function stepText(rank: Rank | null, name: string, element: string | null): string {
+/** What a goal's next step takes, in words, or what it's waiting for. */
+function stepText(rank: Rank | null, name: string, element: string | null, short: string[]): string {
   if (!rank) return `Summon a ${name} first`;
   const step = nextStep(rank);
   if (!step) return "Ancient: nothing left";
+  if (short.length) {
+    return `${rankLabel(step.rank)} waits for ${formatValue(short.length)} more at ${SPIRIT_GRADES[stepGate(rank)!]}: ${short.slice(0, 3).join(", ")}${short.length > 3 ? "…" : ""}`;
+  }
   const grade = SPIRIT_GRADES[step.fodder]!;
   const parts = [
     step.spirit ? `${step.spirit} ${grade} ${name}` : "",
@@ -125,7 +130,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
   const [switchTo, setSwitchTo] = useState<string>("random");
 
   const estimate = useMemo(() => estimateSpirits(goals, ROSTER), [goals]);
-  const settled = useMemo(() => settleMains(sim, goals), [sim, goals]);
+  const settled = useMemo(() => settleMains(sim, ROSTER), [sim]);
   const reached = goalsReached(settled, goals);
   const options = { lowerAsFodder };
 
@@ -164,7 +169,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
         lines.push(`${stuck.map((goal) => goal.name).join(", ")} needs ${formatValue(ANCIENT_SHARDS)} light shards for Ancient: set your light shards above`);
       }
     }
-    setSim(settleMains(next, goals));
+    setSim(settleMains(next, ROSTER));
     setPicks(waiting);
     setSummons((n) => n + count);
     setSpent((n) => n + diamonds);
@@ -196,7 +201,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
   };
 
   const pick = (name: string) => {
-    setSim((current) => settleMains(takeBonus(current, name), goals));
+    setSim((current) => settleMains(takeBonus(current, name), ROSTER));
     setPicks((current) => current.slice(1));
   };
 
@@ -216,7 +221,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
   const doSwitch = () => {
     const result = switchElement(settled, switchFrom, switchTo, ROSTER);
     if (!result) return;
-    setSim(settleMains(result.sim, goals));
+    setSim(settleMains(result.sim, ROSTER));
     say([`Switched ${switchTo === "random" ? SWITCH_COST.random : SWITCH_COST.chosen} Epic ${switchFrom} for an Epic ${result.got}`]);
   };
 
@@ -238,6 +243,15 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
       .filter((lower) => BY_NAME.get(lower.name)?.element === BY_NAME.get(goal.name)?.element)
       .map((lower) => `${lower.name} (priority ${goals.indexOf(lower) + 1}) into ${goal.name} (priority ${index + 1})`),
   );
+
+  // What a spirit's next step is waiting for: the others still short of its gate.
+  const shortOf = (rank: Rank) => {
+    const gate = stepGate(rank);
+    return gate === null ? [] : gateShort(settled, gate, ROSTER);
+  };
+  // How far the roster is through the gate the goals ask for.
+  const gateGrade = estimate.gate;
+  const through = gateGrade === null ? [] : ROSTER.filter((spirit) => (settled.mains[spirit.name]?.grade ?? -1) >= gateGrade);
 
   const bonusProgress = summons % SPIRIT_BONUS_EVERY;
   const switchable = SPIRITS.filter((spirit) => (settled.inventory[spirit.name]?.[EPIC] ?? 0) > 0);
@@ -338,7 +352,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
             onClick={() => {
               let next = sim;
               for (const choices of picks) next = takeBonus(next, bestPick(choices));
-              setSim(settleMains(next, goals));
+              setSim(settleMains(next, ROSTER));
               setPicks([]);
             }}
             className={`${QUIET} ml-auto`}
@@ -412,7 +426,11 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
                         </select>
                       </label>
                       <span className="font-mono text-[10px] text-dim">
-                        {done ? <span className="text-tier-mythic">Reached</span> : stepText(main, goal.name, spirit?.element ?? null)}
+                        {done ? (
+                          <span className="text-tier-mythic">Reached</span>
+                        ) : (
+                          stepText(main, goal.name, spirit?.element ?? null, main ? shortOf(main) : [])
+                        )}
                       </span>
                       <span className="ml-auto flex flex-wrap items-center gap-1">
                         <button type="button" onClick={() => raiseOne(index)} disabled={!can} className={QUIET}>
@@ -481,20 +499,29 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
                 {estimate.shards ? ` · ${formatValue(estimate.shards)} light shards` : ""}
                 {estimate.limit ? ` · ${estimate.limit} runs out last` : ""}
               </p>
+              {gateGrade !== null ? (
+                <p className="font-mono text-[10px] text-ink">
+                  Every spirit has to reach {SPIRIT_GRADES[gateGrade]} A0 first: stars past Legendary wait for the whole
+                  roster, so eleven more spirits are in the price.
+                </p>
+              ) : null}
               <ul className="font-mono text-[10px] text-dim">
-                {estimate.goals.map((goal) => (
+                {estimate.needs.map((goal) => (
                   <li key={goal.name}>
-                    {goal.name} to {rankLabel(goal.rank)}: {formatValue(Math.round(goal.need.spirit * 100) / 100)} Legendary {goal.name}
+                    {goal.name} to {rankLabel(goal.rank)}
+                    {goal.gate ? " (for the gate)" : ""}: {formatValue(Math.round(goal.need.spirit * 100) / 100)} Legendary{" "}
+                    {goal.name}
                     {goal.need.element ? ` + ${formatValue(Math.round(goal.need.element * 100) / 100)} Legendary ${goal.element ?? ""}` : ""}
-                    {" "}(Commons count as 1/256, four of a grade make one of the next)
                   </li>
                 ))}
               </ul>
+              <p className="font-mono text-[10px] text-dim">
+                Commons count as 1/256 of a Legendary, since four of a grade make one of the next.
+              </p>
               <p className="text-[10px] leading-snug text-dim">
-                An average, not a promise: your own summons will land differently. Stars are paid in spirits of
-                the grade being starred (Mythic stars in Mythics, Immortal stars in Immortals, each raised from
-                Legendaries first), the steps between grades in Legendaries, and it assumes every bonus pick goes to a
-                goal spirit or its element when one is offered.
+                An average, not a promise: your own summons will land differently. Every star and step past
+                Legendary A0 is paid in Legendary spirits, the gates drag the whole roster along, and it assumes every
+                bonus pick goes to a wanted spirit or its element when one is offered.
               </p>
             </div>
           ) : null}
@@ -503,7 +530,12 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
           {summons > 0 ? (
             <div className="flex flex-col gap-1">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className={LABEL}>Spare spirits</h3>
+                <h3 className={LABEL}>
+                  Every spirit · what it&apos;s at, and the spares
+                  {gateGrade !== null
+                    ? ` · ${formatValue(through.length)} / ${ROSTER.length} at ${SPIRIT_GRADES[gateGrade]}`
+                    : ""}
+                </h3>
                 <button type="button" onClick={() => setSim((current) => combineAll(current))} className={QUIET}>
                   Combine 4 → 1
                 </button>
@@ -511,10 +543,14 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
               <ul className="grid grid-cols-2 gap-x-3 gap-y-1 sm:grid-cols-3">
                 {SPIRITS.map((spirit) => {
                   const counts = settled.inventory[spirit.name] ?? [];
+                  const main = settled.mains[spirit.name];
                   return (
                     <li key={spirit.name} className="flex flex-col gap-0.5 border-b border-ink/10 pb-1">
                       <span className="font-mono text-[10px] text-ink">
-                        {spirit.name} <span className={ELEMENT_TEXT[spirit.element ?? ""] ?? "text-dim"}>{spirit.element}</span>
+                        {spirit.name} <span className={ELEMENT_TEXT[spirit.element ?? ""] ?? "text-dim"}>{spirit.element}</span>{" "}
+                        <span className={main ? (TIER_TEXT[SPIRIT_GRADES[main.grade]!] ?? "text-dim") : "text-dim"}>
+                          {main ? rankLabel(main) : "none"}
+                        </span>
                       </span>
                       <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
                         {counts.every((count) => !count) ? <span className="text-dim">none</span> : null}
@@ -593,8 +629,13 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
             <p>
               Legendary, Mythic and Immortal stars A0 to A5: 1 of the same spirit, 2 of its element, 1 spirit, 2 element, 1
               spirit. Then 3 of its element for the next grade; Immortal A5 to Ancient takes 1 of the same spirit and 1,000
-              light shards instead. Stars take spirits of the grade being starred: Mythic stars need Mythics, Immortal
-              stars Immortals. The steps between grades take Legendaries.
+              light shards instead. Every one of those takes Legendary spirits.
+            </p>
+            <h3 className={`${LABEL} mt-1`}>The gates</h3>
+            <p>
+              No spirit takes a Mythic star until all {SPIRITS.length} have reached Mythic A0, and none takes an Immortal
+              star until all {SPIRITS.length} are Immortal A0. Reaching the next grade isn&apos;t gated, so spirits climb one
+              at a time and the stars wait for the last of them. Anything past Mythic A0 is a whole-roster project.
             </p>
             <h3 className={`${LABEL} mt-1`}>Fodder</h3>
             <p>

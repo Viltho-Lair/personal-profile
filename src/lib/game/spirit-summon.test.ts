@@ -8,8 +8,12 @@ import {
   EPIC,
   estimateSpirits,
   goalsReached,
+  gateShort,
   IMMORTAL,
   LEGENDARY,
+  MYTHIC,
+  rankGate,
+  requiredRanks,
   LEGENDARY_PER_SUMMON,
   nextStep,
   rankLabel,
@@ -66,19 +70,14 @@ describe("the ladder", () => {
     expect(rankNeed({ grade: LEGENDARY, star: 5 })).toEqual({ spirit: 4, element: 4, shards: 0 });
   });
 
-  it("adds 3 Legendaries of the element at A5 for Mythic", () => {
-    expect(copyNeed(LEGENDARY + 1)).toEqual({ spirit: 4, element: 7, shards: 0 });
+  it("adds 3 Legendaries of the element at A5 for Mythic and Immortal", () => {
+    expect(copyNeed(MYTHIC)).toEqual({ spirit: 4, element: 7, shards: 0 });
+    expect(rankNeed({ grade: MYTHIC, star: 2 })).toEqual({ spirit: 5, element: 9, shards: 0 });
+    expect(copyNeed(IMMORTAL)).toEqual({ spirit: 7, element: 14, shards: 0 });
   });
 
-  it("pays Mythic stars in Mythics: A1 is one Mythic of itself, A2 two Mythics of its element", () => {
-    expect(rankNeed({ grade: LEGENDARY + 1, star: 1 })).toEqual({ spirit: 8, element: 14, shards: 0 });
-    expect(rankNeed({ grade: LEGENDARY + 1, star: 2 })).toEqual({ spirit: 8, element: 36, shards: 0 });
-  });
-
-  it("pays Immortal stars in Immortals, and the steps up in Legendaries", () => {
-    // Mythic A5 is 16 of itself and 72 of its element; 3 Legendary Earth make it Immortal.
-    expect(copyNeed(IMMORTAL)).toEqual({ spirit: 16, element: 75, shards: 0 });
-    expect(copyNeed(ANCIENT)).toEqual({ spirit: 65, element: 664, shards: 1000 });
+  it("takes one more Legendary of itself and 1,000 light shards for Ancient", () => {
+    expect(copyNeed(ANCIENT)).toEqual({ spirit: 11, element: 18, shards: 1000 });
   });
 
   it("names ranks the way the game does", () => {
@@ -89,9 +88,8 @@ describe("the ladder", () => {
 
   it("says what the next step takes", () => {
     expect(nextStep({ grade: 0, star: 0 })).toMatchObject({ spirit: 3, element: 0, fodder: 0 });
-    expect(nextStep({ grade: IMMORTAL, star: 2 })).toMatchObject({ spirit: 1, fodder: IMMORTAL });
-    expect(nextStep({ grade: LEGENDARY + 1, star: 5 })).toMatchObject({ element: 3, fodder: LEGENDARY });
-    expect(nextStep({ grade: IMMORTAL, star: 5 })).toMatchObject({ spirit: 1, fodder: LEGENDARY });
+    expect(nextStep({ grade: IMMORTAL, star: 2 })).toMatchObject({ spirit: 1, fodder: LEGENDARY });
+    expect(nextStep({ grade: MYTHIC, star: 5 })).toMatchObject({ element: 3, fodder: LEGENDARY });
     expect(nextStep({ grade: LEGENDARY, star: 1 })).toMatchObject({ spirit: 0, element: 2 });
     expect(nextStep({ grade: LEGENDARY, star: 5 })).toMatchObject({ element: 3, rank: { grade: LEGENDARY + 1, star: 0 } });
     expect(nextStep({ grade: IMMORTAL, star: 5 })).toMatchObject({ spirit: 1, shards: 1000, rank: ANCIENT_RANK });
@@ -99,19 +97,55 @@ describe("the ladder", () => {
   });
 });
 
+describe("the gates", () => {
+  it("waits for all twelve at Mythic before a Mythic star, and at Immortal before an Immortal one", () => {
+    expect(rankGate({ grade: MYTHIC, star: 0 })).toBeNull();
+    expect(rankGate({ grade: LEGENDARY, star: 5 })).toBeNull();
+    expect(rankGate({ grade: MYTHIC, star: 1 })).toBe(MYTHIC);
+    expect(rankGate({ grade: IMMORTAL, star: 0 })).toBe(MYTHIC);
+    expect(rankGate({ grade: IMMORTAL, star: 1 })).toBe(IMMORTAL);
+    expect(rankGate(ANCIENT_RANK)).toBe(IMMORTAL);
+  });
+
+  it("asks every spirit for the gate's grade, the goal for its own rank", () => {
+    const wanted = requiredRanks([{ name: "Loar", rank: ANCIENT_RANK }], ROSTER);
+    expect(wanted).toHaveLength(12);
+    expect(wanted[0]).toMatchObject({ name: "Loar", rank: ANCIENT_RANK, gate: false });
+    expect(wanted.slice(1).every((entry) => entry.gate && entry.rank.grade === IMMORTAL)).toBe(true);
+    // A goal no gate stands in the way of asks nothing of the others.
+    expect(requiredRanks([{ name: "Loar", rank: { grade: MYTHIC, star: 0 } }], ROSTER)).toHaveLength(1);
+  });
+
+  it("counts who is still short of a gate", () => {
+    const sim = emptySim(ROSTER);
+    sim.mains.Loar = { grade: MYTHIC, star: 0 };
+    expect(gateShort(sim, MYTHIC, ROSTER)).toHaveLength(11);
+    expect(gateShort(sim, MYTHIC, ROSTER)).not.toContain("Loar");
+  });
+});
+
 describe("estimateSpirits", () => {
-  it("is decided by the element for one spirit to Ancient", () => {
+  it("counts the whole roster the gates ask for", () => {
     const estimate = estimateSpirits([{ name: "Loar", rank: ANCIENT_RANK }], ROSTER);
+    expect(estimate.gate).toBe(IMMORTAL);
+    expect(estimate.needs).toHaveLength(12);
     expect(estimate.limit).toBe("Earth");
     expect(estimate.shards).toBe(1000);
     expect(estimate.diamonds).toBe(estimate.batches * SPIRIT_BATCH.diamonds);
-    // 729 Legendaries of Earth at a quarter of the summons, less what the bonus picks bring.
-    const bare = 729 / (LEGENDARY_PER_SUMMON / 4);
+    // Earth carries Loar's 29 Legendaries and 21 each for Noah and Radon, at a quarter of the summons.
+    const bare = (29 + 21 + 21) / (LEGENDARY_PER_SUMMON / 4);
     expect(estimate.summons).toBeLessThan(bare);
     expect(estimate.summons).toBeGreaterThan(bare * 0.8);
   });
 
-  it("costs more for two spirits of one element than for one", () => {
+  it("costs far less for a goal below the first gate", () => {
+    const mythic = estimateSpirits([{ name: "Loar", rank: { grade: MYTHIC, star: 0 } }], ROSTER);
+    const ancient = estimateSpirits([{ name: "Loar", rank: ANCIENT_RANK }], ROSTER);
+    expect(mythic.gate).toBeNull();
+    expect(mythic.summons * 5).toBeLessThan(ancient.summons);
+  });
+
+  it("costs a little more for a second spirit of an element, the roster being most of it", () => {
     const one = estimateSpirits([{ name: "Loar", rank: ANCIENT_RANK }], ROSTER);
     const two = estimateSpirits(
       [
@@ -120,7 +154,8 @@ describe("estimateSpirits", () => {
       ],
       ROSTER,
     );
-    expect(two.summons).toBeGreaterThan(one.summons * 1.5);
+    expect(two.summons).toBeGreaterThan(one.summons);
+    expect(two.summons).toBeLessThan(one.summons * 1.3);
   });
 
   it("is nothing without goals", () => {
@@ -156,10 +191,12 @@ describe("combining and upgrading", () => {
     expect(sim.inventory.Ark!.slice(0, 2)).toEqual([1, 2]);
   });
 
-  it("makes the best copy the goal's own", () => {
-    const sim = settleMains(withSpares({ Loar: { 0: 3, 2: 1 } }), [{ name: "Loar", rank: ANCIENT_RANK }]);
+  it("makes the best copy each spirit's own", () => {
+    const sim = settleMains(withSpares({ Loar: { 0: 3, 2: 1 }, Noah: { 1: 1 } }), ROSTER);
     expect(sim.mains.Loar).toEqual({ grade: 2, star: 0 });
     expect(sim.inventory.Loar![2]).toBe(0);
+    expect(sim.mains.Noah).toEqual({ grade: 1, star: 0 });
+    expect(sim.mains.Radon).toBeUndefined();
   });
 
   it("combines Commons into the goal below Legendary", () => {
@@ -173,7 +210,7 @@ describe("combining and upgrading", () => {
       { name: "Noah", rank: ANCIENT_RANK },
       { name: "Loar", rank: ANCIENT_RANK },
     ];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 2 }, Noah: { [LEGENDARY]: 2 } }), goals);
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 2 }, Noah: { [LEGENDARY]: 2 } }), ROSTER);
     // Loar A1 needs 2 of Earth: Radon has none, Loar's own spare is used up by A0 -> A1, and Noah is above it.
     const first = upgradeGoal(sim, goals, 1, ROSTER, OFF);
     expect(first?.to).toEqual({ grade: LEGENDARY, star: 1 });
@@ -185,7 +222,7 @@ describe("combining and upgrading", () => {
       { name: "Loar", rank: ANCIENT_RANK },
       { name: "Noah", rank: ANCIENT_RANK },
     ];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Noah: { [LEGENDARY]: 3 } }), goals);
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Noah: { [LEGENDARY]: 3 } }), ROSTER);
     const star = { ...sim, mains: { ...sim.mains, Loar: { grade: LEGENDARY, star: 1 } } };
     star.inventory = { ...star.inventory, Loar: [...star.inventory.Loar!] };
     star.inventory.Loar![LEGENDARY] = 0;
@@ -195,36 +232,40 @@ describe("combining and upgrading", () => {
     expect(step?.used).toEqual(["Noah"]);
   });
 
-  it("won't pay a Mythic star in Legendaries it can't raise to Mythic", () => {
+  it("holds a Mythic star until all twelve are Mythic", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Radon: { [LEGENDARY]: 10 } }), goals);
-    sim.mains.Loar = { grade: LEGENDARY + 1, star: 1 };
-    // Mythic A1 -> A2 takes 2 Mythic Earth, 22 Legendaries' worth: 10 isn't enough.
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 4 }, Radon: { [LEGENDARY]: 4 } }), ROSTER);
+    sim.mains.Loar = { grade: MYTHIC, star: 0 };
+    // Loar is Mythic with fodder to spare, but the other eleven aren't there yet.
     expect(upgradeGoal(sim, goals, 0, ROSTER, OFF)).toBeNull();
+    const all = { ...sim, mains: { ...sim.mains } };
+    for (const spirit of ROSTER) all.mains[spirit.name] = { grade: MYTHIC, star: 0 };
+    expect(upgradeGoal(all, goals, 0, ROSTER, OFF)?.to).toEqual({ grade: MYTHIC, star: 1 });
   });
 
-  it("raises Legendaries into Mythic fodder when a Mythic star needs it", () => {
+  it("holds an Immortal star until all twelve are Immortal", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Radon: { [LEGENDARY]: 30 } }), goals);
-    sim.mains.Loar = { grade: LEGENDARY + 1, star: 1 };
-    // Each Mythic Earth is 4 Radon and 7 Earth Legendaries: 22 of Radon's 30.
-    const step = upgradeGoal(sim, goals, 0, ROSTER, OFF);
-    expect(step?.to).toEqual({ grade: LEGENDARY + 1, star: 2 });
-    expect(step?.sim.inventory.Radon![LEGENDARY]).toBe(8);
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 4 }, Radon: { [LEGENDARY]: 4 } }), ROSTER);
+    for (const spirit of ROSTER) sim.mains[spirit.name] = { grade: MYTHIC, star: 5 };
+    sim.mains.Loar = { grade: IMMORTAL, star: 0 };
+    expect(upgradeGoal(sim, goals, 0, ROSTER, OFF)).toBeNull();
+    const all = { ...sim, mains: { ...sim.mains } };
+    for (const spirit of ROSTER) all.mains[spirit.name] = { grade: IMMORTAL, star: 0 };
+    expect(upgradeGoal(all, goals, 0, ROSTER, OFF)?.to).toEqual({ grade: IMMORTAL, star: 1 });
   });
 
-  it("uses a Mythic spare as Mythic fodder", () => {
-    const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Radon: { [LEGENDARY + 1]: 2 } }), goals);
-    sim.mains.Loar = { grade: LEGENDARY + 1, star: 1 };
-    const step = upgradeGoal(sim, goals, 0, ROSTER, OFF);
-    expect(step?.to).toEqual({ grade: LEGENDARY + 1, star: 2 });
-    expect(step?.sim.inventory.Radon![LEGENDARY + 1]).toBe(0);
+  it("raises the other eleven to the gate on the way to the goal", () => {
+    const goals = [{ name: "Loar", rank: { grade: MYTHIC, star: 1 } }];
+    // Mythic A0 costs each spirit 4 of its own and 7 of its element: 15 each covers an element's three.
+    const spares = Object.fromEntries(ROSTER.map((spirit) => [spirit.name, { [LEGENDARY]: 15 }]));
+    const done = upgradeAll(withSpares(spares), goals, ROSTER, OFF);
+    expect(done.sim.mains.Loar).toEqual({ grade: MYTHIC, star: 1 });
+    expect(ROSTER.every((spirit) => (done.sim.mains[spirit.name]?.grade ?? 0) >= MYTHIC)).toBe(true);
   });
 
   it("combines Epics into the Legendary a star needs", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1, [EPIC]: 4 } }), goals);
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1, [EPIC]: 4 } }), ROSTER);
     const step = upgradeGoal(sim, goals, 0, ROSTER, OFF);
     expect(step?.to).toEqual({ grade: LEGENDARY, star: 1 });
     expect(step?.sim.inventory.Loar![EPIC]).toBe(0);
@@ -232,7 +273,8 @@ describe("combining and upgrading", () => {
 
   it("needs the light shards for Ancient", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 2 } }), goals);
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 2 } }), ROSTER);
+    for (const spirit of ROSTER) sim.mains[spirit.name] = { grade: IMMORTAL, star: 0 };
     sim.mains.Loar = { grade: IMMORTAL, star: 5 };
     expect(upgradeGoal(sim, goals, 0, ROSTER, OFF)).toBeNull();
     const done = upgradeAll({ ...sim, shards: 1000 }, goals, ROSTER, OFF);
@@ -241,13 +283,16 @@ describe("combining and upgrading", () => {
     expect(goalsReached(done.sim, goals)).toBe(true);
   });
 
-  it("reaches Ancient from 65 Legendary Loar, 664 Legendary Earth and 1,000 shards", () => {
+  it("reaches Ancient once the whole roster is through both gates", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = withSpares({ Loar: { [LEGENDARY]: 65 }, Radon: { [LEGENDARY]: 700 } });
-    const done = upgradeAll({ ...sim, shards: 1000 }, goals, ROSTER, OFF);
+    // 11 of its own and 18 of its element for Loar, 7 and 14 for each of the other eleven, with room to spare.
+    const spares = Object.fromEntries(ROSTER.map((spirit) => [spirit.name, { [LEGENDARY]: 40 }]));
+    const done = upgradeAll({ ...withSpares(spares), shards: 1000 }, goals, ROSTER, OFF);
     expect(done.sim.mains.Loar).toEqual(ANCIENT_RANK);
-    const short = upgradeAll({ ...withSpares({ Loar: { [LEGENDARY]: 65 }, Radon: { [LEGENDARY]: 600 } }), shards: 1000 }, goals, ROSTER, OFF);
-    expect(short.sim.mains.Loar).not.toEqual(ANCIENT_RANK);
+    expect(goalsReached(done.sim, goals)).toBe(true);
+    const short = Object.fromEntries(ROSTER.map((spirit) => [spirit.name, { [LEGENDARY]: 6 }]));
+    const stuck = upgradeAll({ ...withSpares(short), shards: 1000 }, goals, ROSTER, OFF);
+    expect(stuck.sim.mains.Loar).not.toEqual(ANCIENT_RANK);
   });
 });
 
