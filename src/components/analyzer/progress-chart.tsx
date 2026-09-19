@@ -5,6 +5,7 @@ import { Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { fightStatsOf, nextEvery, type FightInput, type FightSkill, type FightState, type SkillStatus } from "@/lib/game/battle";
 import { useProfile } from "@/lib/profile/use-profile";
+import { MAX_FIGHT_SECONDS } from "@/lib/profile/types";
 import { formatValue, SKILL_BY_NAME, SPIRITS } from "./data";
 import { ELEMENTS } from "@/lib/game/stats";
 import { BeastArt } from "./beast-panel";
@@ -49,23 +50,24 @@ export function ProgressChart() {
 
   const current = profile.character.promotion;
   const index = profile.promotionTarget.promotion ?? Math.min(current, PROMOTION_STAGES.length - 1);
-  // A promotion boss fight lasts longer than a stage's.
-  const seconds = profile.bossMonster && !profile.stageFarming.on ? PROMOTION_SECONDS : FIGHT_SECONDS;
+  // A promotion boss fight lasts longer than a stage's, unless a custom length is set for every fight.
+  const gameSeconds = profile.bossMonster && !profile.stageFarming.on ? PROMOTION_SECONDS : FIGHT_SECONDS;
+  const seconds = profile.promotionTarget.customDuration ? profile.promotionTarget.duration : gameSeconds;
   const next = useMemo(() => promotionFight(profile, factors, index, seconds, manual), [profile, factors, index, seconds, manual]);
   // The Analysis and Render views both show the rendered fight, as it was set up when it started, until a new
   // render or a reload; before any render they show what a render would play now. Picking another enemy (fight
-  // type, promotion or farming stage) clears it, so a result never shows under an enemy it wasn't fought against.
+  // type, promotion or farming stage) or fight length clears it, so a result never shows under a fight it wasn't.
   const rendered = useFightRun();
-  const sameEnemy = rendered !== null && enemyKey(rendered.setup) === enemyKey(next);
+  const sameFight = rendered !== null && fightKey(rendered.setup) === fightKey(next);
   useEffect(() => {
-    if (rendered && !sameEnemy) stopFightRun(true);
-  }, [rendered, sameEnemy]);
+    if (rendered && !sameFight) stopFightRun(true);
+  }, [rendered, sameFight]);
   // Equipping or unequipping while the fight plays changes it from there on: the life pool grows or shrinks around
   // the life already in it, so dropping HP gear for Rage and putting it back plays out as it does in the game.
   useEffect(() => {
     retuneFightRun(fightStatsOf(next.input));
   }, [next.input]);
-  const run = sameEnemy ? rendered : null;
+  const run = sameFight ? rendered : null;
   const setup = run?.setup ?? next;
   const phase: Phase = run?.phase ?? "idle";
   const snap = run?.snap ?? null;
@@ -231,6 +233,12 @@ export function ProgressChart() {
               ))}
             </select>
           ) : null}
+          <FightLength
+            custom={profile.promotionTarget.customDuration}
+            seconds={profile.promotionTarget.duration}
+            gameSeconds={gameSeconds}
+            onChange={setPromotionTarget}
+          />
         </div>
         <span className="ml-auto flex items-center gap-1.5">
           <button
@@ -353,8 +361,63 @@ const NO_MANUAL: string[] = [];
  * Which enemy a fight is against: its type, the promotion boss or monster and its stage, or the farmed stage. The
  * stages analysis is one enemy however far it reaches.
  */
-const enemyKey = (setup: ReturnType<typeof promotionFight>) =>
-  setup.mode === "stages" ? "stages" : `${setup.mode}|${setup.boss?.name ?? ""}|${setup.boss?.stage ?? ""}|${setup.farm?.stage ?? ""}`;
+/**
+ * How long fights last: the game's own length (75s for a promotion boss, 60s otherwise) or a custom one, in whole
+ * seconds up to ten minutes, for every fight. The number only saves once it's a whole second or more, so clearing
+ * the box to type a new one doesn't jump the fight to 1s on the way.
+ */
+function FightLength({
+  custom,
+  seconds,
+  gameSeconds,
+  onChange,
+}: {
+  custom: boolean;
+  seconds: number;
+  gameSeconds: number;
+  onChange: (change: { duration?: number; customDuration?: boolean }) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  return (
+    <span className="flex items-center gap-1.5">
+      <label className={`flex items-center gap-1 ${LABEL}`} title={`Off: the game's ${gameSeconds}s. On: your own length for every fight.`}>
+        <input
+          type="checkbox"
+          checked={custom}
+          onChange={(event) => onChange({ customDuration: event.target.checked })}
+          className="accent-ink"
+        />
+        Custom time
+      </label>
+      {custom ? (
+        <label className={`flex items-center gap-1 ${LABEL}`}>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={MAX_FIGHT_SECONDS}
+            step={1}
+            value={draft ?? seconds}
+            aria-label="Fight length in seconds"
+            onChange={(event) => {
+              setDraft(event.target.value);
+              const next = Math.floor(event.target.valueAsNumber);
+              if (Number.isFinite(next) && next >= 1) onChange({ duration: Math.min(MAX_FIGHT_SECONDS, next) });
+            }}
+            onBlur={() => setDraft(null)}
+            className="w-16 rounded-md border border-ink/20 bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] text-ink tabular-nums outline-none focus-visible:border-ink"
+          />
+          <span className="normal-case">s</span>
+        </label>
+      ) : (
+        <span className={`${LABEL} normal-case`}>· {gameSeconds}s</span>
+      )}
+    </span>
+  );
+}
+
+const fightKey = (setup: ReturnType<typeof promotionFight>) =>
+  `${setup.input.duration}|${setup.mode === "stages" ? "stages" : `${setup.mode}|${setup.boss?.name ?? ""}|${setup.boss?.stage ?? ""}|${setup.farm?.stage ?? ""}`}`;
 
 /** A normal monster's verdict: whether it went down, and how fast. */
 function MonsterResults({

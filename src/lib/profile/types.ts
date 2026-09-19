@@ -181,6 +181,8 @@ export type SoulEngraving = {
 };
 
 export const DEFAULT_FIGHT_SECONDS = 60;
+/** The longest custom fight: ten minutes keeps a render and the upgrade planner quick. */
+export const MAX_FIGHT_SECONDS = 600;
 
 export function emptySoulEngraving(): SoulEngraving {
   return { chaosLevel: 0, chaosBonus: 0, gems: Array<SoulGem | null>(8).fill(null), plates: {}, completed: {} };
@@ -255,8 +257,9 @@ export type ProfileV1 = {
   beasts: Record<string, BeastState>;
   /** Black Orb level and its four element accessories. */
   blackOrb: BlackOrbState;
-  /** The promotion the progress chart aims at, and the fight's length in seconds. */
-  promotionTarget: { promotion: number | null; duration: number };
+  /** The promotion the progress chart aims at, and the fight's length in seconds: the game's own length
+      (75s for a promotion boss, 60s otherwise) unless `customDuration` is on. */
+  promotionTarget: { promotion: number | null; duration: number; customDuration: boolean };
   /** Times weapons (Orr) and accessories (Orb) have been awakened, 0-30. */
   weaponAwakening: number;
   accessoryAwakening: number;
@@ -352,7 +355,7 @@ export function emptyProfile(): ProfileV1 {
     appearance: { clothing: [], guild: [] },
     beasts: {},
     blackOrb: emptyBlackOrb(),
-    promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS },
+    promotionTarget: { promotion: null, duration: DEFAULT_FIGHT_SECONDS, customDuration: false },
     weaponAwakening: 0,
     accessoryAwakening: 0,
     companions: {},

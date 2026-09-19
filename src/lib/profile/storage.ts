@@ -16,6 +16,7 @@ import {
   emptyActivePresets,
   emptySoulEngraving,
   DEFAULT_FIGHT_SECONDS,
+  MAX_FIGHT_SECONDS,
   emptyPresets,
   MAIN_SPIRIT_COUNT,
   PRESET_COUNT,
@@ -301,7 +302,8 @@ function promotionTarget(value: unknown): ProfileV1["promotionTarget"] {
   const duration = wholeLevel(stored.duration);
   return {
     promotion: wholeLevel(stored.promotion),
-    duration: duration !== null && duration >= 1 ? duration : DEFAULT_FIGHT_SECONDS,
+    duration: duration !== null && duration >= 1 ? Math.min(MAX_FIGHT_SECONDS, duration) : DEFAULT_FIGHT_SECONDS,
+    customDuration: stored.customDuration === true,
   };
 }
 

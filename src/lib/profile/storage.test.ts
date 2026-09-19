@@ -221,9 +221,17 @@ describe("parseProfile", () => {
         presets: { skillStones: [{ cooldown: { grade: "B", element: "Water" }, time: { grade: "C", element: "Fire" } }] },
       }),
     );
-    expect(parsed?.promotionTarget).toEqual({ promotion: 5, duration: 60 });
+    expect(parsed?.promotionTarget).toEqual({ promotion: 5, duration: 60, customDuration: false });
     expect(parsed?.presets.skillStones[0]).toEqual({ cooldown: { grade: "B", element: "Water" }, time: null, heat: null });
     expect(c?.constellation).toEqual({ "1": 2, "2": 1 });
+  });
+
+  it("keeps a custom fight length, capped at ten minutes", () => {
+    const parse = (promotionTarget: unknown) =>
+      parseProfile(JSON.stringify({ ...emptyProfile(), promotionTarget }))?.promotionTarget;
+    expect(parse({ promotion: null, duration: 90, customDuration: true })).toEqual({ promotion: null, duration: 90, customDuration: true });
+    expect(parse({ promotion: null, duration: 5000, customDuration: true })?.duration).toBe(600);
+    expect(parse({ promotion: null, duration: 90, customDuration: "yes" })?.customDuration).toBe(false);
   });
 
   it("a profile saved before skill settings existed gets their defaults", () => {
