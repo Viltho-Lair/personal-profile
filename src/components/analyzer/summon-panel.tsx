@@ -30,6 +30,8 @@ import { ACCESSORIES, formatValue, WEAPONS, type Gear } from "./data";
 import { Sprite } from "./sprite";
 import { TIER_BORDER, TIER_TEXT } from "./tiers";
 import { segment, SEGMENTS } from "./nav-styles";
+import { ClassSummon } from "./class-summon";
+import { SpiritSummon } from "./spirit-summon";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const FIELD =
@@ -258,6 +260,8 @@ export function SummonPanel() {
   const [summons, setSummons] = useState(0);
   const [gifts, setGifts] = useState(0);
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
+  // Spirits and classes are runs of their own, apart from the gear run.
+  const [other, setOther] = useState<"spirits" | "classes" | null>(null);
   // Diamonds this run has spent summoning, and the stars it has awakened to (null: still the profile's own).
   const [spent, setSpent] = useState(0);
   const [stars, setStars] = useState<Record<GearKind, number | null>>({ weapons: null, accessories: null });
@@ -351,22 +355,47 @@ export function SummonPanel() {
   const mergeGives = Math.max(0, (merged[MYTHIC_G1] ?? 0) - mythicG1);
   const canMerge = MERGE_LADDER.some((name) => (totals[name] ?? 0) !== (merged[name] ?? 0));
 
+  const switcher = (
+    <div className={SEGMENTS} role="group" aria-label="What to summon">
+      {(["weapons", "accessories"] as const).map((id) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={!other && kind === id}
+          onClick={() => {
+            setOther(null);
+            setSummon({ kind: id });
+          }}
+          className={segment(!other && kind === id)}
+        >
+          {id === "weapons" ? "Weapons" : "Accessories"}
+        </button>
+      ))}
+      {(["spirits", "classes"] as const).map((id) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={other === id}
+          onClick={() => {
+            setAuto("off");
+            setOther(id);
+          }}
+          className={segment(other === id)}
+        >
+          {id === "spirits" ? "Spirits" : "Classes"}
+        </button>
+      ))}
+    </div>
+  );
+
+  // Spirits and classes are their own runs, apart from the profile; the gear run above keeps its state meanwhile.
+  if (other === "spirits") return <SpiritSummon switcher={switcher} />;
+  if (other === "classes") return <ClassSummon switcher={switcher} />;
+
   return (
     <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className={SEGMENTS} role="group" aria-label="What to summon">
-          {(["weapons", "accessories"] as const).map((id) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={kind === id}
-              onClick={() => setSummon({ kind: id })}
-              className={segment(kind === id)}
-            >
-              {id === "weapons" ? "Weapons" : "Accessories"}
-            </button>
-          ))}
-        </div>
+        {switcher}
         <label className="flex items-center gap-1.5">
           <span className={LABEL}>Summon level</span>
           <select
