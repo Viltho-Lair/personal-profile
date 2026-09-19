@@ -11,8 +11,9 @@
  * - A5 to the next grade takes 3 of the same element; Immortal A5 to Ancient takes 1 of the same spirit and
  *   1,000 light shards instead.
  *
- * Every step from Legendary A0 on, up to Ancient, is paid in Legendary spirits. "Same element" fodder can be any
- * spirit of that element, the spirit itself included.
+ * Stars are paid in spirits of the grade being starred: Legendary stars in Legendaries, Mythic stars in Mythics,
+ * Immortal stars in Immortals. The steps between grades (A5 to the next grade, and on to Ancient) are paid in
+ * Legendaries. "Same element" fodder can be any spirit of that element, the spirit itself included.
  */
 
 export const SPIRIT_GRADES = ["Common", "Great", "Rare", "Epic", "Legendary", "Mythic", "Immortal", "Ancient"] as const;
@@ -42,9 +43,9 @@ export const SPIRIT_BONUS_OPTIONS = 2;
 /** Copies of one grade that make one of the next, Common to Legendary. */
 export const COMBINE_COUNT = 4;
 export const MAX_STAR = 5;
-/** Fodder for every star and step up past Legendary A0 is a Legendary spirit, whatever the grade being raised. */
-export const FODDER_GRADE = LEGENDARY;
-/** What each star (A0 -> A1 first) takes, in Legendary spirits. */
+/** Fodder for the steps between grades (Legendary A5 on to Mythic, Immortal and Ancient) is a Legendary spirit. */
+export const STEP_FODDER = LEGENDARY;
+/** What each star (A0 -> A1 first) takes, in spirits of the grade being starred. */
 export const STAR_STEPS: readonly { from: "spirit" | "element"; count: number }[] = [
   { from: "spirit", count: 1 },
   { from: "element", count: 2 },
@@ -91,12 +92,15 @@ const add = (a: Need, b: Need, times = 1): Need => ({
   element: a.element + b.element * times,
   shards: a.shards + b.shards * times,
 });
+/** A spirit given as element fodder: all of what it took counts toward the element. */
+const asElement = (need: Need): Need => ({ spirit: 0, element: need.spirit + need.element, shards: need.shards });
 /** One spirit at A0 of this grade, built from nothing. */
 export const copyNeed = (grade: number): Need => rankNeed({ grade, star: 0 });
 
 /**
- * One spirit at this rank, built from nothing: combined up to Legendary A0, then every star and step up paid in
- * Legendaries. Ancient from nothing is 11 Legendaries of itself, 18 of its element and 1,000 light shards.
+ * One spirit at this rank, built from nothing: combined up to Legendary A0, then each star paid in spirits of its
+ * grade (a Mythic fodder is itself 4 Legendaries of that spirit and 7 of its element) and each step between grades
+ * in Legendaries. Ancient from nothing is 65 Legendaries of itself, 664 of its element and 1,000 light shards.
  */
 export function rankNeed(rank: Rank): Need {
   if (rank.grade < LEGENDARY) return { spirit: COMBINE_COUNT ** (rank.grade - LEGENDARY), element: 0, shards: 0 };
@@ -104,7 +108,10 @@ export function rankNeed(rank: Rank): Need {
   const target = rankIndex(rank);
   for (let current: Rank = { grade: LEGENDARY, star: 0 }; rankIndex(current) < target; ) {
     const step = nextStep(current)!;
-    need = add(need, { spirit: step.spirit, element: step.element, shards: step.shards });
+    const fodder = copyNeed(step.fodder);
+    need = add(need, fodder, step.spirit);
+    need = add(need, asElement(fodder), step.element);
+    need = add(need, { spirit: 0, element: 0, shards: step.shards });
     current = step.rank;
   }
   return need;
@@ -328,24 +335,34 @@ type Work = { sim: SpiritSim; used: string[] };
 
 const cloneWork = (work: Work): Work => ({ sim: cloneSim(work.sim), used: [...work.used] });
 
-/** What this spirit's spares at or below `grade` (Legendary at most) are worth, in Legendary A0. */
+/** Everything this spirit's spares at or below `grade` are worth, in Legendary A0. */
 function worth(sim: SpiritSim, name: string, grade: number): number {
   const counts = sim.inventory[name] ?? [];
   let total = 0;
-  for (let g = 0; g <= Math.min(grade, FODDER_GRADE); g += 1) total += (counts[g] ?? 0) * copyNeed(g).spirit;
+  for (let g = 0; g <= grade; g += 1) {
+    const need = copyNeed(g);
+    total += (counts[g] ?? 0) * (need.spirit + need.element);
+  }
   return total;
 }
 
-/** A cheap check that combining this copy isn't hopeless, so failing searches stop early. */
-const mightMake = (work: Work, name: string, grade: number) => worth(work.sim, name, grade) >= copyNeed(grade).spirit - 1e-9;
+/** A cheap check that making this copy isn't hopeless, so failing searches stop early. */
+function mightMake(work: Work, name: string, grade: number, plan: Plan): boolean {
+  const need = copyNeed(grade);
+  if (worth(work.sim, name, grade) < need.spirit - 1e-9) return false;
+  let total = 0;
+  for (const member of new Set([...plan.order, name])) total += worth(work.sim, member, grade);
+  return total >= need.spirit + need.element - 1e-9;
+}
 
 const note = (work: Work, name: string, plan: Plan) => {
   if (plan.lower.has(name) && !work.used.includes(name)) work.used.push(name);
 };
 
 /**
- * Makes one spare copy of `name` at A0 of `grade` (Legendary at most), combining four of the grade below when
- * there's no spare. False leaves `work` spoiled.
+ * Makes one spare copy of `name` at A0 of `grade`: combining four of the grade below up to Legendary, and past it
+ * raising a Legendary through its stars and the step up, the way a Mythic or Immortal fodder has to be made.
+ * False leaves `work` spoiled.
  */
 function makeCopy(work: Work, name: string, grade: number, plan: Plan): boolean {
   const counts = work.sim.inventory[name]!;
@@ -354,8 +371,18 @@ function makeCopy(work: Work, name: string, grade: number, plan: Plan): boolean 
     note(work, name, plan);
     return true;
   }
-  if (grade === 0 || grade > FODDER_GRADE || !mightMake(work, name, grade)) return false;
-  for (let i = 0; i < COMBINE_COUNT; i += 1) if (!makeCopy(work, name, grade - 1, plan)) return false;
+  if (grade === 0 || grade >= ANCIENT || !mightMake(work, name, grade, plan)) return false;
+  if (grade <= LEGENDARY) {
+    for (let i = 0; i < COMBINE_COUNT; i += 1) if (!makeCopy(work, name, grade - 1, plan)) return false;
+    return true;
+  }
+  if (!makeCopy(work, name, LEGENDARY, plan)) return false;
+  for (let current: Rank = { grade: LEGENDARY, star: 0 }; current.grade < grade; ) {
+    const step = nextStep(current)!;
+    if (!payStep(work, name, step.fodder, "spirit", step.spirit, plan)) return false;
+    if (!payStep(work, name, step.fodder, "element", step.element, plan)) return false;
+    current = step.rank;
+  }
   return true;
 }
 
@@ -385,7 +412,7 @@ function payStep(work: Work, name: string, grade: number, from: "spirit" | "elem
 /** What the next step up from this rank takes, for showing it. */
 export type Step = {
   rank: Rank;
-  /** The grade the fodder is: the spirit's own below Legendary, Legendary from then on. */
+  /** The grade the fodder is: the grade being raised for combining and stars, Legendary for steps between grades. */
   fodder: number;
   spirit: number;
   element: number;
@@ -396,12 +423,12 @@ export function nextStep(rank: Rank): Step | null {
   const { grade, star } = rank;
   if (grade >= ANCIENT) return null;
   if (grade < LEGENDARY) return { rank: { grade: grade + 1, star: 0 }, fodder: grade, spirit: COMBINE_COUNT - 1, element: 0, shards: 0 };
-  const fodder = FODDER_GRADE;
+  const fodder = STEP_FODDER;
   if (star < MAX_STAR) {
     const step = STAR_STEPS[star]!;
     return {
       rank: { grade, star: star + 1 },
-      fodder,
+      fodder: grade,
       spirit: step.from === "spirit" ? step.count : 0,
       element: step.from === "element" ? step.count : 0,
       shards: 0,
@@ -458,7 +485,7 @@ export function upgradeGoal(
   };
 
   const work: Work = { sim: settled, used: [] };
-  // Below Legendary the three copies are of the grade it's at; from Legendary on, every step is paid in Legendaries.
+  // Combining and stars are paid in the grade it's at; the steps between grades in Legendaries.
   if (!payStep(work, goal.name, step.fodder, "spirit", step.spirit, plan)) return null;
   if (!payStep(work, goal.name, step.fodder, "element", step.element, plan)) return null;
   if (step.shards) {

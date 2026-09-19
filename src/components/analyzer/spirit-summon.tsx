@@ -46,7 +46,7 @@ const QUIET = `${BUTTON} border-ink/25 text-dim enabled:hover:border-ink/60 enab
 const LOUD = `${BUTTON} border-ink bg-ink text-ground enabled:hover:brightness-110`;
 
 /** Auto summoning: this many bundles of 11 every tick, raising the goals as it goes. */
-const AUTO_BATCHES = 10;
+const AUTO_BATCHES = 50;
 const AUTO_INTERVAL_MS = 100;
 
 const ROSTER = SPIRITS.map((spirit) => ({ name: spirit.name, element: spirit.element }));
@@ -491,9 +491,10 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
                 ))}
               </ul>
               <p className="text-[10px] leading-snug text-dim">
-                An average, not a promise: your own summons will land differently. Every star and step up from
-                Legendary A0 to Ancient is paid in Legendary spirits, and it assumes every bonus pick goes to a goal spirit
-                or its element when one is offered.
+                An average, not a promise: your own summons will land differently. Stars are paid in spirits of
+                the grade being starred (Mythic stars in Mythics, Immortal stars in Immortals, each raised from
+                Legendaries first), the steps between grades in Legendaries, and it assumes every bonus pick goes to a
+                goal spirit or its element when one is offered.
               </p>
             </div>
           ) : null}
@@ -592,7 +593,8 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
             <p>
               Legendary, Mythic and Immortal stars A0 to A5: 1 of the same spirit, 2 of its element, 1 spirit, 2 element, 1
               spirit. Then 3 of its element for the next grade; Immortal A5 to Ancient takes 1 of the same spirit and 1,000
-              light shards instead. All of it is paid in Legendary spirits.
+              light shards instead. Stars take spirits of the grade being starred: Mythic stars need Mythics, Immortal
+              stars Immortals. The steps between grades take Legendaries.
             </p>
             <h3 className={`${LABEL} mt-1`}>Fodder</h3>
             <p>

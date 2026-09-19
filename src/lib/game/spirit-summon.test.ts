@@ -66,14 +66,19 @@ describe("the ladder", () => {
     expect(rankNeed({ grade: LEGENDARY, star: 5 })).toEqual({ spirit: 4, element: 4, shards: 0 });
   });
 
-  it("adds 3 Legendaries of the element at A5 for Mythic and Immortal", () => {
+  it("adds 3 Legendaries of the element at A5 for Mythic", () => {
     expect(copyNeed(LEGENDARY + 1)).toEqual({ spirit: 4, element: 7, shards: 0 });
-    expect(rankNeed({ grade: LEGENDARY + 1, star: 2 })).toEqual({ spirit: 5, element: 9, shards: 0 });
-    expect(copyNeed(IMMORTAL)).toEqual({ spirit: 7, element: 14, shards: 0 });
   });
 
-  it("takes one more Legendary of itself and 1,000 light shards for Ancient", () => {
-    expect(copyNeed(ANCIENT)).toEqual({ spirit: 11, element: 18, shards: 1000 });
+  it("pays Mythic stars in Mythics: A1 is one Mythic of itself, A2 two Mythics of its element", () => {
+    expect(rankNeed({ grade: LEGENDARY + 1, star: 1 })).toEqual({ spirit: 8, element: 14, shards: 0 });
+    expect(rankNeed({ grade: LEGENDARY + 1, star: 2 })).toEqual({ spirit: 8, element: 36, shards: 0 });
+  });
+
+  it("pays Immortal stars in Immortals, and the steps up in Legendaries", () => {
+    // Mythic A5 is 16 of itself and 72 of its element; 3 Legendary Earth make it Immortal.
+    expect(copyNeed(IMMORTAL)).toEqual({ spirit: 16, element: 75, shards: 0 });
+    expect(copyNeed(ANCIENT)).toEqual({ spirit: 65, element: 664, shards: 1000 });
   });
 
   it("names ranks the way the game does", () => {
@@ -84,7 +89,9 @@ describe("the ladder", () => {
 
   it("says what the next step takes", () => {
     expect(nextStep({ grade: 0, star: 0 })).toMatchObject({ spirit: 3, element: 0, fodder: 0 });
-    expect(nextStep({ grade: IMMORTAL, star: 2 })).toMatchObject({ spirit: 1, fodder: LEGENDARY });
+    expect(nextStep({ grade: IMMORTAL, star: 2 })).toMatchObject({ spirit: 1, fodder: IMMORTAL });
+    expect(nextStep({ grade: LEGENDARY + 1, star: 5 })).toMatchObject({ element: 3, fodder: LEGENDARY });
+    expect(nextStep({ grade: IMMORTAL, star: 5 })).toMatchObject({ spirit: 1, fodder: LEGENDARY });
     expect(nextStep({ grade: LEGENDARY, star: 1 })).toMatchObject({ spirit: 0, element: 2 });
     expect(nextStep({ grade: LEGENDARY, star: 5 })).toMatchObject({ element: 3, rank: { grade: LEGENDARY + 1, star: 0 } });
     expect(nextStep({ grade: IMMORTAL, star: 5 })).toMatchObject({ spirit: 1, shards: 1000, rank: ANCIENT_RANK });
@@ -93,13 +100,13 @@ describe("the ladder", () => {
 });
 
 describe("estimateSpirits", () => {
-  it("is decided by the spirit's own copies for one spirit to Ancient", () => {
+  it("is decided by the element for one spirit to Ancient", () => {
     const estimate = estimateSpirits([{ name: "Loar", rank: ANCIENT_RANK }], ROSTER);
-    expect(estimate.limit).toBe("Loar");
+    expect(estimate.limit).toBe("Earth");
     expect(estimate.shards).toBe(1000);
     expect(estimate.diamonds).toBe(estimate.batches * SPIRIT_BATCH.diamonds);
-    // 11 Legendary Loar at a twelfth of the summons, less what the bonus picks bring.
-    const bare = 11 / (LEGENDARY_PER_SUMMON / 12);
+    // 729 Legendaries of Earth at a quarter of the summons, less what the bonus picks bring.
+    const bare = 729 / (LEGENDARY_PER_SUMMON / 4);
     expect(estimate.summons).toBeLessThan(bare);
     expect(estimate.summons).toBeGreaterThan(bare * 0.8);
   });
@@ -188,14 +195,31 @@ describe("combining and upgrading", () => {
     expect(step?.used).toEqual(["Noah"]);
   });
 
-  it("pays Mythic stars in Legendaries", () => {
+  it("won't pay a Mythic star in Legendaries it can't raise to Mythic", () => {
+    const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Radon: { [LEGENDARY]: 10 } }), goals);
+    sim.mains.Loar = { grade: LEGENDARY + 1, star: 1 };
+    // Mythic A1 -> A2 takes 2 Mythic Earth, 22 Legendaries' worth: 10 isn't enough.
+    expect(upgradeGoal(sim, goals, 0, ROSTER, OFF)).toBeNull();
+  });
+
+  it("raises Legendaries into Mythic fodder when a Mythic star needs it", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
     const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Radon: { [LEGENDARY]: 30 } }), goals);
     sim.mains.Loar = { grade: LEGENDARY + 1, star: 1 };
-    // Mythic A1 -> A2 takes 2 Legendary Earth: Radon's.
+    // Each Mythic Earth is 4 Radon and 7 Earth Legendaries: 22 of Radon's 30.
     const step = upgradeGoal(sim, goals, 0, ROSTER, OFF);
     expect(step?.to).toEqual({ grade: LEGENDARY + 1, star: 2 });
-    expect(step?.sim.inventory.Radon![LEGENDARY]).toBe(28);
+    expect(step?.sim.inventory.Radon![LEGENDARY]).toBe(8);
+  });
+
+  it("uses a Mythic spare as Mythic fodder", () => {
+    const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
+    const sim = settleMains(withSpares({ Loar: { [LEGENDARY]: 1 }, Radon: { [LEGENDARY + 1]: 2 } }), goals);
+    sim.mains.Loar = { grade: LEGENDARY + 1, star: 1 };
+    const step = upgradeGoal(sim, goals, 0, ROSTER, OFF);
+    expect(step?.to).toEqual({ grade: LEGENDARY + 1, star: 2 });
+    expect(step?.sim.inventory.Radon![LEGENDARY + 1]).toBe(0);
   });
 
   it("combines Epics into the Legendary a star needs", () => {
@@ -217,14 +241,12 @@ describe("combining and upgrading", () => {
     expect(goalsReached(done.sim, goals)).toBe(true);
   });
 
-  it("reaches Ancient from exactly 11 Legendary Loar, 18 Legendary Earth and 1,000 shards", () => {
+  it("reaches Ancient from 65 Legendary Loar, 664 Legendary Earth and 1,000 shards", () => {
     const goals = [{ name: "Loar", rank: ANCIENT_RANK }];
-    const sim = withSpares({ Loar: { [LEGENDARY]: 11 }, Radon: { [LEGENDARY]: 18 } });
+    const sim = withSpares({ Loar: { [LEGENDARY]: 65 }, Radon: { [LEGENDARY]: 700 } });
     const done = upgradeAll({ ...sim, shards: 1000 }, goals, ROSTER, OFF);
     expect(done.sim.mains.Loar).toEqual(ANCIENT_RANK);
-    expect(done.sim.inventory.Loar![LEGENDARY]).toBe(0);
-    expect(done.sim.inventory.Radon![LEGENDARY]).toBe(0);
-    const short = upgradeAll({ ...withSpares({ Loar: { [LEGENDARY]: 11 }, Radon: { [LEGENDARY]: 17 } }), shards: 1000 }, goals, ROSTER, OFF);
+    const short = upgradeAll({ ...withSpares({ Loar: { [LEGENDARY]: 65 }, Radon: { [LEGENDARY]: 600 } }), shards: 1000 }, goals, ROSTER, OFF);
     expect(short.sim.mains.Loar).not.toEqual(ANCIENT_RANK);
   });
 });
