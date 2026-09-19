@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import characterData from "@/data/optimizer/character.json";
 import {
+  bonusAt,
   bundleOf,
   CLASS_LEVELS,
   CLASS_SINGLE,
@@ -63,17 +64,18 @@ function ClassTile({ art, count }: { art: ClassArt | undefined; count?: number }
  */
 export function ClassSummon({ switcher }: { switcher: ReactNode }) {
   const [goal, setGoal] = useState<ClassGoal>("nova");
-  const [bonus, setBonus] = useState(1);
   const [startBar, setStartBar] = useState<ClassBar>({ level: 1, progress: 0 });
   const [sim, setSim] = useState<ClassSim>(() => emptyClassSim());
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
   const [last, setLast] = useState<{ drawn: number[]; rewards: number[] } | null>(null);
 
-  const bundle = bundleOf(bonus);
+  // The x10 bonus follows the summon level: +1 a level, +10 from level 10.
+  const bonus = bonusAt(sim.bar.level);
+  const bundle = bundleOf(sim.bar.level);
   const grade = goalGrade(goal);
   const goalName = goal === "nova" ? "Nova" : className(goal);
   // The estimate counts from where the bar is now: the starting value before summoning, the run's after.
-  const estimate = useMemo(() => estimateClass(goal, bonus, sim.bar), [goal, bonus, sim.bar]);
+  const estimate = useMemo(() => estimateClass(goal, sim.bar), [goal, sim.bar]);
   const reached = (sim.owned[grade - 1] ?? 0) > 0;
   const pityLeft = estimate.cap?.summons ?? Infinity;
   const step = levelStep(sim.bar.level);
@@ -140,17 +142,6 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
           </select>
         </label>
         <label className="flex items-center gap-1.5">
-          <span className={LABEL}>x10 bonus</span>
-          <input
-            type="number"
-            min={0}
-            value={bonus}
-            aria-label="Bonus summons on Class Summon x10"
-            onChange={(event) => setBonus(Math.max(0, Math.floor(event.target.valueAsNumber || 0)))}
-            className={`${FIELD} w-14 text-right tabular-nums`}
-          />
-        </label>
-        <label className="flex items-center gap-1.5">
           <span className={LABEL}>Summon level</span>
           <select
             aria-label="Class summon level"
@@ -166,6 +157,12 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               </option>
             ))}
           </select>
+          <span
+            className="font-mono text-[10px] text-dim tabular-nums"
+            title="Class Summon x10 gives one bonus summon a summon level, up to +10 from level 10"
+          >
+            x10 +{bonus}
+          </span>
         </label>
         <label className="flex items-center gap-1.5">
           <span className={LABEL}>Reward bar</span>
@@ -267,8 +264,8 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               </span>
             </div>
             <p className="font-mono text-[10px] text-dim">
-              About {formatValue(Math.round(estimate.summons))} summons ({formatValue(Math.round((estimate.summons / bundle.summons) * 10) / 10)} × x10
-              {bonus ? ` +${bonus}` : ""} at {formatValue(bundle.diamonds)})
+              About {formatValue(Math.round(estimate.summons))} summons in x10 bundles at {formatValue(bundle.diamonds)}, +{bonus} now
+              {bonus < CLASS_TOP_LEVEL ? `, rising with the summon level to +${CLASS_TOP_LEVEL}` : ""}
               {/* With the reward bar close, both odds are just the bar: say that once. */}
               {estimate.median.summons < pityLeft ? ` · half of runs by ${formatValue(Math.round(estimate.median.diamonds))}` : ""}
               {estimate.likely.summons < pityLeft ? `, 9 in 10 by ${formatValue(Math.round(estimate.likely.diamonds))}` : ""}
@@ -345,7 +342,8 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               ))}
             </dl>
             <p className="text-[10px] leading-snug text-dim">
-              Each grade is one class. The number of bonus summons on x10 grows with the summon level.
+              Each grade is one class. Class Summon x10 gives one bonus summon a summon level: +1 at level 1, +9 at level 9, +10
+              from level 10 on.
             </p>
           </div>
           <div className="flex flex-col gap-1">

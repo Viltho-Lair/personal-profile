@@ -73,15 +73,24 @@ describe("expected summons", () => {
     expect(summonsForOdds(19, 0.9, TOP)).toBe(3000);
   });
 
-  it("prices summons in bundles of 10 plus the bonus", () => {
+  it("adds one bonus summon to x10 a summon level, up to +10 at level 10", () => {
     expect(bundleOf(1)).toEqual({ summons: 11, diamonds: 3000 });
-    expect(diamondsFor(22, 1)).toBe(6000);
-    const nova = estimateClass("nova", 1, TOP);
+    expect(bundleOf(9)).toEqual({ summons: 19, diamonds: 3000 });
+    expect(bundleOf(10)).toEqual({ summons: 20, diamonds: 3000 });
+    expect(bundleOf(14)).toEqual({ summons: 20, diamonds: 3000 });
+  });
+
+  it("prices each level's summons in that level's bundle", () => {
+    expect(diamondsFor(22, START)).toBe(6000);
+    // 100 at level 1 (11 a bundle), then 24 at level 2 (12 a bundle).
+    expect(diamondsFor(124, START)).toBeCloseTo((100 / 11) * 3000 + (24 / 12) * 3000, 6);
+    expect(diamondsFor(40, TOP)).toBe(6000);
+    const nova = estimateClass("nova", TOP);
     expect(nova.grade).toBe(19);
     expect(nova.shards).toBe(10_000);
-    expect(nova.diamonds).toBeCloseTo((nova.summons / 11) * 3000, 6);
+    expect(nova.diamonds).toBeCloseTo((nova.summons / 20) * 3000, 6);
     expect(nova.cap?.summons).toBe(3000);
-    expect(estimateClass(5, 1).cap).toBeNull();
+    expect(estimateClass(5).cap).toBeNull();
   });
 });
 

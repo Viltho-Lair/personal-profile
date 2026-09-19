@@ -42,11 +42,15 @@ export const CLASS_TOP_STEP = { summons: 3000, reward: DARK_RAIN };
 export const levelStep = (level: number) => CLASS_LEVELS[Math.max(1, Math.floor(level)) - 1] ?? CLASS_TOP_STEP;
 
 export const CLASS_SINGLE = { summons: 1, diamonds: 300 };
-/** The bundle: 10 summons and the bonus for 3,000 diamonds. The bonus grows with the summon level. */
+/**
+ * The bundle: 10 summons and the bonus for 3,000 diamonds. The bonus is one summon a summon level, +1 at level 1 up
+ * to +10 at level 10 and on: 11 summons a bundle at level 1, 19 at level 9, 20 from level 10.
+ */
 export const CLASS_BUNDLE_DIAMONDS = 3000;
 export const CLASS_BUNDLE_BASE = 10;
-export const bundleOf = (bonus: number) => ({
-  summons: CLASS_BUNDLE_BASE + Math.max(0, Math.floor(bonus)),
+export const bonusAt = (level: number) => Math.min(CLASS_TOP_LEVEL, Math.max(1, Math.floor(level || 1)));
+export const bundleOf = (level: number) => ({
+  summons: CLASS_BUNDLE_BASE + bonusAt(level),
   diamonds: CLASS_BUNDLE_DIAMONDS,
 });
 
@@ -146,32 +150,46 @@ export function summonsForOdds(grade: number, odds: number, bar: ClassBar = { le
   return Math.min(cap, Math.ceil(Math.log(1 - odds) / Math.log(1 - p)));
 }
 
-/** Diamonds for that many summons, bought in bundles (an average, so part bundles count pro rata). */
-export const diamondsFor = (summons: number, bonus: number) => {
-  const bundle = bundleOf(bonus);
-  return (summons / bundle.summons) * bundle.diamonds;
-};
+/**
+ * Diamonds for that many summons bought in bundles from the reward bar at `bar`: each level's summons come in that
+ * level's bundle, which grows as the bar levels up (an average, so part bundles count pro rata).
+ */
+export function diamondsFor(summons: number, bar: ClassBar = { level: 1, progress: 0 }): number {
+  if (!Number.isFinite(summons)) return Infinity;
+  let { level, progress } = clampBar(bar);
+  let left = Math.max(0, summons);
+  let diamonds = 0;
+  while (left > 0) {
+    // From level 10 on the bundle stays the same, so the rest go at once.
+    const here = level >= CLASS_TOP_LEVEL ? left : Math.min(left, levelStep(level).summons - progress);
+    diamonds += (here / bundleOf(level).summons) * CLASS_BUNDLE_DIAMONDS;
+    left -= here;
+    progress = 0;
+    level++;
+  }
+  return diamonds;
+}
 
 /** "Nova" or a grade 1-19. Nova rests on Dark Rain; the steps after it aren't priced yet. */
 export type ClassGoal = number | "nova";
 export const goalGrade = (goal: ClassGoal) => (goal === "nova" ? DARK_RAIN : goal);
 
-export function estimateClass(goal: ClassGoal, bonus: number, bar: ClassBar = { level: 1, progress: 0 }) {
+export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 1, progress: 0 }) {
   const grade = goalGrade(goal);
   const summons = expectedSummons(grade, bar);
   const cap = rewardIn(grade, bar);
   const at = (odds: number) => {
     const n = summonsForOdds(grade, odds, bar);
-    return { summons: n, diamonds: diamondsFor(n, bonus) };
+    return { summons: n, diamonds: diamondsFor(n, bar) };
   };
   return {
     grade,
     summons,
-    diamonds: diamondsFor(summons, bonus),
+    diamonds: diamondsFor(summons, bar),
     median: at(0.5),
     likely: at(0.9),
     /** The most it can take, when the reward bar will give the class. */
-    cap: Number.isFinite(cap) ? { summons: cap, diamonds: diamondsFor(cap, bonus) } : null,
+    cap: Number.isFinite(cap) ? { summons: cap, diamonds: diamondsFor(cap, bar) } : null,
     shards: goal === "nova" ? NOVA_SHARDS : 0,
   };
 }
