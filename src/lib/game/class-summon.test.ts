@@ -11,7 +11,9 @@ import {
   rewardIn,
   rollGrade,
   summonClasses,
-  summonsForOdds,
+  summonsToOwn,
+  mergeClasses,
+  ownsClass,
 } from "./class-summon";
 
 const START = { level: 1, progress: 0 };
@@ -70,7 +72,53 @@ describe("expected summons", () => {
     expect(expectedSummons(19, START)).toBeCloseTo((1 - 0.9999 ** 9700) / 0.0001, 6);
     expect(expectedSummons(10, START)).toBeCloseTo((1 - 0.966 ** 100) / 0.034, 6);
     expect(expectedSummons(19, { level: 10, progress: 2999 })).toBeCloseTo(1, 6);
-    expect(summonsForOdds(19, 0.9, TOP)).toBe(3000);
+  });
+});
+
+describe("merging", () => {
+  it("merges five of a grade into one of the next, up to Dark Rain", () => {
+    const owned = Array(19).fill(0);
+    owned[0] = 26;
+    const merged = mergeClasses(owned);
+    expect(merged.slice(0, 3)).toEqual([1, 0, 1]);
+    const top = Array(19).fill(0);
+    top[17] = 5;
+    top[18] = 4;
+    expect(mergeClasses(top).slice(17)).toEqual([0, 5]);
+    expect(mergeClasses(top)).toHaveLength(19);
+  });
+
+  it("owns a class once the lower ones merge into it", () => {
+    const owned = Array(19).fill(0);
+    owned[2] = 4;
+    owned[1] = 5;
+    expect(ownsClass(owned, 4)).toBe(true);
+    expect(ownsClass(owned, 5)).toBe(false);
+  });
+
+  it("stops a run at the draw, the reward or the merge that gives the class", () => {
+    // Every roll is grade 1: 5 make a grade 2.
+    expect(summonsToOwn(2, TOP, () => 0)).toBe(5);
+    // The bar gives grade 10 at 100 summons, before 5^9 grade 1s could merge into it.
+    expect(summonsToOwn(10, START, () => 0)).toBe(100);
+  });
+});
+
+describe("estimateClass", () => {
+  it("comes out the same every time", () => {
+    expect(estimateClass(12, START, 200)).toEqual(estimateClass(12, START, 200));
+  });
+
+  it("is quicker with merging than without", () => {
+    const withMerging = estimateClass(18, TOP, 400);
+    expect(withMerging.summons).toBeLessThan(expectedSummons(18, TOP));
+    expect(withMerging.median.summons).toBeLessThanOrEqual(withMerging.likely.summons);
+  });
+
+  it("never takes more than the reward bar", () => {
+    const darkRain = estimateClass(19, START, 200);
+    expect(darkRain.likely.summons).toBeLessThanOrEqual(9700);
+    expect(darkRain.cap?.summons).toBe(9700);
   });
 
   it("adds one bonus summon to x10 a summon level, up to +10 at level 10", () => {

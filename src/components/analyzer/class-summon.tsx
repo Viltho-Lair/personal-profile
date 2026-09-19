@@ -17,7 +17,10 @@ import {
   estimateClass,
   goalGrade,
   levelStep,
+  CLASS_MERGE,
+  mergeClasses,
   NOVA_SHARDS,
+  ownsClass,
   summonClasses,
   type ClassBar,
   type ClassGoal,
@@ -74,9 +77,12 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
   const bundle = bundleOf(sim.bar.level);
   const grade = goalGrade(goal);
   const goalName = goal === "nova" ? "Nova" : className(goal);
-  // The estimate counts from where the bar is now: the starting value before summoning, the run's after.
-  const estimate = useMemo(() => estimateClass(goal, sim.bar), [goal, sim.bar]);
-  const reached = (sim.owned[grade - 1] ?? 0) > 0;
+  // The estimate counts from where the bar started, so the run can be held up against it.
+  const estimate = useMemo(() => estimateClass(goal, startBar), [goal, startBar]);
+  // Owning it counts merging: five of a grade make one of the next.
+  const reached = ownsClass(sim.owned, grade);
+  const merged = mergeClasses(sim.owned);
+  const canMerge = merged.some((count, i) => count !== (sim.owned[i] ?? 0));
   const pityLeft = estimate.cap?.summons ?? Infinity;
   const step = levelStep(sim.bar.level);
   const setBar = (change: Partial<ClassBar>) => {
@@ -89,7 +95,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
     const result = summonClasses(sim, count, diamonds);
     setSim(result.sim);
     setLast({ drawn: result.drawn, rewards: result.rewards });
-    if ((result.sim.owned[grade - 1] ?? 0) > 0) setAuto("off");
+    if (ownsClass(result.sim.owned, grade)) setAuto("off");
   };
 
   const runRef = useRef(run);
@@ -255,7 +261,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
                   ) : goal === "nova" ? (
                     `Summon ${className(DARK_RAIN)}, raise it to Seed 5★, then ${formatValue(NOVA_SHARDS)} shards`
                   ) : (
-                    `${grade} grade · ${CLASS_SUMMON_CHANCES[grade - 1]}% a summon`
+                    `${grade} grade · ${CLASS_SUMMON_CHANCES[grade - 1]}% a summon, or merged up from lower classes`
                   )}
                 </span>
               </span>
@@ -283,16 +289,28 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               </ul>
             ) : null}
             <p className="text-[10px] leading-snug text-dim">
-              An average, not a promise: your own summons will land differently. It counts the summons to the first copy of
-              the class, bought as x10 bundles, with the reward bar where it is now. Your profile&apos;s classes stay as they
-              are.
+              An average over many simulated runs, not a promise: your own summons will land differently. It counts the
+              summons to the first copy of the class, summoned, given by the reward bar or merged up from lower classes
+              ({CLASS_MERGE} of a grade make one of the next), bought as x10 bundles from where the reward bar starts. Your
+              profile&apos;s classes stay as they are.
             </p>
           </div>
 
           {/* What's been summoned. */}
           {sim.summons > 0 ? (
             <div className="flex flex-col gap-1">
-              <h3 className={LABEL}>Summoned classes</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className={LABEL}>Summoned classes</h3>
+                <button
+                  type="button"
+                  onClick={() => setSim((current) => ({ ...current, owned: mergeClasses(current.owned) }))}
+                  disabled={!canMerge}
+                  title={`Merge ${CLASS_MERGE} of a grade into one of the next, as far as it goes, up to ${className(DARK_RAIN)}`}
+                  className={QUIET}
+                >
+                  Merge {CLASS_MERGE} → 1
+                </button>
+              </div>
               <ul className="grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1.5">
                 {SUMMONABLE.map((cls, i) => {
                   const count = sim.owned[i] ?? 0;
@@ -342,7 +360,8 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               ))}
             </dl>
             <p className="text-[10px] leading-snug text-dim">
-              Each grade is one class. Class Summon x10 gives one bonus summon a summon level: +1 at level 1, +9 at level 9, +10
+              Each grade is one class, and {CLASS_MERGE} of a grade merge into one of the next, up to {DARK_RAIN}{" "}
+              {className(DARK_RAIN)}. Class Summon x10 gives one bonus summon a summon level: +1 at level 1, +9 at level 9, +10
               from level 10 on.
             </p>
           </div>

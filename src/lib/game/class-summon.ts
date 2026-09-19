@@ -8,6 +8,8 @@
  * drew in between: level 1 to 2 takes 100 summons and gives a grade 10, up to level 9 to 10 at 2,000 summons for a
  * grade 18. From level 10 on, every 3,000 summons gives a grade 19.
  *
+ * Five classes of a grade merge into one of the next grade, up to grade 19 (Dark Rain).
+ *
  * Nova, the last class, is Blast awakened: Seed at 5 stars (awakening 17) takes 10,000 shards to reach Nova.
  * The steps from Dark Rain to Seed 5 stars aren't priced yet.
  */
@@ -118,6 +120,23 @@ export function summonClasses(sim: ClassSim, count: number, diamonds: number, ra
   };
 }
 
+/** Five classes of a grade merge into one of the next grade, up to grade 19 (Dark Rain). */
+export const CLASS_MERGE = 5;
+
+/** The classes owned, merged five to one as far as they go: nothing merges past Dark Rain. */
+export function mergeClasses(owned: readonly number[]): number[] {
+  const merged = [...owned];
+  for (let grade = 1; grade < DARK_RAIN; grade++) {
+    const up = Math.floor((merged[grade - 1] ?? 0) / CLASS_MERGE);
+    merged[grade - 1]! -= up * CLASS_MERGE;
+    merged[grade] = (merged[grade] ?? 0) + up;
+  }
+  return merged;
+}
+
+/** Whether the classes owned hold one of `grade`, merging included. */
+export const ownsClass = (owned: readonly number[], grade: number) => (mergeClasses(owned)[grade - 1] ?? 0) > 0;
+
 /** Summons until the reward bar gives a class of `grade`, or Infinity when it won't. */
 export function rewardIn(grade: number, bar: ClassBar): number {
   let { level, progress } = clampBar(bar);
@@ -133,7 +152,7 @@ export function rewardIn(grade: number, bar: ClassBar): number {
   }
 }
 
-/** Average summons to own a class of `grade`, from the reward bar at `bar`. */
+/** Average summons to own a class of `grade` without merging, from the reward bar at `bar`. */
 export function expectedSummons(grade: number, bar: ClassBar = { level: 1, progress: 0 }): number {
   const p = chance(grade);
   const cap = rewardIn(grade, bar);
@@ -142,12 +161,46 @@ export function expectedSummons(grade: number, bar: ClassBar = { level: 1, progr
   return Number.isFinite(cap) ? (1 - (1 - p) ** cap) / p : 1 / p;
 }
 
-/** Summons that give a class of `grade` with the chance `odds` (0.5 is the median); capped by the reward bar. */
-export function summonsForOdds(grade: number, odds: number, bar: ClassBar = { level: 1, progress: 0 }): number {
-  const p = chance(grade);
-  const cap = rewardIn(grade, bar);
-  if (p <= 0) return cap;
-  return Math.min(cap, Math.ceil(Math.log(1 - odds) / Math.log(1 - p)));
+/** A small seeded random number generator, so the estimate comes out the same every time. */
+export function seeded(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Runs the estimate averages over, and the most summons one run may take before it's given up on. */
+export const ESTIMATE_RUNS = 1000;
+const RUN_LIMIT = 2_000_000;
+
+/**
+ * One run to the first class of `grade`: a summon of it, the reward bar giving it, or enough lower classes to merge
+ * into it (five of a grade make one of the next). Counts lower classes in grade 1 units, 5^(grade - 1) each, so the
+ * merge is exact: merged up, they give one of `grade` once they add up to 5^(grade - 1).
+ */
+export function summonsToOwn(grade: number, bar: ClassBar, random: () => number): number {
+  let { level, progress } = clampBar(bar);
+  const target = CLASS_MERGE ** (grade - 1);
+  let value = 0;
+  const add = (got: number) => {
+    if (got === grade) return true;
+    if (got < grade) value += CLASS_MERGE ** (got - 1);
+    return value >= target;
+  };
+  for (let summons = 1; summons <= RUN_LIMIT; summons++) {
+    if (add(rollGrade(random()))) return summons;
+    const step = levelStep(level);
+    if (++progress >= step.summons) {
+      progress = 0;
+      level++;
+      if (add(step.reward)) return summons;
+    }
+  }
+  return RUN_LIMIT;
 }
 
 /**
@@ -174,18 +227,26 @@ export function diamondsFor(summons: number, bar: ClassBar = { level: 1, progres
 export type ClassGoal = number | "nova";
 export const goalGrade = (goal: ClassGoal) => (goal === "nova" ? DARK_RAIN : goal);
 
-export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 1, progress: 0 }) {
+/**
+ * What owning a class takes from the reward bar at `bar`, over {@link ESTIMATE_RUNS} runs: summoning it, the bar
+ * giving it, or merging lower classes up to it, whichever comes first. The average, and the summons half and nine in
+ * ten runs are done by.
+ */
+export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 1, progress: 0 }, runs = ESTIMATE_RUNS) {
   const grade = goalGrade(goal);
-  const summons = expectedSummons(grade, bar);
+  const random = seeded(grade * 1_000_003 + bar.level * 10_007 + bar.progress);
+  const results = Array.from({ length: runs }, () => summonsToOwn(grade, bar, random)).sort((a, b) => a - b);
+  const summons = results.reduce((sum, n) => sum + n, 0) / runs;
+  const diamonds = results.reduce((sum, n) => sum + diamondsFor(n, bar), 0) / runs;
   const cap = rewardIn(grade, bar);
   const at = (odds: number) => {
-    const n = summonsForOdds(grade, odds, bar);
+    const n = results[Math.min(runs - 1, Math.ceil(odds * runs) - 1)]!;
     return { summons: n, diamonds: diamondsFor(n, bar) };
   };
   return {
     grade,
     summons,
-    diamonds: diamondsFor(summons, bar),
+    diamonds,
     median: at(0.5),
     likely: at(0.9),
     /** The most it can take, when the reward bar will give the class. */
