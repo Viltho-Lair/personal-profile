@@ -8,10 +8,11 @@
  * drew in between: level 0 to 1 takes 100 summons and gives a grade 10, up to level 8 to 9 at 2,000 summons for a
  * grade 18. From level 9 on, every 3,000 summons gives a grade 19.
  *
- * Five classes of a grade merge into one of the next grade, up to grade 19 (Dark Rain).
+ * Five classes of a grade merge into one of the next grade, up to grade 19 (Dark Rain), and five Dark Rains merge
+ * into grade 20, Blast.
  *
- * Nova, the last class, is Blast awakened: Seed at 5 stars (awakening 17) takes 10,000 shards to reach Nova.
- * The steps from Dark Rain to Seed 5 stars aren't priced yet.
+ * Blast awakens on Dark Rains: one a star up to 5 stars, then four for the next tier (Tera, then Seed). Seed at 5
+ * stars takes 10,000 shards for Nova, the last class. All told, Nova takes 28 Dark Rains and 10,000 shards.
  */
 
 /** Chance of each grade per summon, in percent, grade 1 first, as the game lists them. */
@@ -21,8 +22,27 @@ export const CLASS_SUMMON_CHANCES: readonly number[] = [
 /** Grades a summon can give: 1 to 19. */
 export const CLASS_SUMMON_GRADES = 19;
 export const DARK_RAIN = 19;
+export const BLAST = 20;
 /** Seed 5 stars to Nova. */
 export const NOVA_SHARDS = 10_000;
+
+/** A Dark Rain an awakening up to 5 stars, then four for the next tier. */
+export const AWAKEN_STARS = 5;
+export const STAR_COST = 1;
+export const TIER_COST = 4;
+
+/** The way to Nova, each step in the Dark Rains it takes; the last one takes shards instead. */
+export const NOVA_PATH: readonly { to: string; darkRains: number; shards: number }[] = [
+  { to: "Blast", darkRains: 5, shards: 0 },
+  { to: "Blast 5★", darkRains: AWAKEN_STARS * STAR_COST, shards: 0 },
+  { to: "Tera", darkRains: TIER_COST, shards: 0 },
+  { to: "Tera 5★", darkRains: AWAKEN_STARS * STAR_COST, shards: 0 },
+  { to: "Seed", darkRains: TIER_COST, shards: 0 },
+  { to: "Seed 5★", darkRains: AWAKEN_STARS * STAR_COST, shards: 0 },
+  { to: "Nova", darkRains: 0, shards: NOVA_SHARDS },
+];
+/** Dark Rains for Nova: 5 to merge into Blast, then 23 awakening it up. */
+export const NOVA_DARK_RAINS = NOVA_PATH.reduce((sum, step) => sum + step.darkRains, 0);
 
 /** Summon levels 0 to 8: the summons to the next level and the grade of class that level up gives. */
 export const CLASS_LEVELS: readonly { summons: number; reward: number }[] = [
@@ -135,8 +155,14 @@ export function mergeClasses(owned: readonly number[]): number[] {
   return merged;
 }
 
-/** Whether the classes owned hold one of `grade`, merging included. */
-export const ownsClass = (owned: readonly number[], grade: number) => (mergeClasses(owned)[grade - 1] ?? 0) > 0;
+/** How many of `grade` the classes owned come to, merging included. */
+export const copiesOwned = (owned: readonly number[], grade: number) => mergeClasses(owned)[grade - 1] ?? 0;
+
+/** Whether the classes owned hold `copies` of `grade`, merging included. */
+export const ownsClass = (owned: readonly number[], grade: number, copies = 1) => copiesOwned(owned, grade) >= copies;
+
+/** What a goal takes: the grade of class, and how many of it. */
+export const goalCopies = (goal: ClassGoal) => (goal === "nova" ? NOVA_DARK_RAINS : 1);
 
 /** Summons until the reward bar gives a class of `grade`, or Infinity when it won't. */
 export function rewardIn(grade: number, bar: ClassBar): number {
@@ -174,34 +200,63 @@ export function seeded(seed: number): () => number {
   };
 }
 
-/** Runs the estimate averages over, and the most summons one run may take before it's given up on. */
+/**
+ * Runs the estimate averages over, the fewest it settles for on a long goal, the summons it spends over all its runs
+ * and the most one run may take before it's given up on.
+ */
 export const ESTIMATE_RUNS = 1000;
+const LEAST_RUNS = 120;
+const RUN_BUDGET = 8_000_000;
 const RUN_LIMIT = 2_000_000;
 
+/** What a class of `got` is worth towards a goal of `grade`, in grade 1 units: nothing if it's above the goal. */
+const unit = (got: number, grade: number) => (got <= grade ? CLASS_MERGE ** (got - 1) : 0);
+
 /**
- * One run to the first class of `grade`: a summon of it, the reward bar giving it, or enough lower classes to merge
- * into it (five of a grade make one of the next). Counts lower classes in grade 1 units, 5^(grade - 1) each, so the
- * merge is exact: merged up, they give one of `grade` once they add up to 5^(grade - 1).
+ * One run to `copies` classes of `grade`: summoning them, the reward bar giving them, or merging lower classes up
+ * (five of a grade make one of the next). Counts classes in grade 1 units, 5^(grade - 1) each, so the merge is
+ * exact: merged up, they give one of `grade` for every 5^(grade - 1) they add up to.
  */
-export function summonsToOwn(grade: number, bar: ClassBar, random: () => number): number {
+export function summonsToOwn(grade: number, bar: ClassBar, random: () => number, copies = 1): number {
   let { level, progress } = clampBar(bar);
-  const target = CLASS_MERGE ** (grade - 1);
+  const target = copies * CLASS_MERGE ** (grade - 1);
   let value = 0;
-  const add = (got: number) => {
-    if (got === grade) return true;
-    if (got < grade) value += CLASS_MERGE ** (got - 1);
-    return value >= target;
-  };
   for (let summons = 1; summons <= RUN_LIMIT; summons++) {
-    if (add(rollGrade(random()))) return summons;
+    value += unit(rollGrade(random()), grade);
+    if (value >= target) return summons;
     const step = levelStep(level);
     if (++progress >= step.summons) {
       progress = 0;
       level++;
-      if (add(step.reward)) return summons;
+      value += unit(step.reward, grade);
+      if (value >= target) return summons;
     }
   }
   return RUN_LIMIT;
+}
+
+/**
+ * Summons until the reward bar alone has given `copies` classes of `grade`, merging its lower classes up, or
+ * Infinity when it never will. Nothing can take longer than this.
+ */
+export function rewardCap(grade: number, bar: ClassBar, copies = 1): number {
+  let { level, progress } = clampBar(bar);
+  const target = copies * CLASS_MERGE ** (grade - 1);
+  let value = 0;
+  let summons = 0;
+  for (;;) {
+    const step = levelStep(level);
+    summons += step.summons - progress;
+    progress = 0;
+    value += unit(step.reward, grade);
+    if (value >= target) return summons;
+    // Past level 9 every level up is the same, so the rest come at once.
+    if (level >= CLASS_TOP_LEVEL) {
+      const per = unit(step.reward, grade);
+      return per > 0 ? summons + Math.ceil((target - value) / per) * step.summons : Infinity;
+    }
+    level++;
+  }
 }
 
 /**
@@ -229,28 +284,36 @@ export type ClassGoal = number | "nova";
 export const goalGrade = (goal: ClassGoal) => (goal === "nova" ? DARK_RAIN : goal);
 
 /**
- * What owning a class takes from the reward bar at `bar`, over {@link ESTIMATE_RUNS} runs: summoning it, the bar
- * giving it, or merging lower classes up to it, whichever comes first. The average, and the summons half and nine in
- * ten runs are done by.
+ * What a goal takes from the reward bar at `bar`, over up to {@link ESTIMATE_RUNS} runs: summoning the classes, the
+ * bar giving them, or merging lower classes up to them. The average, and the summons half and nine in ten runs are
+ * done by. Nova takes 28 Dark Rains, so its runs are long and it settles for fewer of them.
  */
-export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 0, progress: 0 }, runs = ESTIMATE_RUNS) {
+export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 0, progress: 0 }, most = ESTIMATE_RUNS) {
   const grade = goalGrade(goal);
-  const random = seeded(grade * 1_000_003 + bar.level * 10_007 + bar.progress);
-  const results = Array.from({ length: runs }, () => summonsToOwn(grade, bar, random)).sort((a, b) => a - b);
+  const copies = goalCopies(goal);
+  const random = seeded(grade * 1_000_003 + copies * 7919 + bar.level * 10_007 + bar.progress);
+  const first = summonsToOwn(grade, bar, random, copies);
+  // Long goals take millions of summons a run, so the estimate trades runs for the wait.
+  const runs = Math.max(1, Math.min(most, Math.max(LEAST_RUNS, Math.round(RUN_BUDGET / Math.max(1, first)))));
+  const results = [first, ...Array.from({ length: runs - 1 }, () => summonsToOwn(grade, bar, random, copies))].sort(
+    (a, b) => a - b,
+  );
   const summons = results.reduce((sum, n) => sum + n, 0) / runs;
   const diamonds = results.reduce((sum, n) => sum + diamondsFor(n, bar), 0) / runs;
-  const cap = rewardIn(grade, bar);
+  const cap = rewardCap(grade, bar, copies);
   const at = (odds: number) => {
     const n = results[Math.min(runs - 1, Math.ceil(odds * runs) - 1)]!;
     return { summons: n, diamonds: diamondsFor(n, bar) };
   };
   return {
     grade,
+    copies,
+    runs,
     summons,
     diamonds,
     median: at(0.5),
     likely: at(0.9),
-    /** The most it can take, when the reward bar will give the class. */
+    /** The most it can take, when the reward bar will give the classes. */
     cap: Number.isFinite(cap) ? { summons: cap, diamonds: diamondsFor(cap, bar) } : null,
     shards: goal === "nova" ? NOVA_SHARDS : 0,
   };

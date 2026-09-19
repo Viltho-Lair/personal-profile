@@ -13,6 +13,12 @@ import {
   summonClasses,
   summonsToOwn,
   mergeClasses,
+  NOVA_DARK_RAINS,
+  NOVA_PATH,
+  copiesOwned,
+  goalCopies,
+  rewardCap,
+  seeded,
   ownsClass,
 } from "./class-summon";
 
@@ -104,6 +110,35 @@ describe("merging", () => {
   });
 });
 
+describe("the way to Nova", () => {
+  it("takes 28 Dark Rains and 10,000 shards", () => {
+    expect(NOVA_PATH.map((step) => step.darkRains)).toEqual([5, 5, 4, 5, 4, 5, 0]);
+    expect(NOVA_DARK_RAINS).toBe(28);
+    expect(NOVA_PATH.at(-1)).toEqual({ to: "Nova", darkRains: 0, shards: 10_000 });
+    expect(goalCopies("nova")).toBe(28);
+    expect(goalCopies(12)).toBe(1);
+  });
+
+  it("counts the classes owned by what they merge into", () => {
+    const owned = Array(19).fill(0);
+    owned[18] = 3;
+    owned[17] = 10;
+    expect(copiesOwned(owned, 19)).toBe(5);
+    expect(ownsClass(owned, 19, 5)).toBe(true);
+    expect(ownsClass(owned, 19, 6)).toBe(false);
+  });
+
+  it("is never slower than the reward bar giving every Dark Rain", () => {
+    // 28 Dark Rains at 3,000 summons each from level 9, less what the run has merged up along the way.
+    const cap = rewardCap(19, TOP, 28);
+    expect(cap).toBeLessThanOrEqual(28 * 3000);
+    expect(cap).toBeGreaterThan(27 * 3000);
+    expect(rewardCap(19, TOP)).toBe(3000);
+    expect(rewardCap(18, TOP)).toBe(Infinity);
+    expect(summonsToOwn(19, TOP, seeded(7), 28)).toBeLessThanOrEqual(cap);
+  });
+});
+
 describe("estimateClass", () => {
   it("comes out the same every time", () => {
     expect(estimateClass(12, START, 200)).toEqual(estimateClass(12, START, 200));
@@ -137,7 +172,7 @@ describe("estimateClass", () => {
     expect(nova.grade).toBe(19);
     expect(nova.shards).toBe(10_000);
     expect(nova.diamonds).toBeCloseTo((nova.summons / 20) * 3000, 6);
-    expect(nova.cap?.summons).toBe(3000);
+    expect(nova.cap?.summons).toBe(rewardCap(19, TOP, NOVA_DARK_RAINS));
     expect(estimateClass(5).cap).toBeNull();
   });
 });
@@ -153,7 +188,7 @@ describe("summoning", () => {
     expect(result.sim.diamonds).toBe(3000);
   });
 
-  it("gives a grade 19 every 3,000 from level 10", () => {
+  it("gives a grade 19 every 3,000 from level 9", () => {
     const result = summonClasses(emptyClassSim({ level: 9, progress: 2995 }), 3010, 0, () => 0);
     expect(result.rewards).toEqual([19, 19]);
     expect(result.sim.bar).toEqual({ level: 11, progress: 5 });

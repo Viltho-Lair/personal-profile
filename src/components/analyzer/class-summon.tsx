@@ -20,7 +20,11 @@ import {
   levelStep,
   CLASS_MERGE,
   mergeClasses,
+  NOVA_DARK_RAINS,
+  NOVA_PATH,
   NOVA_SHARDS,
+  copiesOwned,
+  goalCopies,
   ownsClass,
   summonClasses,
   type ClassBar,
@@ -80,8 +84,10 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
   const goalName = goal === "nova" ? "Nova" : className(goal);
   // The estimate counts from where the bar started, so the run can be held up against it.
   const estimate = useMemo(() => estimateClass(goal, startBar), [goal, startBar]);
-  // Owning it counts merging: five of a grade make one of the next.
-  const reached = ownsClass(sim.owned, grade);
+  // Owning it counts merging: five of a grade make one of the next. Nova takes 28 Dark Rains.
+  const copies = goalCopies(goal);
+  const have = copiesOwned(sim.owned, grade);
+  const reached = have >= copies;
   const merged = mergeClasses(sim.owned);
   const canMerge = merged.some((count, i) => count !== (sim.owned[i] ?? 0));
   const pityLeft = estimate.cap?.summons ?? Infinity;
@@ -96,7 +102,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
     const result = summonClasses(sim, count, diamonds);
     setSim(result.sim);
     setLast({ drawn: result.drawn, rewards: result.rewards });
-    if (ownsClass(result.sim.owned, grade)) setAuto("off");
+    if (ownsClass(result.sim.owned, grade, copies)) setAuto("off");
   };
 
   const runRef = useRef(run);
@@ -197,7 +203,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               type="button"
               onClick={() => setAuto("running")}
               disabled={reached}
-              title={`Summon ${formatValue(bundle.summons * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms until ${goal === "nova" ? className(DARK_RAIN) : goalName} is summoned, or you stop`}
+              title={`Summon ${formatValue(bundle.summons * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms until ${copies > 1 ? `${copies} ${className(DARK_RAIN)}s are` : `${goalName} is`} summoned, or you stop`}
               className={QUIET}
             >
               Auto
@@ -257,10 +263,10 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
                 <span className="font-mono text-[10px] text-dim">
                   {reached ? (
                     <span className="text-tier-mythic">
-                      {goal === "nova" ? `${className(DARK_RAIN)} summoned: the rest isn't priced yet` : "Summoned"}
+                      {goal === "nova" ? `${NOVA_DARK_RAINS} ${className(DARK_RAIN)}s in hand: Nova is yours` : "Summoned"}
                     </span>
                   ) : goal === "nova" ? (
-                    `Summon ${className(DARK_RAIN)}, raise it to Seed 5★, then ${formatValue(NOVA_SHARDS)} shards`
+                    `${NOVA_DARK_RAINS} ${className(DARK_RAIN)}s and ${formatValue(NOVA_SHARDS)} shards${sim.summons > 0 ? ` · ${have} so far` : ""}`
                   ) : (
                     `${grade} grade · ${CLASS_SUMMON_CHANCES[grade - 1]}% a summon, or merged up from lower classes`
                   )}
@@ -282,16 +288,27 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
             </p>
             {goal === "nova" ? (
               <ul className="font-mono text-[10px] text-dim">
-                <li>
-                  1. {className(DARK_RAIN)} ({DARK_RAIN} grade): {formatValue(Math.round(estimate.diamonds))} diamonds, counted above
-                </li>
-                <li>2. {className(DARK_RAIN)} to Blast, then awakening up to Seed 5★: not priced yet</li>
-                <li>3. Seed 5★ to Nova: {formatValue(NOVA_SHARDS)} shards</li>
+                {NOVA_PATH.map((path, i) => {
+                  // The Dark Rains this step needs, and how many of them the run has to spare for it.
+                  const before = NOVA_PATH.slice(0, i).reduce((sum, earlier) => sum + earlier.darkRains, 0);
+                  const done = Math.max(0, Math.min(path.darkRains, have - before));
+                  return (
+                    <li key={path.to} className={done === path.darkRains && path.darkRains ? "text-tier-mythic" : ""}>
+                      {i + 1}. {path.to}:{" "}
+                      {path.darkRains
+                        ? `${path.darkRains} ${className(DARK_RAIN)}${path.darkRains > 1 ? "s" : ""}${
+                            i === 0 ? " merge into it" : ""
+                          }${sim.summons > 0 ? ` · ${done} / ${path.darkRains}` : ""}`
+                        : `${formatValue(path.shards)} shards (not priced here)`}
+                    </li>
+                  );
+                })}
               </ul>
             ) : null}
             <p className="text-[10px] leading-snug text-dim">
-              An average over many simulated runs, not a promise: your own summons will land differently. It counts the
-              summons to the first copy of the class, summoned, given by the reward bar or merged up from lower classes
+              An average over {formatValue(estimate.runs)} simulated runs, not a promise: your own summons will land
+              differently. It counts the summons to the {copies > 1 ? `${copies} classes` : "first copy of the class"},
+              summoned, given by the reward bar or merged up from lower classes
               ({CLASS_MERGE} of a grade make one of the next), bought as x10 bundles from where the reward bar starts. Your
               profile&apos;s classes stay as they are.
             </p>
