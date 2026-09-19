@@ -7,6 +7,7 @@ import {
   SPIRIT_BONUS_OPTIONS,
   combineAll,
   emptySim,
+  simFromStarts,
   EPIC,
   estimateSpirits,
   gateShort,
@@ -33,6 +34,7 @@ import {
   type Rank,
   type SpiritGoal,
   type SpiritSim,
+  type SpiritStarts,
   type Upgrade,
 } from "@/lib/game/spirit-summon";
 import { formatValue, SPIRITS, type Spirit } from "./data";
@@ -113,10 +115,13 @@ function stepText(rank: Rank | null, name: string, element: string | null, short
 }
 
 /**
- * Spirit summoning, apart from the profile: every spirit starts from nothing. Pick the spirits to raise in order of
- * priority and how far; the estimate gives the diamonds that takes on average, and the summon buttons try it out.
+ * Spirit summoning, apart from the profile: every spirit starts where you say it is. Pick the spirits to raise in
+ * order of priority and how far; the estimate gives the diamonds that takes on average, and the summon buttons try
+ * it out.
  */
 export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
+  // The rank each spirit is at before the run, for the ones already raised.
+  const [starts, setStarts] = useState<SpiritStarts>({});
   const [sim, setSim] = useState<SpiritSim>(() => emptySim(ROSTER));
   const [summons, setSummons] = useState(0);
   const [spent, setSpent] = useState(0);
@@ -129,7 +134,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
   const [switchFrom, setSwitchFrom] = useState("");
   const [switchTo, setSwitchTo] = useState<string>("random");
 
-  const estimate = useMemo(() => estimateSpirits(goals, ROSTER), [goals]);
+  const estimate = useMemo(() => estimateSpirits(goals, ROSTER, starts), [goals, starts]);
   const settled = useMemo(() => settleMains(sim, ROSTER), [sim]);
   const reached = goalsReached(settled, goals);
   const options = { lowerAsFodder };
@@ -190,15 +195,44 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
     return () => window.clearInterval(timer);
   }, [auto]);
 
-  const clear = () => {
+  const clear = (next: SpiritStarts = starts) => {
     setAuto("off");
-    setSim(emptySim(ROSTER, sim.shards));
+    setSim(simFromStarts(ROSTER, next, sim.shards));
     setSummons(0);
     setSpent(0);
     setPicks([]);
     setLog([]);
     setLast(null);
   };
+
+  /** Sets where a spirit starts, which begins the run again from there. */
+  const setStart = (name: string, rank: Rank | null) => {
+    const next = { ...starts };
+    if (rank) next[name] = rank;
+    else delete next[name];
+    setStarts(next);
+    clear(next);
+  };
+
+  /** The rank picker for a spirit's starting point: what you already have in the game. */
+  const startPicker = (name: string) => (
+    <label className="flex items-center gap-1">
+      <span className={LABEL}>from</span>
+      <select
+        aria-label={`${name} starts at`}
+        value={starts[name] ? rankIndex(starts[name]!) : -1}
+        onChange={(event) => setStart(name, Number(event.target.value) < 0 ? null : SPIRIT_RANKS[Number(event.target.value)]!)}
+        className={FIELD}
+      >
+        <option value={-1}>none</option>
+        {SPIRIT_RANKS.map((rank, i) => (
+          <option key={i} value={i}>
+            {rankLabel(rank)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 
   const pick = (name: string) => {
     setSim((current) => settleMains(takeBonus(current, name), ROSTER));
@@ -274,7 +308,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
         </label>
         <span className="ml-auto flex flex-wrap items-center gap-1.5">
           {summons > 0 ? (
-            <button type="button" onClick={clear} className={QUIET}>
+            <button type="button" onClick={() => clear()} className={QUIET}>
               Clear
             </button>
           ) : null}
@@ -410,6 +444,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
                           {main ? `${rankLabel(main)} · skill Lv 1` : "not owned yet"}
                         </span>
                       </span>
+                      {startPicker(goal.name)}
                       <label className="flex items-center gap-1">
                         <span className={LABEL}>to</span>
                         <select
@@ -484,11 +519,13 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
             ) : null}
           </div>
 
-          {/* The average, from nothing. */}
+          {/* The average, from where the spirits start. */}
           {goals.length ? (
             <div className="flex flex-col gap-1 rounded-md border border-ink/15 p-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className={LABEL}>Diamonds on average, from nothing</h3>
+                <h3 className={LABEL}>
+                  Diamonds on average, {Object.keys(starts).length ? "from where they start" : "from nothing"}
+                </h3>
                 <span className="font-mono text-sm text-tier-immortal tabular-nums">
                   {formatValue(estimate.diamonds)} <span className="text-[10px] text-dim">diamonds</span>
                 </span>
@@ -522,6 +559,54 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
                 An average, not a promise: your own summons will land differently. Every star and step past
                 Legendary A0 is paid in Legendary spirits, the gates drag the whole roster along, and it assumes every
                 bonus pick goes to a wanted spirit or its element when one is offered.
+              </p>
+            </div>
+          ) : null}
+
+          {/* The spirits that aren't goals: where they start, since the gates drag them along too. */}
+          {unpicked.length ? (
+            <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className={LABEL}>The rest of the roster · where they start</h3>
+                <span className="font-mono text-[10px] text-dim">
+                  {gateGrade === null
+                    ? "None of the goals waits on them"
+                    : `They all have to reach ${SPIRIT_GRADES[gateGrade]} A0 for the gate`}
+                </span>
+              </div>
+              <ul className="grid gap-1 @xl:grid-cols-2">
+                {unpicked.map((spirit) => {
+                  const main = settled.mains[spirit.name];
+                  return (
+                    <li key={spirit.name} className="flex flex-wrap items-center gap-2 border-b border-ink/10 pb-1">
+                      <span className="w-8">
+                        <SpiritTile name={spirit.name} grade={main?.grade ?? 0} label={main ? rankLabel(main) : "none"} />
+                      </span>
+                      <span className="flex min-w-24 flex-col">
+                        <span className="font-mono text-[11px] text-ink">
+                          {spirit.name}{" "}
+                          <span className={`text-[10px] ${ELEMENT_TEXT[spirit.element ?? ""] ?? "text-dim"}`}>{spirit.element}</span>
+                        </span>
+                        <span className={`font-mono text-[10px] ${main ? (TIER_TEXT[SPIRIT_GRADES[main.grade]!] ?? "text-dim") : "text-dim"}`}>
+                          {main ? rankLabel(main) : "not owned yet"}
+                        </span>
+                      </span>
+                      {startPicker(spirit.name)}
+                      <button
+                        type="button"
+                        onClick={() => setGoals((current) => [...current, { name: spirit.name, rank: ANCIENT_RANK }])}
+                        title={`Raise ${spirit.name} too`}
+                        className={`${QUIET} ml-auto`}
+                      >
+                        Raise
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="text-[10px] leading-snug text-dim">
+                Set each one to the rank you already have it at. The estimate counts only what&apos;s left to raise, and a
+                run starts with these spirits in hand.
               </p>
             </div>
           ) : null}
@@ -604,7 +689,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
             </div>
           ) : (
             <p className="font-mono text-[10px] text-dim">
-              Every spirit starts from nothing here and your profile&apos;s spirits stay as they are. Summon one or eleven at a
+              Every spirit starts where you set it above and your profile&apos;s spirits stay as they are. Summon one or eleven at a
               time, or let Auto run until the goals are reached.
             </p>
           )}

@@ -19,6 +19,7 @@ import {
   rankLabel,
   rankNeed,
   settleMains,
+  simFromStarts,
   SPIRIT_BATCH,
   SPIRIT_RANKS,
   SPIRIT_SUMMON_CHANCES,
@@ -136,6 +137,33 @@ describe("estimateSpirits", () => {
     const bare = (29 + 21 + 21) / (LEGENDARY_PER_SUMMON / 4);
     expect(estimate.summons).toBeLessThan(bare);
     expect(estimate.summons).toBeGreaterThan(bare * 0.8);
+  });
+
+  it("counts only what's left to raise from where the spirits start", () => {
+    const goal = [{ name: "Loar", rank: ANCIENT_RANK }];
+    const nothing = estimateSpirits(goal, ROSTER);
+    // The whole roster already at Immortal A0 leaves only Loar's stars to Ancient.
+    const started = estimateSpirits(
+      goal,
+      ROSTER,
+      Object.fromEntries(ROSTER.map((spirit) => [spirit.name, { grade: IMMORTAL, star: 0 }])),
+    );
+    expect(started.summons).toBeLessThan(nothing.summons);
+    expect(started.needs.filter((need) => need.gate).every((need) => need.need.spirit === 0)).toBe(true);
+    // Loar already Ancient: nothing left to summon, shards included.
+    const done = estimateSpirits(goal, ROSTER, { Loar: ANCIENT_RANK });
+    expect(done.needs.find((need) => need.name === "Loar")?.need).toEqual({ spirit: 0, element: 0, shards: 0 });
+    expect(done.shards).toBe(0);
+  });
+
+  it("starts a run with the spirits already raised", () => {
+    const sim = simFromStarts(ROSTER, { Loar: { grade: IMMORTAL, star: 2 } });
+    expect(sim.mains.Loar).toEqual({ grade: IMMORTAL, star: 2 });
+    expect(sim.mains.Noah).toBeUndefined();
+    expect(gateShort(sim, IMMORTAL, ROSTER)).toHaveLength(ROSTER.length - 1);
+    // A summoned Epic doesn't push a started spirit back down.
+    const settled = settleMains(summonSpirits(sim, 1, 0, ROSTER, () => 0).sim, ROSTER);
+    expect(settled.mains.Loar).toEqual({ grade: IMMORTAL, star: 2 });
   });
 
   it("costs far less for a goal below the first gate", () => {

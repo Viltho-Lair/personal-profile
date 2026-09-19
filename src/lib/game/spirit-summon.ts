@@ -132,6 +132,25 @@ export const LEGENDARY_PER_SUMMON = SPIRIT_SUMMON_CHANCES.reduce(
 /** A spirit to raise and how far. `gate` marks the ones only there because a gate asks for them. */
 export type SpiritGoal = { name: string; rank: Rank; gate?: boolean };
 
+/** The rank each spirit starts the run at, for spirits already raised. */
+export type SpiritStarts = Readonly<Record<string, Rank>>;
+
+/**
+ * What raising a spirit from `from` to `rank` still takes, in Legendary A0 spirits: what the rank takes from
+ * nothing, less what the spirit in hand already stands for. A spirit at or past the rank takes nothing.
+ */
+export function remainingNeed(rank: Rank, from?: Rank | null): Need {
+  const target = rankNeed(rank);
+  if (!from) return target;
+  if (rankAtLeast(from, rank)) return { spirit: 0, element: 0, shards: 0 };
+  const have = rankNeed(from);
+  return {
+    spirit: Math.max(0, target.spirit - have.spirit),
+    element: Math.max(0, target.element - have.element),
+    shards: Math.max(0, target.shards - have.shards),
+  };
+}
+
 /** The grade every spirit must have reached before the step up from this rank, or null when nothing gates it. */
 export const stepGate = (rank: Rank): number | null =>
   rank.star < MAX_STAR && GATED_GRADES.includes(rank.grade) ? rank.grade : null;
@@ -198,12 +217,12 @@ function bonusHit(wanted: number, total: number): number {
  * shared, so it's the slowest need that decides: each spirit's own copies (1/12 of what's summoned) and each
  * element's total (3/12 of it). The bonus pick goes to a wanted spirit or its element whenever one is offered.
  */
-export function estimateSpirits(goals: readonly SpiritGoal[], roster: Roster): SpiritEstimate {
+export function estimateSpirits(goals: readonly SpiritGoal[], roster: Roster, starts: SpiritStarts = {}): SpiritEstimate {
   const count = roster.length;
   const elementOf = (name: string) => roster.find((spirit) => spirit.name === name)?.element ?? null;
   const detailed = requiredRanks(goals, roster).map((goal) => ({
     ...goal,
-    need: rankNeed(goal.rank),
+    need: remainingNeed(goal.rank, starts[goal.name]),
     element: elementOf(goal.name),
   }));
   const elements = [...new Set(detailed.map((goal) => goal.element))];
@@ -264,6 +283,17 @@ export const emptySim = (roster: Roster, shards = 0): SpiritSim => ({
   inventory: Object.fromEntries(roster.map((spirit) => [spirit.name, SPIRIT_GRADES.map(() => 0)])),
   mains: {},
   shards,
+});
+
+/** A run that starts with the spirits already raised: each one's own copy at the rank it's at. */
+export const simFromStarts = (roster: Roster, starts: SpiritStarts, shards = 0): SpiritSim => ({
+  ...emptySim(roster, shards),
+  mains: Object.fromEntries(
+    roster.flatMap((spirit) => {
+      const rank = starts[spirit.name];
+      return rank ? [[spirit.name, rank] as const] : [];
+    }),
+  ),
 });
 
 const cloneSim = (sim: SpiritSim): SpiritSim => ({
