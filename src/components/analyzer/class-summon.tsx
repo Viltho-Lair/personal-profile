@@ -12,6 +12,7 @@ import {
   CLASS_TOP_LEVEL,
   CLASS_TOP_STEP,
   clampBar,
+  MAX_CLASS_BONUS,
   DARK_RAIN,
   emptyClassSim,
   estimateClass,
@@ -67,12 +68,12 @@ function ClassTile({ art, count }: { art: ClassArt | undefined; count?: number }
  */
 export function ClassSummon({ switcher }: { switcher: ReactNode }) {
   const [goal, setGoal] = useState<ClassGoal>("nova");
-  const [startBar, setStartBar] = useState<ClassBar>({ level: 1, progress: 0 });
+  const [startBar, setStartBar] = useState<ClassBar>({ level: 0, progress: 0 });
   const [sim, setSim] = useState<ClassSim>(() => emptyClassSim());
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
   const [last, setLast] = useState<{ drawn: number[]; rewards: number[] } | null>(null);
 
-  // The x10 bonus follows the summon level: +1 a level, +10 from level 10.
+  // The x10 bonus follows the summon level: +1 at level 0, one more a level, +10 from level 9.
   const bonus = bonusAt(sim.bar.level);
   const bundle = bundleOf(sim.bar.level);
   const grade = goalGrade(goal);
@@ -157,15 +158,15 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
             onChange={(event) => setBar({ level: Number(event.target.value) })}
             className={FIELD}
           >
-            {Array.from({ length: CLASS_TOP_LEVEL }, (_, i) => (
-              <option key={i} value={i + 1}>
-                {i + 1 === CLASS_TOP_LEVEL ? `${i + 1}+` : i + 1}
+            {Array.from({ length: CLASS_TOP_LEVEL + 1 }, (_, i) => (
+              <option key={i} value={i}>
+                {i === CLASS_TOP_LEVEL ? `${i}+` : i}
               </option>
             ))}
           </select>
           <span
             className="font-mono text-[10px] text-dim tabular-nums"
-            title="Class Summon x10 gives one bonus summon a summon level, up to +10 from level 10"
+            title={`Class Summon x10 gives one bonus summon a summon level, up to +${MAX_CLASS_BONUS} from level ${CLASS_TOP_LEVEL}`}
           >
             x10 +{bonus}
           </span>
@@ -271,7 +272,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
             </div>
             <p className="font-mono text-[10px] text-dim">
               About {formatValue(Math.round(estimate.summons))} summons in x10 bundles at {formatValue(bundle.diamonds)}, +{bonus} now
-              {bonus < CLASS_TOP_LEVEL ? `, rising with the summon level to +${CLASS_TOP_LEVEL}` : ""}
+              {bonus < MAX_CLASS_BONUS ? `, rising with the summon level to +${MAX_CLASS_BONUS}` : ""}
               {/* With the reward bar close, both odds are just the bar: say that once. */}
               {estimate.median.summons < pityLeft ? ` · half of runs by ${formatValue(Math.round(estimate.median.diamonds))}` : ""}
               {estimate.likely.summons < pityLeft ? `, 9 in 10 by ${formatValue(Math.round(estimate.likely.diamonds))}` : ""}
@@ -361,22 +362,22 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
             </dl>
             <p className="text-[10px] leading-snug text-dim">
               Each grade is one class, and {CLASS_MERGE} of a grade merge into one of the next, up to {DARK_RAIN}{" "}
-              {className(DARK_RAIN)}. Class Summon x10 gives one bonus summon a summon level: +1 at level 1, +9 at level 9, +10
-              from level 10 on.
+              {className(DARK_RAIN)}. Class Summon x10 gives one bonus summon a summon level: +1 at level 0, +9 at level 8,
+              +{MAX_CLASS_BONUS} from level {CLASS_TOP_LEVEL} on.
             </p>
           </div>
           <div className="flex flex-col gap-1">
             <h3 className={LABEL}>Summon level rewards</h3>
             <dl className="font-mono text-[10px]">
               {[...CLASS_LEVELS, CLASS_TOP_STEP].map((levelUp, i) => {
-                const current = Math.min(sim.bar.level, CLASS_TOP_LEVEL) === i + 1;
+                const current = Math.min(sim.bar.level, CLASS_TOP_LEVEL) === i;
                 return (
                   <div
                     key={i}
                     className={`flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5 ${current ? "text-ink" : "text-dim"}`}
                   >
                     <dt>
-                      {i + 1 === CLASS_TOP_LEVEL ? `Lv ${i + 1}+, every` : `Lv ${i + 1} → ${i + 2}`}{" "}
+                      {i === CLASS_TOP_LEVEL ? `Lv ${i}+, every` : `Lv ${i} → ${i + 1}`}{" "}
                       <span className="tabular-nums">{formatValue(levelUp.summons)}</span>
                     </dt>
                     <dd>

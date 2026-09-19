@@ -5,8 +5,8 @@
  * Trainee, grade 19 Dark Rain. Grade 20 (Blast) shows 0%, so it can't be summoned.
  *
  * The class summon reward bar levels up the summon level, and each level up gives a class, whatever the summons
- * drew in between: level 1 to 2 takes 100 summons and gives a grade 10, up to level 9 to 10 at 2,000 summons for a
- * grade 18. From level 10 on, every 3,000 summons gives a grade 19.
+ * drew in between: level 0 to 1 takes 100 summons and gives a grade 10, up to level 8 to 9 at 2,000 summons for a
+ * grade 18. From level 9 on, every 3,000 summons gives a grade 19.
  *
  * Five classes of a grade merge into one of the next grade, up to grade 19 (Dark Rain).
  *
@@ -24,7 +24,7 @@ export const DARK_RAIN = 19;
 /** Seed 5 stars to Nova. */
 export const NOVA_SHARDS = 10_000;
 
-/** Summon levels 1 to 9: the summons to the next level and the grade of class that level up gives. */
+/** Summon levels 0 to 8: the summons to the next level and the grade of class that level up gives. */
 export const CLASS_LEVELS: readonly { summons: number; reward: number }[] = [
   { summons: 100, reward: 10 },
   { summons: 200, reward: 11 },
@@ -36,21 +36,22 @@ export const CLASS_LEVELS: readonly { summons: number; reward: number }[] = [
   { summons: 1500, reward: 17 },
   { summons: 2000, reward: 18 },
 ];
-/** Level 10 and on: a grade 19 every 3,000 summons. */
-export const CLASS_TOP_LEVEL = CLASS_LEVELS.length + 1;
+/** Level 9 and on: a grade 19 every 3,000 summons. */
+export const CLASS_TOP_LEVEL = CLASS_LEVELS.length;
 export const CLASS_TOP_STEP = { summons: 3000, reward: DARK_RAIN };
 
 /** The summons a summon level takes to level up, and the class it gives. */
-export const levelStep = (level: number) => CLASS_LEVELS[Math.max(1, Math.floor(level)) - 1] ?? CLASS_TOP_STEP;
+export const levelStep = (level: number) => CLASS_LEVELS[Math.max(0, Math.floor(level))] ?? CLASS_TOP_STEP;
 
 export const CLASS_SINGLE = { summons: 1, diamonds: 300 };
 /**
- * The bundle: 10 summons and the bonus for 3,000 diamonds. The bonus is one summon a summon level, +1 at level 1 up
- * to +10 at level 10 and on: 11 summons a bundle at level 1, 19 at level 9, 20 from level 10.
+ * The bundle: 10 summons and the bonus for 3,000 diamonds. The bonus is one summon a summon level, +1 at level 0 up
+ * to +10 at level 9 and on: 11 summons a bundle at level 0, 19 at level 8, 20 from level 9.
  */
 export const CLASS_BUNDLE_DIAMONDS = 3000;
 export const CLASS_BUNDLE_BASE = 10;
-export const bonusAt = (level: number) => Math.min(CLASS_TOP_LEVEL, Math.max(1, Math.floor(level || 1)));
+export const MAX_CLASS_BONUS = CLASS_TOP_LEVEL + 1;
+export const bonusAt = (level: number) => Math.min(MAX_CLASS_BONUS, Math.max(0, Math.floor(level || 0)) + 1);
 export const bundleOf = (level: number) => ({
   summons: CLASS_BUNDLE_BASE + bonusAt(level),
   diamonds: CLASS_BUNDLE_DIAMONDS,
@@ -72,9 +73,9 @@ export function rollGrade(roll: number): number {
 /** Where the reward bar is: the summon level and the summons on the bar at that level. */
 export type ClassBar = { level: number; progress: number };
 
-/** A summon level of 1 or more (10 and above all work alike), with the bar short of its next level up. */
+/** A summon level of 0 or more (9 and above all work alike), with the bar short of its next level up. */
 export function clampBar(bar: ClassBar): ClassBar {
-  const level = Math.max(1, Math.floor(bar.level || 1));
+  const level = Math.max(0, Math.floor(bar.level || 0));
   const progress = Math.min(levelStep(level).summons - 1, Math.max(0, Math.floor(bar.progress || 0)));
   return { level, progress };
 }
@@ -87,7 +88,7 @@ export type ClassSim = {
   bar: ClassBar;
 };
 
-export const emptyClassSim = (bar: ClassBar = { level: 1, progress: 0 }): ClassSim => ({
+export const emptyClassSim = (bar: ClassBar = { level: 0, progress: 0 }): ClassSim => ({
   owned: Array(CLASS_SUMMON_GRADES).fill(0),
   summons: 0,
   diamonds: 0,
@@ -141,7 +142,7 @@ export const ownsClass = (owned: readonly number[], grade: number) => (mergeClas
 export function rewardIn(grade: number, bar: ClassBar): number {
   let { level, progress } = clampBar(bar);
   let summons = 0;
-  // Past level 10 the bar only gives grade 19s, so one pass over the levels is enough.
+  // Past level 9 the bar only gives grade 19s, so one pass over the levels is enough.
   for (;;) {
     const step = levelStep(level);
     summons += step.summons - progress;
@@ -153,7 +154,7 @@ export function rewardIn(grade: number, bar: ClassBar): number {
 }
 
 /** Average summons to own a class of `grade` without merging, from the reward bar at `bar`. */
-export function expectedSummons(grade: number, bar: ClassBar = { level: 1, progress: 0 }): number {
+export function expectedSummons(grade: number, bar: ClassBar = { level: 0, progress: 0 }): number {
   const p = chance(grade);
   const cap = rewardIn(grade, bar);
   if (p <= 0) return cap;
@@ -207,13 +208,13 @@ export function summonsToOwn(grade: number, bar: ClassBar, random: () => number)
  * Diamonds for that many summons bought in bundles from the reward bar at `bar`: each level's summons come in that
  * level's bundle, which grows as the bar levels up (an average, so part bundles count pro rata).
  */
-export function diamondsFor(summons: number, bar: ClassBar = { level: 1, progress: 0 }): number {
+export function diamondsFor(summons: number, bar: ClassBar = { level: 0, progress: 0 }): number {
   if (!Number.isFinite(summons)) return Infinity;
   let { level, progress } = clampBar(bar);
   let left = Math.max(0, summons);
   let diamonds = 0;
   while (left > 0) {
-    // From level 10 on the bundle stays the same, so the rest go at once.
+    // From level 9 on the bundle stays the same, so the rest go at once.
     const here = level >= CLASS_TOP_LEVEL ? left : Math.min(left, levelStep(level).summons - progress);
     diamonds += (here / bundleOf(level).summons) * CLASS_BUNDLE_DIAMONDS;
     left -= here;
@@ -232,7 +233,7 @@ export const goalGrade = (goal: ClassGoal) => (goal === "nova" ? DARK_RAIN : goa
  * giving it, or merging lower classes up to it, whichever comes first. The average, and the summons half and nine in
  * ten runs are done by.
  */
-export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 1, progress: 0 }, runs = ESTIMATE_RUNS) {
+export function estimateClass(goal: ClassGoal, bar: ClassBar = { level: 0, progress: 0 }, runs = ESTIMATE_RUNS) {
   const grade = goalGrade(goal);
   const random = seeded(grade * 1_000_003 + bar.level * 10_007 + bar.progress);
   const results = Array.from({ length: runs }, () => summonsToOwn(grade, bar, random)).sort((a, b) => a - b);

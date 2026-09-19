@@ -16,8 +16,8 @@ import {
   ownsClass,
 } from "./class-summon";
 
-const START = { level: 1, progress: 0 };
-const TOP = { level: 10, progress: 0 };
+const START = { level: 0, progress: 0 };
+const TOP = { level: 9, progress: 0 };
 
 describe("class summon chances", () => {
   it("add up to 100% over grades 1-19, with grade 20 at 0%", () => {
@@ -36,11 +36,11 @@ describe("class summon chances", () => {
 
 describe("the reward bar", () => {
   it("levels up by the game's table, then gives a grade 19 every 3,000", () => {
-    expect(levelStep(1)).toEqual({ summons: 100, reward: 10 });
-    expect(levelStep(6)).toEqual({ summons: 700, reward: 15 });
-    expect(levelStep(9)).toEqual({ summons: 2000, reward: 18 });
-    expect(levelStep(10)).toEqual({ summons: 3000, reward: 19 });
-    expect(levelStep(14)).toEqual({ summons: 3000, reward: 19 });
+    expect(levelStep(0)).toEqual({ summons: 100, reward: 10 });
+    expect(levelStep(5)).toEqual({ summons: 700, reward: 15 });
+    expect(levelStep(8)).toEqual({ summons: 2000, reward: 18 });
+    expect(levelStep(9)).toEqual({ summons: 3000, reward: 19 });
+    expect(levelStep(13)).toEqual({ summons: 3000, reward: 19 });
   });
 
   it("counts the summons to the level up that gives a grade", () => {
@@ -48,16 +48,16 @@ describe("the reward bar", () => {
     expect(rewardIn(11, START)).toBe(300);
     expect(rewardIn(18, START)).toBe(6700);
     expect(rewardIn(19, START)).toBe(9700);
-    expect(rewardIn(19, { level: 10, progress: 2081 })).toBe(919);
+    expect(rewardIn(19, { level: 9, progress: 2081 })).toBe(919);
     // Levels already past, and grades the bar never gives.
-    expect(rewardIn(10, { level: 2, progress: 0 })).toBe(Infinity);
+    expect(rewardIn(10, { level: 1, progress: 0 })).toBe(Infinity);
     expect(rewardIn(18, TOP)).toBe(Infinity);
     expect(rewardIn(9, START)).toBe(Infinity);
   });
 
   it("keeps the bar short of its level up", () => {
-    expect(clampBar({ level: 1, progress: 500 })).toEqual({ level: 1, progress: 99 });
-    expect(clampBar({ level: 0, progress: -5 })).toEqual(START);
+    expect(clampBar({ level: 0, progress: 500 })).toEqual({ level: 0, progress: 99 });
+    expect(clampBar({ level: -2, progress: -5 })).toEqual(START);
   });
 });
 
@@ -71,7 +71,7 @@ describe("expected summons", () => {
     expect(expectedSummons(19, TOP)).toBeCloseTo((1 - 0.9999 ** 3000) / 0.0001, 6);
     expect(expectedSummons(19, START)).toBeCloseTo((1 - 0.9999 ** 9700) / 0.0001, 6);
     expect(expectedSummons(10, START)).toBeCloseTo((1 - 0.966 ** 100) / 0.034, 6);
-    expect(expectedSummons(19, { level: 10, progress: 2999 })).toBeCloseTo(1, 6);
+    expect(expectedSummons(19, { level: 9, progress: 2999 })).toBeCloseTo(1, 6);
   });
 });
 
@@ -121,16 +121,16 @@ describe("estimateClass", () => {
     expect(darkRain.cap?.summons).toBe(9700);
   });
 
-  it("adds one bonus summon to x10 a summon level, up to +10 at level 10", () => {
-    expect(bundleOf(1)).toEqual({ summons: 11, diamonds: 3000 });
-    expect(bundleOf(9)).toEqual({ summons: 19, diamonds: 3000 });
-    expect(bundleOf(10)).toEqual({ summons: 20, diamonds: 3000 });
-    expect(bundleOf(14)).toEqual({ summons: 20, diamonds: 3000 });
+  it("adds one bonus summon to x10 a summon level, up to +10 at level 9", () => {
+    expect(bundleOf(0)).toEqual({ summons: 11, diamonds: 3000 });
+    expect(bundleOf(8)).toEqual({ summons: 19, diamonds: 3000 });
+    expect(bundleOf(9)).toEqual({ summons: 20, diamonds: 3000 });
+    expect(bundleOf(13)).toEqual({ summons: 20, diamonds: 3000 });
   });
 
   it("prices each level's summons in that level's bundle", () => {
     expect(diamondsFor(22, START)).toBe(6000);
-    // 100 at level 1 (11 a bundle), then 24 at level 2 (12 a bundle).
+    // 100 at level 0 (11 a bundle), then 24 at level 1 (12 a bundle).
     expect(diamondsFor(124, START)).toBeCloseTo((100 / 11) * 3000 + (24 / 12) * 3000, 6);
     expect(diamondsFor(40, TOP)).toBe(6000);
     const nova = estimateClass("nova", TOP);
@@ -144,9 +144,9 @@ describe("estimateClass", () => {
 
 describe("summoning", () => {
   it("counts diamonds and gives each level up's class", () => {
-    const result = summonClasses(emptyClassSim({ level: 1, progress: 95 }), 11, 3000, () => 0);
+    const result = summonClasses(emptyClassSim({ level: 0, progress: 95 }), 11, 3000, () => 0);
     expect(result.rewards).toEqual([10]);
-    expect(result.sim.bar).toEqual({ level: 2, progress: 6 });
+    expect(result.sim.bar).toEqual({ level: 1, progress: 6 });
     expect(result.sim.owned[0]).toBe(11);
     expect(result.sim.owned[9]).toBe(1);
     expect(result.sim.summons).toBe(11);
@@ -154,8 +154,8 @@ describe("summoning", () => {
   });
 
   it("gives a grade 19 every 3,000 from level 10", () => {
-    const result = summonClasses(emptyClassSim({ level: 10, progress: 2995 }), 3010, 0, () => 0);
+    const result = summonClasses(emptyClassSim({ level: 9, progress: 2995 }), 3010, 0, () => 0);
     expect(result.rewards).toEqual([19, 19]);
-    expect(result.sim.bar).toEqual({ level: 12, progress: 5 });
+    expect(result.sim.bar).toEqual({ level: 11, progress: 5 });
   });
 });
