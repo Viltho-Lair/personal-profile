@@ -4,18 +4,21 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import characterData from "@/data/optimizer/character.json";
 import {
   bundleOf,
-  CLASS_PITY_EVERY,
-  CLASS_PITY_GRADE,
+  CLASS_LEVELS,
   CLASS_SINGLE,
   CLASS_SUMMON_CHANCES,
   CLASS_SUMMON_GRADES,
-  clampPity,
-  diamondsFor,
+  CLASS_TOP_LEVEL,
+  CLASS_TOP_STEP,
+  clampBar,
+  DARK_RAIN,
   emptyClassSim,
   estimateClass,
   goalGrade,
+  levelStep,
   NOVA_SHARDS,
   summonClasses,
+  type ClassBar,
   type ClassGoal,
   type ClassSim,
 } from "@/lib/game/class-summon";
@@ -61,18 +64,24 @@ function ClassTile({ art, count }: { art: ClassArt | undefined; count?: number }
 export function ClassSummon({ switcher }: { switcher: ReactNode }) {
   const [goal, setGoal] = useState<ClassGoal>("nova");
   const [bonus, setBonus] = useState(1);
-  const [startPity, setStartPity] = useState(0);
+  const [startBar, setStartBar] = useState<ClassBar>({ level: 1, progress: 0 });
   const [sim, setSim] = useState<ClassSim>(() => emptyClassSim());
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
-  const [last, setLast] = useState<{ drawn: number[]; rewards: number } | null>(null);
+  const [last, setLast] = useState<{ drawn: number[]; rewards: number[] } | null>(null);
 
   const bundle = bundleOf(bonus);
   const grade = goalGrade(goal);
   const goalName = goal === "nova" ? "Nova" : className(goal);
   // The estimate counts from where the bar is now: the starting value before summoning, the run's after.
-  const estimate = useMemo(() => estimateClass(goal, bonus, sim.pity), [goal, bonus, sim.pity]);
+  const estimate = useMemo(() => estimateClass(goal, bonus, sim.bar), [goal, bonus, sim.bar]);
   const reached = (sim.owned[grade - 1] ?? 0) > 0;
-  const pityLeft = grade === CLASS_PITY_GRADE ? CLASS_PITY_EVERY - sim.pity : Infinity;
+  const pityLeft = estimate.cap?.summons ?? Infinity;
+  const step = levelStep(sim.bar.level);
+  const setBar = (change: Partial<ClassBar>) => {
+    const bar = clampBar({ ...startBar, ...change });
+    setStartBar(bar);
+    setSim(emptyClassSim(bar));
+  };
 
   const run = (count: number, diamonds: number) => {
     const result = summonClasses(sim, count, diamonds);
@@ -96,7 +105,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
 
   const clear = () => {
     setAuto("off");
-    setSim(emptyClassSim(startPity));
+    setSim(emptyClassSim(startBar));
     setLast(null);
   };
 
@@ -142,23 +151,36 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
           />
         </label>
         <label className="flex items-center gap-1.5">
+          <span className={LABEL}>Summon level</span>
+          <select
+            aria-label="Class summon level"
+            value={Math.min(sim.bar.level, CLASS_TOP_LEVEL)}
+            disabled={sim.summons > 0}
+            title={sim.summons > 0 ? "Clear the run to change where the bar starts" : "Your class summon level now"}
+            onChange={(event) => setBar({ level: Number(event.target.value) })}
+            className={FIELD}
+          >
+            {Array.from({ length: CLASS_TOP_LEVEL }, (_, i) => (
+              <option key={i} value={i + 1}>
+                {i + 1 === CLASS_TOP_LEVEL ? `${i + 1}+` : i + 1}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-1.5">
           <span className={LABEL}>Reward bar</span>
           <input
             type="number"
             min={0}
-            max={CLASS_PITY_EVERY - 1}
-            value={sim.summons > 0 ? sim.pity : startPity}
+            max={step.summons - 1}
+            value={sim.bar.progress}
             disabled={sim.summons > 0}
             title={sim.summons > 0 ? "Clear the run to change where the bar starts" : "Where your class summon reward bar is now"}
             aria-label="Class summon reward bar progress"
-            onChange={(event) => {
-              const pity = clampPity(event.target.valueAsNumber);
-              setStartPity(pity);
-              setSim(emptyClassSim(pity));
-            }}
+            onChange={(event) => setBar({ progress: event.target.valueAsNumber })}
             className={`${FIELD} w-20 text-right tabular-nums`}
           />
-          <span className="font-mono text-[10px] text-dim">/ {formatValue(CLASS_PITY_EVERY)}</span>
+          <span className="font-mono text-[10px] text-dim">/ {formatValue(step.summons)}</span>
         </label>
         <span className="ml-auto flex flex-wrap items-center gap-1.5">
           {sim.summons > 0 ? (
@@ -171,7 +193,7 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               type="button"
               onClick={() => setAuto("running")}
               disabled={reached}
-              title={`Summon ${formatValue(bundle.summons * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms until ${goal === "nova" ? className(CLASS_PITY_GRADE) : goalName} is summoned, or you stop`}
+              title={`Summon ${formatValue(bundle.summons * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms until ${goal === "nova" ? className(DARK_RAIN) : goalName} is summoned, or you stop`}
               className={QUIET}
             >
               Auto
@@ -195,17 +217,17 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
         </span>
       </div>
 
-      {/* The class summon reward bar: a grade 19 class every 3,000 summons. */}
+      {/* The class summon reward bar: each level up gives a class. */}
       <div className="flex flex-col gap-1">
         <div
           role="meter"
           aria-label="Class summon reward progress"
           aria-valuemin={0}
-          aria-valuemax={CLASS_PITY_EVERY}
-          aria-valuenow={sim.pity}
+          aria-valuemax={step.summons}
+          aria-valuenow={sim.bar.progress}
           className="relative h-3 overflow-hidden rounded-sm border border-ink/20 bg-ink/[0.06]"
         >
-          <div className="absolute inset-y-0 left-0 bg-tier-epic" style={{ width: `${(sim.pity / CLASS_PITY_EVERY) * 100}%` }} />
+          <div className="absolute inset-y-0 left-0 bg-tier-epic" style={{ width: `${(sim.bar.progress / step.summons) * 100}%` }} />
         </div>
         <p className={LABEL}>
           {sim.summons > 0 ? (
@@ -213,8 +235,8 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               <span className="text-tier-immortal">{formatValue(sim.diamonds)} diamonds spent</span> · {formatValue(sim.summons)} summons ·{" "}
             </>
           ) : null}
-          Class summon reward {formatValue(sim.pity)} / {formatValue(CLASS_PITY_EVERY)}: a {CLASS_PITY_GRADE} grade{" "}
-          {className(CLASS_PITY_GRADE)}
+          Level {sim.bar.level} · class summon reward {formatValue(sim.bar.progress)} / {formatValue(step.summons)}: a{" "}
+          {step.reward} grade {className(step.reward)}
         </p>
       </div>
 
@@ -231,10 +253,10 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
                 <span className="font-mono text-[10px] text-dim">
                   {reached ? (
                     <span className="text-tier-mythic">
-                      {goal === "nova" ? `${className(CLASS_PITY_GRADE)} summoned: the rest isn't priced yet` : "Summoned"}
+                      {goal === "nova" ? `${className(DARK_RAIN)} summoned: the rest isn't priced yet` : "Summoned"}
                     </span>
                   ) : goal === "nova" ? (
-                    `Summon ${className(CLASS_PITY_GRADE)}, raise it to Seed 5★, then ${formatValue(NOVA_SHARDS)} shards`
+                    `Summon ${className(DARK_RAIN)}, raise it to Seed 5★, then ${formatValue(NOVA_SHARDS)} shards`
                   ) : (
                     `${grade} grade · ${CLASS_SUMMON_CHANCES[grade - 1]}% a summon`
                   )}
@@ -250,16 +272,16 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               {/* With the reward bar close, both odds are just the bar: say that once. */}
               {estimate.median.summons < pityLeft ? ` · half of runs by ${formatValue(Math.round(estimate.median.diamonds))}` : ""}
               {estimate.likely.summons < pityLeft ? `, 9 in 10 by ${formatValue(Math.round(estimate.likely.diamonds))}` : ""}
-              {grade === CLASS_PITY_GRADE
-                ? ` · never more than ${formatValue(Math.round(diamondsFor(CLASS_PITY_EVERY - sim.pity, bonus)))} with the reward bar`
+              {estimate.cap
+                ? ` · never more than ${formatValue(Math.round(estimate.cap.diamonds))}, when the reward bar gives it`
                 : ""}
             </p>
             {goal === "nova" ? (
               <ul className="font-mono text-[10px] text-dim">
                 <li>
-                  1. {className(CLASS_PITY_GRADE)} ({CLASS_PITY_GRADE} grade): {formatValue(Math.round(estimate.diamonds))} diamonds, counted above
+                  1. {className(DARK_RAIN)} ({DARK_RAIN} grade): {formatValue(Math.round(estimate.diamonds))} diamonds, counted above
                 </li>
-                <li>2. {className(CLASS_PITY_GRADE)} to Blast, then awakening up to Seed 5★: not priced yet</li>
+                <li>2. {className(DARK_RAIN)} to Blast, then awakening up to Seed 5★: not priced yet</li>
                 <li>3. Seed 5★ to Nova: {formatValue(NOVA_SHARDS)} shards</li>
               </ul>
             ) : null}
@@ -295,7 +317,9 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
               {last ? (
                 <p className="font-mono text-[10px] text-dim">
                   Last summon: {lastText}
-                  {last.rewards ? ` (reward bar paid out ${last.rewards > 1 ? `${last.rewards} times` : "once"})` : ""}
+                  {last.rewards.length
+                    ? ` · level up rewards: ${last.rewards.map((reward) => `${reward} ${className(reward)}`).join(", ")}`
+                    : ""}
                 </p>
               ) : null}
             </div>
@@ -323,6 +347,28 @@ export function ClassSummon({ switcher }: { switcher: ReactNode }) {
             <p className="text-[10px] leading-snug text-dim">
               Each grade is one class. The number of bonus summons on x10 grows with the summon level.
             </p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <h3 className={LABEL}>Summon level rewards</h3>
+            <dl className="font-mono text-[10px]">
+              {[...CLASS_LEVELS, CLASS_TOP_STEP].map((levelUp, i) => {
+                const current = Math.min(sim.bar.level, CLASS_TOP_LEVEL) === i + 1;
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5 ${current ? "text-ink" : "text-dim"}`}
+                  >
+                    <dt>
+                      {i + 1 === CLASS_TOP_LEVEL ? `Lv ${i + 1}+, every` : `Lv ${i + 1} → ${i + 2}`}{" "}
+                      <span className="tabular-nums">{formatValue(levelUp.summons)}</span>
+                    </dt>
+                    <dd>
+                      {levelUp.reward} <span className="text-ink">{className(levelUp.reward)}</span>
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
           </div>
         </div>
       </div>
