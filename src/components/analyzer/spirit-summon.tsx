@@ -139,9 +139,38 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
   const reached = goalsReached(settled, goals);
   const options = { lowerAsFodder };
 
-  const say = (lines: string[]) => lines.length && setLog((current) => [...lines.reverse(), ...current].slice(0, 8));
+  // Room for a line per spirit, since a gate moves the whole roster at once.
+  const say = (lines: string[]) =>
+    lines.length && setLog((current) => [...lines.reverse(), ...current].slice(0, ROSTER.length + 2));
   const describe = (step: Upgrade) =>
     `${step.name} ${rankLabel(step.from)} → ${rankLabel(step.to)}${step.used.length ? ` (used ${step.used.join(", ")} as fodder)` : ""}`;
+
+  /**
+   * A tick raises a spirit several steps at once — the stars A1 to A5, then the step to the next grade — so each
+   * spirit gets one line saying how far it came and how many stars it took on the way.
+   */
+  const summarize = (steps: readonly Upgrade[]): string[] => {
+    const order: string[] = [];
+    const runs = new Map<string, { from: Rank; to: Rank; stars: number; used: Set<string> }>();
+    for (const step of steps) {
+      let entry = runs.get(step.name);
+      if (!entry) {
+        entry = { from: step.from, to: step.to, stars: 0, used: new Set() };
+        runs.set(step.name, entry);
+        order.push(step.name);
+      }
+      entry.to = step.to;
+      if (step.to.star > 0) entry.stars += 1;
+      for (const name of step.used) entry.used.add(name);
+    }
+    return order.map((name) => {
+      const entry = runs.get(name)!;
+      // One step is plain to read on its own; several in a tick are worth counting.
+      const stars = entry.stars > 1 ? ` · ${entry.stars} stars on the way` : "";
+      const used = entry.used.size ? ` (used ${[...entry.used].join(", ")} as fodder)` : "";
+      return `${name} ${rankLabel(entry.from)} → ${rankLabel(entry.to)}${stars}${used}`;
+    });
+  };
 
   /** The bonus pick that helps most: a goal spirit first, highest priority first, then one of a goal's element. */
   const bestPick = (choices: string[]) => {
@@ -161,7 +190,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
       waiting = [];
       const raised = upgradeAll(next, goals, ROSTER, options);
       next = raised.sim;
-      lines.push(...raised.steps.filter((step) => step.to.star === 0 || step.used.length).map(describe));
+      lines.push(...summarize(raised.steps));
       // Auto stops by itself once every goal is there, or when light shards are all a goal is waiting on.
       if (goalsReached(next, goals)) setAuto("off");
       const stuck = goals.filter((goal) => {
@@ -249,7 +278,7 @@ export function SpiritSummon({ switcher }: { switcher: ReactNode }) {
   const raiseAll = () => {
     const raised = upgradeAll(settled, goals, ROSTER, options);
     setSim(raised.sim);
-    say(raised.steps.length ? raised.steps.map(describe) : ["Nothing can go up yet"]);
+    say(raised.steps.length ? summarize(raised.steps) : ["Nothing can go up yet"]);
   };
 
   const doSwitch = () => {
