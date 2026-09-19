@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Instrument_Sans, Unbounded } from "next/font/google";
 import { ADSENSE_CLIENT, ADSENSE_SCRIPT_URL } from "@/lib/adsense";
 import { OWNER, OWNER_DESCRIPTION, SITE_URL } from "@/lib/site";
+import { THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -80,8 +81,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
       data-phase="idle"
       className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+      // The theme script sets data-theme before React hydrates.
+      suppressHydrationWarning
     >
       <body className="min-h-full">
+        {/* First in <body>, before anything paints. Not in <head>: AdSense
+            inserts its own scripts there, which would break hydration. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         {/* A plain async script, not next/script: React renders it into the
             server HTML, where the AdSense crawler can find it on every page. */}
         <script async src={ADSENSE_SCRIPT_URL} crossOrigin="anonymous" />

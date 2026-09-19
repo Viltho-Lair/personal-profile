@@ -18,6 +18,7 @@ import { rarityGroup } from "@/lib/game/formulas";
 import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
+import { segment, SEGMENTS } from "./nav-styles";
 import { EquipSuggestions, LowestEquip } from "./equip-suggestions";
 import { castInFightRun, retuneFightRun, setManualInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
@@ -146,16 +147,14 @@ export function ProgressChart() {
         <h2 className="text-sm font-semibold">
           {nextFarm ? "Stage farming" : nextStages ? "Stages" : next.mode === "monster" ? "Normal monster" : "Promotion"}
         </h2>
-        <div className="flex gap-1" role="group" aria-label="Fight view">
+        <div className={SEGMENTS} role="group" aria-label="Fight view">
           {(["analysis", "render"] as const).map((id) => (
             <button
               key={id}
               type="button"
               aria-pressed={view === id}
               onClick={() => setView(id)}
-              className={`flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                view === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink hover:text-ink"
-              }`}
+              className={segment(view === id)}
             >
               {id === "analysis" ? "Analysis" : "Render"}
             </button>

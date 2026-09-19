@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function AnalyzerLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-svh flex-col md:h-svh md:overflow-hidden bg-ground text-ink">
+    <div className="flex min-h-svh flex-col bg-chrome text-ink md:h-svh md:overflow-hidden">
       <JsonLd
         data={{
           "@context": "https://schema.org",

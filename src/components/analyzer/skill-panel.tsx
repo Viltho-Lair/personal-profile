@@ -11,6 +11,7 @@ import {
   type Skill,
 } from "./data";
 import { LevelInput } from "./level-input";
+import { SECTION_NAV, sectionTab } from "./nav-styles";
 import { SkillDialog } from "./skill-dialog";
 import { SkillFamiliars } from "./skill-familiars";
 import { SkillMastery } from "./skill-mastery";
@@ -89,7 +90,7 @@ function SkillWorkspace({ skills }: { skills: Skill[] }) {
           onLevelChange={(level) => setSkillLevel(open.name, level, open.maxLevel)}
           onClose={() => setOpenName(null)}
           // Over the settings half; on a phone it's a full-screen sheet above the bottom bar.
-          className="fixed inset-x-0 top-0 bottom-12 md:absolute md:inset-0 md:left-1/2"
+          className="fixed inset-x-0 top-0 bottom-14 md:absolute md:inset-0 md:left-1/2"
         />
       ) : null}
     </div>
@@ -136,43 +137,33 @@ export function SkillPanel() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <nav aria-label="Skill sections" className="shrink-0 overflow-x-auto border-b border-ink/15 [scrollbar-width:none]">
-        <div className="flex w-max gap-1.5 px-3 py-2 sm:px-4">
+      <nav aria-label="Skill sections" className={SECTION_NAV}>
+        <button
+          type="button"
+          aria-pressed={section === "core"}
+          aria-label="Core skills"
+          title="Core skills"
+          onClick={() => setSection("core")}
+          className={sectionTab(section === "core")}
+        >
+          <svg aria-hidden viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 11.5 12 4l9 7.5" />
+            <path d="M5.5 10v10h13V10" />
+            <path d="M10 20v-5h4v5" />
+          </svg>
+          Core
+        </button>
+        {SECTIONS.map(({ id, label }) => (
           <button
+            key={id}
             type="button"
-            aria-pressed={section === "core"}
-            aria-label="Core skills"
-            title="Core skills"
-            onClick={() => setSection("core")}
-            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
-              section === "core"
-                ? "border-ink bg-ink text-ground"
-                : "border-ink/40 text-ink hover:border-ink"
-            }`}
+            aria-pressed={section === id}
+            onClick={() => setSection(id)}
+            className={sectionTab(section === id)}
           >
-            <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 11.5 12 4l9 7.5" />
-              <path d="M5.5 10v10h13V10" />
-              <path d="M10 20v-5h4v5" />
-            </svg>
-            Core
+            {label}
           </button>
-          {SECTIONS.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={section === id}
-              onClick={() => setSection(id)}
-              className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
-                section === id
-                  ? "border-ink bg-ink text-ground"
-                  : "border-ink/25 text-dim hover:border-ink/60 hover:text-ink"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        ))}
       </nav>
 
       <div className="min-h-0 flex-1">

@@ -2,8 +2,18 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* The page follows the visitor's system theme, so dark is a media query. */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* The page follows the system theme unless the visitor picks one: data-theme
+   on <html> is "light" or "dark" then, and absent for System. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme]), :root:not([data-theme]) *) {
+      @slot;
+    }
+  }
+}
 
 @theme inline {
   /* Page palette */
@@ -11,6 +21,7 @@
   --color-ink: var(--ink);
   --color-dim: var(--dim);
   --color-line: var(--line);
+  --color-chrome: var(--chrome);
 
   /* Logo colours */
   --color-brand-blue: #48c9ec;
@@ -73,27 +84,30 @@
 :root {
   color-scheme: light dark;
 
-  --ground: #f1f3f6;
-  --ink: #0f1217;
-  --dim: #5a6371;
-  --line: rgb(15 18 23 / 7.5%);
+  /* Each colour holds its light and dark value; color-scheme picks one. */
+  --ground: light-dark(#f1f3f6, #0c0f14);
+  /* The frame around the analyzer's cards, a step away from the cards. */
+  --chrome: light-dark(#e2e6ec, #06080b);
+  --ink: light-dark(#0f1217, #eef1f5);
+  --dim: light-dark(#5a6371, #8a94a3);
+  --line: light-dark(rgb(15 18 23 / 7.5%), rgb(238 241 245 / 6%));
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --element-fire: #cc1f26;
-  --element-water: #0d7ea6;
-  --element-wind: #5b46c4;
-  --element-earth: #8a5a00;
+  --element-fire: light-dark(#cc1f26, #ff5b5e);
+  --element-water: light-dark(#0d7ea6, #48c9ec);
+  --element-wind: light-dark(#5b46c4, #a99cff);
+  --element-earth: light-dark(#8a5a00, #ffb547);
 
   /* In-game order: grey, green, orange, purple, red, cyan, yellow, teal (Ancient), dark blue (30★) */
-  --tier-common: #6b7280;
-  --tier-great: #2f7d4f;
-  --tier-rare: #b35a00;
-  --tier-epic: #7a3fb8;
-  --tier-legendary: #c21f2b;
-  --tier-mythic: #0b7f95;
-  --tier-immortal: #8a6a12;
-  --tier-ancient: #0f7a63;
-  --tier-star30: #1f3fae;
+  --tier-common: light-dark(#6b7280, #9aa3af);
+  --tier-great: light-dark(#2f7d4f, #4ec27f);
+  --tier-rare: light-dark(#b35a00, #ff9a3c);
+  --tier-epic: light-dark(#7a3fb8, #b98cf0);
+  --tier-legendary: light-dark(#c21f2b, #ff5a5f);
+  --tier-mythic: light-dark(#0b7f95, #3fdcf0);
+  --tier-immortal: light-dark(#8a6a12, #ffd75e);
+  --tier-ancient: light-dark(#0f7a63, #5eefcc);
+  --tier-star30: light-dark(#1f3fae, #4f78ff);
 
   /* shadcn semantics, tuned to the palette above */
   --background: var(--ground);
@@ -104,11 +118,11 @@
   --popover-foreground: var(--ink);
   --primary: var(--ink);
   --primary-foreground: var(--ground);
-  --secondary: rgb(15 18 23 / 5%);
+  --secondary: light-dark(rgb(15 18 23 / 5%), rgb(238 241 245 / 6%));
   --secondary-foreground: var(--ink);
-  --muted: rgb(15 18 23 / 5%);
+  --muted: var(--secondary);
   --muted-foreground: var(--dim);
-  --accent: rgb(15 18 23 / 5%);
+  --accent: var(--secondary);
   --accent-foreground: var(--ink);
   --destructive: #ff3236;
   --border: var(--line);
@@ -117,31 +131,12 @@
   --radius: 0.625rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #0c0f14;
-    --ink: #eef1f5;
-    --dim: #8a94a3;
-    --line: rgb(238 241 245 / 6%);
-    --secondary: rgb(238 241 245 / 6%);
-    --muted: rgb(238 241 245 / 6%);
-    --accent: rgb(238 241 245 / 6%);
-
-    --element-fire: #ff5b5e;
-    --element-water: #48c9ec;
-    --element-wind: #a99cff;
-    --element-earth: #ffb547;
-
-    --tier-common: #9aa3af;
-    --tier-great: #4ec27f;
-    --tier-rare: #ff9a3c;
-    --tier-epic: #b98cf0;
-    --tier-legendary: #ff5a5f;
-    --tier-mythic: #3fdcf0;
-    --tier-immortal: #ffd75e;
-    --tier-ancient: #5eefcc;
-    --tier-star30: #4f78ff;
-  }
+/* A theme the visitor picked outranks the system one. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @layer base {

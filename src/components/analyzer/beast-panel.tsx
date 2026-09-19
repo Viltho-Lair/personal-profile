@@ -167,7 +167,7 @@ export function BeastPanel() {
 
   return (
     <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
-      <div className="flex min-h-0 flex-col gap-4 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0 md:pb-20">
+      <div className="flex min-h-0 flex-col gap-4 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0">
         {FAMILIES.map((family) => (
           <section key={family} aria-label={FAMILY_LABEL[family]} className="flex flex-col gap-2">
             <h2 className={LABEL}>{FAMILY_LABEL[family]}</h2>
@@ -181,7 +181,7 @@ export function BeastPanel() {
           </section>
         ))}
       </div>
-      <div className="flex min-h-0 flex-col gap-3 overflow-auto p-3 pb-20 sm:p-4">
+      <div className="flex min-h-0 flex-col gap-3 overflow-auto p-3 pb-6 sm:p-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className={LABEL}>Beast preset</span>
           <PresetPicker label="Beast preset" active={profile.activePresets.beasts} onSelect={(index) => selectPreset("beasts", index)} />

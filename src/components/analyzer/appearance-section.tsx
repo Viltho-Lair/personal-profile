@@ -95,10 +95,10 @@ function OutfitList({ group, items, title }: { group: keyof OwnedAppearance; ite
 export function AppearanceSection() {
   return (
     <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
-      <div className="min-h-0 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0 md:pb-20">
+      <div className="min-h-0 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0">
         <OutfitList group="clothing" items={APPEARANCE.clothing} title="Owned clothing" />
       </div>
-      <div className="min-h-0 overflow-auto p-3 pb-20 sm:p-4">
+      <div className="min-h-0 overflow-auto p-3 pb-6 sm:p-4">
         <OutfitList group="guild" items={APPEARANCE.guild} title="Guild shop outfits" />
       </div>
     </div>

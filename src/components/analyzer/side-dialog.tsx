@@ -13,7 +13,7 @@ export function SideDialog({
   openKey,
   onClose,
   children,
-  className = "fixed inset-x-0 top-0 bottom-12 md:absolute md:inset-0 md:left-1/2",
+  className = "fixed inset-x-0 top-0 bottom-14 md:absolute md:inset-0 md:left-1/2",
 }: {
   title: string;
   subtitle?: ReactNode;

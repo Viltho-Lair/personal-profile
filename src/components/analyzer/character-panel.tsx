@@ -34,6 +34,7 @@ import { AWAKENING, formatPercent, formatValue, GEAR_LEVEL_FACTORS } from "./dat
 import { ConstellationTab } from "./constellation-tab";
 import { InlineLevel, SetAllLevels } from "./level-input";
 import { MemoryTreeTab } from "./memory-tree-tab";
+import { SECTION_NAV, sectionTab } from "./nav-styles";
 import { formatNumber } from "@/lib/number-format";
 
 type Icon = { icon?: string | null; iconSize?: number | null };
@@ -78,7 +79,7 @@ function Tabs<T extends string>({
   label: string;
 }) {
   return (
-    <nav aria-label={label} className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-ink/15 px-3 py-2 [scrollbar-width:none] sm:px-4">
+    <nav aria-label={label} className={SECTION_NAV}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -87,9 +88,7 @@ function Tabs<T extends string>({
           disabled={Boolean(tab.locked)}
           title={tab.locked ?? undefined}
           onClick={() => onChange(tab.id)}
-          className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] whitespace-nowrap uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 sm:text-xs ${
-            active === tab.id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim enabled:hover:border-ink/60 enabled:hover:text-ink"
-          }`}
+          className={sectionTab(active === tab.id)}
         >
           {tab.label}
           {tab.locked ? " · Locked" : ""}

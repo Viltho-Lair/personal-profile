@@ -120,12 +120,12 @@ export function BlackOrbPanel() {
 
   return (
     <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
-      <div className="flex min-h-0 flex-col gap-2 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0 md:pb-20">
+      <div className="flex min-h-0 flex-col gap-2 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0">
         {ELEMENTS.map((element) => (
           <AccessoryCard key={element} element={element} />
         ))}
       </div>
-      <div className="flex min-h-0 flex-col gap-3 overflow-auto p-3 pb-20 sm:p-4">
+      <div className="flex min-h-0 flex-col gap-3 overflow-auto p-3 pb-6 sm:p-4">
         <div className="flex items-center gap-2">
           <span className={LABEL}>Black Orb</span>
           <InlineLevel value={orb.level} min={0} max={999} name="Black Orb" onChange={setOrbLevel} />

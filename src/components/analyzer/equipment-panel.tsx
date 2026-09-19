@@ -16,7 +16,7 @@ import { SealedShrine } from "./sealed-shrine";
 import { SoulWeaponPanel } from "./soul-weapon-panel";
 import { SpiritGrid } from "./spirit-grid";
 
-const PANEL = "min-h-0 flex-1 overflow-auto p-4 pb-20 sm:p-6 sm:pb-20";
+const PANEL = "min-h-0 flex-1 overflow-auto p-4 pb-6 sm:p-6";
 const WIKI_URL = "https://slayerlegend.wiki/";
 
 const EQUIPMENT_TABS = [
@@ -37,16 +37,16 @@ export function EquipmentPanel() {
       onValueChange={(value) => setActive(String(value))}
       className="flex h-full min-h-0 flex-col gap-0"
     >
-      <div className="flex shrink-0 items-end justify-between gap-4 border-b border-ink/15 px-4 sm:px-6">
+      <div className="flex shrink-0 items-end justify-between gap-4 border-b border-ink/10 px-3 sm:px-4">
         <TabsList
           variant="line"
-          className="h-auto! w-auto justify-start gap-4 overflow-visible rounded-none bg-transparent p-0 pb-2"
+          className="h-auto! w-auto min-w-0 justify-start gap-5 xl:shrink-0 overflow-x-auto rounded-none bg-transparent p-0 [scrollbar-width:none]"
         >
           {EQUIPMENT_TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="h-auto flex-none gap-1.5 rounded-none px-0 pt-4 font-mono text-xs tracking-[0.08em] text-dim uppercase data-active:text-ink!"
+              className="-mb-px h-auto flex-none gap-1.5 rounded-t-sm rounded-b-none border-0 border-b-2 border-transparent px-0 py-2.5 font-mono text-[10px] tracking-[0.08em] text-dim uppercase after:hidden hover:text-ink data-active:border-brand-orange! data-active:text-ink! sm:text-[11px]"
             >
               {tab.label}
               <span className="text-[10px] opacity-60">{tab.count}</span>
@@ -54,7 +54,7 @@ export function EquipmentPanel() {
           ))}
         </TabsList>
 
-        <p className="hidden pb-2 font-mono text-[10px] tracking-[0.06em] text-dim uppercase lg:block">
+        <p className="hidden min-w-0 pb-2.5 text-right font-mono text-[10px] leading-snug tracking-[0.06em] text-dim uppercase xl:block">
           Data: Master Optimizer · spirit skills from{" "}
           <a
             href={WIKI_URL}
@@ -77,10 +77,10 @@ export function EquipmentPanel() {
 
       <TabsContent value="relics" className="relative min-h-0 flex-1">
         <div className="flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
-          <div className="min-h-0 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0 md:pb-20">
+          <div className="min-h-0 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0">
             <RelicList />
           </div>
-          <div className="min-h-0 overflow-auto p-3 pb-20 sm:p-4">
+          <div className="min-h-0 overflow-auto p-3 pb-6 sm:p-4">
             <SealedShrine />
           </div>
         </div>

@@ -67,7 +67,7 @@ export function EquippedBadge({ position = "top-1 left-1" }: { position?: string
 }
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
-const ACTION = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase underline-offset-4 hover:text-ink hover:underline";
+const ACTION = "rounded-md border border-ink/15 px-2.5 py-1 font-mono text-[10px] tracking-[0.08em] text-dim uppercase outline-none transition-colors hover:border-ink/40 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring";
 
 /** Slayer level and the highest stage reached. */
 function SlayerProgress() {
@@ -250,7 +250,7 @@ export function SettingsPanel() {
 
   return (
     <section aria-labelledby="settings-title" className="flex h-full flex-col justify-between gap-3">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         <h2 id="settings-title" className="text-sm font-semibold">
           Settings
         </h2>
@@ -258,7 +258,7 @@ export function SettingsPanel() {
         <AbbreviateSwitch />
         <EventBuffFields />
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+      <div className="flex flex-wrap items-center gap-1.5 border-t border-ink/10 pt-3">
         <button type="button" onClick={exportProfile} className={ACTION}>
           Export JSON
         </button>
@@ -287,7 +287,7 @@ export function SettingsPanel() {
               onConfirm: resetProfile,
             })
           }
-          className={`${ACTION} hover:text-red-500`}
+          className={`${ACTION} hover:border-red-500/50 hover:text-red-500`}
         >
           Reset profile
         </button>

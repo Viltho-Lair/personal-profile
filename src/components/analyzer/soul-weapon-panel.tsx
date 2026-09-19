@@ -239,12 +239,12 @@ function EngravingSettings() {
 export function SoulWeaponPanel() {
   return (
     <div className="relative flex flex-col md:grid md:h-full md:min-h-0 md:grid-cols-2">
-      <ul className="flex min-h-0 flex-col gap-2 overflow-auto border-b border-ink/15 p-3 pb-20 sm:p-4 md:border-r md:border-b-0">
+      <ul className="flex min-h-0 flex-col gap-2 overflow-auto border-b border-ink/15 p-3 pb-6 sm:p-4 md:border-r md:border-b-0">
         {SOUL_WEAPONS.map((weapon) => (
           <SoulWeaponRow key={weapon.id} weapon={weapon} />
         ))}
       </ul>
-      <div className="min-h-0 overflow-auto p-3 pb-20 sm:p-4">
+      <div className="min-h-0 overflow-auto p-3 pb-6 sm:p-4">
         <EngravingSettings />
       </div>
     </div>

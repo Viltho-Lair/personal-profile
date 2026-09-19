@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LEGAL_NAV, OWNER, SITE_NAV } from "@/lib/site";
+import { ThemeToggle } from "./theme-toggle";
 
 const utility = "font-mono text-xs tracking-[0.08em] uppercase";
 
@@ -14,17 +15,20 @@ export function SiteHeader() {
         <Image src="/logo.svg" alt="" width={16} height={18} />
         {OWNER}
       </Link>
-      <nav aria-label="Site">
-        <ul className="flex flex-wrap gap-x-5 gap-y-2">
-          {SITE_NAV.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href} className="hover:text-ink">
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        <nav aria-label="Site">
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {SITE_NAV.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="hover:text-ink">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

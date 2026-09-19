@@ -29,6 +29,7 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { ACCESSORIES, formatValue, WEAPONS, type Gear } from "./data";
 import { Sprite } from "./sprite";
 import { TIER_BORDER, TIER_TEXT } from "./tiers";
+import { segment, SEGMENTS } from "./nav-styles";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const FIELD =
@@ -353,16 +354,14 @@ export function SummonPanel() {
   return (
     <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex gap-1" role="group" aria-label="What to summon">
+        <div className={SEGMENTS} role="group" aria-label="What to summon">
           {(["weapons", "accessories"] as const).map((id) => (
             <button
               key={id}
               type="button"
               aria-pressed={kind === id}
               onClick={() => setSummon({ kind: id })}
-              className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                kind === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink hover:text-ink"
-              }`}
+              className={segment(kind === id)}
             >
               {id === "weapons" ? "Weapons" : "Accessories"}
             </button>

@@ -18,6 +18,7 @@ import { useProfile } from "@/lib/profile/use-profile";
 import { BeastPanel } from "./beast-panel";
 import { formatValue } from "./data";
 import { InlineLevel } from "./level-input";
+import { SECTION_NAV, sectionTab, segment, SEGMENTS } from "./nav-styles";
 import { Sprite } from "./sprite";
 import { ELEMENT_BORDER, ELEMENT_TEXT } from "./tiers";
 
@@ -436,16 +437,14 @@ function CompanionSection() {
       <aside className="flex min-h-0 shrink-0 flex-col border-t border-ink/15 md:max-h-[45%] lg:max-h-none lg:w-[22rem] lg:border-t-0 lg:border-l">
         <div className="flex shrink-0 items-center gap-2 border-b border-ink/10 px-3 py-2">
           <span className="text-sm font-medium">{selected.name}</span>
-          <div className="ml-auto flex gap-1">
+          <div className={`${SEGMENTS} ml-auto`}>
             {(["advancement", "promotion"] as const).map((id) => (
               <button
                 key={id}
                 type="button"
                 aria-pressed={tab === id}
                 onClick={() => setTab(id)}
-                className={`rounded-md border px-2 py-1 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  tab === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink hover:text-ink"
-                }`}
+                className={segment(tab === id)}
               >
                 {id === "advancement" ? "Advancement" : "Promotion"}
               </button>
@@ -465,16 +464,14 @@ export function CompanionPanel() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <nav aria-label="Companion sections" className="flex shrink-0 gap-1.5 border-b border-ink/15 px-3 py-2 sm:px-4">
+      <nav aria-label="Companion sections" className={SECTION_NAV}>
         {(["companion", "beasts"] as const).map((id) => (
           <button
             key={id}
             type="button"
             aria-pressed={section === id}
             onClick={() => setSection(id)}
-            className={`rounded-md border px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-xs ${
-              section === id ? "border-ink bg-ink text-ground" : "border-ink/25 text-dim hover:border-ink/60 hover:text-ink"
-            }`}
+            className={sectionTab(section === id)}
           >
             {id === "companion" ? "Companion" : "Beasts"}
           </button>

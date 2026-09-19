@@ -22,6 +22,34 @@ import { ANALYZER_TABS, type TabId } from "./tabs";
 
 const TAB_ICONS: Record<string, { icon: string; iconSize: number } | undefined> = navigationData.icons;
 
+/** One line under each tab's title, naming what the tab holds. */
+const TAB_BLURBS: Record<TabId, string> = {
+  char: "Enhance, growth, promotion and appearance",
+  skill: "Skills, proficiency, mastery and familiars",
+  equips: "Weapons, accessories, relics, spirits, soul weapons and the black orb",
+  companion: "Companions and beasts",
+  analysis: "Fights, the stats summary and presets",
+  summon: "Weapon and accessory summons",
+};
+
+const CARD = "rounded-xl border border-ink/10 bg-ground shadow-[0_1px_2px_rgb(0_0_0/0.04)]";
+
+function TabIcon({ id, className }: { id: TabId; className: string }) {
+  if (id === "analysis") return <ChartLine aria-hidden strokeWidth={1.75} className={className} />;
+  if (id === "summon") return <Store aria-hidden strokeWidth={1.75} className={className} />;
+  const art = TAB_ICONS[id];
+  return art ? (
+    <Image
+      src={art.icon}
+      alt=""
+      width={art.iconSize}
+      height={art.iconSize}
+      draggable={false}
+      className={`object-contain ${className}`}
+    />
+  ) : null;
+}
+
 /**
  * The page reads ?tab= on the server and passes it in, so the first HTML
  * already holds the right panel. Tab changes only rewrite the URL: Next.js
@@ -45,6 +73,8 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
     }
   }, [profile]);
 
+  const current = ANALYZER_TABS.find((tab) => tab.id === active) ?? ANALYZER_TABS[0];
+
   return (
     <Tabs
       value={active}
@@ -52,92 +82,94 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
         setActive(value as TabId);
         window.history.replaceState(null, "", `?tab=${String(value)}`);
       }}
-      className="flex min-h-0 flex-1 flex-col gap-0"
+      className="flex min-h-0 flex-1 flex-col gap-0 md:flex-row! md:gap-3 md:px-3 md:pb-3"
     >
-      {/* Every tab fills the page beside the ad and Settings, which stay on screen for all of them. */}
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <div className="flex min-h-0 flex-1 flex-col">
-      {ANALYZER_TABS.map((tab) => (
-        <TabsContent
-          key={tab.id}
-          value={tab.id}
-          className={tab.id === "analysis" ? "min-h-0 flex-1 overflow-auto md:pb-14 xl:flex xl:flex-col xl:overflow-hidden" : "min-h-0 flex-1 overflow-auto md:pb-20"}
-        >
-          {tab.id === "char" ? (
-            <CharacterPanel />
-          ) : tab.id === "skill" ? (
-            <SkillPanel />
-          ) : tab.id === "equips" ? (
-            <EquipmentPanel />
-          ) : tab.id === "companion" ? (
-            <CompanionPanel />
-          ) : tab.id === "summon" ? (
-            <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col p-3">
-              <SummonPanel />
-            </section>
-          ) : (
-            <AnalysisPanel />
-          )}
-        </TabsContent>
-      ))}
-      </div>
-      <aside
-        aria-label="Advertisement and settings"
-        className="flex shrink-0 flex-col border-t border-ink/15 pb-20 md:flex-row lg:w-72 lg:min-h-0 lg:flex-col lg:overflow-auto lg:border-t-0 lg:border-l lg:pb-14 xl:w-80"
+      {/* A rail beside the panels from tablet width up; a bar fixed to the bottom on phones.
+          `!` overrides: shadcn scopes some defaults to the list variant,
+          which outranks a plain utility class. */}
+      <TabsList
+        variant="line"
+        className="fixed inset-x-0 bottom-0 z-50 h-14! w-full items-stretch justify-around gap-0.5 rounded-none border-t border-ink/10 bg-ground/95 px-1 py-1 backdrop-blur-md md:static md:z-auto md:h-auto! md:w-[4.75rem] md:shrink-0 md:flex-col md:justify-start md:gap-1 md:rounded-xl md:border md:bg-ground md:p-1.5 lg:w-48"
       >
-        <div
-          aria-label="Advertisement"
-          className="flex min-h-24 items-center justify-center overflow-hidden border-b border-ink/15 p-2 md:flex-1 md:border-r md:border-b-0 lg:min-h-0 lg:border-r-0 lg:border-b"
-        >
-          <AdSlot slot={ANALYZER_AD_SLOT} />
-        </div>
-        <div className="flex flex-col p-3 md:flex-1 md:pb-16 lg:pb-3">
-          <SettingsPanel />
-        </div>
-      </aside>
-      </div>
+        <span className="hidden px-2.5 pt-2 pb-1 font-mono text-[10px] tracking-[0.08em] text-dim uppercase lg:block">
+          Planner
+        </span>
+        {ANALYZER_TABS.map((tab) => (
+          <TabsTrigger
+            key={tab.id}
+            value={tab.id}
+            aria-label={tab.name}
+            title={tab.name}
+            className="group/nav h-full min-w-0 flex-1 flex-col gap-0.5 rounded-lg px-0.5 py-0.5 text-[9px] leading-tight font-medium text-dim transition-colors after:hidden hover:bg-ink/[0.04] hover:text-ink data-active:bg-ink/[0.07]! data-active:text-ink! md:h-auto md:w-full md:flex-none md:py-2 md:text-[10px] lg:flex-row lg:justify-start lg:gap-3 lg:px-2.5 lg:py-1.5 lg:text-sm"
+          >
+            <span
+              aria-hidden
+              className="absolute top-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-brand-orange opacity-0 transition-opacity group-data-active/nav:opacity-100 md:top-1/2 md:left-0 md:h-5 md:w-0.5 md:-translate-x-0 md:-translate-y-1/2"
+            />
+            <span className="grid size-7 shrink-0 place-items-center md:size-9 lg:size-8">
+              <TabIcon id={tab.id} className="size-6 md:size-7 lg:size-6" />
+            </span>
+            <span className="max-w-full truncate">{tab.name}</span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
-      {/* Fixed above the panels: the bar never scrolls and nothing scrolls under the tabs.
-          The tabs sit astride the rule and hide it behind them. */}
-      <div className="fixed inset-x-0 bottom-0 z-50">
-        <div className="relative h-12 border-t border-ink/25 bg-ground">
-          <p className="absolute inset-x-0 bottom-0.5 px-3 text-center text-[8px] leading-tight text-dim sm:text-[9px] lg:right-3 lg:left-auto lg:bottom-auto lg:top-1/2 lg:max-w-[22rem] lg:-translate-y-1/2 lg:text-right">
-            All data, information and artwork belong to Slayer Legends. This is an analysis tool only, using the Master Optimizer document.
-          </p>
-        </div>
-        <TabsList
-          variant="line"
-          /* `!` overrides: shadcn scopes some defaults to the list variant,
-             which outranks a plain utility class. */
-          className="absolute inset-x-0 top-0 h-auto! w-full -translate-y-1/2 justify-center gap-1.5 rounded-none bg-transparent p-0 px-3 sm:gap-2 sm:px-4"
-        >
+      {/* Every tab fills the page beside the ad and Settings, which stay on screen for all of them. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 px-2 pb-20 md:px-0 md:pb-0 lg:flex-row">
+        <main className={`${CARD} relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`}>
+          <div className="flex shrink-0 items-center gap-3 border-b border-ink/10 px-3 py-2 sm:px-4">
+            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-ink/[0.05]">
+              <TabIcon id={current.id} className="size-6" />
+            </span>
+            <div className="flex min-w-0 flex-col">
+              <h2 className="text-sm leading-tight font-semibold">{current.name}</h2>
+              <p className="truncate text-[11px] text-dim">{TAB_BLURBS[current.id]}</p>
+            </div>
+          </div>
           {ANALYZER_TABS.map((tab) => (
-            <TabsTrigger
+            <TabsContent
               key={tab.id}
               value={tab.id}
-              aria-label={tab.name}
-              title={tab.name}
-              className="h-12 w-12 flex-none rounded-lg border border-ink/25 bg-ground! px-1 text-[10px] leading-tight font-medium whitespace-normal [overflow-wrap:anywhere] text-dim data-active:border-ink! data-active:bg-ink! data-active:text-ground! sm:h-14 sm:w-14 sm:text-[11px]"
+              className={tab.id === "analysis" ? "min-h-0 flex-1 overflow-auto xl:flex xl:flex-col xl:overflow-hidden" : "min-h-0 flex-1 overflow-auto"}
             >
-              {tab.id === "analysis" ? (
-                <ChartLine aria-hidden strokeWidth={1.75} className="size-7 sm:size-8" />
+              {tab.id === "char" ? (
+                <CharacterPanel />
+              ) : tab.id === "skill" ? (
+                <SkillPanel />
+              ) : tab.id === "equips" ? (
+                <EquipmentPanel />
+              ) : tab.id === "companion" ? (
+                <CompanionPanel />
               ) : tab.id === "summon" ? (
-                <Store aria-hidden strokeWidth={1.75} className="size-7 sm:size-8" />
-              ) : TAB_ICONS[tab.id] ? (
-                <Image
-                  src={TAB_ICONS[tab.id]!.icon}
-                  alt=""
-                  width={TAB_ICONS[tab.id]!.iconSize}
-                  height={TAB_ICONS[tab.id]!.iconSize}
-                  draggable={false}
-                  className="size-9 object-contain sm:size-11"
-                />
+                <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col p-3 sm:p-4">
+                  <SummonPanel />
+                </section>
               ) : (
-                tab.label
+                <AnalysisPanel />
               )}
-            </TabsTrigger>
+            </TabsContent>
           ))}
-        </TabsList>
+        </main>
+
+        <aside
+          aria-label="Advertisement and settings"
+          className="flex shrink-0 flex-col gap-3 md:flex-row lg:w-72 lg:min-h-0 lg:flex-col lg:overflow-auto xl:w-80"
+        >
+          <div className={`${CARD} flex flex-col p-4 md:flex-1 lg:flex-none`}>
+            <SettingsPanel />
+          </div>
+          <div className="flex flex-col gap-3 md:flex-1 lg:min-h-0">
+            <div
+              aria-label="Advertisement"
+              className="flex min-h-24 flex-1 items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/15 p-2"
+            >
+              <AdSlot slot={ANALYZER_AD_SLOT} />
+            </div>
+            <p className="px-1 text-[10px] leading-snug text-dim">
+              All data, information and artwork belong to Slayer Legends. This is an analysis tool only, using the Master Optimizer document.
+            </p>
+          </div>
+        </aside>
       </div>
     </Tabs>
   );
@@ -147,10 +179,10 @@ export function AnalyzerShell({ initialTab }: { initialTab: TabId }) {
 function AnalysisPanel() {
   return (
     <section aria-label="Analysis" className="flex flex-col xl:grid xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="flex min-h-[32rem] flex-col border-b border-ink/15 xl:min-h-0 xl:border-r xl:border-b-0">
+      <div className="flex min-h-[32rem] flex-col border-b border-ink/10 xl:min-h-0 xl:border-r xl:border-b-0">
         <ProgressChart />
       </div>
-      <div className="flex min-h-0 flex-col border-b border-ink/15 xl:border-b-0">
+      <div className="flex min-h-0 flex-col border-b border-ink/10 xl:border-b-0">
         <StatsSummary />
       </div>
     </section>
