@@ -29,7 +29,7 @@ const TAB_BLURBS: Record<TabId, string> = {
   equips: "Weapons, accessories, relics, spirits, soul weapons and the black orb",
   companion: "Companions and beasts",
   analysis: "Fights, the stats summary and presets",
-  summon: "Weapon, accessory, spirit and class summons",
+  summon: "Weapon, accessory, spirit, class and familiar summons",
 };
 
 const CARD = "rounded-xl border border-ink/10 bg-ground shadow-[0_1px_2px_rgb(0_0_0/0.04)]";

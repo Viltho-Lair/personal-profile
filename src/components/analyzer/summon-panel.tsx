@@ -32,6 +32,7 @@ import { TIER_BORDER, TIER_TEXT } from "./tiers";
 import { segment, SEGMENTS } from "./nav-styles";
 import { ClassSummon } from "./class-summon";
 import { SpiritSummon } from "./spirit-summon";
+import { FamiliarSummon } from "./familiar-summon";
 
 const LABEL = "font-mono text-[10px] tracking-[0.08em] text-dim uppercase";
 const FIELD =
@@ -260,8 +261,8 @@ export function SummonPanel() {
   const [summons, setSummons] = useState(0);
   const [gifts, setGifts] = useState(0);
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
-  // Spirits and classes are runs of their own, apart from the gear run.
-  const [other, setOther] = useState<"spirits" | "classes" | null>(null);
+  // Spirits, classes and familiars are runs of their own, apart from the gear run.
+  const [other, setOther] = useState<"spirits" | "classes" | "familiars" | null>(null);
   // Diamonds this run has spent summoning, and the stars it has awakened to (null: still the profile's own).
   const [spent, setSpent] = useState(0);
   const [stars, setStars] = useState<Record<GearKind, number | null>>({ weapons: null, accessories: null });
@@ -371,7 +372,7 @@ export function SummonPanel() {
           {id === "weapons" ? "Weapons" : "Accessories"}
         </button>
       ))}
-      {(["spirits", "classes"] as const).map((id) => (
+      {(["spirits", "classes", "familiars"] as const).map((id) => (
         <button
           key={id}
           type="button"
@@ -382,15 +383,16 @@ export function SummonPanel() {
           }}
           className={segment(other === id)}
         >
-          {id === "spirits" ? "Spirits" : "Classes"}
+          {id === "spirits" ? "Spirits" : id === "classes" ? "Classes" : "Familiars"}
         </button>
       ))}
     </div>
   );
 
-  // Spirits and classes are their own runs, apart from the profile; the gear run above keeps its state meanwhile.
+  // Spirits, classes and familiars are their own runs, apart from the profile; the gear run keeps its state meanwhile.
   if (other === "spirits") return <SpiritSummon switcher={switcher} />;
   if (other === "classes") return <ClassSummon switcher={switcher} />;
+  if (other === "familiars") return <FamiliarSummon switcher={switcher} />;
 
   return (
     <section aria-label="Summon" className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
