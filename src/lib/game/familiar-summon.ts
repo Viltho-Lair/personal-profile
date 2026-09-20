@@ -514,7 +514,7 @@ export type FamiliarPlay = {
 };
 
 /** Summons a run may make before it's given up on, and how big its batches grow as it drags on. */
-export const RUN_LIMIT = 80_000_000;
+export const RUN_LIMIT = 20_000_000;
 const MAX_CHUNK = 256;
 
 const clampStar = (star: number) => Math.max(0, Math.min(MAX_COMBINE_STAR, Math.floor(star) || 0));
@@ -657,9 +657,19 @@ export const diamondsFor = (summons: number) =>
  * Runs an estimate averages over, the fewest it settles for on a long goal, and the summons it spends over all of
  * them. A long run is millions of summons, so it trades runs for the wait.
  */
-export const ESTIMATE_RUNS = 200;
+export const ESTIMATE_RUNS = 400;
+/** Runs every estimate makes, however long they are, so the median and the nine-in-ten mean something. */
+const FEWEST_RUNS = 8;
+/** Runs before the settling test is trusted at all. */
 const LEAST_RUNS = 24;
-const RUN_BUDGET = 1_200_000;
+/** Summons an estimate may simulate in all: a long goal spends them on a few runs, a short one on hundreds. */
+const RUN_BUDGET = 4_000_000;
+/**
+ * How close the average has to settle before an estimate stops running: a tenth of a percent of standard error
+ * against the average itself. A low fill lands all over the place and takes hundreds of runs to pin down, while a
+ * full bar settles in a few dozen, and this spends the runs where they are actually needed.
+ */
+const SETTLED = 0.03;
 
 export type FamiliarEstimate = {
   /** The goals it priced, in priority order, and how the slots were filled. */
@@ -745,10 +755,26 @@ export function estimateFamiliars(
 
   const seed = list.reduce((sum, goal, index) => sum + (goal.from * 13 + goal.to * 101) * (index + 3), 0);
   const random = seeded(seed + (mode === "self" ? 101 : 211));
-  const first = playFamiliars(list, mode, target, random);
-  // A long goal takes millions of summons a run, so the estimate settles for fewer of them.
-  const runs = Math.max(1, Math.min(ESTIMATE_RUNS, Math.max(LEAST_RUNS, Math.round(RUN_BUDGET / Math.max(1, first.summons)))));
-  const results = [first, ...Array.from({ length: runs - 1 }, () => playFamiliars(list, mode, target, random))];
+  // Runs go on until the average has settled, or until the summons they have simulated is the limit.
+  const results: FamiliarPlay[] = [];
+  let total = 0;
+  let square = 0;
+  let spent = 0;
+  while (results.length < ESTIMATE_RUNS) {
+    const play = playFamiliars(list, mode, target, random);
+    results.push(play);
+    total += play.summons;
+    square += play.summons * play.summons;
+    spent += play.summons;
+    // The summons budget comes first, so a goal whose runs are millions long still answers quickly.
+    if (spent > RUN_BUDGET) break;
+    if (results.length < FEWEST_RUNS) continue;
+    if (results.length < LEAST_RUNS) continue;
+    const average = total / results.length;
+    const spread = Math.sqrt(Math.max(0, square / results.length - average * average));
+    if (average > 0 && spread / Math.sqrt(results.length) / average < SETTLED) break;
+  }
+  const runs = results.length;
   const sorted = results.map((play) => play.summons).sort((a, b) => a - b);
   const at = (odds: number) => {
     const summons = sorted[Math.min(runs - 1, Math.ceil(odds * runs) - 1)]!;

@@ -8,9 +8,7 @@ import {
   COMBINE_GAUGE,
   COMBINE_SLOTS,
   COMBINE_TARGETS,
-  compareFills,
   emptyFamiliarSim,
-  estimateFamiliars,
   FAMILIAR_BATCH,
   FAMILIAR_SUMMON_CHANCES,
   FAMILIAR_SUMMON_COSTS,
@@ -26,10 +24,10 @@ import {
   summonFamiliars,
   type CombineMode,
   type FamiliarGoal,
-  type FillComparison,
   type FamiliarSim,
   type Fodder,
 } from "@/lib/game/familiar-summon";
+import type { FamiliarAnswer } from "./familiar-summon.worker";
 import { familiarStars } from "@/lib/profile/rules";
 import type { FamiliarGroup } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
@@ -128,10 +126,37 @@ function StarRow({ row, familiar }: { row: readonly number[]; familiar: Familiar
   );
 }
 
+/** A run that starts with the familiars you said you already have, one copy of each at the star you set. */
+function startingSim(goals: readonly FamiliarGoal[]): FamiliarSim {
+  const sim = emptyFamiliarSim(NAMES);
+  // Yours, not summoned, so it counts in hand without counting as something the run drew.
+  for (const goal of goals) if (goal.from > 0) sim.copies[goal.name]![goal.from]! += 1;
+  return sim;
+}
+
 /**
- * Familiar summoning, apart from the profile: pick a familiar, say what star it is at and what star you want, and
- * the estimate gives the diamonds that takes on average. The summon buttons try it out, and nothing here changes
- * the familiars you actually own.
+ * Prices the goals off the page's thread. The numbers already on screen stay there while the next lot is worked
+ * out, so changing a star never leaves the panel blank or holds up the click that changed it.
+ */
+function useAnalysis(goals: FamiliarGoal[], mode: CombineMode, target: number) {
+  const [state, setState] = useState<{ key: string; answer: FamiliarAnswer | null }>({ key: "", answer: null });
+  const key = `${goalKey(goals)}::${mode}::${target}`;
+  useEffect(() => {
+    const worker = new Worker(new URL("./familiar-summon.worker.ts", import.meta.url), { type: "module" });
+    const id = Date.now();
+    worker.onmessage = (event: MessageEvent<{ id: number; answer: FamiliarAnswer }>) => {
+      if (event.data.id === id) setState({ key, answer: event.data.answer });
+    };
+    worker.postMessage({ id, goals, mode, target });
+    return () => worker.terminate();
+  }, [key, goals, mode, target]);
+  return { ...state, working: state.key !== key };
+}
+
+/**
+ * Familiar summoning, apart from the profile: list the familiars to raise, say what star each is at and what star
+ * you want, and the estimate gives the diamonds that takes on average. The summon buttons try it out, and nothing
+ * here changes the familiars you actually own.
  */
 export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
   const { profile } = useProfile();
@@ -141,13 +166,10 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
   const [mode, setMode] = useState<CombineMode>("self");
   const [target, setTarget] = useState<number>(FULL_BAR);
   const [feed, setFeed] = useState<Record<string, string[]>>({});
-  const [sim, setSim] = useState<FamiliarSim>(() => emptyFamiliarSim(NAMES));
+  const [sim, setSim] = useState<FamiliarSim>(() => startingSim(goals));
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
   const [last, setLast] = useState<Record<string, number[]> | null>(null);
-  // Pricing every fill is hundreds of runs, so it lands after the panel has drawn rather than holding it up.
-  const [comparison, setComparison] = useState<FillComparison | null>(null);
 
-  const key = goalKey(goals);
   const groups = useMemo(() => [...new Set(goals.map((goal) => goal.group))], [goals]);
   /** Each group's members that aren't goals, in the order they are fed. Another goal is never eaten. */
   const spares = useMemo(() => {
@@ -163,22 +185,13 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
     return byGroup;
   }, [groups, goals, feed]);
 
-  const estimate = useMemo(() => estimateFamiliars(goals, mode, target), [goals, mode, target]);
-  const other = useMemo(
-    () => estimateFamiliars(goals, mode === "self" ? "same" : "self", target),
-    [goals, mode, target],
-  );
+  const analysis = useAnalysis(goals, mode, target);
+  const estimate = analysis.answer?.estimate ?? null;
+  const other = analysis.answer?.other ?? null;
+  const fills = analysis.answer?.fills ?? null;
   /** The goal highest up the list that this run hasn't got to yet: where both gauges send their familiar. */
   const wanting = goals.find((goal) => (bestStar(sim, goal.name) ?? -1) < goal.to) ?? goals[0];
   const reached = goals.every((goal) => (bestStar(sim, goal.name) ?? -1) >= goal.to);
-
-  // Every fill priced against the others, worked out once the panel is on screen rather than holding it up.
-  useEffect(() => {
-    const timer = window.setTimeout(() => setComparison(compareFills(goals, mode)), 0);
-    return () => window.clearTimeout(timer);
-  }, [goals, mode]);
-  // The one in hand belongs to an older list until the next lands.
-  const fills = comparison && goalKey(comparison.best.goals) === key && comparison.best.mode === mode ? comparison : null;
 
   const run = (count: number, diamonds: number, combine: boolean) => {
     const result = summonFamiliars(sim, count, diamonds, NAMES, wanting?.name ?? NAMES[0]!);
@@ -201,10 +214,17 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
     return () => window.clearInterval(timer);
   }, [auto]);
 
-  const clear = () => {
+  /** Starts the run again from the stars the list says each familiar is already at. */
+  const clear = (list: FamiliarGoal[] = goals) => {
     setAuto("off");
-    setSim(emptyFamiliarSim(NAMES));
+    setSim(startingSim(list));
     setLast(null);
+  };
+
+  /** Changes the list, and starts the run again so it begins from the stars it now says. */
+  const relist = (list: FamiliarGoal[]) => {
+    setGoals(list);
+    clear(list);
   };
 
   const combine = () => setSim((current) => combineGoals(current, goals, spares, mode, target));
@@ -226,8 +246,9 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
       return next;
     });
 
+  /** Changing a star restarts the run, so it begins from the star that was just set. */
   const setGoal = (index: number, change: Partial<FamiliarGoal>) =>
-    setGoals((current) => current.map((goal, i) => (i === index ? { ...goal, ...change } : goal)));
+    relist(goals.map((goal, i) => (i === index ? { ...goal, ...change } : goal)));
 
   const unpicked = FAMILIARS.filter((familiar) => !goals.some((goal) => goal.name === familiar.name));
 
@@ -258,7 +279,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
         </div>
         <span className="ml-auto flex flex-wrap items-center gap-1.5">
           {sim.summons > 0 ? (
-            <button type="button" onClick={clear} className={QUIET}>
+            <button type="button" onClick={() => clear()} className={QUIET}>
               Clear
             </button>
           ) : null}
@@ -331,8 +352,8 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                 onChange={(event) => {
                   const familiar = FAMILIARS.find((entry) => entry.name === event.target.value);
                   if (!familiar) return;
-                  setGoals((current) => [
-                    ...current,
+                  relist([
+                    ...goals,
                     {
                       name: familiar.name,
                       group: familiar.group,
@@ -402,7 +423,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                         </select>
                       </label>
                       <span className="font-mono text-[10px] text-dim">
-                        {estimate.finished[index]
+                        {estimate?.finished[index]
                           ? `done by ~${formatValue(estimate.finished[index]!)} summons`
                           : goal.to <= goal.from
                             ? "already there"
@@ -430,7 +451,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                         <button
                           type="button"
                           aria-label={`Stop raising ${goal.name}`}
-                          onClick={() => setGoals((current) => current.filter((_, i) => i !== index))}
+                          onClick={() => relist(goals.filter((_, i) => i !== index))}
                           className={`${QUIET} px-1.5`}
                         >
                           ✕
@@ -455,12 +476,13 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
               <h3 className={LABEL}>
                 Diamonds on average · {goals.length === 1 ? `${goals[0]!.name} to ${goals[0]!.to}★` : `${goals.length} familiars`} ·{" "}
                 {MODE_LABEL[mode]} at {target}%
+                {analysis.working ? <span className="text-dim"> · working it out…</span> : null}
               </h3>
               <span className="font-mono text-sm text-tier-immortal tabular-nums">
-                {formatValue(estimate.diamonds)} <span className="text-[10px] text-dim">diamonds</span>
+                {estimate ? formatValue(estimate.diamonds) : "—"} <span className="text-[10px] text-dim">diamonds</span>
               </span>
             </div>
-            {estimate.summons > 0 ? (
+            {estimate && estimate.summons > 0 ? (
               <>
                 <p className="font-mono text-[10px] text-dim">
                   About {formatValue(estimate.summons)} summons ({formatValue(estimate.batches)} × {FAMILIAR_BATCH.summons} at{" "}
@@ -477,14 +499,16 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                   {formatValue(estimate.summons)} summons, and {formatValue(estimate.combinePicks)} × {COMBINE_BONUS.star}★ from{" "}
                   {formatValue(estimate.combines)} combines. Both let you choose, so each one goes to the goal highest up the list that still wants it.
                 </p>
-                <p className="font-mono text-[10px] text-ink">
-                  {MODE_LABEL[mode === "self" ? "same" : "self"]} at {target}% would cost {formatValue(other.diamonds)} —{" "}
-                  {other.diamonds === estimate.diamonds
-                    ? "the same"
-                    : other.diamonds > estimate.diamonds
-                      ? `${formatValue(Math.round((other.diamonds / Math.max(1, estimate.diamonds)) * 10) / 10)}× more`
-                      : `${formatValue(Math.round((estimate.diamonds / Math.max(1, other.diamonds)) * 10) / 10)}× less`}
-                </p>
+                {other ? (
+                  <p className="font-mono text-[10px] text-ink">
+                    {MODE_LABEL[mode === "self" ? "same" : "self"]} at {target}% would cost {formatValue(other.diamonds)} —{" "}
+                    {other.diamonds === estimate.diamonds
+                      ? "the same"
+                      : other.diamonds > estimate.diamonds
+                        ? `${formatValue(Math.round((other.diamonds / Math.max(1, estimate.diamonds)) * 10) / 10)}× more`
+                        : `${formatValue(Math.round((estimate.diamonds / Math.max(1, other.diamonds)) * 10) / 10)}× less`}
+                  </p>
+                ) : null}
                 {/* What each step costs and earns at this fill: the whole of the 25% argument is this table. */}
                 <table className="mt-0.5 w-full font-mono text-[10px] text-dim tabular-nums">
                   <thead>
@@ -531,13 +555,15 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
               </>
             ) : (
               <p className="font-mono text-[10px] text-dim">
-                Every familiar on the list is already at the star it is after. Add one, or aim one higher.
+                {analysis.working
+                  ? "Working the goals out…"
+                  : "Every familiar on the list is already at the star it is after. Add one, or aim one higher."}
               </p>
             )}
           </div>
 
           {/* Every fill priced against the others, which is the whole of the "is 25% faster" question. */}
-          {estimate.summons > 0 ? (
+          {estimate && estimate.summons > 0 ? (
             <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className={LABEL}>Which fill is cheapest · {MODE_LABEL[mode]}</h3>
