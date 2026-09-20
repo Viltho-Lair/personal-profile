@@ -20,6 +20,7 @@ import { spiritState } from "@/lib/profile/rules";
 import { FAMILIAR_SKILL, FARM_STAGES, FIGHT_SECONDS, promotionFight, PROMOTION_SECONDS, PROMOTION_STAGES, STAGE_COUNT, stageBossHp, stagesCleared } from "./promotion-fight";
 import { UpgradePlans } from "./upgrade-plans";
 import { segment, SEGMENTS } from "./nav-styles";
+import { PrimeFamiliarArt, primeFrom } from "./prime-familiar";
 import { EquipSuggestions, LowestEquip } from "./equip-suggestions";
 import { castInFightRun, retuneFightRun, setManualInFightRun, startFightRun, stopFightRun, useFightRun } from "./fight-run";
 import { useSpiritFactors, type SpiritFactors } from "./spirit-stats";
@@ -126,6 +127,17 @@ export function ProgressChart() {
       : boss
         ? { maxHp: boss.hp, boss: Boolean(setup.input.bossMonster), title: boss.name, subtitle: `Promotion boss · stage ${boss.stage}` }
         : null;
+  // The three equipped familiars as the one prime the render draws at the slayer's shoulder.
+  const { weapon: weaponPart, attribute: attributePart, battle: battlePart } = setup.familiar.parts;
+  const prime = useMemo(
+    () =>
+      primeFrom({
+        attribute: attributePart ? { name: attributePart.familiar.name, stars: attributePart.stars } : null,
+        battle: battlePart ? { name: battlePart.familiar.name, stars: battlePart.stars } : null,
+        weapon: weaponPart ? { name: weaponPart.familiar.name, stars: weaponPart.stars } : null,
+      }),
+    [attributePart, battlePart, weaponPart],
+  );
   // Each spirit shows in its awakening's art when its skill kicks in.
   const spiritArt = useMemo(
     () =>
@@ -284,6 +296,7 @@ export function ProgressChart() {
             element={mainElement(setup.skills)}
             baseMoveSpeed={MOVE_SPEED * (setup.input.movementSpeed ?? 1)}
             spiritArt={spiritArt}
+            prime={prime}
           />
           <EquipSuggestions />
         </div>
@@ -935,6 +948,12 @@ function FamiliarTile({
   const spent = Boolean(status?.complete);
   const canPress = running ? !auto && !spent && ready >= 1 && !status?.queued : true;
   const uses = familiar.skill.maxUses ?? 1;
+  // The three familiars as the one prime they make, the way the game shows them.
+  const prime = primeFrom({
+    attribute: { name: attribute.familiar.name, stars: attribute.stars },
+    battle: { name: battle.familiar.name, stars: battle.stars },
+    weapon: { name: weapon.familiar.name, stars: weapon.stars },
+  });
   const title = `Familiar (${attribute.familiar.name} + ${battle.familiar.name} + ${weapon.familiar.name}): ${effect?.hits ?? 1} hits of ${formatValue(Math.round((effect?.power ?? 0) * 10000) / 100)}% ATK${
     familiar.skill.element ? ` as ${familiar.skill.element}` : ""
   }, range ${familiar.range}, ${uses > 1 ? `${uses} uses a battle, ${formatValue(familiar.skill.every)}s apart` : "once a battle"} · ${auto ? "auto" : "manual"}${running ? "" : " (tap to switch)"}`;
@@ -951,7 +970,11 @@ function FamiliarTile({
       }`}
     >
       <span className="absolute inset-0 flex items-center justify-center">
-        <FamiliarArt familiar={weapon.familiar} stars={weapon.stars} size={40} />
+        {prime ? (
+          <PrimeFamiliarArt prime={prime} size={44} />
+        ) : (
+          <FamiliarArt familiar={weapon.familiar} stars={weapon.stars} size={40} />
+        )}
       </span>
       {spent ? <span className="absolute inset-0 bg-black/60" /> : status && ready < 1 ? <span className="absolute inset-x-0 top-0 bg-black/60" style={{ height: `${(1 - ready) * 100}%` }} /> : null}
       {auto && !spent ? <Settings aria-hidden className="absolute inset-0 m-auto size-3/4 animate-[spin_4s_linear_infinite] text-white opacity-60" /> : null}

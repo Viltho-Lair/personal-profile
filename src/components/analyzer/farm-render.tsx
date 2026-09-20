@@ -5,6 +5,8 @@ import { CHARGE_SECONDS, type FightEvent, type FightState } from "@/lib/game/bat
 import { BASIC_RANGE, createField, FARM_WAVES, type FarmStage, type FieldEnemy, type FieldState } from "@/lib/game/farm";
 import type { Element } from "@/lib/game/stats";
 import { SKILL_BY_NAME } from "./data";
+import type { PrimeFamiliar } from "@/lib/game/prime-familiar";
+import { PRIME_NATIVE, PrimeLayers } from "./prime-familiar";
 
 /**
  * A fight as a small side-on battlefield: stage farming's waves and box, or the one boss or monster of a
@@ -18,6 +20,9 @@ const H = 220;
 const GROUND = 158;
 /** Range the view spans, and how much of it sits behind the slayer. */
 const VIEW = 24;
+/** One filter for the prime familiar in the field: only one is ever drawn at a time. */
+const PRIME_FILTER = "prime-familiar-tint";
+
 const BEHIND = 10.8;
 const UNIT = W / VIEW;
 
@@ -217,14 +222,26 @@ function Boss({ x, y, enemy, flash }: { x: number; y: number; enemy: FieldEnemy;
   );
 }
 
-/** A familiar hovering at the slayer's shoulder while it attacks. */
-function FamiliarBody({ x, y, colour, time }: { x: number; y: number; colour: string; time: number }) {
+/**
+ * A familiar hovering at the slayer's shoulder while it attacks: the prime the three
+ * equipped familiars make, or a mote of its element while any slot is empty.
+ */
+function FamiliarBody({ x, y, colour, time, prime }: { x: number; y: number; colour: string; time: number; prime: PrimeFamiliar | null }) {
   const bob = Math.sin(time * 6) * 1.5;
+  const size = UNIT * 1.9;
   return (
     <g transform={`translate(${x} ${y + bob})`}>
       <circle r={UNIT * 0.32} fill={colour} fillOpacity="0.25" />
-      <circle r={UNIT * 0.18} fill={colour} stroke={INK} strokeWidth="0.8" />
-      <path d={`M ${-UNIT * 0.18} 0 L ${-UNIT * 0.42} ${-UNIT * 0.2} L ${-UNIT * 0.3} ${UNIT * 0.08} Z`} fill={INK} fillOpacity="0.7" />
+      {prime ? (
+        <g transform={`translate(${-size / 2} ${-size / 2}) scale(${size / PRIME_NATIVE})`}>
+          <PrimeLayers prime={prime} filterId={PRIME_FILTER} />
+        </g>
+      ) : (
+        <>
+          <circle r={UNIT * 0.18} fill={colour} stroke={INK} strokeWidth="0.8" />
+          <path d={`M ${-UNIT * 0.18} 0 L ${-UNIT * 0.42} ${-UNIT * 0.2} L ${-UNIT * 0.3} ${UNIT * 0.08} Z`} fill={INK} fillOpacity="0.7" />
+        </>
+      )}
     </g>
   );
 }
@@ -705,8 +722,8 @@ function TimeStop({ x, y, time }: { x: number; y: number; time: number }) {
 /** Seconds a skill's name stays over the slayer's head. */
 const NAME_SECONDS = 0.9;
 
-function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot, dust }: {
-  event: FightEvent; age: number; x: (position: number) => number; y: number; slayerX: number; time: number; spiritArt: Record<string, string>; spiritSlot: number; dust: string;
+function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot, dust, prime }: {
+  event: FightEvent; age: number; x: (position: number) => number; y: number; slayerX: number; time: number; spiritArt: Record<string, string>; spiritSlot: number; dust: string; prime: PrimeFamiliar | null;
 }) {
   const life = lifeOf(event);
   const t = age / life;
@@ -728,7 +745,7 @@ function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot, dust }
         <g>
           {event.kind === "familiar" ? (
             <>
-              <FamiliarBody x={slayerX - UNIT * 0.7} y={chest - UNIT * 1.1} colour={colour} time={time} />
+              <FamiliarBody x={slayerX - UNIT * 0.7} y={chest - UNIT * 1.1} colour={colour} time={time} prime={prime} />
               <FamiliarShots origin={{ x: slayerX - UNIT * 0.7, y: chest - UNIT * 1.1 }} from={from} to={to} targets={targets} age={age} colour={colour} chest={chest} ground={y} count={event.count} gap={event.gap} />
             </>
           ) : styleOf(event) === "blizzard" ? (
@@ -821,13 +838,15 @@ function Effect({ event, age, x, y, slayerX, time, spiritArt, spiritSlot, dust }
 /** The one enemy of a promotion or stages fight: its HP and whether it's a boss. */
 export type SingleEnemy = { maxHp: number; boss: boolean; title: string; subtitle: string };
 
-export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiritArt }: {
+export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiritArt, prime = null }: {
   stage: FarmStage | null;
   enemy: SingleEnemy | null;
   snap: FightState | null;
   element: Element | null;
   baseMoveSpeed: number;
   spiritArt: Record<string, string>;
+  /** The three equipped familiars as one creature, drawn when the familiar attacks. */
+  prime?: PrimeFamiliar | null;
 }) {
   const initial = useMemo(() => (stage ? createField(stage).state() : null), [stage]);
   const lost = snap?.total ?? 0;
@@ -988,6 +1007,7 @@ export function BattleRender({ stage, enemy, snap, element, baseMoveSpeed, spiri
           slayerX={x(shown)}
           time={time}
           spiritArt={spiritArt}
+          prime={prime}
           spiritSlot={Math.max(0, spirits.indexOf(event))}
           dust={dust}
         />

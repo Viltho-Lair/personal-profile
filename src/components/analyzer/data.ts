@@ -189,6 +189,14 @@ export const MASTERY_PAGES = skillMasteryData.pages as unknown as MasteryPage[];
 export const FAMILIARS = familiarsData.familiars as unknown as Familiar[];
 export const MANA_ALTAR: readonly AltarLevel[] = familiarsData.manaAltar;
 
+export const FAMILIAR_BY_NAME = new Map(FAMILIARS.map((familiar) => [familiar.name, familiar]));
+
+/** The art a familiar wears at a star count; an unowned one shows its first art. */
+export function familiarArt(familiar: Familiar, stars: number | null) {
+  const star = stars ?? 0;
+  return familiar.art.find((band) => band.from <= star && star <= band.to) ?? familiar.art[0];
+}
+
 export const KNOWN_NAMES: KnownNames = {
   skills: SKILLS.map((skill) => skill.name),
   weapons: WEAPONS.map((gear) => gear.grade),

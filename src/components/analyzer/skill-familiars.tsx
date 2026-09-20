@@ -14,6 +14,8 @@ import { SideDialog } from "./side-dialog";
 import { Sprite } from "./sprite";
 import { ELEMENT_TEXT, TIER_BORDER, TIER_TEXT } from "./tiers";
 import { formatNumber } from "@/lib/number-format";
+import { PrimeFamiliarArt, primeFrom } from "./prime-familiar";
+import { familiarFightSkills, FIGHT_SECONDS } from "./promotion-fight";
 
 const GROUP_LABEL: Record<FamiliarGroup, string> = {
   weapon: "Weapon",
@@ -125,6 +127,64 @@ function ProficiencySettings() {
   );
 }
 
+/**
+ * The prime familiar: what the three equipped familiars are in a fight. The picture is the battle familiar
+ * in the attribute familiar's element holding the weapon familiar's weapon, and the numbers are the use the
+ * fight plays: the hits, the range and the damage the three of them work out to.
+ */
+function PrimePreview() {
+  const { profile } = useProfile();
+  const combined = familiarFightSkills(profile, FIGHT_SECONDS);
+  const { attribute, battle, weapon } = combined.parts;
+  const prime = primeFrom({
+    attribute: attribute ? { name: attribute.familiar.name, stars: attribute.stars } : null,
+    battle: battle ? { name: battle.familiar.name, stars: battle.stars } : null,
+    weapon: weapon ? { name: weapon.familiar.name, stars: weapon.stars } : null,
+  });
+  const effect = combined.skill?.effect.type === "damage" ? combined.skill.effect : null;
+  const uses = combined.skill?.maxUses ?? 1;
+  const element = combined.skill?.element ?? null;
+
+  return (
+    <section className="flex flex-col gap-2 rounded-lg border border-ink/15 p-3">
+      <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">Prime familiar</h3>
+      {prime && combined.skill && attribute && battle && weapon ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex size-24 shrink-0 items-center justify-center rounded-md bg-ink/[0.04]">
+            <PrimeFamiliarArt prime={prime} size={96} />
+          </span>
+          <dl className="grid min-w-40 flex-1 grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-xs">
+            <dt className="text-dim">Made of</dt>
+            <dd className="text-right text-ink">
+              {attribute.familiar.name} + {battle.familiar.name} + {weapon.familiar.name}
+            </dd>
+            <dt className="text-dim">Element</dt>
+            <dd className={`text-right ${element ? (ELEMENT_TEXT[element] ?? "text-ink") : "text-ink"}`}>{element ?? "—"}</dd>
+            <dt className="text-dim">Hits</dt>
+            <dd className="text-right text-ink tabular-nums">{effect?.hits ?? 1}</dd>
+            <dt className="text-dim">Damage a hit</dt>
+            <dd className="text-right text-ink tabular-nums">{pct(effect?.power ?? 0)} ATK</dd>
+            <dt className="text-dim">Range</dt>
+            <dd className="text-right text-ink tabular-nums">{combined.range}</dd>
+            <dt className="text-dim">Uses</dt>
+            <dd className="text-right text-ink tabular-nums">
+              {uses > 1 ? `${uses}, ${formatNumber(combined.skill.every)}s apart` : "once a battle"}
+            </dd>
+          </dl>
+        </div>
+      ) : (
+        <p className="text-[11px] text-dim">
+          Equip an attribute, a battle and a weapon familiar: in a fight the three of them are one familiar, and
+          its picture and its attack come from all three.
+        </p>
+      )}
+      {combined.notes.length ? (
+        <p className="text-[10px] leading-snug text-dim">Not modelled: {combined.notes.join(" · ")}</p>
+      ) : null}
+    </section>
+  );
+}
+
 export function SkillFamiliars() {
   const { profile, setFamiliarStars, equipFamiliar, selectPreset } = useProfile();
   const equipped = activeFamiliars(profile);
@@ -193,6 +253,8 @@ export function SkillFamiliars() {
             })}
           </div>
         </section>
+
+        <PrimePreview />
 
         <section className="flex flex-col gap-2 rounded-lg border border-ink/15 p-3">
           <h3 className="font-mono text-[10px] tracking-[0.12em] text-dim uppercase">Mana Altar</h3>
