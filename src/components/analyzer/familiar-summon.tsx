@@ -3,17 +3,19 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   bestStar,
-  combineUp,
+  combineGoals,
   COMBINE_BONUS,
   COMBINE_GAUGE,
   COMBINE_SLOTS,
-  copiesNeeded,
+  COMBINE_TARGETS,
+  compareFills,
   emptyFamiliarSim,
-  estimateFamiliar,
+  estimateFamiliars,
   FAMILIAR_BATCH,
   FAMILIAR_SUMMON_CHANCES,
   FAMILIAR_SUMMON_COSTS,
-  fodderFor,
+  FULL_BAR,
+  goalKey,
   MAX_COMBINE_STAR,
   MAX_FAMILIAR_STAR,
   MAX_SUMMON_STAR,
@@ -23,6 +25,8 @@ import {
   SUMMON_BONUS,
   summonFamiliars,
   type CombineMode,
+  type FamiliarGoal,
+  type FillComparison,
   type FamiliarSim,
   type Fodder,
 } from "@/lib/game/familiar-summon";
@@ -52,8 +56,6 @@ const NAMES = FAMILIARS.map((familiar) => familiar.name);
 const BY_NAME = new Map(FAMILIARS.map((familiar) => [familiar.name, familiar]));
 const STARS = Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, star) => star);
 
-const groupOf = (name: string) => BY_NAME.get(name)?.group ?? "attribute";
-const groupNames = (name: string) => FAMILIARS.filter((familiar) => familiar.group === groupOf(name)).map((f) => f.name);
 
 const rarityAt = (familiar: Familiar | undefined, star: number) =>
   familiar?.stars.find((entry) => entry.star === star)?.rarity ?? null;
@@ -133,37 +135,57 @@ function StarRow({ row, familiar }: { row: readonly number[]; familiar: Familiar
  */
 export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
   const { profile } = useProfile();
-  const [name, setName] = useState(FAMILIARS[0]?.name ?? "Na");
-  const owned = familiarStars(profile, name);
-  const [from, setFrom] = useState<number | null>(null);
-  const [to, setTo] = useState(MAX_COMBINE_STAR);
+  const [goals, setGoals] = useState<FamiliarGoal[]>(() => [
+    { name: FAMILIARS[0]!.name, group: FAMILIARS[0]!.group, from: 0, to: MAX_COMBINE_STAR },
+  ]);
   const [mode, setMode] = useState<CombineMode>("self");
-  const [feed, setFeed] = useState<string[] | null>(null);
+  const [target, setTarget] = useState<number>(FULL_BAR);
+  const [feed, setFeed] = useState<Record<string, string[]>>({});
   const [sim, setSim] = useState<FamiliarSim>(() => emptyFamiliarSim(NAMES));
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
   const [last, setLast] = useState<Record<string, number[]> | null>(null);
+  // Pricing every fill is hundreds of runs, so it lands after the panel has drawn rather than holding it up.
+  const [comparison, setComparison] = useState<FillComparison | null>(null);
 
-  // The star it starts at: your profile's, until you say otherwise. Your familiars are never touched.
-  const start = from ?? Math.min(MAX_COMBINE_STAR, owned ?? 0);
-  const goal = Math.max(start, to);
-  const group = groupOf(name);
-  // The rest of the group, in the order they are fed to it. Resets when the familiar changes.
-  const kin = useMemo(() => {
-    const members = groupNames(name).filter((member) => member !== name);
-    return feed && feed.length === members.length && feed.every((member) => members.includes(member)) ? feed : members;
-  }, [name, feed]);
+  const key = goalKey(goals);
+  const groups = useMemo(() => [...new Set(goals.map((goal) => goal.group))], [goals]);
+  /** Each group's members that aren't goals, in the order they are fed. Another goal is never eaten. */
+  const spares = useMemo(() => {
+    const byGroup: Record<string, string[]> = {};
+    for (const group of groups) {
+      const members = FAMILIARS.filter(
+        (familiar) => familiar.group === group && !goals.some((goal) => goal.name === familiar.name),
+      ).map((familiar) => familiar.name);
+      const order = feed[group];
+      byGroup[group] =
+        order && order.length === members.length && order.every((member) => members.includes(member)) ? order : members;
+    }
+    return byGroup;
+  }, [groups, goals, feed]);
 
-  const estimate = useMemo(() => estimateFamiliar(start, goal, mode), [start, goal, mode]);
-  const other = useMemo(() => estimateFamiliar(start, goal, mode === "self" ? "same" : "self"), [start, goal, mode]);
-  const needs = useMemo(() => copiesNeeded(goal, mode), [goal, mode]);
-  const reached = bestStar(sim, name);
+  const estimate = useMemo(() => estimateFamiliars(goals, mode, target), [goals, mode, target]);
+  const other = useMemo(
+    () => estimateFamiliars(goals, mode === "self" ? "same" : "self", target),
+    [goals, mode, target],
+  );
+  /** The goal highest up the list that this run hasn't got to yet: where both gauges send their familiar. */
+  const wanting = goals.find((goal) => (bestStar(sim, goal.name) ?? -1) < goal.to) ?? goals[0];
+  const reached = goals.every((goal) => (bestStar(sim, goal.name) ?? -1) >= goal.to);
+
+  // Every fill priced against the others, worked out once the panel is on screen rather than holding it up.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setComparison(compareFills(goals, mode)), 0);
+    return () => window.clearTimeout(timer);
+  }, [goals, mode]);
+  // The one in hand belongs to an older list until the next lands.
+  const fills = comparison && goalKey(comparison.best.goals) === key && comparison.best.mode === mode ? comparison : null;
 
   const run = (count: number, diamonds: number, combine: boolean) => {
-    const result = summonFamiliars(sim, count, diamonds, NAMES, name);
-    const next = combine ? combineUp(result.sim, name, [name, ...kin], mode, goal) : result.sim;
+    const result = summonFamiliars(sim, count, diamonds, NAMES, wanting?.name ?? NAMES[0]!);
+    const next = combine ? combineGoals(result.sim, goals, spares, mode, target) : result.sim;
     setSim(next);
     setLast(result.drawn);
-    if (combine && (bestStar(next, name) ?? -1) >= goal) setAuto("off");
+    if (combine && goals.every((goal) => (bestStar(next, goal.name) ?? -1) >= goal.to)) setAuto("off");
   };
 
   const runRef = useRef(run);
@@ -185,63 +207,52 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
     setLast(null);
   };
 
-  const combine = () => setSim((current) => combineUp(current, name, [name, ...kin], mode, goal));
+  const combine = () => setSim((current) => combineGoals(current, goals, spares, mode, target));
 
-  /** Moves one of the group up or down the feeding order. */
-  const move = (index: number, by: number) => {
-    const next = [...kin];
+  /** Moves one of a group's spares up or down its feeding order. */
+  const moveSpare = (group: string, index: number, by: number) => {
+    const next = [...(spares[group] ?? [])];
     const [member] = next.splice(index, 1);
     next.splice(Math.max(0, Math.min(next.length, index + by)), 0, member!);
-    setFeed(next);
+    setFeed((current) => ({ ...current, [group]: next }));
   };
+
+  /** Moves a goal up or down the priority list, which is what the two gauges follow. */
+  const movePriority = (index: number, by: number) =>
+    setGoals((current) => {
+      const next = [...current];
+      const [goal] = next.splice(index, 1);
+      next.splice(Math.max(0, Math.min(next.length, index + by)), 0, goal!);
+      return next;
+    });
+
+  const setGoal = (index: number, change: Partial<FamiliarGoal>) =>
+    setGoals((current) => current.map((goal, i) => (i === index ? { ...goal, ...change } : goal)));
+
+  const unpicked = FAMILIARS.filter((familiar) => !goals.some((goal) => goal.name === familiar.name));
 
   return (
     <section aria-label="Familiar summon" className="@container flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {switcher}
-        <label className="flex items-center gap-1.5">
-          <span className={LABEL}>Familiar</span>
-          <select
-            aria-label="Familiar to raise"
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value);
-              setFrom(null);
-              setFeed(null);
-            }}
-            className={FIELD}
-          >
-            {FAMILIARS.map((familiar) => (
-              <option key={familiar.name} value={familiar.name}>
-                {familiar.name} ({GROUP_LABEL[familiar.group]})
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-1.5">
-          <span className={LABEL}>from</span>
-          <select aria-label={`${name} starts at`} value={start} onChange={(event) => setFrom(Number(event.target.value))} className={FIELD}>
-            {STARS.map((star) => (
-              <option key={star} value={star}>
-                {star}★{star === owned ? " · yours" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-1.5">
-          <span className={LABEL}>to</span>
-          <select aria-label={`${name} goal`} value={goal} onChange={(event) => setTo(Number(event.target.value))} className={FIELD}>
-            {STARS.filter((star) => star >= start).map((star) => (
-              <option key={star} value={star}>
-                {star}★{star === MAX_COMBINE_STAR ? " · as high as combining goes" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
         <div className={SEGMENTS} role="group" aria-label="How the slots are filled">
           {(["self", "same"] as const).map((id) => (
             <button key={id} type="button" aria-pressed={mode === id} onClick={() => setMode(id)} className={segment(mode === id)}>
               {MODE_LABEL[id]}
+            </button>
+          ))}
+        </div>
+        <div className={SEGMENTS} role="group" aria-label="How far the combine bar is filled">
+          {COMBINE_TARGETS.map((fill) => (
+            <button
+              key={fill}
+              type="button"
+              aria-pressed={target === fill}
+              onClick={() => setTarget(fill)}
+              title={`Press each combine once the bar reaches ${fill}%`}
+              className={segment(target === fill)}
+            >
+              {fill}%
             </button>
           ))}
         </div>
@@ -255,8 +266,8 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             <button
               type="button"
               onClick={() => setAuto("running")}
-              disabled={(reached ?? -1) >= goal}
-              title={`Summon ${formatValue(FAMILIAR_BATCH.summons * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms and combine as it goes, until ${name} reaches ${goal}★ or you stop`}
+              disabled={reached || !goals.length}
+              title={`Summon ${formatValue(FAMILIAR_BATCH.summons * AUTO_BATCHES)} every ${AUTO_INTERVAL_MS} ms and combine as it goes, until every goal is there or you stop`}
               className={QUIET}
             >
               Auto
@@ -301,26 +312,159 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             {COMBINE_BONUS.star}★ picked ·{" "}
           </>
         ) : null}
-        {reached === null ? `No ${name} summoned yet` : `${name} is at ${reached}★ in this run`}
+        {reached
+          ? "Every goal is there in this run"
+          : wanting
+            ? `Both gauges are going to ${wanting.name}, the highest goal still short of its star`
+            : "Add a familiar to raise"}
       </p>
 
       <div className="grid min-h-0 gap-3 @3xl:grid-cols-[minmax(0,1fr)_16rem]">
         <div className="flex min-w-0 flex-col gap-3">
-          {/* The average, from the star it starts at. */}
+          {/* The familiars to raise, in the order the gauges serve them. */}
+          <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className={LABEL}>Familiars to raise · first is top priority</h3>
+              <select
+                aria-label="Add a familiar to raise"
+                value=""
+                onChange={(event) => {
+                  const familiar = FAMILIARS.find((entry) => entry.name === event.target.value);
+                  if (!familiar) return;
+                  setGoals((current) => [
+                    ...current,
+                    {
+                      name: familiar.name,
+                      group: familiar.group,
+                      from: Math.min(MAX_COMBINE_STAR, familiarStars(profile, familiar.name) ?? 0),
+                      to: MAX_COMBINE_STAR,
+                    },
+                  ]);
+                }}
+                className={FIELD}
+                disabled={!unpicked.length}
+              >
+                <option value="">Add familiar…</option>
+                {unpicked.map((familiar) => (
+                  <option key={familiar.name} value={familiar.name}>
+                    {familiar.name} ({GROUP_LABEL[familiar.group]})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {goals.length ? (
+              <ul className="flex flex-col gap-1">
+                {goals.map((goal, index) => {
+                  const at = bestStar(sim, goal.name);
+                  const owned = familiarStars(profile, goal.name);
+                  return (
+                    <li key={goal.name} className="flex flex-wrap items-center gap-2 border-b border-ink/10 pb-1">
+                      <span className="w-4 text-right font-mono text-[10px] text-dim tabular-nums">{index + 1}</span>
+                      <span className="w-9 shrink-0">
+                        <FamiliarTile name={goal.name} star={at ?? goal.from} label={at === null ? "none" : undefined} />
+                      </span>
+                      <span className="flex min-w-24 flex-col">
+                        <span className="font-mono text-[11px] text-ink">
+                          {goal.name} <span className="text-[10px] text-dim">{GROUP_LABEL[goal.group as FamiliarGroup]}</span>
+                        </span>
+                        <span className="font-mono text-[10px] text-dim">
+                          {at === null ? "none in this run" : `${at}★ in this run`}
+                        </span>
+                      </span>
+                      <label className="flex items-center gap-1">
+                        <span className={LABEL}>from</span>
+                        <select
+                          aria-label={`${goal.name} starts at`}
+                          value={goal.from}
+                          onChange={(event) => setGoal(index, { from: Number(event.target.value) })}
+                          className={FIELD}
+                        >
+                          {STARS.map((star) => (
+                            <option key={star} value={star}>
+                              {star}★{star === owned ? " · yours" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <span className={LABEL}>to</span>
+                        <select
+                          aria-label={`${goal.name} goal`}
+                          value={goal.to}
+                          onChange={(event) => setGoal(index, { to: Number(event.target.value) })}
+                          className={FIELD}
+                        >
+                          {STARS.filter((star) => star >= goal.from).map((star) => (
+                            <option key={star} value={star}>
+                              {star}★
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <span className="font-mono text-[10px] text-dim">
+                        {estimate.finished[index]
+                          ? `done by ~${formatValue(estimate.finished[index]!)} summons`
+                          : goal.to <= goal.from
+                            ? "already there"
+                            : ""}
+                      </span>
+                      <span className="ml-auto flex items-center gap-1">
+                        <button
+                          type="button"
+                          aria-label={`Raise ${goal.name}'s priority`}
+                          onClick={() => movePriority(index, -1)}
+                          disabled={index === 0}
+                          className={`${QUIET} px-1.5`}
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Lower ${goal.name}'s priority`}
+                          onClick={() => movePriority(index, 1)}
+                          disabled={index === goals.length - 1}
+                          className={`${QUIET} px-1.5`}
+                        >
+                          ▼
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Stop raising ${goal.name}`}
+                          onClick={() => setGoals((current) => current.filter((_, i) => i !== index))}
+                          className={`${QUIET} px-1.5`}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="font-mono text-[10px] text-dim">Add the familiars you want to raise, most important first.</p>
+            )}
+            <p className="text-[10px] leading-snug text-dim">
+              Both gauges let you choose, so their familiars go to the highest goal that still wants one — which is what
+              priority buys. A goal is never fed to another goal, whatever group it is in.
+            </p>
+          </div>
+
+          {/* The average for the whole list. */}
           <div className="flex flex-col gap-1 rounded-md border border-ink/15 p-2">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className={LABEL}>
-                Diamonds on average · {name} {start}★ → {goal}★ · {MODE_LABEL[mode]}
+                Diamonds on average · {goals.length === 1 ? `${goals[0]!.name} to ${goals[0]!.to}★` : `${goals.length} familiars`} ·{" "}
+                {MODE_LABEL[mode]} at {target}%
               </h3>
               <span className="font-mono text-sm text-tier-immortal tabular-nums">
                 {formatValue(estimate.diamonds)} <span className="text-[10px] text-dim">diamonds</span>
               </span>
             </div>
-            {goal > start ? (
+            {estimate.summons > 0 ? (
               <>
                 <p className="font-mono text-[10px] text-dim">
                   About {formatValue(estimate.summons)} summons ({formatValue(estimate.batches)} × {FAMILIAR_BATCH.summons} at{" "}
-                  {formatValue(FAMILIAR_BATCH.diamonds)}) · around {formatValue(estimate.copies)} {name} of any star among them,
+                  {formatValue(FAMILIAR_BATCH.diamonds)}) · around {formatValue(estimate.copies)} of any one familiar among them,
                   one summon in {ROSTER_SIZE}
                 </p>
                 <p className="font-mono text-[10px] text-dim">
@@ -331,92 +475,203 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                 <p className="font-mono text-[10px] text-dim">
                   The gauges do most of it: {formatValue(estimate.summonPicks)} × {SUMMON_BONUS.star}★ from{" "}
                   {formatValue(estimate.summons)} summons, and {formatValue(estimate.combinePicks)} × {COMBINE_BONUS.star}★ from{" "}
-                  {formatValue(estimate.combines)} combines. Both let you choose, so every one of them is a {name}.
+                  {formatValue(estimate.combines)} combines. Both let you choose, so each one goes to the goal highest up the list that still wants it.
                 </p>
                 <p className="font-mono text-[10px] text-ink">
-                  {MODE_LABEL[mode === "self" ? "same" : "self"]} would cost {formatValue(other.diamonds)} —{" "}
+                  {MODE_LABEL[mode === "self" ? "same" : "self"]} at {target}% would cost {formatValue(other.diamonds)} —{" "}
                   {other.diamonds === estimate.diamonds
                     ? "the same"
                     : other.diamonds > estimate.diamonds
                       ? `${formatValue(Math.round((other.diamonds / Math.max(1, estimate.diamonds)) * 10) / 10)}× more`
                       : `${formatValue(Math.round((estimate.diamonds / Math.max(1, other.diamonds)) * 10) / 10)}× less`}
                 </p>
-                <ul className="mt-0.5 grid gap-x-3 font-mono text-[10px] text-dim @xl:grid-cols-2">
-                  {STARS.slice(0, goal).map((star) => (
-                    <li key={star} className={star < start ? "opacity-50" : ""}>
-                      <span className="text-ink">
-                        {star}★ → {star + 1}★
-                      </span>{" "}
-                      {fodderText(fodderFor(star, mode), name, group)}
-                      {needs.own[star + 1] ? ` · ${formatValue(needs.own[star + 1]!)} to make` : ""}
-                    </li>
-                  ))}
-                </ul>
+                {/* What each step costs and earns at this fill: the whole of the 25% argument is this table. */}
+                <table className="mt-0.5 w-full font-mono text-[10px] text-dim tabular-nums">
+                  <thead>
+                    <tr className="border-b border-ink/10 text-left">
+                      <th className="font-normal">Step</th>
+                      <th className="font-normal">In the slots</th>
+                      <th className="pr-2 text-right font-normal">Chance</th>
+                      <th className="pr-2 text-right font-normal">Tries</th>
+                      <th className="pr-2 text-right font-normal">Materials</th>
+                      <th className="text-right font-normal">Gauge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {estimate.odds.map((step) => {
+                      const spent = step.materials.self + step.materials.same;
+                      return (
+                        <tr key={step.star} className="border-b border-ink/5">
+                          <td className="text-ink">
+                            {step.star}★ → {step.star + 1}★
+                          </td>
+                          <td>{fodderText(step.fodder, "the familiar", (goals[0]?.group ?? "attribute") as FamiliarGroup)}</td>
+                          <td className="pr-2 text-right">{step.bar}%</td>
+                          <td className="pr-2 text-right">{formatValue(Math.round(step.attempts * 10) / 10)}</td>
+                          <td className="pr-2 text-right">{formatValue(Math.round(spent * 10) / 10)}</td>
+                          <td className={`text-right ${step.gauge ? "text-ink" : ""}`}>
+                            {step.gauge ? formatValue(Math.round(step.gauge)) : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
                 <p className="text-[10px] leading-snug text-dim">
-                  An average, not a promise. It fills all five slots to 100% every time, so no combine ever fails and the
-                  gauges&apos; failure column never comes into it. Fed nothing but its own copies and with no gauges at
-                  all, {goal}★ would be {formatValue(estimate.ownCopies)} of {name} at 0★ — the picks are what make it
-                  reachable.
+                  Materials is what one star costs on average, and it does not move with the fill: half the chance is
+                  twice the tries on half the materials. What moves is the gauge, because a miss pays out as well as a
+                  hit — so a lower bar earns more {COMBINE_BONUS.star}★ for the same materials, and only at the stars
+                  whose combines count for it.
+                </p>
+                <p className="text-[10px] leading-snug text-dim">
+                  An average, not a promise. Fed nothing but its own copies and with no gauges at all, one 10★ alone
+                  would be {formatValue(estimate.ownCopies)} copies of it at 0★ — the picks are what make it reachable. A
+                  combine that misses loses its materials and leaves the familiar on the star it was already on.
                 </p>
               </>
             ) : (
               <p className="font-mono text-[10px] text-dim">
-                {name} is already at {goal}★. Pick a higher star to price the rest of the way.
+                Every familiar on the list is already at the star it is after. Add one, or aim one higher.
               </p>
             )}
           </div>
 
-          {/* Which of the group gets eaten first. */}
+          {/* Every fill priced against the others, which is the whole of the "is 25% faster" question. */}
+          {estimate.summons > 0 ? (
+            <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className={LABEL}>Which fill is cheapest · {MODE_LABEL[mode]}</h3>
+                {fills ? (
+                  <span className="font-mono text-[11px] text-ink">
+                    {fills.matters.length === 0 ? (
+                      <span className="text-dim">Nothing here reaches a star the gauge counts, so the fill is free</span>
+                    ) : fills.saved > 0 ? (
+                      <>
+                        <span className="text-tier-mythic">{fills.best.target}%</span> wins by{" "}
+                        {formatValue(fills.saved)} diamonds
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-tier-mythic">{FULL_BAR}%</span> wins: nothing lower pays for itself here
+                      </>
+                    )}
+                  </span>
+                ) : (
+                  <span className="font-mono text-[10px] text-dim">Working the fills out…</span>
+                )}
+              </div>
+              {fills ? (
+                <>
+                  <ul className="flex flex-col gap-0.5">
+                    {fills.fills.map((fill) => {
+                      const best = fill.target === fills.best.target;
+                      return (
+                        <li
+                          key={fill.target}
+                          className={`grid grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-2 border-b border-ink/5 py-0.5 font-mono text-[10px] tabular-nums ${
+                            best ? "text-ink" : "text-dim"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setTarget(fill.target)}
+                            aria-pressed={target === fill.target}
+                            className={`text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              target === fill.target ? "text-ink underline" : "hover:text-ink"
+                            }`}
+                          >
+                            {fill.target}%{best ? " ★" : ""}
+                          </button>
+                          <span>
+                            {formatValue(fill.summons)} summons, half by {formatValue(fill.median.summons)} ·{" "}
+                            {formatValue(fill.combines)} combines · {formatValue(fill.combinePicks)} ×{" "}
+                            {COMBINE_BONUS.star}★
+                          </span>
+                          <span className={best ? "text-tier-immortal" : ""}>{formatValue(fill.diamonds)}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="text-[10px] leading-snug text-dim">
+                    {fills.matters.length === 0
+                      ? `No combine on the way to these stars moves the combine gauge, so every fill costs the same and the only difference is how many times you press it.`
+                      : `Only ${fills.matters.map((star) => `${star}★`).join(" and ")} care: those are the steps whose combines move the gauge, and the only ones where the bar can be set lower. Everything below them costs the same however you fill it.`}
+                    {fills.best.target < FULL_BAR
+                      ? ` A low bar is also a far swingier run — that is what the gap between the average and the halfway mark is telling you.`
+                      : ""}
+                  </p>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Which of each group's spares get eaten first. */}
           <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className={LABEL}>{GROUP_LABEL[group]} familiars · fed to {name} in this order</h3>
+              <h3 className={LABEL}>Spare familiars · fed to the goals in this order</h3>
               <span className="font-mono text-[10px] text-dim">
                 {mode === "same"
-                  ? `Same type fills every slot it can, so all three are spent and raised`
-                  : `Self type spends none of them — they are summoned and left`}
+                  ? "Same type fills every slot it can, so the spares are spent and raised"
+                  : "Self type spends none of them — they are summoned and left"}
               </span>
             </div>
-            <ul className="flex flex-col gap-1">
-              {kin.map((member, index) => (
-                <li key={member} className="flex flex-wrap items-center gap-2 border-b border-ink/10 pb-1">
-                  <span className="w-4 text-right font-mono text-[10px] text-dim tabular-nums">{index + 1}</span>
-                  <span className="w-9 shrink-0">
-                    <FamiliarTile name={member} star={bestStar(sim, member) ?? 0} label={bestStar(sim, member) === null ? "none" : undefined} />
-                  </span>
-                  <span className="flex min-w-24 flex-col">
-                    <span className="font-mono text-[11px] text-ink">
-                      {member}{" "}
-                      <span className={`text-[10px] ${ELEMENT_TEXT[BY_NAME.get(member)?.element ?? ""] ?? "text-dim"}`}>
-                        {BY_NAME.get(member)?.element}
-                      </span>
-                    </span>
-                    <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
-                      <StarRow row={sim.copies[member] ?? []} familiar={BY_NAME.get(member)} />
-                    </span>
-                  </span>
-                  <span className="ml-auto flex items-center gap-1">
-                    <button
-                      type="button"
-                      aria-label={`Feed ${member} sooner`}
-                      onClick={() => move(index, -1)}
-                      disabled={index === 0 || mode !== "same"}
-                      className={`${QUIET} px-1.5`}
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Feed ${member} later`}
-                      onClick={() => move(index, 1)}
-                      disabled={index === kin.length - 1 || mode !== "same"}
-                      className={`${QUIET} px-1.5`}
-                    >
-                      ▼
-                    </button>
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {groups.map((group) => (
+              <div key={group} className="flex flex-col gap-1">
+                <h4 className={LABEL}>{GROUP_LABEL[group as FamiliarGroup]}</h4>
+                {(spares[group] ?? []).length ? (
+                  <ul className="flex flex-col gap-1">
+                    {(spares[group] ?? []).map((member, index) => (
+                      <li key={member} className="flex flex-wrap items-center gap-2 border-b border-ink/10 pb-1">
+                        <span className="w-4 text-right font-mono text-[10px] text-dim tabular-nums">{index + 1}</span>
+                        <span className="w-9 shrink-0">
+                          <FamiliarTile
+                            name={member}
+                            star={bestStar(sim, member) ?? 0}
+                            label={bestStar(sim, member) === null ? "none" : undefined}
+                          />
+                        </span>
+                        <span className="flex min-w-24 flex-col">
+                          <span className="font-mono text-[11px] text-ink">
+                            {member}{" "}
+                            <span className={`text-[10px] ${ELEMENT_TEXT[BY_NAME.get(member)?.element ?? ""] ?? "text-dim"}`}>
+                              {BY_NAME.get(member)?.element}
+                            </span>
+                          </span>
+                          <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
+                            <StarRow row={sim.copies[member] ?? []} familiar={BY_NAME.get(member)} />
+                          </span>
+                        </span>
+                        <span className="ml-auto flex items-center gap-1">
+                          <button
+                            type="button"
+                            aria-label={`Feed ${member} sooner`}
+                            onClick={() => moveSpare(group, index, -1)}
+                            disabled={index === 0 || mode !== "same"}
+                            className={`${QUIET} px-1.5`}
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Feed ${member} later`}
+                            onClick={() => moveSpare(group, index, 1)}
+                            disabled={index === (spares[group] ?? []).length - 1 || mode !== "same"}
+                            className={`${QUIET} px-1.5`}
+                          >
+                            ▼
+                          </button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-mono text-[10px] text-dim">
+                    Every {GROUP_LABEL[group as FamiliarGroup]} familiar is a goal, so this group has no spares to feed
+                    anyone.
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Everything summoned, and what is left once it has been combined. */}
@@ -429,7 +684,8 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             </div>
             <ul className="flex flex-col gap-0.5">
               {FAMILIARS.map((familiar) => {
-                const inGroup = familiar.group === group;
+                const inGroup = groups.includes(familiar.group);
+                const isGoal = goals.some((goal) => goal.name === familiar.name);
                 return (
                   <li
                     key={familiar.name}
@@ -439,7 +695,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                   >
                     <span className="font-mono text-[10px] text-ink">
                       {familiar.name}
-                      {familiar.name === name ? <span className="text-tier-mythic"> ★</span> : null}{" "}
+                      {isGoal ? <span className="text-tier-mythic"> ★</span> : null}{" "}
                       <span className="text-[9px] text-dim">{GROUP_LABEL[familiar.group]}</span>
                     </span>
                     <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
@@ -453,8 +709,8 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
               })}
             </ul>
             <p className="font-mono text-[9px] text-dim">
-              Left column: summoned, the {SUMMON_BONUS.star}★ picks included. Right: what is left once combined. The
-              eight familiars outside {GROUP_LABEL[group]} are no help to {name} at all.
+              Left column: summoned, the {SUMMON_BONUS.star}★ picks included. Right: what is left once combined. A
+              familiar outside every goal&apos;s group is no help to any of them at all.
             </p>
             {last ? (
               <p className="font-mono text-[10px] text-dim">
@@ -469,7 +725,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
               </p>
             ) : (
               <p className="font-mono text-[10px] text-dim">
-                Summon one or eleven at a time, or let Auto run until {name} reaches {goal}★. Your own familiars stay
+                Summon one or eleven at a time, or let Auto run until every goal is there. Your own familiars stay
                 exactly as they are.
               </p>
             )}
@@ -482,7 +738,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             <dl className="font-mono text-[10px]">
               {FAMILIAR_SUMMON_CHANCES.map((chance, star) => (
                 <div key={star} className="flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5">
-                  <dt className={TIER_TEXT[rarityAt(BY_NAME.get(name), star) ?? ""] ?? "text-dim"}>{star}-Star</dt>
+                  <dt className={TIER_TEXT[rarityAt(BY_NAME.get(goals[0]?.name ?? ""), star) ?? ""] ?? "text-dim"}>{star}-Star</dt>
                   <dd className="text-ink tabular-nums">{chance}%</dd>
                 </div>
               ))}

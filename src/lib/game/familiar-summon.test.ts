@@ -1,27 +1,33 @@
 import { describe, expect, it } from "vitest";
 import {
   bestStar,
+  combineOdds,
   combineOnce,
-  combineUp,
+  combineGoals,
   COMBINE_BONUS,
   COMBINE_GAUGE,
   COMBINE_SLOTS,
+  COMBINE_TARGETS,
+  compareFills,
   copiesNeeded,
   diamondsFor,
   drawFamiliar,
   emptyFamiliarSim,
-  estimateFamiliar,
+  estimateFamiliars,
   FAMILIAR_BATCH,
   FAMILIAR_SUMMON_CHANCES,
   FAMILIAR_SUMMON_COSTS,
+  fodderAt,
   fodderBar,
   fodderFor,
   fodderSets,
+  planFor,
+  FULL_BAR,
   gaugeFor,
   GROUP_SIZE,
   MAX_COMBINE_STAR,
   MAX_SUMMON_STAR,
-  playFamiliar,
+  playFamiliars,
   ROSTER_SIZE,
   sameChance,
   seeded,
@@ -33,6 +39,9 @@ import {
 } from "./familiar-summon";
 
 const GROUP = ["Hi", "Ti", "A", "Je"];
+const SPARES = { attribute: ["Ti", "A", "Je"] };
+/** One goal for Hi, the way the old two-star calls read. */
+const one = (from: number, to: number, name = "Hi") => [{ name, group: "attribute", from, to }];
 const ROSTER = [...GROUP, "Pe", "Ku", "Sha", "Po", "Mus", "Na", "Rion", "Ru"];
 
 describe("the summon rates", () => {
@@ -196,22 +205,22 @@ describe("the copies a goal takes", () => {
 
 describe("estimating a goal", () => {
   it("asks for nothing when the familiar is already there", () => {
-    const estimate = estimateFamiliar(10, 10, "self");
+    const estimate = estimateFamiliars(one(10, 10), "self");
     expect(estimate.summons).toBe(0);
     expect(estimate.diamonds).toBe(0);
     expect(estimate.combines).toBe(0);
   });
 
   it("stops at 10★, since the 11th star takes an awakening", () => {
-    expect(estimateFamiliar(0, 11, "self").to).toBe(MAX_COMBINE_STAR);
-    expect(estimateFamiliar(0, 99, "self").to).toBe(MAX_COMBINE_STAR);
+    expect(estimateFamiliars(one(0, 11), "self").goals[0]!.to).toBe(MAX_COMBINE_STAR);
+    expect(estimateFamiliars(one(0, 99), "self").goals[0]!.to).toBe(MAX_COMBINE_STAR);
   });
 
   it("costs more the further the goal is", () => {
     for (const mode of ["self", "same"] as const) {
       let last = -1;
       for (let star = 0; star <= MAX_COMBINE_STAR; star += 1) {
-        const estimate = estimateFamiliar(0, star, mode);
+        const estimate = estimateFamiliars(one(0, star), mode);
         expect(estimate.summons).toBeGreaterThan(last);
         last = estimate.summons;
       }
@@ -219,43 +228,43 @@ describe("estimating a goal", () => {
   });
 
   it("costs less the further along the familiar already is", () => {
-    const scratch = estimateFamiliar(0, MAX_COMBINE_STAR, "self").summons;
-    const nearly = estimateFamiliar(9, MAX_COMBINE_STAR, "self").summons;
+    const scratch = estimateFamiliars(one(0, MAX_COMBINE_STAR), "self").summons;
+    const nearly = estimateFamiliars(one(9, MAX_COMBINE_STAR), "self").summons;
     expect(nearly).toBeLessThan(scratch);
   });
 
   it("reaches 6★ on the summon gauge alone, inside its 300 summons", () => {
     // Every 300 summons hands over a 6★ of the familiar you pick, so nothing up to 6★ can cost more than that.
     for (let star = 1; star <= SUMMON_BONUS.star; star += 1) {
-      expect(estimateFamiliar(0, star, "self").summons).toBeLessThanOrEqual(SUMMON_BONUS.full);
+      expect(estimateFamiliars(one(0, star), "self").summons).toBeLessThanOrEqual(SUMMON_BONUS.full);
     }
   });
 
   it("makes same type dearer than self type once the group has to be raised too", () => {
-    const self = estimateFamiliar(0, MAX_COMBINE_STAR, "self");
-    const same = estimateFamiliar(0, MAX_COMBINE_STAR, "same");
+    const self = estimateFamiliars(one(0, MAX_COMBINE_STAR), "self");
+    const same = estimateFamiliars(one(0, MAX_COMBINE_STAR), "same");
     expect(same.summons).toBeGreaterThan(self.summons);
   });
 
   it("buys its summons in bundles of eleven", () => {
-    const estimate = estimateFamiliar(0, 8, "self");
+    const estimate = estimateFamiliars(one(0, 8), "self");
     expect(estimate.batches).toBe(Math.ceil(estimate.summons / FAMILIAR_BATCH.summons));
     expect(estimate.diamonds).toBe(estimate.batches * FAMILIAR_BATCH.diamonds);
   });
 
   it("gets a 6★ for every 300 summons it makes", () => {
-    const estimate = estimateFamiliar(0, MAX_COMBINE_STAR, "self");
+    const estimate = estimateFamiliars(one(0, MAX_COMBINE_STAR), "self");
     expect(estimate.summonPicks).toBe(Math.floor(estimate.summons / SUMMON_BONUS.full));
     expect(estimate.combinePicks).toBeGreaterThan(0);
   });
 
   it("summons one copy of the goal familiar in twelve", () => {
-    const estimate = estimateFamiliar(0, MAX_COMBINE_STAR, "self");
+    const estimate = estimateFamiliars(one(0, MAX_COMBINE_STAR), "self");
     expect(estimate.copies).toBe(Math.round(estimate.summons / ROSTER_SIZE));
   });
 
   it("puts the median and the nine-in-ten run either side of the average", () => {
-    const estimate = estimateFamiliar(0, 9, "self");
+    const estimate = estimateFamiliars(one(0, 9), "self");
     expect(estimate.runs).toBeGreaterThan(1);
     expect(estimate.median.summons).toBeLessThanOrEqual(estimate.likely.summons);
     expect(estimate.likely.diamonds).toBe(diamondsFor(estimate.likely.summons));
@@ -263,28 +272,33 @@ describe("estimating a goal", () => {
 
   it("finishes every goal inside the summons a run is allowed", () => {
     for (const mode of ["self", "same"] as const) {
-      expect(estimateFamiliar(0, MAX_COMBINE_STAR, mode).beyond).toBe(false);
+      expect(estimateFamiliars(one(0, MAX_COMBINE_STAR), mode).beyond).toBe(false);
     }
   });
 
   it("comes out the same every time it's asked", () => {
-    expect(estimateFamiliar(0, 9, "same")).toEqual(estimateFamiliar(0, 9, "same"));
+    expect(estimateFamiliars(one(0, 9), "same")).toEqual(estimateFamiliars(one(0, 9), "same"));
   });
 });
 
 describe("one run of a goal", () => {
   it("asks for nothing when the familiar starts at the goal", () => {
-    expect(playFamiliar(5, 5, "self", seeded(1))).toEqual({ summons: 0, combines: 0, picks: { summon: 0, combine: 0 } });
+    expect(playFamiliars(one(5, 5), "self", FULL_BAR, seeded(1))).toEqual({
+      summons: 0,
+      combines: 0,
+      picks: { summon: 0, combine: 0 },
+      finished: [0],
+    });
   });
 
   it("costs less the further along the familiar starts", () => {
-    const scratch = playFamiliar(0, 9, "self", seeded(11)).summons;
-    const part = playFamiliar(8, 9, "self", seeded(11)).summons;
+    const scratch = playFamiliars(one(0, 9), "self", FULL_BAR, seeded(11)).summons;
+    const part = playFamiliars(one(8, 9), "self", FULL_BAR, seeded(11)).summons;
     expect(part).toBeLessThan(scratch);
   });
 
   it("waits for the gauge rather than combining for a goal it hands over whole", () => {
-    const play = playFamiliar(0, SUMMON_BONUS.star, "self", seeded(3));
+    const play = playFamiliars(one(0, SUMMON_BONUS.star), "self", FULL_BAR, seeded(3));
     expect(play.summons).toBeLessThanOrEqual(SUMMON_BONUS.full);
   });
 });
@@ -316,7 +330,7 @@ describe("summoning", () => {
     const run = summonFamiliars(emptyFamiliarSim(ROSTER), 100, 0, ROSTER, "Hi", seeded(5));
     const drawn = Object.values(run.sim.drawn).reduce((sum, row) => sum + row.reduce((a, b) => a + b, 0), 0);
     expect(drawn).toBe(100);
-    const combined = combineUp(run.sim, "Hi", GROUP, "same", MAX_COMBINE_STAR);
+    const combined = combineGoals(run.sim, one(0, MAX_COMBINE_STAR), SPARES, "same");
     // Combining changes what is in hand and never what was summoned.
     expect(combined.drawn).toEqual(run.sim.drawn);
   });
@@ -357,10 +371,16 @@ describe("combining copies in hand", () => {
     expect(next.copies.A![1]).toBe(0);
   });
 
-  it("refuses when the fodder isn't there, or the bar wouldn't fill", () => {
+  it("refuses when the fodder isn't there, or there is nowhere left to go", () => {
     expect(combineOnce(withCopies({ Hi: [1, 2] }), "Hi", 1, GROUP, { self: 2, same: 0 })).toBeNull();
-    expect(combineOnce(withCopies({ Hi: [1, 3] }), "Hi", 1, GROUP, { self: 1, same: 0 })).toBeNull();
     expect(combineOnce(withCopies({ Hi: [10, 2] }), "Hi", MAX_COMBINE_STAR, GROUP, { self: 1, same: 0 })).toBeNull();
+  });
+
+  it("allows a half-filled bar and lets the roll decide it", () => {
+    // One copy at 1★ is a 50% bar rather than a refusal.
+    const sim = withCopies({ Hi: [1, 2] });
+    expect(combineOnce(sim, "Hi", 1, GROUP, { self: 1, same: 0 }, "Hi", () => 0.1)!.copies.Hi![2]).toBe(1);
+    expect(combineOnce(sim, "Hi", 1, GROUP, { self: 1, same: 0 }, "Hi", () => 0.9)!.copies.Hi![2]).toBe(0);
   });
 
   it("only ever counts the group as four familiars", () => {
@@ -385,7 +405,7 @@ describe("combining everything in hand", () => {
   };
 
   it("takes the goal up as far as its own copies go in self mode", () => {
-    const next = combineUp(withCopies({ Hi: [0, 8] }), "Hi", GROUP, "self", 2);
+    const next = combineGoals(withCopies({ Hi: [0, 8] }), one(0, 2), SPARES, "self");
     // A 2★ takes three at 1★, and each of those two at 0★: six spent, two left over.
     expect(next.copies.Hi![0]).toBe(2);
     expect(next.copies.Hi![1]).toBe(0);
@@ -394,18 +414,18 @@ describe("combining everything in hand", () => {
   });
 
   it("leaves the group alone in self mode", () => {
-    const next = combineUp(withCopies({ Hi: [0, 2], Ti: [0, 8] }), "Hi", GROUP, "self", MAX_COMBINE_STAR);
+    const next = combineGoals(withCopies({ Hi: [0, 2], Ti: [0, 8] }), one(0, MAX_COMBINE_STAR), SPARES, "self");
     expect(next.copies.Ti![0]).toBe(8);
   });
 
   it("spends the group in same mode", () => {
-    const next = combineUp(withCopies({ Hi: [0, 1], Ti: [0, 2] }), "Hi", GROUP, "same", 1);
+    const next = combineGoals(withCopies({ Hi: [0, 1], Ti: [0, 2] }), one(0, 1), SPARES, "same");
     expect(next.copies.Hi![1]).toBe(1);
     expect(next.copies.Ti![0]).toBe(0);
   });
 
   it("stops at the goal star", () => {
-    const next = combineUp(withCopies({ Hi: [0, 400] }), "Hi", GROUP, "self", 2);
+    const next = combineGoals(withCopies({ Hi: [0, 400] }), one(0, 2), SPARES, "self");
     expect(next.copies.Hi![2]).toBe(1);
     // Nothing is ever carried past the star that was asked for.
     expect(next.copies.Hi![3]).toBe(0);
@@ -413,14 +433,14 @@ describe("combining everything in hand", () => {
 
   it("never combines more than the goal could still need", () => {
     // A 1★ goal wants one copy there and no more, so a pile of 0★ is not ground up behind it.
-    const next = combineUp(withCopies({ Hi: [0, 200] }), "Hi", GROUP, "self", 1);
+    const next = combineGoals(withCopies({ Hi: [0, 200] }), one(0, 1), SPARES, "self");
     expect(next.copies.Hi![1]).toBe(1);
     expect(next.copies.Hi![0]).toBe(198);
   });
 
   it("leaves the run it was given alone", () => {
     const sim = withCopies({ Hi: [0, 4] });
-    combineUp(sim, "Hi", GROUP, "self", 1);
+    combineGoals(sim, one(0, 1), SPARES, "self");
     expect(sim.copies.Hi![0]).toBe(4);
   });
 });
@@ -431,7 +451,7 @@ describe("the estimate against a run of the real thing", () => {
     let sim = emptyFamiliarSim(ROSTER);
     for (let tick = 0; tick < 100_000; tick += 1) {
       sim = summonFamiliars(sim, FAMILIAR_BATCH.summons, FAMILIAR_BATCH.diamonds, ROSTER, "Hi", random).sim;
-      sim = combineUp(sim, "Hi", GROUP, mode, goal);
+      sim = combineGoals(sim, one(0, goal), SPARES, mode);
       if ((bestStar(sim, "Hi") ?? -1) >= goal) return sim.summons;
     }
     return sim.summons;
@@ -439,11 +459,168 @@ describe("the estimate against a run of the real thing", () => {
 
   it("lands within a tenth of what summoning and combining actually take", () => {
     const goal = 8;
-    const estimate = estimateFamiliar(0, goal, "self");
+    const estimate = estimateFamiliars(one(0, goal), "self");
     const random = seeded(2024);
     const runs = 40;
     const mean = Array.from({ length: runs }, () => panelRun(goal, "self", random)).reduce((a, b) => a + b, 0) / runs;
     expect(mean).toBeGreaterThan(estimate.summons * 0.9);
     expect(mean).toBeLessThan(estimate.summons * 1.1);
+  });
+});
+
+describe("how far to fill the bar", () => {
+  it("takes the fewest materials that reach the target", () => {
+    expect(fodderAt(7, "self", 100)).toEqual({ self: 4, same: 0 });
+    expect(fodderAt(7, "self", 50)).toEqual({ self: 2, same: 0 });
+    expect(fodderAt(7, "self", 25)).toEqual({ self: 1, same: 0 });
+    expect(fodderAt(7, "same", 25)).toEqual({ self: 0, same: 2 });
+    expect(fodderAt(7, "same", 12.5)).toEqual({ self: 0, same: 1 });
+  });
+
+  it("can't set a step lower than one material already fills", () => {
+    // 0★ and 9★ are 100% from a single copy of the familiar itself.
+    for (const star of [0, 9]) {
+      expect(fodderAt(star, "self", 12.5)).toEqual({ self: 1, same: 0 });
+      expect(combineOdds(star, "self", 12.5).bar).toBe(100);
+    }
+  });
+
+  it("always spends the same materials on a star, whatever the fill", () => {
+    // Half the chance is twice the attempts on half the materials, so the total never moves.
+    for (let star = 0; star < MAX_COMBINE_STAR; star += 1) {
+      for (const target of COMBINE_TARGETS) {
+        const odds = combineOdds(star, "self", target);
+        expect(odds.materials.self).toBeCloseTo(FULL_BAR / selfChance(star), 6);
+        expect(odds.materials.same).toBe(0);
+        // Same type, where the slots let it stay pure, costs twice as many for being worth half each.
+        const kin = combineOdds(star, "same", target);
+        if (kin.fodder.self === 0) expect(kin.materials.same).toBeCloseTo(FULL_BAR / sameChance(star), 6);
+      }
+    }
+  });
+
+  it("earns more gauge the lower the bar is set, since a failure pays out too", () => {
+    const full = combineOdds(7, "self", FULL_BAR);
+    const quarter = combineOdds(7, "self", 25);
+    expect(full.gauge).toBe(516);
+    // Four attempts: one that goes through, and three that pay the failure rate.
+    expect(quarter.gauge).toBe(516 + 48 * 3);
+    expect(quarter.materials.self).toBe(full.materials.self);
+    expect(quarter.attempts).toBe(4);
+  });
+
+  it("earns nothing extra below 7★, where no combine moves the gauge", () => {
+    for (let star = 0; star < 7; star += 1) {
+      for (const target of COMBINE_TARGETS) expect(combineOdds(star, "self", target).gauge).toBe(0);
+    }
+  });
+});
+
+describe("which fill is cheapest", () => {
+  it("prices every distinct fill once", () => {
+    const comparison = compareFills(one(0, MAX_COMBINE_STAR), "self");
+    expect(comparison.fills.length).toBeGreaterThan(1);
+    // 25% and 12.5% settle on the same materials at every star on self type, so only one of them is run.
+    const shapes = comparison.fills.map((fill) => planFor(MAX_COMBINE_STAR, "self", fill.target).map((s) => `${s.self}/${s.same}`).join(","));
+    expect(new Set(shapes).size).toBe(shapes.length);
+  });
+
+  it("says the fill only matters where the gauge is moving", () => {
+    expect(compareFills(one(0, MAX_COMBINE_STAR), "self").matters).toEqual([7, 8]);
+    // A goal that never reaches 7★ has nothing to decide.
+    expect(compareFills(one(0, 6), "self").matters).toEqual([]);
+  });
+
+  it("finds a low fill cheapest on self type, which is what the gauge pays for", () => {
+    const comparison = compareFills(one(0, MAX_COMBINE_STAR), "self");
+    expect(comparison.best.target).toBeLessThan(FULL_BAR);
+    expect(comparison.best.summons).toBeLessThan(comparison.full.summons);
+    expect(comparison.best.combinePicks).toBeGreaterThan(comparison.full.combinePicks);
+    expect(comparison.saved).toBeGreaterThan(0);
+  });
+
+  it("leaves a goal below 7★ all but unchanged however the bar is filled", () => {
+    // Nothing under 7★ moves the gauge, so the fill only shuffles how the same materials are spent.
+    const comparison = compareFills(one(0, 6), "self");
+    for (const fill of comparison.fills) {
+      expect(fill.summons).toBeGreaterThan(comparison.full.summons * 0.9);
+      expect(fill.summons).toBeLessThan(comparison.full.summons * 1.1);
+    }
+  });
+});
+
+describe("a combine that misses", () => {
+  it("loses its materials and leaves the familiar where it was", () => {
+    const sim = emptyFamiliarSim(ROSTER);
+    sim.copies.Hi![7] = 2;
+    // One material at 7★ is a 25% bar, and this roll misses it.
+    const next = combineOnce(sim, "Hi", 7, GROUP, { self: 1, same: 0 }, "Hi", () => 0.99)!;
+    expect(next.copies.Hi![7]).toBe(1);
+    expect(next.copies.Hi![8]).toBe(0);
+    expect(next.gauge).toBe(gaugeFor(7).fail);
+    expect(next.combines).toBe(1);
+  });
+
+  it("takes the familiar up and pays the better rate when it lands", () => {
+    const sim = emptyFamiliarSim(ROSTER);
+    sim.copies.Hi![7] = 2;
+    const next = combineOnce(sim, "Hi", 7, GROUP, { self: 1, same: 0 }, "Hi", () => 0.1)!;
+    expect(next.copies.Hi![8]).toBe(1);
+    expect(next.gauge).toBe(gaugeFor(7).success - COMBINE_BONUS.full);
+    // 516 is over a full gauge, and the 7★ it gives back lands on the very star it was spent from.
+    expect(next.picks.combine).toBe(1);
+    expect(next.copies.Hi![7]).toBe(1);
+  });
+});
+
+describe("a list of goals in priority order", () => {
+  const goal = (name: string, group: string, to: number) => ({ name, group, from: 0, to });
+
+  it("costs more the more familiars are on it", () => {
+    const one = estimateFamiliars([goal("Hi", "attribute", 8)], "self");
+    const two = estimateFamiliars([goal("Hi", "attribute", 8), goal("Ti", "attribute", 8)], "self");
+    expect(two.summons).toBeGreaterThan(one.summons);
+    // Summons rain on every familiar at once, so a second goal is dearer than nothing and cheaper than a rerun.
+    expect(two.summons).toBeLessThan(one.summons * 2);
+  });
+
+  it("finishes them in the order they are given", () => {
+    const estimate = estimateFamiliars(
+      [goal("Hi", "attribute", 8), goal("Ti", "attribute", 8), goal("A", "attribute", 8)],
+      "self",
+    );
+    expect(estimate.finished[0]).toBeLessThanOrEqual(estimate.finished[1]!);
+    expect(estimate.finished[1]).toBeLessThanOrEqual(estimate.finished[2]!);
+    expect(estimate.finished[2]).toBeLessThanOrEqual(estimate.summons);
+  });
+
+  it("keeps goals in different groups from sharing fodder", () => {
+    const together = estimateFamiliars([goal("Hi", "attribute", 8), goal("Na", "weapon", 8)], "same");
+    const inOne = estimateFamiliars([goal("Hi", "attribute", 8), goal("Ti", "attribute", 8)], "same");
+    // Two groups keep four spares each; two goals in one group leave only two to feed them both.
+    expect(together.summons).toBeLessThan(inOne.summons);
+  });
+
+  it("puts the goals it priced in the estimate, tidied up", () => {
+    const estimate = estimateFamiliars([{ name: "Hi", group: "attribute", from: 9, to: 4 }], "self");
+    // A goal that asks to go backwards is left where it is rather than run.
+    expect(estimate.goals[0]).toEqual({ name: "Hi", group: "attribute", from: 9, to: 9 });
+    expect(estimate.summons).toBe(0);
+  });
+
+  it("raises every goal on the list when it runs", () => {
+    const goals = [goal("Hi", "attribute", 7), goal("Ti", "attribute", 7)];
+    let sim = emptyFamiliarSim(ROSTER);
+    const random = seeded(31);
+    for (let tick = 0; tick < 20_000; tick += 1) {
+      const needy = goals.find((entry) => (bestStar(sim, entry.name) ?? -1) < entry.to) ?? goals[0]!;
+      sim = summonFamiliars(sim, FAMILIAR_BATCH.summons, 0, ROSTER, needy.name, random).sim;
+      sim = combineGoals(sim, goals, { attribute: ["A", "Je"] }, "self", FULL_BAR, random);
+      if (goals.every((entry) => (bestStar(sim, entry.name) ?? -1) >= entry.to)) break;
+    }
+    for (const entry of goals) expect(bestStar(sim, entry.name)).toBeGreaterThanOrEqual(entry.to);
+    // Self type never touches the spares, so what is in hand for them is exactly what was summoned.
+    expect(sim.copies.A).toEqual(sim.drawn.A);
+    expect(sim.copies.Je).toEqual(sim.drawn.Je);
   });
 });

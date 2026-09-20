@@ -112,15 +112,79 @@ export const selfOnlyFodder = (star: number) => Math.ceil(100 / selfChance(star)
 export type CombineMode = "self" | "same";
 export const COMBINE_MODES: readonly CombineMode[] = ["self", "same"];
 
-/** The fodder set a mode uses for the step up from `star`. */
+/** The fodder set a mode uses to fill the bar the whole way for the step up from `star`. */
 export function fodderFor(star: number, mode: CombineMode): Fodder {
   const sets = fodderSets(star);
   return (mode === "same" ? sets[0] : sets[sets.length - 1]) ?? { self: selfOnlyFodder(star), same: 0 };
 }
 
+/**
+ * How far to fill the combine bar before pressing it. Nothing says a combine has to be a certain thing: fewer
+ * materials means a smaller chance, more attempts, and the same materials spent per star gained either way — what
+ * changes is the gauge, which pays out on a failure too.
+ */
+export const COMBINE_TARGETS: readonly number[] = [100, 50, 25, 12.5];
+export const FULL_BAR = 100;
+
+/**
+ * The fewest materials that fill the bar to at least `target`, leaning on the mode's own kind first. A step whose
+ * smallest material already overshoots — 0★ and 9★ on self type are 100% from one — simply can't be set lower.
+ */
+export function fodderAt(star: number, mode: CombineMode, target: number): Fodder {
+  const want = Math.max(1e-9, Math.min(FULL_BAR, target));
+  const self = selfChance(star);
+  const same = sameChance(star);
+  if (mode === "self" || same <= 0) {
+    return { self: Math.max(1, Math.min(COMBINE_SLOTS, Math.ceil(want / self))), same: 0 };
+  }
+  // Same type first, and only as many of the familiar's own copies as the five slots force.
+  for (let own = 0; own <= COMBINE_SLOTS; own += 1) {
+    const room = COMBINE_SLOTS - own;
+    const needed = Math.ceil(Math.max(0, want - own * self) / same);
+    if (needed <= room) return { self: own, same: Math.max(needed, own === 0 ? 1 : 0) };
+  }
+  return { self: COMBINE_SLOTS, same: 0 };
+}
+
 /** The fodder set for every step up to `to`, 0★ first. */
-export const planFor = (to: number, mode: CombineMode): Fodder[] =>
-  Array.from({ length: Math.max(0, to) }, (_, star) => fodderFor(star, mode));
+export const planFor = (to: number, mode: CombineMode, target: number = FULL_BAR): Fodder[] =>
+  Array.from({ length: Math.max(0, to) }, (_, star) => fodderAt(star, mode, target));
+
+/** What one step up costs and earns on average, at the fill a mode and target settle on. */
+export type CombineOdds = {
+  star: number;
+  fodder: Fodder;
+  /** How far the bar fills, in percent, and so the chance one attempt goes through. */
+  bar: number;
+  /** Attempts one star takes on average. */
+  attempts: number;
+  /** Materials one star takes on average: the familiar's own copies, and its group's. */
+  materials: { self: number; same: number };
+  /** Combine gauge one star earns on average, the failures along the way included. */
+  gauge: number;
+};
+
+/**
+ * What the step up from `star` comes to at this fill.
+ *
+ * The materials a star costs don't move with the fill: half the chance is twice the attempts on half the
+ * materials each. What moves is the gauge, since a failure pays out as well — so the lower the bar is set, the
+ * more attempts a star takes and the more gauge those attempts add up to.
+ */
+export function combineOdds(star: number, mode: CombineMode, target: number): CombineOdds {
+  const fodder = fodderAt(star, mode, target);
+  const bar = Math.min(FULL_BAR, fodderBar(star, fodder));
+  const attempts = bar > 0 ? FULL_BAR / bar : Infinity;
+  const { success, fail } = gaugeFor(star);
+  return {
+    star,
+    fodder,
+    bar,
+    attempts,
+    materials: { self: fodder.self * attempts, same: fodder.same * attempts },
+    gauge: success + fail * (attempts - 1),
+  };
+}
 
 /**
  * What a familiar at each star is worth in copies of itself at 0★, fed nothing but its own copies: the fewest
@@ -140,17 +204,19 @@ export const STAR_COST: readonly number[] = Array.from({ length: MAX_COMBINE_STA
  * They are a ceiling, not a target: nothing is ever combined past what the goal could still need, so a run never
  * grinds copies it has no use for.
  */
-export function copiesNeeded(to: number, mode: CombineMode) {
-  const plan = planFor(to, mode);
+export function copiesNeeded(to: number, mode: CombineMode, target: number = FULL_BAR) {
+  const plan = planFor(to, mode, target);
+  const odds = Array.from({ length: Math.max(0, to) }, (_, star) => combineOdds(star, mode, target));
   const own = Array.from({ length: to + 1 }, () => 0);
   const kin = Array.from({ length: to + 1 }, () => 0);
   own[to] = 1;
   for (let star = to - 1; star >= 0; star -= 1) {
-    const set = plan[star]!;
-    own[star] = own[star + 1]! * (1 + set.self);
-    kin[star] = own[star + 1]! * set.same + kin[star + 1]! * (1 + set.self + set.same);
+    const step = odds[star]!;
+    // A star costs one copy of the familiar, which only goes up when the combine does, plus its materials.
+    own[star] = own[star + 1]! * (1 + step.materials.self);
+    kin[star] = own[star + 1]! * step.materials.same + kin[star + 1]! * (1 + step.materials.self + step.materials.same);
   }
-  return { own, kin, plan };
+  return { own, kin, plan, odds };
 }
 
 /* ------------------------------------------------------------ Summoning */
@@ -256,11 +322,14 @@ export function summonFamiliars(
 }
 
 /**
- * Combines one copy of `name` up a star, taking its fodder from the copies in hand: the familiar's own copies for
- * the self slots, then the rest of its group in the order given for the same type slots. The combine gauge takes
- * what the materials' star is worth, and every 300 of it hands `goal` a 7★.
+ * Tries one combine of `name` at `star`, taking its fodder from the copies in hand: the familiar's own copies for
+ * the self slots, then the rest of its group in the order given for the same type slots.
  *
- * Null when the fodder isn't there, when the set wouldn't fill the bar, or when it's as high as combining goes.
+ * The bar the fodder fills is the chance it goes through. It either way spends the materials and adds what that
+ * star is worth to the combine gauge — more on a success than a failure — and every 300 of the gauge hands `goal`
+ * a 7★. A failure leaves the familiar at the star it was on; only its materials are gone.
+ *
+ * Null when the fodder isn't there, or when it's as high as combining goes.
  */
 export function combineOnce(
   sim: FamiliarSim,
@@ -269,24 +338,28 @@ export function combineOnce(
   group: readonly string[],
   fodder: Fodder,
   goal: string = name,
+  random: () => number = Math.random,
 ): FamiliarSim | null {
-  if (star >= MAX_COMBINE_STAR || fodderBar(star, fodder) < 100) return null;
+  const bar = Math.min(FULL_BAR, fodderBar(star, fodder));
+  if (star >= MAX_COMBINE_STAR || bar <= 0) return null;
   const kin = group.filter((member) => member !== name);
   if ((sim.copies[name]?.[star] ?? 0) < 1 + fodder.self) return null;
   if (kin.reduce((sum, member) => sum + (sim.copies[member]?.[star] ?? 0), 0) < fodder.same) return null;
 
   const next = cloneSim(sim);
-  next.copies[name]![star]! -= 1 + fodder.self;
+  const went = random() * FULL_BAR < bar;
+  // The materials go whatever happens; the familiar itself only moves when the combine goes through.
+  next.copies[name]![star]! -= fodder.self + (went ? 1 : 0);
   let left = fodder.same;
   for (const member of kin) {
     const take = Math.min(left, next.copies[member]![star]!);
     next.copies[member]![star]! -= take;
     left -= take;
   }
-  next.copies[name]![star + 1]! += 1;
+  if (went) next.copies[name]![star + 1]! += 1;
   next.combines += 1;
 
-  next.gauge += gaugeFor(star).success;
+  next.gauge += went ? gaugeFor(star).success : gaugeFor(star).fail;
   while (next.gauge >= COMBINE_BONUS.full) {
     next.gauge -= COMBINE_BONUS.full;
     next.copies[goal]![COMBINE_BONUS.star]! += 1;
@@ -296,42 +369,85 @@ export function combineOnce(
 }
 
 /**
- * Combines everything in hand as far as it goes, star by star from the bottom up, filling the slots the way the
- * mode says. Nothing is combined past what the goal could still need, so a run never grinds copies it has no use
- * for; in self mode that leaves the rest of the group alone entirely.
- *
- * `group` is in the order its members are fed to the goal, the first one eaten first.
+ * How many copies each star is still short of, worked down from the goal: what is missing above decides what is
+ * wanted below. It reads what is in hand every time, so a run that loses materials to a failed combine asks for
+ * more rather than stalling against a fixed ceiling.
  */
-export function combineUp(
+export function stillWanted(own: readonly number[], kin: readonly number[], to: number, odds: readonly CombineOdds[]) {
+  const wantOwn = Array.from({ length: to + 1 }, () => 0);
+  const wantKin = Array.from({ length: to + 1 }, () => 0);
+  wantOwn[to] = 1;
+  for (let star = to - 1; star >= 0; star -= 1) {
+    const step = odds[star]!;
+    const shortOwn = Math.max(0, wantOwn[star + 1]! - (own[star + 1] ?? 0));
+    const shortKin = Math.max(0, wantKin[star + 1]! - (kin[star + 1] ?? 0));
+    wantOwn[star] = shortOwn * (1 + step.materials.self);
+    wantKin[star] = shortOwn * step.materials.same + shortKin * (1 + step.materials.self + step.materials.same);
+  }
+  return { wantOwn, wantKin };
+}
+
+/**
+ * Combines everything in hand for a whole list of goals, star by star from the bottom up, with the goals taking
+ * their turn at each star in the order they were given. `spares` is each group's members that aren't goals, in
+ * the order they are fed; another goal is never eaten, whatever group it is in.
+ *
+ * Both gauges hand their familiar to the highest goal that still wants one, which is what priority buys.
+ */
+export function combineGoals(
   sim: FamiliarSim,
-  name: string,
-  group: readonly string[],
+  goals: readonly FamiliarGoal[],
+  spares: Record<string, readonly string[]>,
   mode: CombineMode,
-  to: number = MAX_COMBINE_STAR,
+  target: number = FULL_BAR,
+  random: () => number = Math.random,
 ): FamiliarSim {
-  const goal = Math.min(to, MAX_COMBINE_STAR);
-  const { own, kin, plan } = copiesNeeded(goal, mode);
-  const order = [name, ...group.filter((member) => member !== name)];
+  const list = tidyGoals(goals);
+  if (!list.length) return sim;
+  const odds = Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target));
+  const groups = [...new Set(list.map((goal) => goal.group))];
   let current = sim;
 
-  const held = (member: string, star: number) => current.copies[member]?.[star] ?? 0;
-  const kinHeld = (star: number) => order.slice(1).reduce((sum, member) => sum + held(member, star), 0);
+  const held = (name: string, star: number) => current.copies[name]?.[star] ?? 0;
+  const ownRow = (name: string) => current.copies[name] ?? [];
+  const kinRow = (group: string) =>
+    Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, star) =>
+      (spares[group] ?? []).reduce((sum, member) => sum + held(member, star), 0),
+    );
+  /** The goal highest up the list that hasn't got there yet, which is where a gauge's familiar goes. */
+  const wanting = () =>
+    (list.find((goal) => (bestStar(current, goal.name) ?? -1) < goal.to) ?? list[0]!).name;
 
-  for (let star = 0; star < goal; star += 1) {
-    const set = plan[star]!;
-    // The goal goes first: it has first call on the group's copies at this star.
-    while (held(name, star + 1) < (own[star + 1] ?? 0)) {
-      const next = combineOnce(current, name, star, order, set, name);
-      if (!next) break;
-      current = next;
+  for (let star = 0; star < MAX_COMBINE_STAR; star += 1) {
+    const set = odds[star]!.fodder;
+    for (const goal of list) {
+      if (star >= goal.to) continue;
+      const order = [goal.name, ...(spares[goal.group] ?? [])];
+      const want = stillWanted(ownRow(goal.name), kinRow(goal.group), goal.to, odds).wantOwn[star + 1]!;
+      while (held(goal.name, star + 1) < want) {
+        const next = combineOnce(current, goal.name, star, order, set, wanting(), random);
+        if (!next) break;
+        current = next;
+      }
     }
-    // Then the group, but only while a star above still wants them.
-    if (set.same > 0 && (kin[star + 1] ?? 0) > 0) {
-      for (const member of order.slice(1)) {
-        while (kinHeld(star + 1) < (kin[star + 1] ?? 0)) {
-          const next = combineOnce(current, member, star, order, set, name);
-          if (!next) break;
-          current = next;
+    // Then each group's spares, but only as far as the goals leaning on them still want.
+    if (set.same > 0) {
+      for (const group of groups) {
+        const members = spares[group] ?? [];
+        if (!members.length) continue;
+        const want = list
+          .filter((goal) => goal.group === group)
+          .reduce(
+            (sum, goal) => sum + (stillWanted(ownRow(goal.name), kinRow(group), goal.to, odds).wantKin[star + 1] ?? 0),
+            0,
+          );
+        for (const member of members) {
+          while (kinRow(group)[star + 1]! < want) {
+            const order = [member, ...members.filter((other) => other !== member)];
+            const next = combineOnce(current, member, star, order, set, wanting(), random);
+            if (!next) break;
+            current = next;
+          }
         }
       }
     }
@@ -384,48 +500,90 @@ function binomial(n: number, p: number, random: () => number): number {
   return Math.max(0, Math.min(n, Math.round(mean + spread * z)));
 }
 
+/** A familiar to raise, where it starts and where it's going. The list is in priority order, first served first. */
+export type FamiliarGoal = { name: string; group: string; from: number; to: number };
+
 /** What one run came to. */
-export type FamiliarPlay = { summons: number; combines: number; picks: { summon: number; combine: number } };
+export type FamiliarPlay = {
+  summons: number;
+  combines: number;
+  /** Familiars the two gauges handed over, all of them picked for whichever goal still needed one most. */
+  picks: { summon: number; combine: number };
+  /** Summons by the time each goal was finished, in the order the goals were given. */
+  finished: number[];
+};
 
 /** Summons a run may make before it's given up on, and how big its batches grow as it drags on. */
 export const RUN_LIMIT = 80_000_000;
-const MAX_CHUNK = 8192;
+const MAX_CHUNK = 256;
+
+const clampStar = (star: number) => Math.max(0, Math.min(MAX_COMBINE_STAR, Math.floor(star) || 0));
+
+/** Puts a goal list in order and inside the stars combining can reach. */
+export function tidyGoals(goals: readonly FamiliarGoal[]): FamiliarGoal[] {
+  return goals.map((goal) => {
+    const from = clampStar(goal.from);
+    return { ...goal, from, to: Math.max(from, clampStar(goal.to)) };
+  });
+}
 
 /**
- * One run to carry a familiar from `from` to `to`, filling the slots the way `mode` says.
+ * One run to carry every goal to the star it's after, filling the slots the way `mode` and `target` say.
  *
- * Copies of the goal familiar are one summon in twelve and the other three of its group three in twelve, so they
- * are counted as two pools: the group's members are interchangeable as same type fodder, and all three come in as
- * often as each other. Both gauges hand over a familiar you pick, which is always the one being raised.
+ * Copies of a named familiar are one summon in twelve, so a group's members that aren't goals arrive together as
+ * one pool of same type fodder. Goals are served in the order they are given: the one highest up has first call
+ * on its group's fodder, and on whatever the two gauges hand over.
  *
- * Summons are drawn one at a time while a run is short, where how the copies happen to land still decides it, and
- * in larger batches once it is long enough for them to even out.
+ * Both gauges let you choose, so every familiar they give goes to the highest goal that still wants one. That is
+ * what priority buys here, and it is most of what a run is really spending.
  */
-export function playFamiliar(from: number, to: number, mode: CombineMode, random: () => number): FamiliarPlay {
-  const goal = Math.max(0, Math.min(MAX_COMBINE_STAR, to));
-  const start = Math.max(0, Math.min(goal, from));
-  if (goal <= start) return { summons: 0, combines: 0, picks: { summon: 0, combine: 0 } };
+export function playFamiliars(
+  goals: readonly FamiliarGoal[],
+  mode: CombineMode,
+  target: number,
+  random: () => number,
+): FamiliarPlay {
+  const list = tidyGoals(goals);
+  const blank = { summons: 0, combines: 0, picks: { summon: 0, combine: 0 }, finished: list.map(() => 0) };
+  if (!list.length || list.every((goal) => goal.to <= goal.from)) return blank;
 
-  const { own: wantOwn, kin: wantKin, plan } = copiesNeeded(goal, mode);
-  const own = Array.from({ length: goal + 1 }, () => 0);
-  const kin = Array.from({ length: goal + 1 }, () => 0);
-  own[start]! += 1;
+  const odds = Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target));
+  const row = () => Array.from({ length: MAX_COMBINE_STAR + 1 }, () => 0);
+  // One pool per goal, and one more per group for the members of it that aren't goals.
+  const own = list.map(() => row());
+  const groups = [...new Set(list.map((goal) => goal.group))];
+  const kin = new Map(groups.map((group) => [group, row()]));
+  const spare = new Map(groups.map((group) => [group, GROUP_SIZE - list.filter((goal) => goal.group === group).length]));
+  list.forEach((goal, index) => {
+    own[index]![goal.from]! += 1;
+  });
 
   let summons = 0;
   let combines = 0;
   let gauge = 0;
   const picks = { summon: 0, combine: 0 };
+  const finished = list.map(() => 0);
+  const done = (index: number) => own[index]![list[index]!.to]! >= 1;
+  /** The goal highest up the list that still wants a familiar, or -1 once they are all there. */
+  const wanting = () => list.findIndex((_, index) => !done(index));
 
-  const award = (star: number) => {
-    gauge += gaugeFor(star).success;
+  /** Hands a gauge's familiar to the goal that needs it most, at the star the gauge gives or its own goal star. */
+  const give = (star: number) => {
+    const index = wanting();
+    if (index < 0) return false;
+    own[index]![Math.min(star, list[index]!.to)]! += 1;
+    return true;
+  };
+
+  const award = (star: number, went: boolean) => {
+    gauge += went ? gaugeFor(star).success : gaugeFor(star).fail;
     while (gauge >= COMBINE_BONUS.full) {
       gauge -= COMBINE_BONUS.full;
-      own[Math.min(COMBINE_BONUS.star, goal)]! += 1;
-      picks.combine += 1;
+      if (give(COMBINE_BONUS.star)) picks.combine += 1;
     }
   };
 
-  while (own[goal]! < 1 && summons < RUN_LIMIT) {
+  while (wanting() >= 0 && summons < RUN_LIMIT) {
     // A short run turns on single copies, so it is drawn one at a time; a long one evens out and goes in batches.
     // A batch never steps over the summon gauge's next 300, so its 6★ always lands on the summon that earns it.
     const chunk = Math.max(
@@ -434,38 +592,61 @@ export function playFamiliar(from: number, to: number, mode: CombineMode, random
     );
     for (let star = 0; star <= MAX_SUMMON_STAR; star += 1) {
       const chance = (FAMILIAR_SUMMON_CHANCES[star] ?? 0) / 100 / ROSTER_SIZE;
-      const at = Math.min(star, goal);
-      own[at]! += binomial(chunk, chance, random);
-      kin[at]! += binomial(chunk, chance * (GROUP_SIZE - 1), random);
+      list.forEach((goal, index) => {
+        own[index]![Math.min(star, goal.to)]! += binomial(chunk, chance, random);
+      });
+      for (const group of groups) {
+        const others = spare.get(group)!;
+        if (others > 0) kin.get(group)![star]! += binomial(chunk, chance * others, random);
+      }
     }
     summons += chunk;
     const gauges = Math.floor(summons / SUMMON_BONUS.full) - picks.summon;
-    if (gauges > 0) {
-      own[Math.min(SUMMON_BONUS.star, goal)]! += gauges;
-      picks.summon += gauges;
-    }
+    for (let i = 0; i < gauges; i += 1) if (give(SUMMON_BONUS.star)) picks.summon += 1;
 
-    // Combine from the bottom up: the goal has first call on the group at each star, and neither pool is taken
-    // past what the goal could still need.
-    for (let star = 0; star < goal; star += 1) {
-      const set = plan[star]!;
-      while (own[star]! >= 1 + set.self && kin[star]! >= set.same && own[star + 1]! < wantOwn[star + 1]!) {
-        own[star]! -= 1 + set.self;
-        kin[star]! -= set.same;
-        own[star + 1]! += 1;
-        combines += 1;
-        award(star);
-      }
-      const takes = 1 + set.self + set.same;
-      while (kin[star]! >= takes && kin[star + 1]! < wantKin[star + 1]!) {
-        kin[star]! -= takes;
-        kin[star + 1]! += 1;
-        combines += 1;
-        award(star);
+    // Combine from the bottom up, and at every star the goals take their turn in the order they were given.
+    const wants = list.map((goal, index) => stillWanted(own[index]!, kin.get(goal.group)!, goal.to, odds));
+    for (let star = 0; star < MAX_COMBINE_STAR; star += 1) {
+      const { fodder: set, bar } = odds[star]!;
+      list.forEach((goal, index) => {
+        if (star >= goal.to) return;
+        const pool = own[index]!;
+        const fodderPool = kin.get(goal.group)!;
+        const want = wants[index]!.wantOwn[star + 1]!;
+        while (pool[star]! >= 1 + set.self && fodderPool[star]! >= set.same && pool[star + 1]! < want) {
+          const went = random() * FULL_BAR < bar;
+          pool[star]! -= set.self + (went ? 1 : 0);
+          fodderPool[star]! -= set.same;
+          if (went) pool[star + 1]! += 1;
+          combines += 1;
+          award(star, went);
+        }
+      });
+      // Then each group's spares, but only as far as the goals leaning on them still want.
+      if (set.same > 0) {
+        for (const group of groups) {
+          if ((spare.get(group) ?? 0) <= 0) continue;
+          const pool = kin.get(group)!;
+          const want = list.reduce(
+            (sum, goal, index) => (goal.group === group ? sum + (wants[index]!.wantKin[star + 1] ?? 0) : sum),
+            0,
+          );
+          const takes = set.self + set.same;
+          while (pool[star]! >= 1 + takes && pool[star + 1]! < want) {
+            const went = random() * FULL_BAR < bar;
+            pool[star]! -= takes + (went ? 1 : 0);
+            if (went) pool[star + 1]! += 1;
+            combines += 1;
+            award(star, went);
+          }
+        }
       }
     }
+    list.forEach((_, index) => {
+      if (!finished[index] && done(index)) finished[index] = summons;
+    });
   }
-  return { summons, combines, picks };
+  return { summons, combines, picks, finished };
 }
 
 /** Diamonds for that many summons, bought in bundles of eleven. */
@@ -476,15 +657,18 @@ export const diamondsFor = (summons: number) =>
  * Runs an estimate averages over, the fewest it settles for on a long goal, and the summons it spends over all of
  * them. A long run is millions of summons, so it trades runs for the wait.
  */
-export const ESTIMATE_RUNS = 400;
+export const ESTIMATE_RUNS = 200;
 const LEAST_RUNS = 24;
-const RUN_BUDGET = 3_000_000;
+const RUN_BUDGET = 1_200_000;
 
 export type FamiliarEstimate = {
-  /** Where it starts, where it's going, and how the slots were filled. */
-  from: number;
-  to: number;
+  /** The goals it priced, in priority order, and how the slots were filled. */
+  goals: FamiliarGoal[];
   mode: CombineMode;
+  /** The bar it filled to before pressing each combine. */
+  target: number;
+  /** What each step up comes to at that fill. */
+  odds: CombineOdds[];
   /** Runs it was averaged over. */
   runs: number;
   /** Summons on average, the bundles of 11 they come in, and the diamonds those cost. */
@@ -496,40 +680,49 @@ export type FamiliarEstimate = {
   /** Familiars the two gauges hand over on the way, both of them picked. */
   summonPicks: number;
   combinePicks: number;
-  /** Copies of the goal familiar summoned on the way, at any star: one summon in twelve. */
+  /** Copies of any one named familiar summoned on the way: one summon in twelve. */
   copies: number;
-  /** What the goal is worth in copies of itself at 0★, if it were only ever fed its own copies. */
+  /** Summons by the time each goal was done, in the order they were given. */
+  finished: number[];
+  /** What the last goal is worth in copies of itself at 0★, if it were only ever fed its own copies. */
   ownCopies: number;
-  /** Copies the goal takes at each star, and the group's, as the fodder sets add up. */
-  needs: { own: number[]; kin: number[]; plan: Fodder[] };
-  /** True when a run hit the summons it is allowed before reaching the goal. */
+  /** True when a run hit the summons it is allowed before every goal was there. */
   beyond: boolean;
   /** The summons half the runs, and nine in ten runs, were done by. */
   median: { summons: number; diamonds: number };
   likely: { summons: number; diamonds: number };
 };
 
-/** Estimates already made: a goal is hundreds of runs, and it only depends on the two stars and the mode. */
+/** Estimates already made: a goal list is hundreds of runs, and it only depends on the list, the mode and the fill. */
 const ESTIMATES = new Map<string, FamiliarEstimate>();
 
+/** A goal list as one string, so an estimate can be looked up again and a stale one spotted. */
+export const goalKey = (goals: readonly FamiliarGoal[]) =>
+  goals.map((goal) => `${goal.name}@${goal.group}:${goal.from}>${goal.to}`).join("|");
+
 /**
- * What carrying one familiar from `from` to `to` takes, averaged over up to {@link ESTIMATE_RUNS} runs of
- * {@link playFamiliar}.
+ * What carrying every goal to the star it's after takes, averaged over up to {@link ESTIMATE_RUNS} runs of
+ * {@link playFamiliars}.
  *
- * It comes out the same for any familiar, since every group has four members and every familiar is summoned as
- * often as the others.
+ * Which familiars they are only matters for the groups they fall in, since every familiar is summoned as often as
+ * the others and every group has four members.
  */
-export function estimateFamiliar(from: number, to: number, mode: CombineMode = "self"): FamiliarEstimate {
-  const start = Math.max(0, Math.min(MAX_COMBINE_STAR, Math.floor(from) || 0));
-  const goal = Math.max(start, Math.min(MAX_COMBINE_STAR, Math.floor(to) || 0));
-  const key = `${start}:${goal}:${mode}`;
+export function estimateFamiliars(
+  goals: readonly FamiliarGoal[],
+  mode: CombineMode = "self",
+  target: number = FULL_BAR,
+): FamiliarEstimate {
+  const list = tidyGoals(goals);
+  const key = `${goalKey(list)}::${mode}::${target}`;
   const known = ESTIMATES.get(key);
   if (known) return known;
 
+  const last = list[list.length - 1];
   const base = {
-    from: start,
-    to: goal,
+    goals: list,
     mode,
+    target,
+    odds: Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target)),
     runs: 0,
     summons: 0,
     batches: 0,
@@ -538,8 +731,8 @@ export function estimateFamiliar(from: number, to: number, mode: CombineMode = "
     summonPicks: 0,
     combinePicks: 0,
     copies: 0,
-    ownCopies: STAR_COST[goal]!,
-    needs: copiesNeeded(goal, mode),
+    finished: list.map(() => 0),
+    ownCopies: STAR_COST[last?.to ?? 0]!,
     beyond: false,
     median: { summons: 0, diamonds: 0 },
     likely: { summons: 0, diamonds: 0 },
@@ -548,13 +741,14 @@ export function estimateFamiliar(from: number, to: number, mode: CombineMode = "
     ESTIMATES.set(key, estimate);
     return estimate;
   };
-  if (goal <= start) return keep(base);
+  if (!list.length || list.every((goal) => goal.to <= goal.from)) return keep(base);
 
-  const random = seeded(start * 1_000_003 + goal * 7919 + (mode === "self" ? 101 : 211));
-  const first = playFamiliar(start, goal, mode, random);
+  const seed = list.reduce((sum, goal, index) => sum + (goal.from * 13 + goal.to * 101) * (index + 3), 0);
+  const random = seeded(seed + (mode === "self" ? 101 : 211));
+  const first = playFamiliars(list, mode, target, random);
   // A long goal takes millions of summons a run, so the estimate settles for fewer of them.
   const runs = Math.max(1, Math.min(ESTIMATE_RUNS, Math.max(LEAST_RUNS, Math.round(RUN_BUDGET / Math.max(1, first.summons)))));
-  const results = [first, ...Array.from({ length: runs - 1 }, () => playFamiliar(start, goal, mode, random))];
+  const results = [first, ...Array.from({ length: runs - 1 }, () => playFamiliars(list, mode, target, random))];
   const sorted = results.map((play) => play.summons).sort((a, b) => a - b);
   const at = (odds: number) => {
     const summons = sorted[Math.min(runs - 1, Math.ceil(odds * runs) - 1)]!;
@@ -574,8 +768,54 @@ export function estimateFamiliar(from: number, to: number, mode: CombineMode = "
     summonPicks: mean((play) => play.picks.summon),
     combinePicks: mean((play) => play.picks.combine),
     copies: Math.round(summons / ROSTER_SIZE),
+    finished: list.map((_, index) => mean((play) => play.finished[index] ?? play.summons)),
     beyond: results.some((play) => play.summons >= RUN_LIMIT),
     median: at(0.5),
     likely: at(0.9),
   });
+}
+
+/** Every fill priced side by side, and which of them came out cheapest. */
+export type FillComparison = {
+  /** One priced run per distinct fill, in the order {@link COMBINE_TARGETS} lists them. */
+  fills: FamiliarEstimate[];
+  /** The cheapest fill, and what it saves against filling the bar the whole way. */
+  best: FamiliarEstimate;
+  full: FamiliarEstimate;
+  saved: number;
+  /** The stars where the fill changes anything: only the ones whose combines move the gauge. */
+  matters: number[];
+};
+
+/**
+ * Prices every fill for the same goals, so the question of how far to fill the bar can be answered rather than
+ * argued about.
+ *
+ * The materials a star costs are the same at any fill — half the chance is twice the attempts on half the
+ * materials — so what separates them is the combine gauge, which pays out on a failure as well as a success. That
+ * makes a lower fill worth more gauge per material at the stars whose combines count for it, and worth exactly
+ * nothing anywhere else.
+ */
+export function compareFills(goals: readonly FamiliarGoal[], mode: CombineMode = "self"): FillComparison {
+  const list = tidyGoals(goals);
+  const top = list.reduce((highest, goal) => Math.max(highest, goal.to), 0);
+  // Two targets that settle on the same materials at every star are the same run, so only one of them is priced.
+  const seen = new Set<string>();
+  const fills = COMBINE_TARGETS.flatMap((target) => {
+    const shape = planFor(top, mode, target)
+      .map((set) => `${set.self}/${set.same}`)
+      .join(",");
+    if (seen.has(shape)) return [];
+    seen.add(shape);
+    return [estimateFamiliars(list, mode, target)];
+  });
+  const full = fills.find((fill) => fill.target === FULL_BAR) ?? fills[0]!;
+  const best = fills.reduce((cheapest, fill) => (fill.summons < cheapest.summons ? fill : cheapest), fills[0]!);
+  // A star only cares about the fill when its combines move the gauge and the bar can actually be set lower.
+  const matters = Array.from({ length: top }, (_, star) => star).filter((star) => {
+    const { success, fail } = gaugeFor(star);
+    if (!success && !fail) return false;
+    return new Set(COMBINE_TARGETS.map((target) => combineOdds(star, mode, target).bar)).size > 1;
+  });
+  return { fills, best, full, saved: Math.max(0, full.diamonds - best.diamonds), matters };
 }
