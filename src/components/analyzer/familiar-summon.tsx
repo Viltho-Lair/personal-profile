@@ -5,14 +5,15 @@ import {
   bestStar,
   combineUp,
   COMBINE_BONUS,
+  COMBINE_GAUGE,
   COMBINE_SLOTS,
-  combineBonusesBy,
+  copiesNeeded,
   emptyFamiliarSim,
   estimateFamiliar,
   FAMILIAR_BATCH,
   FAMILIAR_SUMMON_CHANCES,
   FAMILIAR_SUMMON_COSTS,
-  fodderSets,
+  fodderFor,
   MAX_COMBINE_STAR,
   MAX_FAMILIAR_STAR,
   MAX_SUMMON_STAR,
@@ -21,6 +22,7 @@ import {
   selfChance,
   SUMMON_BONUS,
   summonFamiliars,
+  type CombineMode,
   type FamiliarSim,
   type Fodder,
 } from "@/lib/game/familiar-summon";
@@ -28,6 +30,7 @@ import { familiarStars } from "@/lib/profile/rules";
 import type { FamiliarGroup } from "@/lib/profile/types";
 import { useProfile } from "@/lib/profile/use-profile";
 import { FAMILIARS, formatValue, type Familiar } from "./data";
+import { segment, SEGMENTS } from "./nav-styles";
 import { FamiliarArt } from "./skill-familiars";
 import { ELEMENT_TEXT, TIER_BORDER, TIER_TEXT } from "./tiers";
 
@@ -44,15 +47,18 @@ const AUTO_BATCHES = 50;
 const AUTO_INTERVAL_MS = 100;
 
 const GROUP_LABEL: Record<FamiliarGroup, string> = { weapon: "Weapon", attribute: "Attribute", battle: "Battle" };
+const MODE_LABEL: Record<CombineMode, string> = { self: "Self type", same: "Same type" };
 const NAMES = FAMILIARS.map((familiar) => familiar.name);
 const BY_NAME = new Map(FAMILIARS.map((familiar) => [familiar.name, familiar]));
+const STARS = Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, star) => star);
+
 const groupOf = (name: string) => BY_NAME.get(name)?.group ?? "attribute";
 const groupNames = (name: string) => FAMILIARS.filter((familiar) => familiar.group === groupOf(name)).map((f) => f.name);
 
 const rarityAt = (familiar: Familiar | undefined, star: number) =>
   familiar?.stars.find((entry) => entry.star === star)?.rarity ?? null;
 
-/** What a fodder set reads as: "2 Hi" or "4 Attribute". */
+/** What a fodder set reads as: "3 × Hi + 2 × other Attribute". */
 const fodderText = (fodder: Fodder, name: string, group: FamiliarGroup) =>
   [fodder.self ? `${fodder.self} × ${name}` : "", fodder.same ? `${fodder.same} × other ${GROUP_LABEL[group]}` : ""]
     .filter(Boolean)
@@ -83,32 +89,45 @@ function FamiliarTile({ name, star, label }: { name: string; star: number; label
   );
 }
 
-/** One of the two bonus bars, as the game draws them. */
-function BonusBar({ made, every, label }: { made: number; every: number; label: string }) {
-  const at = made % every;
+/** One of the two gauges, as the game draws them. */
+function Gauge({ at, full, label }: { at: number; full: number; label: string }) {
   return (
     <div className="flex flex-col gap-1">
       <div
         role="meter"
         aria-label={label}
         aria-valuemin={0}
-        aria-valuemax={every}
+        aria-valuemax={full}
         aria-valuenow={at}
         className="relative h-3 overflow-hidden rounded-sm border border-ink/20 bg-ink/[0.06]"
       >
-        <div className="absolute inset-y-0 left-0 bg-tier-epic" style={{ width: `${(at / every) * 100}%` }} />
+        <div className="absolute inset-y-0 left-0 bg-tier-epic" style={{ width: `${Math.min(100, (at / full) * 100)}%` }} />
       </div>
       <p className={LABEL}>
-        {label} {formatValue(at)} / {formatValue(every)}
+        {label} {formatValue(at)} / {formatValue(full)}
       </p>
     </div>
   );
 }
 
-const STARS = Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, star) => star);
+/** A familiar's copies by star, as "0★ 12 · 3★ 1". */
+function StarRow({ row, familiar }: { row: readonly number[]; familiar: Familiar | undefined }) {
+  if (row.every((count) => !count)) return <span className="text-dim">none</span>;
+  return (
+    <>
+      {row.map((count, star) =>
+        count ? (
+          <span key={star} className={TIER_TEXT[rarityAt(familiar, star) ?? ""] ?? "text-dim"}>
+            {star}★ {formatValue(count)}
+          </span>
+        ) : null,
+      )}
+    </>
+  );
+}
 
 /**
- * Familiar summoning, apart from the profile: pick a familiar, say what star it's at and what star you want, and
+ * Familiar summoning, apart from the profile: pick a familiar, say what star it is at and what star you want, and
  * the estimate gives the diamonds that takes on average. The summon buttons try it out, and nothing here changes
  * the familiars you actually own.
  */
@@ -118,44 +137,31 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
   const owned = familiarStars(profile, name);
   const [from, setFrom] = useState<number | null>(null);
   const [to, setTo] = useState(MAX_COMBINE_STAR);
+  const [mode, setMode] = useState<CombineMode>("self");
+  const [feed, setFeed] = useState<string[] | null>(null);
   const [sim, setSim] = useState<FamiliarSim>(() => emptyFamiliarSim(NAMES));
   const [auto, setAuto] = useState<"off" | "running" | "paused">("off");
   const [last, setLast] = useState<Record<string, number[]> | null>(null);
-  const [picks, setPicks] = useState(0);
 
   // The star it starts at: your profile's, until you say otherwise. Your familiars are never touched.
   const start = from ?? Math.min(MAX_COMBINE_STAR, owned ?? 0);
   const goal = Math.max(start, to);
   const group = groupOf(name);
-  const kin = useMemo(() => groupNames(name), [name]);
-  const estimate = useMemo(() => estimateFamiliar(start, goal), [start, goal]);
+  // The rest of the group, in the order they are fed to it. Resets when the familiar changes.
+  const kin = useMemo(() => {
+    const members = groupNames(name).filter((member) => member !== name);
+    return feed && feed.length === members.length && feed.every((member) => members.includes(member)) ? feed : members;
+  }, [name, feed]);
 
-  // Where the run has got to, and the 7★ picks its combines have earned.
+  const estimate = useMemo(() => estimateFamiliar(start, goal, mode), [start, goal, mode]);
+  const other = useMemo(() => estimateFamiliar(start, goal, mode === "self" ? "same" : "self"), [start, goal, mode]);
+  const needs = useMemo(() => copiesNeeded(goal, mode), [goal, mode]);
   const reached = bestStar(sim, name);
-  const earned = combineBonusesBy(sim.combines);
-  const waiting = Math.max(0, earned - picks);
-
-  /** Adds `count` copies of the goal familiar at a star, for the picks the combine bonus bar hands over. */
-  const withPicks = (current: FamiliarSim, count: number): FamiliarSim => {
-    if (count < 1) return current;
-    const copies = [...current.copies[name]!];
-    copies[COMBINE_BONUS.star]! += count;
-    return { ...current, copies: { ...current.copies, [name]: copies } };
-  };
 
   const run = (count: number, diamonds: number, combine: boolean) => {
-    const result = summonFamiliars(sim, count, diamonds, NAMES);
-    let next = result.sim;
-    let taken = picks;
-    if (combine) {
-      // Auto takes the bonus picks itself, and the bar lets you choose, so they all go to the goal familiar.
-      const earned = combineBonusesBy(next.combines);
-      next = withPicks(next, earned - taken);
-      taken = Math.max(taken, earned);
-      next = combineUp(next, name, kin, goal);
-    }
+    const result = summonFamiliars(sim, count, diamonds, NAMES, name);
+    const next = combine ? combineUp(result.sim, name, [name, ...kin], mode, goal) : result.sim;
     setSim(next);
-    setPicks(taken);
     setLast(result.drawn);
     if (combine && (bestStar(next, name) ?? -1) >= goal) setAuto("off");
   };
@@ -177,17 +183,17 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
     setAuto("off");
     setSim(emptyFamiliarSim(NAMES));
     setLast(null);
-    setPicks(0);
   };
 
-  /** Takes a 7★ copy of the goal familiar from the combine bonus bar, as the game has you pick one. */
-  const takePick = () => {
-    if (waiting < 1) return;
-    setSim((current) => withPicks(current, 1));
-    setPicks((current) => current + 1);
-  };
+  const combine = () => setSim((current) => combineUp(current, name, [name, ...kin], mode, goal));
 
-  const combine = () => setSim((current) => combineUp(current, name, kin, goal));
+  /** Moves one of the group up or down the feeding order. */
+  const move = (index: number, by: number) => {
+    const next = [...kin];
+    const [member] = next.splice(index, 1);
+    next.splice(Math.max(0, Math.min(next.length, index + by)), 0, member!);
+    setFeed(next);
+  };
 
   return (
     <section aria-label="Familiar summon" className="@container flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
@@ -201,6 +207,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             onChange={(event) => {
               setName(event.target.value);
               setFrom(null);
+              setFeed(null);
             }}
             className={FIELD}
           >
@@ -213,12 +220,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
         </label>
         <label className="flex items-center gap-1.5">
           <span className={LABEL}>from</span>
-          <select
-            aria-label={`${name} starts at`}
-            value={start}
-            onChange={(event) => setFrom(Number(event.target.value))}
-            className={FIELD}
-          >
+          <select aria-label={`${name} starts at`} value={start} onChange={(event) => setFrom(Number(event.target.value))} className={FIELD}>
             {STARS.map((star) => (
               <option key={star} value={star}>
                 {star}★{star === owned ? " · yours" : ""}
@@ -236,6 +238,13 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             ))}
           </select>
         </label>
+        <div className={SEGMENTS} role="group" aria-label="How the slots are filled">
+          {(["self", "same"] as const).map((id) => (
+            <button key={id} type="button" aria-pressed={mode === id} onClick={() => setMode(id)} className={segment(mode === id)}>
+              {MODE_LABEL[id]}
+            </button>
+          ))}
+        </div>
         <span className="ml-auto flex flex-wrap items-center gap-1.5">
           {sim.summons > 0 ? (
             <button type="button" onClick={clear} className={QUIET}>
@@ -276,29 +285,24 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
       </div>
 
       <div className="grid gap-3 @xl:grid-cols-2">
-        <BonusBar made={sim.summons} every={SUMMON_BONUS.every} label={`Summon Bonus Random ${SUMMON_BONUS.star}-star Familiar +1`} />
-        <BonusBar made={sim.combines} every={COMBINE_BONUS.every} label={`Combine Bonus Select ${COMBINE_BONUS.star}-star Familiar +1`} />
+        <Gauge
+          at={sim.summons % SUMMON_BONUS.full}
+          full={SUMMON_BONUS.full}
+          label={`Summon Bonus Select ${SUMMON_BONUS.star}-star Familiar +1`}
+        />
+        <Gauge at={sim.gauge} full={COMBINE_BONUS.full} label={`Combine Bonus Select ${COMBINE_BONUS.star}-star Familiar +1`} />
       </div>
       <p className={LABEL}>
         {sim.summons > 0 ? (
           <>
             <span className="text-tier-immortal">{formatValue(sim.diamonds)} diamonds spent</span> ·{" "}
             {formatValue(sim.summons)} summons · {formatValue(sim.combines)} combines ·{" "}
+            {formatValue(sim.picks.summon)} × {SUMMON_BONUS.star}★ and {formatValue(sim.picks.combine)} ×{" "}
+            {COMBINE_BONUS.star}★ picked ·{" "}
           </>
         ) : null}
         {reached === null ? `No ${name} summoned yet` : `${name} is at ${reached}★ in this run`}
       </p>
-
-      {waiting > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-tier-epic/60 bg-tier-epic/10 px-2 py-1.5">
-          <span className="font-mono text-[11px] text-ink">
-            Combine bonus{waiting > 1 ? ` (${formatValue(waiting)} waiting)` : ""}: pick a {COMBINE_BONUS.star}★ familiar
-          </span>
-          <button type="button" onClick={takePick} className={`${QUIET} ml-auto`}>
-            Take {COMBINE_BONUS.star}★ {name}
-          </button>
-        </div>
-      ) : null}
 
       <div className="grid min-h-0 gap-3 @3xl:grid-cols-[minmax(0,1fr)_16rem]">
         <div className="flex min-w-0 flex-col gap-3">
@@ -306,7 +310,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
           <div className="flex flex-col gap-1 rounded-md border border-ink/15 p-2">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className={LABEL}>
-                Diamonds on average · {name} {start}★ → {goal}★
+                Diamonds on average · {name} {start}★ → {goal}★ · {MODE_LABEL[mode]}
               </h3>
               <span className="font-mono text-sm text-tier-immortal tabular-nums">
                 {formatValue(estimate.diamonds)} <span className="text-[10px] text-dim">diamonds</span>
@@ -320,18 +324,22 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                   one summon in {ROSTER_SIZE}
                 </p>
                 <p className="font-mono text-[10px] text-dim">
-                  {formatValue(estimate.combines)} combines, which is {formatValue(estimate.combineBonuses)} picked{" "}
-                  {COMBINE_BONUS.star}★ from the combine bonus · {formatValue(estimate.summonBonuses)} random{" "}
-                  {SUMMON_BONUS.star}★ from the summon bonus
-                </p>
-                <p className="font-mono text-[10px] text-dim">
                   Half the runs were done by {formatValue(estimate.median.summons)} summons (
                   {formatValue(estimate.median.diamonds)}), nine in ten by {formatValue(estimate.likely.summons)} (
                   {formatValue(estimate.likely.diamonds)}) · over {formatValue(estimate.runs)} runs
                 </p>
                 <p className="font-mono text-[10px] text-dim">
-                  Fed nothing but its own copies, {goal}★ would be {formatValue(estimate.ownCopies)} of {name} at 0★. The
-                  other three {GROUP_LABEL[group]} familiars fill every slot they can, which is what makes it affordable.
+                  The gauges do most of it: {formatValue(estimate.summonPicks)} × {SUMMON_BONUS.star}★ from{" "}
+                  {formatValue(estimate.summons)} summons, and {formatValue(estimate.combinePicks)} × {COMBINE_BONUS.star}★ from{" "}
+                  {formatValue(estimate.combines)} combines. Both let you choose, so every one of them is a {name}.
+                </p>
+                <p className="font-mono text-[10px] text-ink">
+                  {MODE_LABEL[mode === "self" ? "same" : "self"]} would cost {formatValue(other.diamonds)} —{" "}
+                  {other.diamonds === estimate.diamonds
+                    ? "the same"
+                    : other.diamonds > estimate.diamonds
+                      ? `${formatValue(Math.round((other.diamonds / Math.max(1, estimate.diamonds)) * 10) / 10)}× more`
+                      : `${formatValue(Math.round((estimate.diamonds / Math.max(1, other.diamonds)) * 10) / 10)}× less`}
                 </p>
                 <ul className="mt-0.5 grid gap-x-3 font-mono text-[10px] text-dim @xl:grid-cols-2">
                   {STARS.slice(0, goal).map((star) => (
@@ -339,18 +347,16 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                       <span className="text-ink">
                         {star}★ → {star + 1}★
                       </span>{" "}
-                      {fodderSets(star)
-                        .map((set) => fodderText(set, name, group))
-                        .join(" · or ")}
+                      {fodderText(fodderFor(star, mode), name, group)}
+                      {needs.own[star + 1] ? ` · ${formatValue(needs.own[star + 1]!)} to make` : ""}
                     </li>
                   ))}
                 </ul>
                 <p className="text-[10px] leading-snug text-dim">
-                  An average, not a promise. It fills all five slots to 100% every time, so no combine is ever wasted,
-                  and it never takes one of the other three up a star of its own: that costs the same as a star on{" "}
-                  {name} and is worth half as much in the slot. Every combine counts toward the{" "}
-                  {COMBINE_BONUS.every}-combine bonus, so combining spare familiars you have no other use for fills that
-                  bar faster than this — the estimate doesn&apos;t assume you do it.
+                  An average, not a promise. It fills all five slots to 100% every time, so no combine ever fails and the
+                  gauges&apos; failure column never comes into it. Fed nothing but its own copies and with no gauges at
+                  all, {goal}★ would be {formatValue(estimate.ownCopies)} of {name} at 0★ — the picks are what make it
+                  reachable.
                 </p>
               </>
             ) : (
@@ -360,48 +366,96 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
             )}
           </div>
 
-          {/* What the run holds, for the goal's group: the others are summoned and left. */}
+          {/* Which of the group gets eaten first. */}
+          <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className={LABEL}>{GROUP_LABEL[group]} familiars · fed to {name} in this order</h3>
+              <span className="font-mono text-[10px] text-dim">
+                {mode === "same"
+                  ? `Same type fills every slot it can, so all three are spent and raised`
+                  : `Self type spends none of them — they are summoned and left`}
+              </span>
+            </div>
+            <ul className="flex flex-col gap-1">
+              {kin.map((member, index) => (
+                <li key={member} className="flex flex-wrap items-center gap-2 border-b border-ink/10 pb-1">
+                  <span className="w-4 text-right font-mono text-[10px] text-dim tabular-nums">{index + 1}</span>
+                  <span className="w-9 shrink-0">
+                    <FamiliarTile name={member} star={bestStar(sim, member) ?? 0} label={bestStar(sim, member) === null ? "none" : undefined} />
+                  </span>
+                  <span className="flex min-w-24 flex-col">
+                    <span className="font-mono text-[11px] text-ink">
+                      {member}{" "}
+                      <span className={`text-[10px] ${ELEMENT_TEXT[BY_NAME.get(member)?.element ?? ""] ?? "text-dim"}`}>
+                        {BY_NAME.get(member)?.element}
+                      </span>
+                    </span>
+                    <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
+                      <StarRow row={sim.copies[member] ?? []} familiar={BY_NAME.get(member)} />
+                    </span>
+                  </span>
+                  <span className="ml-auto flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={`Feed ${member} sooner`}
+                      onClick={() => move(index, -1)}
+                      disabled={index === 0 || mode !== "same"}
+                      className={`${QUIET} px-1.5`}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Feed ${member} later`}
+                      onClick={() => move(index, 1)}
+                      disabled={index === kin.length - 1 || mode !== "same"}
+                      className={`${QUIET} px-1.5`}
+                    >
+                      ▼
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Everything summoned, and what is left once it has been combined. */}
           <div className="flex flex-col gap-1.5 rounded-md border border-ink/15 p-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className={LABEL}>
-                {GROUP_LABEL[group]} familiars in this run · the rest are no help to {name}
-              </h3>
+              <h3 className={LABEL}>Every familiar · summoned, and what is left after combining</h3>
               <button type="button" onClick={combine} disabled={!sim.summons} className={LOUD}>
                 Combine
               </button>
             </div>
-            <ul className="grid gap-2 @xl:grid-cols-2">
-              {kin.map((member) => {
-                const row = sim.copies[member] ?? [];
-                const best = bestStar(sim, member);
+            <ul className="flex flex-col gap-0.5">
+              {FAMILIARS.map((familiar) => {
+                const inGroup = familiar.group === group;
                 return (
-                  <li key={member} className="flex items-center gap-2 border-b border-ink/10 pb-1">
-                    <span className="w-9 shrink-0">
-                      <FamiliarTile name={member} star={best ?? 0} label={best === null ? "none" : `${best}★`} />
+                  <li
+                    key={familiar.name}
+                    className={`grid grid-cols-[6rem_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-2 border-b border-ink/10 py-0.5 ${
+                      inGroup ? "" : "opacity-45"
+                    }`}
+                  >
+                    <span className="font-mono text-[10px] text-ink">
+                      {familiar.name}
+                      {familiar.name === name ? <span className="text-tier-mythic"> ★</span> : null}{" "}
+                      <span className="text-[9px] text-dim">{GROUP_LABEL[familiar.group]}</span>
                     </span>
-                    <span className="flex min-w-0 flex-col">
-                      <span className="font-mono text-[11px] text-ink">
-                        {member}
-                        {member === name ? <span className="text-tier-mythic"> · raising</span> : null}{" "}
-                        <span className={`text-[10px] ${ELEMENT_TEXT[BY_NAME.get(member)?.element ?? ""] ?? "text-dim"}`}>
-                          {BY_NAME.get(member)?.element}
-                        </span>
-                      </span>
-                      <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] text-dim tabular-nums">
-                        {row.every((count) => !count) ? <span>none in hand</span> : null}
-                        {row.map((count, star) =>
-                          count ? (
-                            <span key={star} className={TIER_TEXT[rarityAt(BY_NAME.get(member), star) ?? ""] ?? "text-dim"}>
-                              {star}★ {formatValue(count)}
-                            </span>
-                          ) : null,
-                        )}
-                      </span>
+                    <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
+                      <StarRow row={sim.drawn[familiar.name] ?? []} familiar={familiar} />
+                    </span>
+                    <span className="flex flex-wrap gap-x-1.5 font-mono text-[9px] tabular-nums">
+                      <StarRow row={sim.copies[familiar.name] ?? []} familiar={familiar} />
                     </span>
                   </li>
                 );
               })}
             </ul>
+            <p className="font-mono text-[9px] text-dim">
+              Left column: summoned, the {SUMMON_BONUS.star}★ picks included. Right: what is left once combined. The
+              eight familiars outside {GROUP_LABEL[group]} are no help to {name} at all.
+            </p>
             {last ? (
               <p className="font-mono text-[10px] text-dim">
                 Last summon:{" "}
@@ -438,6 +492,35 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
               gives.
             </p>
           </div>
+
+          <div className="flex flex-col gap-1">
+            <h3 className={LABEL}>Combine gauge, by material</h3>
+            <dl className="font-mono text-[10px]">
+              <div className="flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5 text-dim">
+                <dt>Used as material</dt>
+                <dd className="flex gap-3">
+                  <span className="w-8 text-right">Fail</span>
+                  <span className="w-10 text-right">Success</span>
+                </dd>
+              </div>
+              {COMBINE_GAUGE.map((row, star) =>
+                row.fail || row.success ? (
+                  <div key={star} className="flex items-baseline justify-between gap-2 border-b border-ink/10 py-0.5">
+                    <dt className="text-ink">{star} stars</dt>
+                    <dd className="flex gap-3 tabular-nums">
+                      <span className="w-8 text-right text-dim">{row.fail}</span>
+                      <span className="w-10 text-right text-ink">{row.success}</span>
+                    </dd>
+                  </div>
+                ) : null,
+              )}
+            </dl>
+            <p className="text-[10px] leading-snug text-dim">
+              Nothing below 7★ moves this gauge, so the {COMBINE_BONUS.star}★ picks only start once the goal is deep in.
+              Every {COMBINE_BONUS.full} gives one.
+            </p>
+          </div>
+
           <div className="flex flex-col gap-1 text-[10px] leading-snug text-dim">
             <h3 className={LABEL}>Combining</h3>
             <p>
@@ -465,13 +548,13 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
               ))}
             </dl>
             <p>
-              <span className="text-ink">Self</span> is another copy of the same familiar.{" "}
+              <span className="text-ink">Self type</span> is another copy of the same familiar.{" "}
               <span className="text-ink">Same type</span> is any other familiar of its group, and it is worth half as
               much. Nothing outside the group counts.
             </p>
             <p>
-              7★ and 8★ are the wall: five same type familiars only reach 62.5%, so those two steps always want copies of
-              the familiar itself.
+              7★ and 8★ are the wall: five same type familiars only reach 62.5%, so those two steps take three of its
+              own and two of the group whichever mode you pick.
             </p>
             <p>
               {MAX_COMBINE_STAR}★ is as far as combining goes. The {MAX_FAMILIAR_STAR}th star takes a special awakening,
