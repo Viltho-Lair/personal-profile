@@ -109,8 +109,19 @@ export const selfOnlyFodder = (star: number) => Math.ceil(100 / selfChance(star)
  * they can fill — which is all of them except at 7★ and 8★, where five same type familiars only reach 62.5%, so
  * those two steps take three of its own and two of the group whichever way you go.
  */
-export type CombineMode = "self" | "same";
-export const COMBINE_MODES: readonly CombineMode[] = ["self", "same"];
+export type CombineMode = "self" | "same" | "mix";
+export const COMBINE_MODES: readonly CombineMode[] = ["self", "same", "mix"];
+
+/**
+ * Where a mixed plan stops leaning on the group and starts spending the familiar's own copies.
+ *
+ * The two pure ways are the ends of this: a crossover of 0 never asks the group for anything, and one at
+ * {@link MAX_COMBINE_STAR} asks them for every slot they can fill. Somewhere between is usually cheaper than
+ * either, because the group's copies rain down at low stars and cost as much as the goal's own at high ones —
+ * where only the goal gets what the two gauges hand out.
+ */
+export const CROSSOVERS: readonly number[] = Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, star) => star);
+export const ALL_SAME = MAX_COMBINE_STAR;
 
 /** The fodder set a mode uses to fill the bar the whole way for the step up from `star`. */
 export function fodderFor(star: number, mode: CombineMode): Fodder {
@@ -130,7 +141,9 @@ export const FULL_BAR = 100;
  * The fewest materials that fill the bar to at least `target`, leaning on the mode's own kind first. A step whose
  * smallest material already overshoots — 0★ and 9★ on self type are 100% from one — simply can't be set lower.
  */
-export function fodderAt(star: number, mode: CombineMode, target: number): Fodder {
+export function fodderAt(star: number, mode: CombineMode, target: number, crossover: number = ALL_SAME): Fodder {
+  // A mixed plan leans on the group below the crossover and on the familiar itself from there up.
+  if (mode === "mix") return fodderAt(star, star < crossover ? "same" : "self", target);
   const want = Math.max(1e-9, Math.min(FULL_BAR, target));
   const self = selfChance(star);
   const same = sameChance(star);
@@ -147,8 +160,8 @@ export function fodderAt(star: number, mode: CombineMode, target: number): Fodde
 }
 
 /** The fodder set for every step up to `to`, 0★ first. */
-export const planFor = (to: number, mode: CombineMode, target: number = FULL_BAR): Fodder[] =>
-  Array.from({ length: Math.max(0, to) }, (_, star) => fodderAt(star, mode, target));
+export const planFor = (to: number, mode: CombineMode, target: number = FULL_BAR, crossover: number = ALL_SAME): Fodder[] =>
+  Array.from({ length: Math.max(0, to) }, (_, star) => fodderAt(star, mode, target, crossover));
 
 /** What one step up costs and earns on average, at the fill a mode and target settle on. */
 export type CombineOdds = {
@@ -171,8 +184,8 @@ export type CombineOdds = {
  * materials each. What moves is the gauge, since a failure pays out as well — so the lower the bar is set, the
  * more attempts a star takes and the more gauge those attempts add up to.
  */
-export function combineOdds(star: number, mode: CombineMode, target: number): CombineOdds {
-  const fodder = fodderAt(star, mode, target);
+export function combineOdds(star: number, mode: CombineMode, target: number, crossover: number = ALL_SAME): CombineOdds {
+  const fodder = fodderAt(star, mode, target, crossover);
   const bar = Math.min(FULL_BAR, fodderBar(star, fodder));
   const attempts = bar > 0 ? FULL_BAR / bar : Infinity;
   const { success, fail } = gaugeFor(star);
@@ -204,9 +217,9 @@ export const STAR_COST: readonly number[] = Array.from({ length: MAX_COMBINE_STA
  * They are a ceiling, not a target: nothing is ever combined past what the goal could still need, so a run never
  * grinds copies it has no use for.
  */
-export function copiesNeeded(to: number, mode: CombineMode, target: number = FULL_BAR) {
-  const plan = planFor(to, mode, target);
-  const odds = Array.from({ length: Math.max(0, to) }, (_, star) => combineOdds(star, mode, target));
+export function copiesNeeded(to: number, mode: CombineMode, target: number = FULL_BAR, crossover: number = ALL_SAME) {
+  const plan = planFor(to, mode, target, crossover);
+  const odds = Array.from({ length: Math.max(0, to) }, (_, star) => combineOdds(star, mode, target, crossover));
   const own = Array.from({ length: to + 1 }, () => 0);
   const kin = Array.from({ length: to + 1 }, () => 0);
   own[to] = 1;
@@ -400,11 +413,12 @@ export function combineGoals(
   spares: Record<string, readonly string[]>,
   mode: CombineMode,
   target: number = FULL_BAR,
+  crossover: number = ALL_SAME,
   random: () => number = Math.random,
 ): FamiliarSim {
   const list = tidyGoals(goals);
   if (!list.length) return sim;
-  const odds = Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target));
+  const odds = Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target, crossover));
   const groups = [...new Set(list.map((goal) => goal.group))];
   let current = sim;
 
@@ -541,13 +555,14 @@ export function playFamiliars(
   goals: readonly FamiliarGoal[],
   mode: CombineMode,
   target: number,
+  crossover: number,
   random: () => number,
 ): FamiliarPlay {
   const list = tidyGoals(goals);
   const blank = { summons: 0, combines: 0, picks: { summon: 0, combine: 0 }, finished: list.map(() => 0) };
   if (!list.length || list.every((goal) => goal.to <= goal.from)) return blank;
 
-  const odds = Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target));
+  const odds = Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target, crossover));
   const row = () => Array.from({ length: MAX_COMBINE_STAR + 1 }, () => 0);
   // One pool per goal, and one more per group for the members of it that aren't goals.
   const own = list.map(() => row());
@@ -677,6 +692,8 @@ export type FamiliarEstimate = {
   mode: CombineMode;
   /** The bar it filled to before pressing each combine. */
   target: number;
+  /** For a mixed plan, the star it stops leaning on the group at. The pure ways ignore it. */
+  crossover: number;
   /** What each step up comes to at that fill. */
   odds: CombineOdds[];
   /** Runs it was averaged over. */
@@ -685,6 +702,9 @@ export type FamiliarEstimate = {
   summons: number;
   batches: number;
   diamonds: number;
+  /** How far a run typically lands from that average, and how far the average itself might still be out. */
+  spread: number;
+  error: number;
   /** Combines along the way. */
   combines: number;
   /** Familiars the two gauges hand over on the way, both of them picked. */
@@ -721,9 +741,11 @@ export function estimateFamiliars(
   goals: readonly FamiliarGoal[],
   mode: CombineMode = "self",
   target: number = FULL_BAR,
+  crossover: number = ALL_SAME,
 ): FamiliarEstimate {
   const list = tidyGoals(goals);
-  const key = `${goalKey(list)}::${mode}::${target}`;
+  const settledOn = mode === "mix" ? Math.max(0, Math.min(ALL_SAME, Math.floor(crossover))) : ALL_SAME;
+  const key = `${goalKey(list)}::${mode}::${target}::${settledOn}`;
   const known = ESTIMATES.get(key);
   if (known) return known;
 
@@ -732,11 +754,14 @@ export function estimateFamiliars(
     goals: list,
     mode,
     target,
-    odds: Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target)),
+    crossover: settledOn,
+    odds: Array.from({ length: MAX_COMBINE_STAR }, (_, star) => combineOdds(star, mode, target, settledOn)),
     runs: 0,
     summons: 0,
     batches: 0,
     diamonds: 0,
+    spread: 0,
+    error: 0,
     combines: 0,
     summonPicks: 0,
     combinePicks: 0,
@@ -754,14 +779,14 @@ export function estimateFamiliars(
   if (!list.length || list.every((goal) => goal.to <= goal.from)) return keep(base);
 
   const seed = list.reduce((sum, goal, index) => sum + (goal.from * 13 + goal.to * 101) * (index + 3), 0);
-  const random = seeded(seed + (mode === "self" ? 101 : 211));
+  const random = seeded(seed + (mode === "self" ? 101 : mode === "same" ? 211 : 307));
   // Runs go on until the average has settled, or until the summons they have simulated is the limit.
   const results: FamiliarPlay[] = [];
   let total = 0;
   let square = 0;
   let spent = 0;
   while (results.length < ESTIMATE_RUNS) {
-    const play = playFamiliars(list, mode, target, random);
+    const play = playFamiliars(list, mode, target, settledOn, random);
     results.push(play);
     total += play.summons;
     square += play.summons * play.summons;
@@ -784,12 +809,15 @@ export function estimateFamiliars(
     Math.round(results.reduce((sum, play) => sum + pick(play), 0) / runs);
 
   const summons = mean((play) => play.summons);
+  const spread = Math.sqrt(Math.max(0, square / runs - (total / runs) ** 2));
   return keep({
     ...base,
     runs,
     summons,
     batches: Math.ceil(summons / FAMILIAR_BATCH.summons),
     diamonds: diamondsFor(summons),
+    spread: Math.round(spread),
+    error: Math.round(spread / Math.sqrt(runs)),
     combines: mean((play) => play.combines),
     summonPicks: mean((play) => play.picks.summon),
     combinePicks: mean((play) => play.picks.combine),
@@ -822,18 +850,22 @@ export type FillComparison = {
  * makes a lower fill worth more gauge per material at the stars whose combines count for it, and worth exactly
  * nothing anywhere else.
  */
-export function compareFills(goals: readonly FamiliarGoal[], mode: CombineMode = "self"): FillComparison {
+export function compareFills(
+  goals: readonly FamiliarGoal[],
+  mode: CombineMode = "self",
+  crossover: number = ALL_SAME,
+): FillComparison {
   const list = tidyGoals(goals);
   const top = list.reduce((highest, goal) => Math.max(highest, goal.to), 0);
   // Two targets that settle on the same materials at every star are the same run, so only one of them is priced.
   const seen = new Set<string>();
   const fills = COMBINE_TARGETS.flatMap((target) => {
-    const shape = planFor(top, mode, target)
+    const shape = planFor(top, mode, target, crossover)
       .map((set) => `${set.self}/${set.same}`)
       .join(",");
     if (seen.has(shape)) return [];
     seen.add(shape);
-    return [estimateFamiliars(list, mode, target)];
+    return [estimateFamiliars(list, mode, target, crossover)];
   });
   const full = fills.find((fill) => fill.target === FULL_BAR) ?? fills[0]!;
   const best = fills.reduce((cheapest, fill) => (fill.summons < cheapest.summons ? fill : cheapest), fills[0]!);
@@ -841,7 +873,57 @@ export function compareFills(goals: readonly FamiliarGoal[], mode: CombineMode =
   const matters = Array.from({ length: top }, (_, star) => star).filter((star) => {
     const { success, fail } = gaugeFor(star);
     if (!success && !fail) return false;
-    return new Set(COMBINE_TARGETS.map((target) => combineOdds(star, mode, target).bar)).size > 1;
+    return new Set(COMBINE_TARGETS.map((target) => combineOdds(star, mode, target, crossover).bar)).size > 1;
   });
   return { fills, best, full, saved: Math.max(0, full.diamonds - best.diamonds), matters };
+}
+
+/** The cheapest mixed plan, and what leaning on the group each way would have cost instead. */
+export type MixSearch = {
+  /** The star the cheapest plan stops asking the group for slots at. */
+  crossover: number;
+  /** That plan, priced. */
+  best: FamiliarEstimate;
+  /** Every crossover priced, lowest first, so the shape of the choice can be seen. */
+  tried: FamiliarEstimate[];
+  /**
+   * The crossovers that came out as cheap as the best one, once the runs' own margin of error is allowed for.
+   * Where this is a long run of stars, the plan below them simply does not matter.
+   */
+  tied: number[];
+  /** What the two pure ways cost: never asking the group, and asking them for every slot they can fill. */
+  pureSelf: FamiliarEstimate;
+  pureSame: FamiliarEstimate;
+  /** What the mix saves against the cheaper of those two. */
+  saved: number;
+};
+
+/**
+ * Finds where a plan should stop leaning on the group.
+ *
+ * The group's copies rain down as fast as three of the goal's own and fill a slot for half as much, so low stars
+ * are theirs. High stars are not: a 7★ of theirs costs what a 7★ of the goal's costs to raise, and only the goal
+ * is handed anything by the two gauges. Somewhere in between the two swap over, and that is what this looks for.
+ *
+ * A crossover of 0 is the pure self type plan and one of {@link ALL_SAME} the pure same type plan, so the search
+ * takes in both and can only come back with something at least as cheap as the better of them.
+ */
+export function bestMix(goals: readonly FamiliarGoal[], target: number = FULL_BAR): MixSearch {
+  const list = tidyGoals(goals);
+  const tried = CROSSOVERS.map((crossover) => estimateFamiliars(list, "mix", target, crossover));
+  const best = tried.reduce((cheapest, run) => (run.summons < cheapest.summons ? run : cheapest), tried[0]!);
+  const pureSelf = tried[0]!;
+  const pureSame = tried[tried.length - 1]!;
+  // Two runs are the same answer when the gap between them is inside what their own margins of error allow.
+  const margin = (run: FamiliarEstimate) => 2 * Math.sqrt(run.error ** 2 + best.error ** 2);
+  const tied = tried.filter((run) => run.summons - best.summons <= margin(run)).map((run) => run.crossover);
+  return {
+    crossover: best.crossover,
+    best,
+    tried,
+    tied,
+    pureSelf,
+    pureSame,
+    saved: Math.max(0, Math.min(pureSelf.diamonds, pureSame.diamonds) - best.diamonds),
+  };
 }

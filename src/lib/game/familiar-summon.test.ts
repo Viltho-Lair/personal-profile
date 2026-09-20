@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  ALL_SAME,
+  bestMix,
   bestStar,
   combineOdds,
   combineOnce,
@@ -283,7 +285,7 @@ describe("estimating a goal", () => {
 
 describe("one run of a goal", () => {
   it("asks for nothing when the familiar starts at the goal", () => {
-    expect(playFamiliars(one(5, 5), "self", FULL_BAR, seeded(1))).toEqual({
+    expect(playFamiliars(one(5, 5), "self", FULL_BAR, ALL_SAME, seeded(1))).toEqual({
       summons: 0,
       combines: 0,
       picks: { summon: 0, combine: 0 },
@@ -292,13 +294,13 @@ describe("one run of a goal", () => {
   });
 
   it("costs less the further along the familiar starts", () => {
-    const scratch = playFamiliars(one(0, 9), "self", FULL_BAR, seeded(11)).summons;
-    const part = playFamiliars(one(8, 9), "self", FULL_BAR, seeded(11)).summons;
+    const scratch = playFamiliars(one(0, 9), "self", FULL_BAR, ALL_SAME, seeded(11)).summons;
+    const part = playFamiliars(one(8, 9), "self", FULL_BAR, ALL_SAME, seeded(11)).summons;
     expect(part).toBeLessThan(scratch);
   });
 
   it("waits for the gauge rather than combining for a goal it hands over whole", () => {
-    const play = playFamiliars(one(0, SUMMON_BONUS.star), "self", FULL_BAR, seeded(3));
+    const play = playFamiliars(one(0, SUMMON_BONUS.star), "self", FULL_BAR, ALL_SAME, seeded(3));
     expect(play.summons).toBeLessThanOrEqual(SUMMON_BONUS.full);
   });
 });
@@ -615,12 +617,58 @@ describe("a list of goals in priority order", () => {
     for (let tick = 0; tick < 20_000; tick += 1) {
       const needy = goals.find((entry) => (bestStar(sim, entry.name) ?? -1) < entry.to) ?? goals[0]!;
       sim = summonFamiliars(sim, FAMILIAR_BATCH.summons, 0, ROSTER, needy.name, random).sim;
-      sim = combineGoals(sim, goals, { attribute: ["A", "Je"] }, "self", FULL_BAR, random);
+      sim = combineGoals(sim, goals, { attribute: ["A", "Je"] }, "self", FULL_BAR, ALL_SAME, random);
       if (goals.every((entry) => (bestStar(sim, entry.name) ?? -1) >= entry.to)) break;
     }
     for (const entry of goals) expect(bestStar(sim, entry.name)).toBeGreaterThanOrEqual(entry.to);
     // Self type never touches the spares, so what is in hand for them is exactly what was summoned.
     expect(sim.copies.A).toEqual(sim.drawn.A);
     expect(sim.copies.Je).toEqual(sim.drawn.Je);
+  });
+});
+
+describe("mixing the two kinds of fodder", () => {
+  it("takes the group's slots below the crossover and the familiar's own above it", () => {
+    // Six is where this one swaps over: the group fills the slots under it, its own copies from it up.
+    expect(fodderAt(3, "mix", FULL_BAR, 6)).toEqual(fodderAt(3, "same", FULL_BAR));
+    expect(fodderAt(6, "mix", FULL_BAR, 6)).toEqual(fodderAt(6, "self", FULL_BAR));
+    expect(fodderAt(9, "mix", FULL_BAR, 6)).toEqual(fodderAt(9, "self", FULL_BAR));
+  });
+
+  it("is the two pure ways at either end of the crossover", () => {
+    for (let star = 0; star < MAX_COMBINE_STAR; star += 1) {
+      expect(fodderAt(star, "mix", FULL_BAR, 0)).toEqual(fodderAt(star, "self", FULL_BAR));
+      expect(fodderAt(star, "mix", FULL_BAR, ALL_SAME)).toEqual(fodderAt(star, "same", FULL_BAR));
+    }
+  });
+
+  it("prices every crossover, the two pure ways among them", () => {
+    const mix = bestMix(one(0, 8), FULL_BAR);
+    expect(mix.tried).toHaveLength(MAX_COMBINE_STAR + 1);
+    expect(mix.pureSelf.crossover).toBe(0);
+    expect(mix.pureSame.crossover).toBe(ALL_SAME);
+    expect(mix.tried.map((run) => run.crossover)).toEqual(Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, i) => i));
+  });
+
+  it("never comes back with worse than the better of the two pure ways", () => {
+    const mix = bestMix(one(0, 8), FULL_BAR);
+    expect(mix.best.summons).toBeLessThanOrEqual(mix.pureSelf.summons);
+    expect(mix.best.summons).toBeLessThanOrEqual(mix.pureSame.summons);
+    expect(mix.tied).toContain(mix.crossover);
+  });
+
+  it("stops leaning on the group well before the stars the gauges pay out at", () => {
+    // Above 7★ a group copy costs what the goal's own costs to raise and no gauge helps it, so it is never worth it.
+    const mix = bestMix(one(0, MAX_COMBINE_STAR), FULL_BAR);
+    expect(mix.crossover).toBeLessThanOrEqual(COMBINE_BONUS.star);
+    const late = mix.tried.find((run) => run.crossover === MAX_COMBINE_STAR)!;
+    expect(late.summons).toBeGreaterThan(mix.best.summons * 2);
+  });
+
+  it("keeps the crossover it settled on in the estimate it hands back", () => {
+    const mix = bestMix(one(0, 8), FULL_BAR);
+    expect(mix.best.mode).toBe("mix");
+    expect(mix.best.crossover).toBe(mix.crossover);
+    expect(mix.best.odds[3]).toEqual(combineOdds(3, "mix", FULL_BAR, mix.crossover));
   });
 });

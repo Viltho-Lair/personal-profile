@@ -6,12 +6,14 @@ import {
   combineGoals,
   COMBINE_BONUS,
   COMBINE_GAUGE,
+  COMBINE_MODES,
   COMBINE_SLOTS,
   COMBINE_TARGETS,
   emptyFamiliarSim,
   FAMILIAR_BATCH,
   FAMILIAR_SUMMON_CHANCES,
   FAMILIAR_SUMMON_COSTS,
+  diamondsFor,
   FULL_BAR,
   goalKey,
   MAX_COMBINE_STAR,
@@ -49,7 +51,7 @@ const AUTO_BATCHES = 50;
 const AUTO_INTERVAL_MS = 100;
 
 const GROUP_LABEL: Record<FamiliarGroup, string> = { weapon: "Weapon", attribute: "Attribute", battle: "Battle" };
-const MODE_LABEL: Record<CombineMode, string> = { self: "Self type", same: "Same type" };
+const MODE_LABEL: Record<CombineMode, string> = { self: "Self type", same: "Same type", mix: "Best mix" };
 const NAMES = FAMILIARS.map((familiar) => familiar.name);
 const BY_NAME = new Map(FAMILIARS.map((familiar) => [familiar.name, familiar]));
 const STARS = Array.from({ length: MAX_COMBINE_STAR + 1 }, (_, star) => star);
@@ -108,6 +110,16 @@ function Gauge({ at, full, label }: { at: number; full: number; label: string })
       </p>
     </div>
   );
+}
+
+/** How one cost reads against another: a ratio once the gap is worth one, and the difference while it isn't. */
+function compare(other: number, mine: number) {
+  if (other === mine) return "the same";
+  const ratio = Math.max(other, mine) / Math.max(1, Math.min(other, mine));
+  const word = other > mine ? "more" : "less";
+  // A ratio that rounds to one says nothing, so a close call gives the difference instead.
+  if (ratio < 1.1) return `${formatValue(Math.abs(other - mine))} ${word}`;
+  return `${formatValue(Math.round(ratio * 10) / 10)}× ${word}`;
 }
 
 /** A familiar's copies by star, as "0★ 12 · 3★ 1". */
@@ -189,13 +201,16 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
   const estimate = analysis.answer?.estimate ?? null;
   const other = analysis.answer?.other ?? null;
   const fills = analysis.answer?.fills ?? null;
+  const mix = analysis.answer?.mix ?? null;
   /** The goal highest up the list that this run hasn't got to yet: where both gauges send their familiar. */
   const wanting = goals.find((goal) => (bestStar(sim, goal.name) ?? -1) < goal.to) ?? goals[0];
   const reached = goals.every((goal) => (bestStar(sim, goal.name) ?? -1) >= goal.to);
+  /** The one goal, when there is only one, so the plan can be read in its own name. */
+  const only = goals.length === 1 ? goals[0] : undefined;
 
   const run = (count: number, diamonds: number, combine: boolean) => {
     const result = summonFamiliars(sim, count, diamonds, NAMES, wanting?.name ?? NAMES[0]!);
-    const next = combine ? combineGoals(result.sim, goals, spares, mode, target) : result.sim;
+    const next = combine ? combineGoals(result.sim, goals, spares, mode, target, estimate?.crossover) : result.sim;
     setSim(next);
     setLast(result.drawn);
     if (combine && goals.every((goal) => (bestStar(next, goal.name) ?? -1) >= goal.to)) setAuto("off");
@@ -227,7 +242,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
     clear(list);
   };
 
-  const combine = () => setSim((current) => combineGoals(current, goals, spares, mode, target));
+  const combine = () => setSim((current) => combineGoals(current, goals, spares, mode, target, estimate?.crossover));
 
   /** Moves one of a group's spares up or down its feeding order. */
   const moveSpare = (group: string, index: number, by: number) => {
@@ -257,8 +272,21 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {switcher}
         <div className={SEGMENTS} role="group" aria-label="How the slots are filled">
-          {(["self", "same"] as const).map((id) => (
-            <button key={id} type="button" aria-pressed={mode === id} onClick={() => setMode(id)} className={segment(mode === id)}>
+          {COMBINE_MODES.map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={mode === id}
+              onClick={() => setMode(id)}
+              title={
+                id === "mix"
+                  ? "Lean on the group at the stars where that is cheaper and on the familiar itself from there up, and work out where the two swap over"
+                  : id === "self"
+                    ? "Fill every slot with copies of the familiar itself"
+                    : "Fill every slot the group can fill"
+              }
+              className={segment(mode === id)}
+            >
               {MODE_LABEL[id]}
             </button>
           ))}
@@ -499,14 +527,19 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                   {formatValue(estimate.summons)} summons, and {formatValue(estimate.combinePicks)} × {COMBINE_BONUS.star}★ from{" "}
                   {formatValue(estimate.combines)} combines. Both let you choose, so each one goes to the goal highest up the list that still wants it.
                 </p>
+                {mix ? (
+                  <p className="font-mono text-[10px] text-ink">
+                    Fill the slots from the group up to{" "}
+                    <span className="text-tier-mythic">{mix.crossover === 0 ? "nothing" : `${mix.crossover}★`}</span>, then from{" "}
+                    {goals.length === 1 ? goals[0]!.name : "each goal"}&apos;s own copies the rest of the way
+                    {mix.tied.length > 1 ? ` · ${mix.tied.map((star) => `${star}★`).join(" and ")} come out the same` : ""}
+                  </p>
+                ) : null}
                 {other ? (
                   <p className="font-mono text-[10px] text-ink">
-                    {MODE_LABEL[mode === "self" ? "same" : "self"]} at {target}% would cost {formatValue(other.diamonds)} —{" "}
-                    {other.diamonds === estimate.diamonds
-                      ? "the same"
-                      : other.diamonds > estimate.diamonds
-                        ? `${formatValue(Math.round((other.diamonds / Math.max(1, estimate.diamonds)) * 10) / 10)}× more`
-                        : `${formatValue(Math.round((estimate.diamonds / Math.max(1, other.diamonds)) * 10) / 10)}× less`}
+                    {mix ? "The better of the two pure ways" : `${MODE_LABEL[mode === "self" ? "same" : "self"]} at ${target}%`} would
+                    cost {formatValue(other.diamonds)} —{" "}
+                    {compare(other.diamonds, estimate.diamonds)}
                   </p>
                 ) : null}
                 {/* What each step costs and earns at this fill: the whole of the 25% argument is this table. */}
@@ -529,7 +562,7 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                           <td className="text-ink">
                             {step.star}★ → {step.star + 1}★
                           </td>
-                          <td>{fodderText(step.fodder, "the familiar", (goals[0]?.group ?? "attribute") as FamiliarGroup)}</td>
+                          <td>{fodderText(step.fodder, only?.name ?? "each goal", (only?.group ?? goals[0]?.group ?? "attribute") as FamiliarGroup)}</td>
                           <td className="pr-2 text-right">{step.bar}%</td>
                           <td className="pr-2 text-right">{formatValue(Math.round(step.attempts * 10) / 10)}</td>
                           <td className="pr-2 text-right">{formatValue(Math.round(spent * 10) / 10)}</td>
@@ -547,6 +580,44 @@ export function FamiliarSummon({ switcher }: { switcher: ReactNode }) {
                   hit — so a lower bar earns more {COMBINE_BONUS.star}★ for the same materials, and only at the stars
                   whose combines count for it.
                 </p>
+                {/* Where the group stops being worth a slot: the whole of the mixed plan in one column. */}
+                {mix ? (
+                  <div className="mt-0.5 flex flex-col gap-1 border-t border-ink/10 pt-1.5">
+                    <h4 className={LABEL}>Where to stop leaning on the group</h4>
+                    <ul className="grid gap-x-3 font-mono text-[10px] tabular-nums @xl:grid-cols-2">
+                      {mix.tried.map((run) => {
+                        const isBest = run.crossover === mix.crossover;
+                        const tied = mix.tied.includes(run.crossover);
+                        return (
+                          <li
+                            key={run.crossover}
+                            className={`flex items-baseline justify-between gap-2 border-b border-ink/5 py-0.5 ${
+                              isBest ? "text-ink" : tied ? "text-dim" : "text-dim/70"
+                            }`}
+                          >
+                            <span>
+                              {run.crossover === 0
+                                ? "Never"
+                                : run.crossover >= MAX_COMBINE_STAR
+                                  ? "All the way"
+                                  : `Up to ${run.crossover}★`}
+                              {isBest ? " ★" : ""}
+                            </span>
+                            <span className={isBest ? "text-tier-immortal" : ""}>
+                              {formatValue(run.diamonds)} ± {formatValue(diamondsFor(run.error))}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <p className="text-[10px] leading-snug text-dim">
+                      The group&apos;s copies rain down three times as fast as the goal&apos;s own and fill a slot for
+                      half as much, so the low stars are theirs. The high ones are not: a {COMBINE_BONUS.star}★ of
+                      theirs costs what one of the goal&apos;s costs to raise, and only the goal is handed anything by
+                      the two gauges — which is why leaning on them past {COMBINE_BONUS.star}★ is so much dearer.
+                    </p>
+                  </div>
+                ) : null}
                 <p className="text-[10px] leading-snug text-dim">
                   An average, not a promise. Fed nothing but its own copies and with no gauges at all, one 10★ alone
                   would be {formatValue(estimate.ownCopies)} copies of it at 0★ — the picks are what make it reachable. A
